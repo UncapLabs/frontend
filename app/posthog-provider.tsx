@@ -1,29 +1,56 @@
 // app/provider.tsx
-import { useEffect, useState } from "react";
-import { PostHogProvider } from "posthog-js/react";
+import { useEffect, useState, type ReactNode } from "react";
 
-export function PHProvider({ children }: { children: React.ReactNode }) {
-  const [posthog, setPosthog] = useState<any>(null);
+// Define proper types for PostHog
+interface PostHogWindow extends Window {
+  posthog?: {
+    init: (apiKey: string, config: { api_host: string }) => void;
+    capture: (event: string, properties?: Record<string, any>) => void;
+    identify: (userId: string, properties?: Record<string, any>) => void;
+    reset: () => void;
+    q?: any[];
+    c?: number;
+  };
+}
+
+declare global {
+  interface Window {
+    posthog?: PostHogWindow["posthog"];
+  }
+}
+
+export function PHProvider({ children }: { children: ReactNode }) {
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // Only initialize on client side
-    if (typeof window !== "undefined") {
-      // Dynamic import to ensure it only loads on client
-      import("posthog-js").then((posthogModule) => {
-        const posthogClient = posthogModule.default;
-
-        posthogClient.init(import.meta.env.VITE_PUBLIC_POSTHOG_KEY, {
-          api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
-          capture_pageview: false, // We'll handle this manually with React Router
-        });
-
-        setPosthog(posthogClient);
-      });
-    }
+    setIsClient(true);
   }, []);
 
-  // Don't render PostHogProvider until posthog is loaded
-  if (!posthog) return <>{children}</>;
+  useEffect(() => {
+    if (!isClient || typeof window === "undefined") return;
 
-  return <PostHogProvider client={posthog}>{children}</PostHogProvider>;
+    let mounted = true;
+
+    const loadPostHog = async () => {
+      try {
+        const { default: posthog } = await import("posthog-js");
+
+        if (mounted) {
+          posthog.init("phc_vYG1xMtaZVec4XoqJTYmP1PBYduJxu6lXtwzK2ddlIe", {
+            api_host: "https://us.i.posthog.com",
+          });
+        }
+      } catch (error) {
+        console.error("Failed to load PostHog:", error);
+      }
+    };
+
+    loadPostHog();
+
+    return () => {
+      mounted = false;
+    };
+  }, [isClient]);
+
+  return <>{children}</>;
 }
