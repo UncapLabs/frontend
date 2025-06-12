@@ -36,8 +36,8 @@ export function PHProvider({ children }: { children: ReactNode }) {
         const { default: posthog } = await import("posthog-js");
 
         if (mounted) {
-          posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_KEY, {
-            api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
+          posthog.init("phc_yIxOHwCOu1TnJZfNoiwJl6mwxc4PuQG8UGkG2VcZEjL", {
+            api_host: "https://us.i.posthog.com",
           });
         }
       } catch (error) {
