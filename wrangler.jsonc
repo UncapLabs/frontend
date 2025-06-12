@@ -13,7 +13,9 @@
 	"observability": {
 		"enabled": true
 	},
-	
+	"routes": [
+		{ "pattern": "uncap.finance/*", "zone_name": "uncap.finance" }
+	],
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
