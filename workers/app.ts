@@ -14,29 +14,19 @@ app.use(
   })
 );
 
-// Handle both /docs and /docs/*
-app.get("/docs", async (c) => {
-  console.log("Docs route hit (exact):", c.req.path);
-  console.log("DOCS_WORKER available:", !!c.env.DOCS_WORKER);
+// Handle ALL /docs requests by forwarding to docs worker
+app.all("/docs*", async (c) => {
+  // Strip /docs prefix: /docs/intro becomes /intro, /docs becomes /
+  const url = new URL(c.req.url);
+  url.pathname = url.pathname.replace(/^\/docs/, "") || "/";
 
-  try {
-    const response = await c.env.DOCS_WORKER.fetch(c.req.raw);
-    console.log("DOCS_WORKER response status:", response.status);
-    console.log(
-      "DOCS_WORKER response headers:",
-      Object.fromEntries(response.headers.entries())
-    );
+  const newRequest = new Request(url.toString(), {
+    method: c.req.method,
+    headers: c.req.header(),
+    body: c.req.raw.body,
+  });
 
-    return response;
-  } catch (error) {
-    console.error("DOCS_WORKER fetch error:", (error as any).message);
-    return c.text("Error calling docs worker: " + (error as any).message, 500);
-  }
-});
-
-app.get("/docs/*", async (c) => {
-  console.log("Docs route hit (wildcard):", c.req.path);
-  return c.env.DOCS_WORKER.fetch(c.req.raw);
+  return c.env.DOCS_WORKER.fetch(newRequest);
 });
 
 app.get("*", (c) => {
