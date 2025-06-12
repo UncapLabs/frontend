@@ -8,11 +8,13 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig({
   plugins: [
     cloudflare({ viteEnvironment: { name: "ssr" } }),
-    // cloudflare({}),
     tailwindcss(),
     reactRouter(),
     tsconfigPaths(),
   ],
+  ssr: {
+    noExternal: ["posthog-js", "posthog-js/react"],
+  },
   resolve: {
     alias: {
       punycode: "punycode/",
