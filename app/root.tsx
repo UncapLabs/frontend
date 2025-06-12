@@ -17,6 +17,7 @@ import type { AppRouter } from "workers/router";
 import type { Route } from "./+types/root";
 import "./app.css";
 import { StarknetProvider } from "./starknet-provider";
+import { PostHogProvider } from "posthog-js/react";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -88,15 +89,24 @@ export default function App() {
   );
 
   return (
-    <StarknetProvider>
-      <QueryClientProvider client={queryClient}>
-        <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
-          <Outlet />
-          <Toaster />
-          <ReactQueryDevtools initialIsOpen={false} />
-        </TRPCProvider>
-      </QueryClientProvider>
-    </StarknetProvider>
+    <PostHogProvider
+      apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_KEY}
+      options={{
+        api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
+        capture_exceptions: true, // This enables capturing exceptions using Error Tracking
+        debug: import.meta.env.MODE === "development",
+      }}
+    >
+      <StarknetProvider>
+        <QueryClientProvider client={queryClient}>
+          <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
+            <Outlet />
+            <Toaster />
+            <ReactQueryDevtools initialIsOpen={false} />
+          </TRPCProvider>
+        </QueryClientProvider>
+      </StarknetProvider>
+    </PostHogProvider>
   );
 }
 
