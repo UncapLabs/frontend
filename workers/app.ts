@@ -17,7 +17,21 @@ app.use(
 // Handle both /docs and /docs/*
 app.get("/docs", async (c) => {
   console.log("Docs route hit (exact):", c.req.path);
-  return c.env.DOCS_WORKER.fetch(c.req.raw);
+  console.log("DOCS_WORKER available:", !!c.env.DOCS_WORKER);
+
+  try {
+    const response = await c.env.DOCS_WORKER.fetch(c.req.raw);
+    console.log("DOCS_WORKER response status:", response.status);
+    console.log(
+      "DOCS_WORKER response headers:",
+      Object.fromEntries(response.headers.entries())
+    );
+
+    return response;
+  } catch (error) {
+    console.error("DOCS_WORKER fetch error:", (error as any).message);
+    return c.text("Error calling docs worker: " + (error as any).message, 500);
+  }
 });
 
 app.get("/docs/*", async (c) => {
