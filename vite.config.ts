@@ -12,9 +12,6 @@ export default defineConfig({
     reactRouter(),
     tsconfigPaths(),
   ],
-  ssr: {
-    noExternal: ["posthog-js", "posthog-js/react"],
-  },
   resolve: {
     alias: {
       punycode: "punycode/",

@@ -42,9 +42,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
-        <ScrollRestoration />
-        <Scripts />
+        <PHProvider>
+          {children}
+          <ScrollRestoration />
+          <Scripts />
+        </PHProvider>
       </body>
     </html>
   );
@@ -89,17 +91,15 @@ export default function App() {
   );
 
   return (
-    <PHProvider>
-      <StarknetProvider>
-        <QueryClientProvider client={queryClient}>
-          <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
-            <Outlet />
-            <Toaster />
-            <ReactQueryDevtools initialIsOpen={false} />
-          </TRPCProvider>
-        </QueryClientProvider>
-      </StarknetProvider>
-    </PHProvider>
+    <StarknetProvider>
+      <QueryClientProvider client={queryClient}>
+        <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
+          <Outlet />
+          <Toaster />
+          <ReactQueryDevtools initialIsOpen={false} />
+        </TRPCProvider>
+      </QueryClientProvider>
+    </StarknetProvider>
   );
 }
 

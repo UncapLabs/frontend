@@ -1,20 +1,29 @@
 // app/provider.tsx
 import { useEffect, useState } from "react";
-import posthog from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
 
 export function PHProvider({ children }: { children: React.ReactNode }) {
-  const [hydrated, setHydrated] = useState(false);
+  const [posthog, setPosthog] = useState<any>(null);
 
   useEffect(() => {
-    posthog.init("phc_vYG1xMtaZVec4XoqJTYmP1PBYduJxu6lXtwzK2ddlIe", {
-      api_host: "https://us.i.posthog.com",
-      defaults: "2025-05-24",
-    });
+    // Only initialize on client side
+    if (typeof window !== "undefined") {
+      // Dynamic import to ensure it only loads on client
+      import("posthog-js").then((posthogModule) => {
+        const posthogClient = posthogModule.default;
 
-    setHydrated(true);
+        posthogClient.init(import.meta.env.VITE_PUBLIC_POSTHOG_KEY, {
+          api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
+          capture_pageview: false, // We'll handle this manually with React Router
+        });
+
+        setPosthog(posthogClient);
+      });
+    }
   }, []);
 
-  if (!hydrated) return <>{children}</>;
+  // Don't render PostHogProvider until posthog is loaded
+  if (!posthog) return <>{children}</>;
+
   return <PostHogProvider client={posthog}>{children}</PostHogProvider>;
 }
