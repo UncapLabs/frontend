@@ -14,8 +14,14 @@ app.use(
   })
 );
 
-// Handle /docs/* by fetching the Docusaurus worker
+// Handle both /docs and /docs/*
+app.get("/docs", async (c) => {
+  console.log("Docs route hit (exact):", c.req.path);
+  return c.env.DOCS_WORKER.fetch(c.req.raw);
+});
+
 app.get("/docs/*", async (c) => {
+  console.log("Docs route hit (wildcard):", c.req.path);
   return c.env.DOCS_WORKER.fetch(c.req.raw);
 });
 
