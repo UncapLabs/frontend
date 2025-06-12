@@ -14,6 +14,11 @@ app.use(
   })
 );
 
+// Handle /docs/* by fetching the Docusaurus worker
+app.get("/docs/*", async (c) => {
+  return c.env.DOCS_WORKER.fetch(c.req.raw);
+});
+
 app.get("*", (c) => {
   const requestHandler = createRequestHandler(
     () => import("virtual:react-router/server-build"),
