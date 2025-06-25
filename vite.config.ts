@@ -3,11 +3,12 @@ import { cloudflare } from "@cloudflare/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
-// import path from "path";
 
 export default defineConfig({
   plugins: [
-    cloudflare({ viteEnvironment: { name: "ssr" } }),
+    cloudflare({
+      viteEnvironment: { name: "ssr" },
+    }),
     tailwindcss(),
     reactRouter(),
     tsconfigPaths(),
@@ -18,3 +19,7 @@ export default defineConfig({
     },
   },
 });
+
+// configPath: "./wrangler.jsonc",
+// auxiliaryWorkers: [{ configPath: "../uncap-docs/wrangler.jsonc" }],
+// persistState: { path: "../uncap-docs/.wrangler/state" },
