@@ -15,5 +15,7 @@
 .env
 .env.*
 
+# Cursor
+.cursor/prds/
 
 

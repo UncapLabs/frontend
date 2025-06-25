@@ -34,10 +34,8 @@ export function useBorrowTransaction({
   borrowAmount,
   annualInterestRate,
 }: UseBorrowTransactionParams): UseBorrowTransactionResult {
-  const queryClient = useQueryClient();
-  const { address, chainId } = useAccount();
+  const { address } = useAccount();
   const { ownerIndex, isLoadingOwnerPositions } = useOwnerPositions();
-  const invalidatedRef = useRef<string | null>(null);
 
   const { contract: tbtcContract } = useContract({
     abi: TBTC_ABI,

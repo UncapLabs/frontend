@@ -1,6 +1,5 @@
 import { Button } from "~/components/ui/button";
 import { NumericFormat, type NumberFormatValues } from "react-number-format";
-import { z } from "zod/v4";
 import {
   Card,
   CardContent,
@@ -29,7 +28,6 @@ import {
   ArrowDown,
   Check,
   CheckCircle2,
-  XCircle,
   Loader2,
   ExternalLink,
   ArrowLeft,
@@ -37,18 +35,11 @@ import {
 import { Separator } from "~/components/ui/separator";
 import { Slider } from "~/components/ui/slider";
 import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useTRPC } from "~/lib/trpc";
-import {
-  computeBorrowAmountFromLTV,
-  computeDebtLimit,
-  computeHealthFactor,
-  computeLiquidationPrice,
-  computeLTVFromBorrowAmount,
-  MAX_LIMIT,
-  MAX_LTV,
-  getAnnualInterestRate,
-} from "~/lib/utils/calc";
+import { useForm, useStore } from "@tanstack/react-form";
+import { type BorrowFormData } from "~/types/borrow";
+import { useFetchPrices } from "~/hooks/use-fetch-prices";
+import { useFormCalculations } from "~/hooks/use-form-calculations";
+import { MAX_LIMIT, MAX_LTV, getAnnualInterestRate } from "~/lib/utils/calc";
 import type { Route } from "./+types/dashboard";
 import { useAccount, useBalance } from "@starknet-react/core";
 import {
@@ -58,129 +49,59 @@ import {
 } from "~/lib/constants";
 import { useBorrowTransaction } from "~/hooks/use-borrow-transaction";
 import { getLtvColor } from "~/lib/utils";
-import { getBorrowButtonText } from "~/lib/utils/form";
 import { toast } from "sonner";
 
-const createBorrowFormSchema = (
-  currentBitcoinPrice: number | undefined,
-  currentBitUSDPrice: number | undefined,
-  bitcoinBalance: { value: bigint | number; formatted: string } | undefined
-) =>
-  z
-    .object({
-      collateralAmount: z
-        .number()
-        .positive({ message: "Collateral amount must be greater than 0." })
-        .optional(),
-      borrowAmount: z
-        .number()
-        .positive({ message: "Borrow amount must be greater than 0." })
-        .optional(),
-    })
-    .refine(
-      (data) => {
-        // Refinement 1: Ensure collateral is present if borrow amount is entered
-        if (data.borrowAmount && data.borrowAmount > 0) {
-          return data.collateralAmount && data.collateralAmount > 0;
-        }
-        return true;
-      },
-      {
-        message:
-          "Please enter a valid collateral amount before specifying a borrow amount.",
-        path: ["borrowAmount"],
-      }
-    )
-    .refine(
-      (data) => {
-        // Refinement 2: Check max borrow amount based on collateral, price and Minimum Collateral Ratio
-        if (
-          data.collateralAmount &&
-          data.collateralAmount > 0 &&
-          data.borrowAmount &&
-          data.borrowAmount > 0 &&
-          currentBitcoinPrice &&
-          currentBitcoinPrice > 0
-        ) {
-          const maxBorrowable = computeDebtLimit(
-            data.collateralAmount,
-            currentBitcoinPrice
-          );
-          return data.borrowAmount <= maxBorrowable;
-        }
-        return true; // Pass if not all conditions for this specific check are met
-      },
-      {
-        message: "Not enough collateral to borrow this amount.",
-        path: ["borrowAmount"],
-      }
-    )
-    .refine(
-      (data) => {
-        // Refinement 3: Check minimum borrow amount
-        if (
-          data.borrowAmount &&
-          data.borrowAmount > 0 &&
-          currentBitUSDPrice &&
-          currentBitUSDPrice > 0
-        ) {
-          const borrowValue = data.borrowAmount * currentBitUSDPrice;
-          if (borrowValue < 2000) {
-            return false; // Invalid if borrow value is less than $100
-          }
-        }
-        return true;
-      },
-      {
-        message: "Minimum borrow amount is $2000.",
-        path: ["borrowAmount"], // Error associated with the borrow amount field
-      }
-    )
-    .refine(
-      (data) => {
-        // Refinement 4: Check collateral amount doesn't exceed balance
-        if (data.collateralAmount && data.collateralAmount > 0) {
-          if (!bitcoinBalance || !bitcoinBalance.value) {
-            return false; // No balance available
-          }
-          return data.collateralAmount <= Number(bitcoinBalance.value) / 1e18;
-        }
-        return true;
-      },
-      {
-        message: "Insufficient balance.",
-        path: ["collateralAmount"],
-      }
-    );
-
 function Borrow() {
-  const [selectedRate, setSelectedRate] = useState("fixed");
-  const [selfManagedRate, setSelfManagedRate] = useState(5);
-  const [collateralAmount, setCollateralAmount] = useState<number | undefined>(
-    undefined
-  );
-  const [borrowAmount, setBorrowAmount] = useState<number | undefined>(
-    undefined
-  );
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
-  const [transactionSubmitted, setTransactionSubmitted] = useState(false);
-
-  const trpc = useTRPC();
-  const { data: bitcoin, refetch: refetchBitcoin } = useQuery({
-    ...trpc.priceRouter.getBitcoinPrice.queryOptions(),
-    refetchInterval: 30000, // Refetch every 30 seconds
-  });
-  const { data: bitUSD, refetch: refetchBitUSD } = useQuery({
-    ...trpc.priceRouter.getBitUSDPrice.queryOptions(),
-    refetchInterval: 30000, // Refetch every 30 seconds
-  });
   const { address } = useAccount();
   const { data: bitcoinBalance } = useBalance({
     token: TBTC_ADDRESS,
     address: address,
     refetchInterval: 30000,
   });
+
+  // Create properly typed default values
+  const defaultBorrowFormValues: BorrowFormData = {
+    collateralAmount: undefined,
+    borrowAmount: undefined,
+    selectedRate: "fixed",
+    selfManagedRate: 5,
+  };
+
+  // Form setup with TanStack Form
+  const form = useForm({
+    defaultValues: defaultBorrowFormValues,
+    onSubmit: async ({ value }) => {
+      console.log("Form submitted:", value);
+      // This will be handled by the borrow transaction
+    },
+  });
+
+  // Get form values reactively
+  const collateralAmount = useStore(
+    form.store,
+    (state) => state.values.collateralAmount
+  );
+  const borrowAmount = useStore(
+    form.store,
+    (state) => state.values.borrowAmount
+  );
+  const selectedRate = useStore(
+    form.store,
+    (state) => state.values.selectedRate
+  );
+  const selfManagedRate = useStore(
+    form.store,
+    (state) => state.values.selfManagedRate
+  );
+
+  // State for UI interactions
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
+  const [transactionSubmitted, setTransactionSubmitted] = useState(false);
+
+  // Conditional price fetching
+  const { bitcoin, bitUSD, refetchBitcoin, refetchBitUSD } =
+    useFetchPrices(collateralAmount);
 
   // Store transaction details for success screen
   const [transactionDetails, setTransactionDetails] = useState<{
@@ -194,12 +115,23 @@ function Borrow() {
     return getAnnualInterestRate(selectedRate, selfManagedRate);
   }, [selectedRate, selfManagedRate]);
 
-  // Replace the existing useBorrowTransaction with the new hook
+  // Use form calculations hook
+  const {
+    ltvValue,
+    debtLimit,
+    healthFactor,
+    liquidationPrice,
+    computeBorrowFromLTV,
+  } = useFormCalculations(
+    collateralAmount,
+    borrowAmount,
+    bitcoin?.price,
+    bitUSD?.price
+  );
+
   const {
     send,
     isPending,
-    isSuccess,
-    error,
     isReady,
     isTransactionSuccess,
     isTransactionError,
@@ -216,78 +148,40 @@ function Borrow() {
     setTransactionSubmitted(true);
   }
 
-  // Create the schema inside useMemo so it updates when bitcoinBalance changes
-  const borrowFormSchema = useMemo(() => {
-    return createBorrowFormSchema(
-      bitcoin?.price,
-      bitUSD?.price,
-      bitcoinBalance
-    );
-  }, [bitcoin?.price, bitUSD?.price, bitcoinBalance]);
+  // Get form validation state
+  const canSubmit = useStore(form.store, (state) => state.canSubmit);
+  const isValid = useStore(form.store, (state) => state.isValid);
 
-  // Auto-updating validation based on all dependencies
-  const formErrors = useMemo(() => {
-    if (collateralAmount === undefined && borrowAmount === undefined) {
-      return null;
+  // Create button text based on form state and validation
+  const buttonText = useMemo(() => {
+    if (!collateralAmount) {
+      return "Enter collateral amount";
     }
 
-    const validationResult = borrowFormSchema.safeParse({
-      collateralAmount,
-      borrowAmount,
-    });
-
-    return validationResult.success ? null : validationResult.error;
-  }, [
-    collateralAmount,
-    borrowAmount,
-    borrowFormSchema, // Use the memoized schema
-  ]);
-
-  // Auto-updating LTV calculation
-  const ltvValue = useMemo(() => {
-    if (
-      collateralAmount &&
-      collateralAmount > 0 &&
-      borrowAmount !== undefined &&
-      bitcoin?.price &&
-      bitcoin.price > 0
-    ) {
-      const ltv =
-        borrowAmount > 0
-          ? computeLTVFromBorrowAmount(
-              borrowAmount,
-              collateralAmount,
-              bitcoin.price
-            )
-          : 0;
-      return Math.round(ltv * 100);
+    if (!borrowAmount) {
+      return "Enter borrow amount";
     }
-    return 0;
-  }, [collateralAmount, borrowAmount, bitcoin?.price]);
 
-  // Remove the getButtonText function and use the imported one
-  const buttonText = useMemo(
-    () => getBorrowButtonText(formErrors),
-    [formErrors]
-  );
+    if (!isValid) {
+      return "Check inputs";
+    }
 
-  // Handlers
+    return "Borrow";
+  }, [collateralAmount, borrowAmount, isValid]);
+
+  // Handlers using TanStack Form
   const handleCollateralChange = (values: NumberFormatValues) => {
-    setCollateralAmount(Number(values.value));
+    form.setFieldValue("collateralAmount", Number(values.value) || undefined);
   };
 
   const handleBorrowAmountChange = (values: NumberFormatValues) => {
-    setBorrowAmount(Number(values.value));
+    form.setFieldValue("borrowAmount", Number(values.value) || undefined);
   };
 
   const handleLtvSliderChange = (value: number[]) => {
     const intendedLtvPercentage = Math.min(value[0], MAX_LTV * 100);
-    const newBorrowAmount = computeBorrowAmountFromLTV(
-      intendedLtvPercentage,
-      collateralAmount || 0,
-      bitcoin?.price || 0
-    );
-    setBorrowAmount(newBorrowAmount);
+    const newBorrowAmount = computeBorrowFromLTV(intendedLtvPercentage);
+    form.setFieldValue("borrowAmount", newBorrowAmount);
   };
 
   const handlePercentageClick = (
@@ -298,13 +192,10 @@ function Borrow() {
       const balance = bitcoinBalance?.value
         ? Number(bitcoinBalance.value) / 1e18
         : 0;
-      setCollateralAmount(balance * percentage);
+      form.setFieldValue("collateralAmount", balance * percentage);
     } else {
-      const maxBorrowable = computeDebtLimit(
-        collateralAmount || 0,
-        bitcoin?.price || 0
-      );
-      setBorrowAmount(maxBorrowable * percentage);
+      const maxBorrowable = debtLimit;
+      form.setFieldValue("borrowAmount", maxBorrowable * percentage);
     }
   };
 
@@ -355,7 +246,7 @@ function Borrow() {
   }
 
   const handleBorrowClick = () => {
-    if (isReady && !formErrors) {
+    if (isReady && canSubmit) {
       send();
     }
   };
@@ -363,10 +254,7 @@ function Borrow() {
   const handleNewBorrow = () => {
     setShowSuccessScreen(false);
     setTransactionSubmitted(false);
-    setCollateralAmount(undefined);
-    setBorrowAmount(undefined);
-    setSelectedRate("fixed");
-    setSelfManagedRate(5);
+    form.reset();
     setTransactionDetails(null);
   };
 
@@ -557,44 +445,59 @@ function Borrow() {
                     )}
                   </div>
                   <div className="flex items-start justify-between space-x-4">
-                    <div className="flex-grow">
-                      <NumericFormat
-                        id="collateralAmount"
-                        customInput={Input}
-                        thousandSeparator=","
-                        placeholder="0"
-                        inputMode="decimal"
-                        allowNegative={false}
-                        decimalScale={7}
-                        value={collateralAmount}
-                        onValueChange={handleCollateralChange}
-                        isAllowed={(values) => {
-                          const { floatValue } = values;
-                          if (floatValue === undefined) return true;
-                          return floatValue < MAX_LIMIT;
-                        }}
-                        className="text-3xl md:text-4xl font-semibold h-auto p-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none outline-none shadow-none tracking-tight text-slate-800"
-                      />
-                      <NumericFormat
-                        className="text-sm text-slate-500 mt-1"
-                        displayType="text"
-                        value={(bitcoin?.price || 0) * (collateralAmount || 0)}
-                        prefix={"≈ $"}
-                        thousandSeparator=","
-                        decimalScale={2}
-                        fixedDecimalScale
-                      />
-                      {formErrors?.issues.map((issue) =>
-                        issue.path.includes("collateralAmount") ? (
-                          <p
-                            key={issue.code + issue.path.join(".")}
-                            className="text-xs text-red-500 mt-1"
-                          >
-                            {issue.message}
-                          </p>
-                        ) : null
+                    <form.Field
+                      name="collateralAmount"
+                      validators={{
+                        onChange: ({ value }) => {
+                          if (value && bitcoinBalance) {
+                            const balance = Number(bitcoinBalance.value) / 1e18;
+                            if (value > balance) {
+                              return "Insufficient balance";
+                            }
+                          }
+                          return undefined;
+                        },
+                      }}
+                    >
+                      {(field) => (
+                        <div className="flex-grow">
+                          <NumericFormat
+                            id="collateralAmount"
+                            customInput={Input}
+                            thousandSeparator=","
+                            placeholder="0"
+                            inputMode="decimal"
+                            allowNegative={false}
+                            decimalScale={7}
+                            value={field.state.value}
+                            onValueChange={handleCollateralChange}
+                            onBlur={field.handleBlur}
+                            isAllowed={(values) => {
+                              const { floatValue } = values;
+                              if (floatValue === undefined) return true;
+                              return floatValue < MAX_LIMIT;
+                            }}
+                            className="text-3xl md:text-4xl font-semibold h-auto p-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none outline-none shadow-none tracking-tight text-slate-800"
+                          />
+                          <NumericFormat
+                            className="text-sm text-slate-500 mt-1"
+                            displayType="text"
+                            value={
+                              (bitcoin?.price || 0) * (field.state.value || 0)
+                            }
+                            prefix={"≈ $"}
+                            thousandSeparator=","
+                            decimalScale={2}
+                            fixedDecimalScale
+                          />
+                          {field.state.meta.errors && (
+                            <p className="text-xs text-red-500 mt-1">
+                              {field.state.meta.errors.join(" ")}
+                            </p>
+                          )}
+                        </div>
                       )}
-                    </div>
+                    </form.Field>
                     <div className="text-right">
                       <Select defaultValue="BTC">
                         <SelectTrigger className="w-auto min-w-[120px] rounded-full h-10 pl-2 pr-3 border border-slate-200 bg-white shadow-sm hover:border-slate-300 transition-colors flex items-center">
@@ -710,44 +613,70 @@ function Borrow() {
                     </div>
                   </div>
                   <div className="flex items-start justify-between space-x-2 mt-2">
-                    <div className="flex-grow">
-                      <NumericFormat
-                        id="borrowAmount"
-                        customInput={Input}
-                        thousandSeparator=","
-                        placeholder="0"
-                        inputMode="decimal"
-                        allowNegative={false}
-                        decimalScale={7}
-                        value={borrowAmount}
-                        onValueChange={handleBorrowAmountChange}
-                        isAllowed={(values) => {
-                          const { floatValue } = values;
-                          if (floatValue === undefined) return true;
-                          return floatValue < MAX_LIMIT;
-                        }}
-                        className="text-3xl md:text-4xl font-semibold h-auto p-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none outline-none shadow-none tracking-tight text-slate-800"
-                      />
-                      <NumericFormat
-                        className="text-sm text-slate-500 mt-1"
-                        displayType="text"
-                        value={(bitUSD?.price || 0) * (borrowAmount || 0)}
-                        prefix={"≈ $"}
-                        thousandSeparator=","
-                        decimalScale={2}
-                        fixedDecimalScale
-                      />
-                      {formErrors?.issues.map((issue) =>
-                        issue.path.includes("borrowAmount") ? (
-                          <p
-                            key={issue.code + issue.path.join(".")}
-                            className="text-xs text-red-500 mt-1"
-                          >
-                            {issue.message}
-                          </p>
-                        ) : null
+                    <form.Field
+                      name="borrowAmount"
+                      validators={{
+                        onChange: ({ value, fieldApi }) => {
+                          if (value && value > 0) {
+                            const collateral =
+                              fieldApi.form.getFieldValue("collateralAmount");
+
+                            // Require collateral if borrow amount is entered
+                            if (!collateral || collateral <= 0) {
+                              return "Please enter a valid collateral amount first";
+                            }
+
+                            // Check minimum borrow amount
+                            if (bitUSD?.price) {
+                              const borrowValue = value * bitUSD.price;
+                              if (borrowValue < 2000) {
+                                return "Minimum borrow amount is $2000";
+                              }
+                            }
+                          }
+                          return undefined;
+                        },
+                      }}
+                    >
+                      {(field) => (
+                        <div className="flex-grow">
+                          <NumericFormat
+                            id="borrowAmount"
+                            customInput={Input}
+                            thousandSeparator=","
+                            placeholder="0"
+                            inputMode="decimal"
+                            allowNegative={false}
+                            decimalScale={7}
+                            value={field.state.value}
+                            onValueChange={handleBorrowAmountChange}
+                            onBlur={field.handleBlur}
+                            isAllowed={(values) => {
+                              const { floatValue } = values;
+                              if (floatValue === undefined) return true;
+                              return floatValue < MAX_LIMIT;
+                            }}
+                            className="text-3xl md:text-4xl font-semibold h-auto p-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none outline-none shadow-none tracking-tight text-slate-800"
+                          />
+                          <NumericFormat
+                            className="text-sm text-slate-500 mt-1"
+                            displayType="text"
+                            value={
+                              (bitUSD?.price || 0) * (field.state.value || 0)
+                            }
+                            prefix={"≈ $"}
+                            thousandSeparator=","
+                            decimalScale={2}
+                            fixedDecimalScale
+                          />
+                          {field.state.meta.errors && (
+                            <p className="text-xs text-red-500 mt-1">
+                              {field.state.meta.errors.join(" ")}
+                            </p>
+                          )}
+                        </div>
                       )}
-                    </div>
+                    </form.Field>
                     <div className="text-right">
                       <div className="w-auto rounded-full h-10 px-4 border border-slate-200 bg-white shadow-sm flex items-center justify-start">
                         <div className="bg-blue-100 p-1 rounded-full mr-2">
@@ -831,7 +760,7 @@ function Borrow() {
 
                   <Button
                     disabled={
-                      !!formErrors ||
+                      !canSubmit ||
                       !collateralAmount ||
                       !borrowAmount ||
                       borrowAmount <= 0 ||
@@ -857,7 +786,9 @@ function Borrow() {
                           ? "bg-blue-50 border-2 border-blue-500"
                           : "bg-slate-50 border-2 border-transparent hover:border-slate-200"
                       } rounded-lg p-3 cursor-pointer transition-all min-h-[60px]`}
-                      onClick={() => setSelectedRate("fixed")}
+                      onClick={() =>
+                        form.setFieldValue("selectedRate", "fixed")
+                      }
                     >
                       {selectedRate === "fixed" && (
                         <>
@@ -896,7 +827,9 @@ function Borrow() {
                           ? "bg-blue-50 border-2 border-blue-500"
                           : "bg-slate-50 border-2 border-transparent hover:border-slate-200"
                       } rounded-lg p-3 cursor-pointer transition-all min-h-[60px]`}
-                      onClick={() => setSelectedRate("variable")}
+                      onClick={() =>
+                        form.setFieldValue("selectedRate", "variable")
+                      }
                     >
                       {selectedRate === "variable" && (
                         <div className="absolute top-2 right-2">
@@ -928,7 +861,9 @@ function Borrow() {
                           ? "bg-blue-50 border-2 border-blue-500"
                           : "bg-slate-50 border-2 border-transparent hover:border-slate-200"
                       } rounded-lg p-3 cursor-pointer transition-all min-h-[60px]`}
-                      onClick={() => setSelectedRate("selfManaged")}
+                      onClick={() =>
+                        form.setFieldValue("selectedRate", "selfManaged")
+                      }
                     >
                       {selectedRate === "selfManaged" && (
                         <div className="absolute top-2 right-2">
@@ -984,7 +919,7 @@ function Borrow() {
                             <Slider
                               value={[selfManagedRate]}
                               onValueChange={(value) =>
-                                setSelfManagedRate(value[0])
+                                form.setFieldValue("selfManagedRate", value[0])
                               }
                               min={0.5}
                               max={20}
@@ -1054,10 +989,7 @@ function Borrow() {
                   <NumericFormat
                     className="font-medium"
                     displayType="text"
-                    value={computeDebtLimit(
-                      collateralAmount || 0,
-                      bitcoin?.price || 0
-                    )}
+                    value={debtLimit}
                     prefix={"$"}
                     thousandSeparator=","
                     decimalScale={2}
@@ -1079,11 +1011,7 @@ function Borrow() {
                     <NumericFormat
                       className="text-green-600 font-semibold"
                       displayType="text"
-                      value={computeHealthFactor(
-                        collateralAmount || 0,
-                        borrowAmount || 0,
-                        bitcoin?.price || 0
-                      )}
+                      value={healthFactor}
                       thousandSeparator=","
                       decimalScale={2}
                       fixedDecimalScale
@@ -1105,11 +1033,7 @@ function Borrow() {
                   <NumericFormat
                     className="font-medium"
                     displayType="text"
-                    value={computeLiquidationPrice(
-                      collateralAmount || 0,
-                      borrowAmount || 0,
-                      bitUSD?.price || 0
-                    )}
+                    value={liquidationPrice}
                     prefix={"$"}
                     thousandSeparator=","
                     decimalScale={2}
