@@ -17,6 +17,7 @@ import type { AppRouter } from "workers/router";
 import type { Route } from "./+types/root";
 import "./app.css";
 import { StarknetProvider } from "./starknet-provider";
+import { PHProvider } from "./posthog-provider";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -41,9 +42,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
-        <ScrollRestoration />
-        <Scripts />
+        <PHProvider>
+          {children}
+          <ScrollRestoration />
+          <Scripts />
+        </PHProvider>
       </body>
     </html>
   );

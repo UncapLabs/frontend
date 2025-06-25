@@ -14,6 +14,21 @@ app.use(
   })
 );
 
+// Handle ALL /docs requests by forwarding to docs worker
+app.all("/docs*", async (c) => {
+  // Strip /docs prefix: /docs/intro becomes /intro, /docs becomes /
+  const url = new URL(c.req.url);
+  url.pathname = url.pathname.replace(/^\/docs/, "") || "/";
+
+  const newRequest = new Request(url.toString(), {
+    method: c.req.method,
+    headers: c.req.header(),
+    body: c.req.raw.body,
+  });
+
+  return c.env.DOCS_WORKER.fetch(newRequest);
+});
+
 app.get("*", (c) => {
   const requestHandler = createRequestHandler(
     () => import("virtual:react-router/server-build"),
