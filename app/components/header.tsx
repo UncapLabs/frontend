@@ -13,9 +13,7 @@ import { Separator } from "~/components/ui/separator";
 import {
   Menu as MenuIcon,
   X as XIcon,
-  Home as HomeIcon,
   DollarSign as DollarIcon,
-  BarChart3 as ChartIcon,
   Layers as LayersIcon,
 } from "lucide-react";
 import { Link, useLocation } from "react-router";
@@ -49,16 +47,19 @@ function NavLink({
       to={href}
       onClick={onClick}
       className={`font-medium transition-all duration-200 ease-in-out flex items-center gap-2
-      ${isMobile
-          ? `block px-4 py-3 text-base rounded-lg ${isActive
-            ? "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300"
-            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
-          }`
-          : `px-4 py-2 rounded-full text-sm ${isActive
-            ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 shadow-sm"
-            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
-          }`
-        }`}
+      ${
+        isMobile
+          ? `block px-4 py-3 text-base rounded-lg ${
+              isActive
+                ? "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300"
+                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+            }`
+          : `px-4 py-2 rounded-full text-sm ${
+              isActive
+                ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 shadow-sm"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+            }`
+      }`}
     >
       {icon && <span className="text-blue-500 dark:text-blue-400">{icon}</span>}
       {children}
