@@ -13,16 +13,6 @@ export default defineConfig({
     reactRouter(),
     tsconfigPaths(),
   ],
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          // Separate lucide-react into its own chunk
-          "lucide-icons": ["lucide-react"],
-        },
-      },
-    },
-  },
   resolve: {
     alias: {
       punycode: "punycode/",
