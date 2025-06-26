@@ -17,11 +17,11 @@
 	"routes": [
   	  { "pattern": "uncap.finance", "custom_domain": true }
   	],
-	// "env": {
-	// 	"dev": {
-	// 	// services binding for local development
-	// 	}
-  	// }
+	"env": {
+		"dev": {
+		// services binding for local development
+		}
+  	}
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
