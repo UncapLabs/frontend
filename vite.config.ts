@@ -14,7 +14,7 @@ export default defineConfig({
     tsconfigPaths(),
   ],
   optimizeDeps: {
-    include: ["@tanstack/react-form", "@tanstack/form-core"],
+    include: ["@tanstack/react-form", "@tanstack/form-core", "@trpc/server"],
   },
   resolve: {
     alias: {
