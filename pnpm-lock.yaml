@@ -44,6 +44,9 @@ importers:
       '@starknet-react/core':
         specifier: 4.0.1-beta.1
         version: 4.0.1-beta.1(get-starknet-core@4.0.0)(react@19.1.0)(starknet@7.6.2)(typescript@5.8.3)
+      '@tanstack/form-core':
+        specifier: ^1.12.3
+        version: 1.12.3
       '@tanstack/react-form':
         specifier: ^1.12.3
         version: 1.12.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
