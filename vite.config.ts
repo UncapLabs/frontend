@@ -13,6 +13,9 @@ export default defineConfig({
     reactRouter(),
     tsconfigPaths(),
   ],
+  optimizeDeps: {
+    include: ["@tanstack/react-form", "@tanstack/form-core"],
+  },
   resolve: {
     alias: {
       punycode: "punycode/",
