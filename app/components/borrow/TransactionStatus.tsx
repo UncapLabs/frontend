@@ -3,6 +3,7 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { NumericFormat } from "react-number-format";
 import { TBTC_SYMBOL, INTEREST_RATE_SCALE_DOWN_FACTOR } from "~/lib/constants";
+import { TransactionProgress } from "~/components/transaction-flow/TransactionProgress";
 
 interface TransactionDetails {
   collateralAmount: number;
@@ -17,6 +18,10 @@ interface TransactionStatusProps {
   annualInterestRate: bigint;
   transactionHash?: string;
   onNewBorrow: () => void;
+  // Transaction state props
+  isPending?: boolean;
+  isError?: boolean;
+  error?: Error | null;
 }
 
 export function TransactionStatus({
@@ -26,28 +31,23 @@ export function TransactionStatus({
   annualInterestRate,
   transactionHash,
   onNewBorrow,
+  isPending = false,
+  isError = false,
+  error = null,
 }: TransactionStatusProps) {
-  if (shouldShowLoading) {
-    // Loading state - transaction is approved and pending
+  // Show transaction progress for any active transaction state
+  if (isPending || isError || (transactionHash && !shouldShowSuccess)) {
     return (
       <Card className="border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
-        <CardContent className="pt-6 space-y-6">
-          <div className="flex flex-col items-center justify-center py-20 space-y-6">
-            <Loader2 className="h-16 w-16 text-blue-600 animate-spin" />
-            <div className="text-center space-y-2">
-              <h3 className="text-xl font-semibold text-slate-800">
-                Processing Transaction
-              </h3>
-              <p className="text-sm text-slate-600">
-                Your transaction is being confirmed on the blockchain...
-              </p>
-              {transactionHash && (
-                <p className="text-xs text-slate-500">
-                  Transaction Hash: {transactionHash.slice(0, 10)}...
-                </p>
-              )}
-            </div>
-          </div>
+        <CardContent className="pt-6">
+          <TransactionProgress
+            isPending={isPending}
+            isSuccess={shouldShowSuccess}
+            isError={isError}
+            error={error}
+            transactionHash={transactionHash}
+            onClose={onNewBorrow}
+          />
         </CardContent>
       </Card>
     );

@@ -42,7 +42,7 @@ import {
   PositionSummary,
   TransactionStatus,
 } from "~/components/borrow";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useForm, useStore } from "@tanstack/react-form";
 import { type BorrowFormData } from "~/types/borrow";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
@@ -55,12 +55,13 @@ import {
   TBTC_ADDRESS,
   TBTC_SYMBOL,
 } from "~/lib/constants";
-import { useBorrowTransaction } from "~/hooks/use-borrow-transaction";
 import { getLtvColor } from "~/lib/utils";
 import { toast } from "sonner";
+import { useOwnerPositions } from "~/hooks/use-owner-positions";
+import { useBorrowTransaction } from "~/hooks/use-borrow-transaction";
 
 function Borrow() {
-  const { address } = useAccount();
+  const { address, account, connector } = useAccount();
   const { data: bitcoinBalance } = useBalance({
     token: TBTC_ADDRESS,
     address: address,
@@ -104,19 +105,10 @@ function Borrow() {
 
   // State for UI interactions
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
-  const [transactionSubmitted, setTransactionSubmitted] = useState(false);
 
   // Conditional price fetching
   const { bitcoin, bitUSD, refetchBitcoin, refetchBitUSD } =
     useFetchPrices(collateralAmount);
-
-  // Store transaction details for success screen
-  const [transactionDetails, setTransactionDetails] = useState<{
-    collateralAmount: number;
-    borrowAmount: number;
-    transactionHash: string;
-  } | null>(null);
 
   // Calculate annual interest rate
   const annualInterestRate = useMemo(() => {
@@ -137,24 +129,24 @@ function Borrow() {
     bitUSD?.price
   );
 
+  // Use the borrow transaction hook
   const {
     send,
     isPending,
+    isError: isTransactionError,
+    error: transactionError,
+    data,
     isReady,
     isTransactionSuccess,
-    isTransactionError,
-    transactionError,
-    data,
+    transactionError: txError,
   } = useBorrowTransaction({
     collateralAmount,
     borrowAmount,
     annualInterestRate,
   });
 
-  // Track when transaction is submitted
-  if (isPending && !transactionSubmitted) {
-    setTransactionSubmitted(true);
-  }
+  // Get transaction hash from the transaction data
+  const transactionHash = data?.transaction_hash;
 
   // Get form validation state
   const canSubmit = useStore(form.store, (state) => state.canSubmit);
@@ -162,6 +154,10 @@ function Borrow() {
 
   // Create button text based on form state and validation
   const buttonText = useMemo(() => {
+    if (!address) {
+      return "Connect Wallet";
+    }
+
     if (!collateralAmount) {
       return "Enter collateral amount";
     }
@@ -175,16 +171,9 @@ function Borrow() {
     }
 
     return "Borrow";
-  }, [collateralAmount, borrowAmount, isValid]);
+  }, [address, collateralAmount, borrowAmount, isValid]);
 
   // Handlers using TanStack Form
-  const handleCollateralChange = (values: NumberFormatValues) => {
-    form.setFieldValue("collateralAmount", Number(values.value) || undefined);
-  };
-
-  const handleBorrowAmountChange = (values: NumberFormatValues) => {
-    form.setFieldValue("borrowAmount", Number(values.value) || undefined);
-  };
 
   const handleLtvSliderChange = (value: number[]) => {
     const intendedLtvPercentage = Math.min(value[0], MAX_LTV * 100);
@@ -207,71 +196,36 @@ function Borrow() {
     }
   };
 
-  // Handle success
-  if (isTransactionSuccess && data?.transaction_hash && !showSuccessScreen) {
-    toast.success("Transaction Successful! 🎉", {
-      description: `Successfully borrowed ${borrowAmount?.toLocaleString()} bitUSD`,
-      action: {
-        label: "View",
-        onClick: () =>
-          window.open(
-            `https://voyager.online/tx/${data.transaction_hash}`,
-            "_blank"
-          ),
-      },
-    });
-
-    setTransactionDetails({
-      collateralAmount: collateralAmount || 0,
-      borrowAmount: borrowAmount || 0,
-      transactionHash: data.transaction_hash,
-    });
-    setShowSuccessScreen(true);
-    setTransactionSubmitted(false); // Reset for next transaction
-  }
-
-  // Handle error (including user rejection)
-  if (isTransactionError && transactionError && !showSuccessScreen) {
-    const errorMessage =
-      transactionError.message || "The transaction failed. Please try again.";
-    const isUserRejection =
-      errorMessage.toLowerCase().includes("reject") ||
-      errorMessage.toLowerCase().includes("cancel") ||
-      errorMessage.toLowerCase().includes("denied") ||
-      errorMessage.toLowerCase().includes("user abort");
-
-    if (isUserRejection) {
-      toast.info("Transaction Cancelled", {
-        description: "You cancelled the transaction.",
-      });
-    } else {
-      toast.error("Transaction Failed", {
-        description: errorMessage,
-      });
+  const handleBorrowClick = async () => {
+    if (!isReady) {
+      if (!address) {
+        toast.error("Please connect your wallet");
+      }
+      return;
     }
 
-    setTransactionSubmitted(false); // Reset on error
-  }
+    if (!canSubmit || !collateralAmount || !borrowAmount) {
+      return;
+    }
 
-  const handleBorrowClick = () => {
-    if (isReady && canSubmit) {
-      send();
+    try {
+      await send();
+    } catch (error) {
+      console.error("Transaction error:", error);
     }
   };
 
   const handleNewBorrow = () => {
-    setShowSuccessScreen(false);
-    setTransactionSubmitted(false);
     form.reset();
-    setTransactionDetails(null);
   };
 
-  // Show loading only when transaction is pending (after wallet approval)
-  // If user rejects, isPending becomes false and isTransactionError becomes true
-  const shouldShowLoading =
-    transactionSubmitted && !showSuccessScreen && !isTransactionError;
-  const shouldShowSuccess = showSuccessScreen && !!transactionDetails;
+  // User rejection = error but no transaction hash (never signed)
+  const isUserRejection = isTransactionError && !transactionHash;
 
+  // Derive loading/success states from transaction hook state  
+  const shouldShowLoading = isPending;
+  const shouldShowSuccess = isTransactionSuccess;
+  const shouldShowTransactionUI = isPending || (isTransactionError && !isUserRejection) || (transactionHash && !isTransactionSuccess) || isTransactionSuccess;
 
   // Original form UI
   return (
@@ -284,14 +238,21 @@ function Borrow() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Left Panel */}
         <div className="md:col-span-2">
-          {shouldShowLoading || shouldShowSuccess ? (
+          {shouldShowTransactionUI ? (
             <TransactionStatus
               shouldShowLoading={shouldShowLoading}
               shouldShowSuccess={shouldShowSuccess}
-              transactionDetails={transactionDetails}
+              transactionDetails={collateralAmount && borrowAmount && transactionHash ? {
+                collateralAmount,
+                borrowAmount,
+                transactionHash,
+              } : null}
               annualInterestRate={annualInterestRate}
-              transactionHash={data?.transaction_hash}
+              transactionHash={transactionHash}
               onNewBorrow={handleNewBorrow}
+              isPending={isPending}
+              isError={isTransactionError}
+              error={txError || transactionError}
             />
           ) : (
             <Card className="border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
@@ -301,10 +262,22 @@ function Borrow() {
                   name="collateralAmount"
                   validators={{
                     onChange: ({ value }) => {
-                      if (value && bitcoinBalance) {
-                        const balance = Number(bitcoinBalance.value) / 1e18;
-                        if (value > balance) {
-                          return "Insufficient balance";
+                      if (value && value > 0) {
+                        if (!address) {
+                          return "Please connect your wallet";
+                        }
+                        
+                        // Check balance if wallet is connected
+                        if (address && bitcoinBalance) {
+                          const balance = Number(bitcoinBalance.value) / 1e18;
+                          if (value > balance) {
+                            return "Insufficient balance";
+                          }
+                        }
+                        
+                        // Check against maximum limit
+                        if (value >= MAX_LIMIT) {
+                          return `Maximum collateral amount is ${MAX_LIMIT.toLocaleString()}`;
                         }
                       }
                       return undefined;
@@ -314,12 +287,20 @@ function Borrow() {
                   {(field) => (
                     <CollateralInput
                       value={field.state.value}
-                      onChange={handleCollateralChange}
+                      onChange={(values) => field.handleChange(Number(values.value) || undefined)}
                       onBlur={field.handleBlur}
                       bitcoin={bitcoin}
                       bitcoinBalance={bitcoinBalance}
-                      onPercentageClick={(percentage) => handlePercentageClick(percentage, "collateral")}
-                      error={field.state.meta.errors as string[] | undefined}
+                      onPercentageClick={(percentage) =>
+                        handlePercentageClick(percentage, "collateral")
+                      }
+                      error={
+                        field.state.meta.errors?.length
+                          ? Array.isArray(field.state.meta.errors)
+                            ? field.state.meta.errors
+                            : [field.state.meta.errors].filter(Boolean) as string[]
+                          : undefined
+                      }
                     />
                   )}
                 </form.Field>
@@ -341,20 +322,34 @@ function Borrow() {
                   validators={{
                     onChange: ({ value, fieldApi }) => {
                       if (value && value > 0) {
+                        if (!address) {
+                          return "Please connect your wallet";
+                        }
+
                         const collateral =
                           fieldApi.form.getFieldValue("collateralAmount");
 
                         // Require collateral if borrow amount is entered
                         if (!collateral || collateral <= 0) {
-                          return "Please enter a valid collateral amount first";
+                          return "Please enter collateral amount first";
                         }
 
                         // Check minimum borrow amount
                         if (bitUSD?.price) {
                           const borrowValue = value * bitUSD.price;
                           if (borrowValue < 2000) {
-                            return "Minimum borrow amount is $2000";
+                            return "Minimum borrow amount is $2,000";
                           }
+                        }
+                        
+                        // Check against debt limit
+                        if (value > debtLimit) {
+                          return "Exceeds maximum borrowable amount";
+                        }
+                        
+                        // Check LTV ratio
+                        if (ltvValue > MAX_LTV * 100) {
+                          return "LTV ratio too high";
                         }
                       }
                       return undefined;
@@ -364,11 +359,19 @@ function Borrow() {
                   {(field) => (
                     <BorrowInput
                       value={field.state.value}
-                      onChange={handleBorrowAmountChange}
+                      onChange={(values) => field.handleChange(Number(values.value) || undefined)}
                       onBlur={field.handleBlur}
                       bitUSD={bitUSD}
-                      onPercentageClick={(percentage) => handlePercentageClick(percentage, "borrow")}
-                      error={field.state.meta.errors as string[] | undefined}
+                      onPercentageClick={(percentage) =>
+                        handlePercentageClick(percentage, "borrow")
+                      }
+                      error={
+                        field.state.meta.errors?.length
+                          ? Array.isArray(field.state.meta.errors)
+                            ? field.state.meta.errors
+                            : [field.state.meta.errors].filter(Boolean) as string[]
+                          : undefined
+                      }
                     />
                   )}
                 </form.Field>
@@ -383,6 +386,7 @@ function Borrow() {
 
                   <Button
                     disabled={
+                      !address ||
                       !canSubmit ||
                       !collateralAmount ||
                       !borrowAmount ||
@@ -400,8 +404,12 @@ function Borrow() {
                 <InterestRateSelector
                   selectedRate={selectedRate}
                   selfManagedRate={selfManagedRate}
-                  onRateChange={(rate) => form.setFieldValue("selectedRate", rate)}
-                  onSelfManagedRateChange={(rate) => form.setFieldValue("selfManagedRate", rate)}
+                  onRateChange={(rate) =>
+                    form.setFieldValue("selectedRate", rate)
+                  }
+                  onSelfManagedRateChange={(rate) =>
+                    form.setFieldValue("selfManagedRate", rate)
+                  }
                 />
               </CardContent>
             </Card>

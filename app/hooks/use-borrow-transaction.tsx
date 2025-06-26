@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useMemo } from "react";
 import {
   useAccount,
   useContract,
@@ -6,13 +6,11 @@ import {
   type UseSendTransactionResult,
   useTransactionReceipt,
 } from "@starknet-react/core";
-import { useQueryClient } from "@tanstack/react-query";
 import {
   TBTC_ABI,
   TBTC_ADDRESS,
   BORROWER_OPERATIONS_ABI,
   BORROWER_OPERATIONS_ADDRESS,
-  TM_ADDRESS,
 } from "~/lib/constants";
 import { useOwnerPositions } from "./use-owner-positions";
 
@@ -109,21 +107,6 @@ export function useBorrowTransaction({
   const isTransactionSuccess = isReceiptSuccess && !!receipt;
   const isTransactionError = transaction.isError || isReceiptError;
   const transactionError = transaction.error || receiptError || null;
-
-  // // Invalidate once when receipt is successful
-  // if (
-  //   isTransactionSuccess &&
-  //   receipt &&
-  //   transaction.data?.transaction_hash &&
-  //   invalidatedRef.current !== transaction.data.transaction_hash &&
-  //   address && // Ensure address is defined
-  //   chainId // Ensure chainId is defined
-  // ) {
-  //   invalidatedRef.current = transaction.data.transaction_hash;
-  //   queryClient.invalidateQueries({
-  //     queryKey: ["ownerPositions", address, TM_ADDRESS],
-  //   });
-  // }
 
   return {
     ...transaction,

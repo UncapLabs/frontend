@@ -90,8 +90,13 @@ export function BorrowInput({
             decimalScale={2}
             fixedDecimalScale
           />
-          {error && (
-            <p className="text-xs text-red-500 mt-1">{error.join(" ")}</p>
+          {error && error.length > 0 && (
+            <div className="flex items-start gap-1 mt-2">
+              <svg className="w-3 h-3 text-red-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-xs text-red-600 font-medium">{error.join(" ")}</p>
+            </div>
           )}
         </div>
         <div className="text-right">
