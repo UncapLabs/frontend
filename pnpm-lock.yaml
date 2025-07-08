@@ -74,9 +74,6 @@ importers:
       hono:
         specifier: ^4.7.8
         version: 4.8.3
-      immer:
-        specifier: ^10.1.1
-        version: 10.1.1
       isbot:
         specifier: ^5.1.27
         version: 5.1.28
@@ -8284,7 +8281,8 @@ snapshots:
     dependencies:
       queue: 6.0.2
 
-  immer@10.1.1: {}
+  immer@10.1.1:
+    optional: true
 
   import-fresh@2.0.0:
     dependencies:
