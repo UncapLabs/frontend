@@ -34,15 +34,9 @@ export function useBorrowWithFlow({
   const transactionSteps: TransactionStep[] = useMemo(
     () => [
       {
-        id: "approve-tbtc",
-        name: "Approve TBTC",
-        description: "Approve TBTC spending for collateral",
-        state: "idle",
-      },
-      {
         id: "open-trove",
-        name: "Open Trove",
-        description: "Create borrowing position",
+        name: "Opening Trove",
+        description: "Approving TBTC and creating borrowing position",
         state: "idle",
       },
     ],
@@ -58,13 +52,12 @@ export function useBorrowWithFlow({
     try {
       await transaction.send();
 
-      // If we get a transaction hash, update the first step
+      // If we get a transaction hash, update with it
       if (transaction.data?.transaction_hash) {
         updateStep(0, {
-          state: "success",
+          state: "loading",
           transactionHash: transaction.data.transaction_hash,
         });
-        updateStep(1, { state: "loading" });
       }
     } catch (error) {
       updateStep(0, {
@@ -77,9 +70,9 @@ export function useBorrowWithFlow({
 
   // Check if transaction is successful and update flow accordingly
   if (transaction.isTransactionSuccess && currentTransaction) {
-    const secondStep = currentTransaction.steps[1];
-    if (secondStep && secondStep.state !== "success") {
-      updateStep(1, {
+    const firstStep = currentTransaction.steps[0];
+    if (firstStep && firstStep.state !== "success") {
+      updateStep(0, {
         state: "success",
         transactionHash: transaction.data?.transaction_hash,
       });
@@ -90,12 +83,11 @@ export function useBorrowWithFlow({
 
   // Check if transaction failed and update flow accordingly
   if (transaction.isTransactionError && currentTransaction) {
-    const stepIndex = transaction.data?.transaction_hash ? 1 : 0;
-    const currentStep = currentTransaction.steps[stepIndex];
-    if (currentStep && currentStep.state !== "error") {
+    const firstStep = currentTransaction.steps[0];
+    if (firstStep && firstStep.state !== "error") {
       const errorMessage =
         transaction.transactionError?.message || "Transaction failed";
-      updateStep(stepIndex, { state: "error", error: errorMessage });
+      updateStep(0, { state: "error", error: errorMessage });
     }
   }
 

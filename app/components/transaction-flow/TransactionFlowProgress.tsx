@@ -18,9 +18,11 @@ export function TransactionFlowProgress() {
         <h3 className="text-xl font-semibold text-slate-800">
           {transaction.title}
         </h3>
-        <p className="text-sm text-slate-600">
-          Step {transaction.currentStepIndex + 1} of {transaction.steps.length}
-        </p>
+        {transaction.steps.length > 1 && (
+          <p className="text-sm text-slate-600">
+            Step {transaction.currentStepIndex + 1} of {transaction.steps.length}
+          </p>
+        )}
       </div>
 
       {/* Progress steps */}
@@ -31,7 +33,6 @@ export function TransactionFlowProgress() {
             step={step}
             isActive={index === transaction.currentStepIndex}
             isCompleted={index < transaction.currentStepIndex}
-            stepNumber={index + 1}
           />
         ))}
       </div>
@@ -85,12 +86,10 @@ function StepDisplay({
   step,
   isActive,
   isCompleted,
-  stepNumber,
 }: {
   step: TransactionStep;
   isActive: boolean;
   isCompleted: boolean;
-  stepNumber: number;
 }) {
   const getStepIcon = () => {
     if (step.state === 'success' || isCompleted) {
@@ -120,7 +119,7 @@ function StepDisplay({
         <p className={`text-sm font-medium ${
           isActive ? 'text-slate-800' : 'text-slate-600'
         }`}>
-          {stepNumber}. {step.name}
+          {step.name}
         </p>
         {step.state === 'error' && step.error && (
           <p className="text-xs text-red-500 mt-1">
