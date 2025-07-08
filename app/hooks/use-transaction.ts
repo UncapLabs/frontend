@@ -8,6 +8,7 @@ import { type Call } from "starknet";
 interface UseTransactionResult {
   send: () => Promise<void>;
   isPending: boolean;
+  isSending: boolean;
   isSuccess: boolean;
   isError: boolean;
   error: Error | null;
@@ -44,8 +45,9 @@ export function useTransaction(
   // Derive transaction state
   const transactionHash = data?.transaction_hash;
   const isPending =
-    isSending || (!!transactionHash && !isReceiptSuccess && !isReceiptError);
-  const isSuccess = isReceiptSuccess && !!receipt;
+    isSending ||
+    (!!transactionHash && !receipt && !isReceiptError);
+  const isSuccess = !!receipt;
   const isError = isSendError || isReceiptError;
   const error = sendError || receiptError || null;
 
@@ -60,6 +62,7 @@ export function useTransaction(
   return {
     send,
     isPending,
+    isSending,
     isSuccess,
     isError,
     error,

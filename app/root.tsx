@@ -13,6 +13,7 @@ import { Toaster } from "~/components/ui/sonner";
 import { TRPCProvider } from "./lib/trpc";
 import { useState } from "react";
 import type { AppRouter } from "workers/router";
+import { NuqsAdapter } from "nuqs/adapters/react-router/v7";
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -94,9 +95,11 @@ export default function App() {
     <StarknetProvider>
       <QueryClientProvider client={queryClient}>
         <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
-          <Outlet />
-          <Toaster />
-          <ReactQueryDevtools initialIsOpen={false} />
+          <NuqsAdapter>
+            <Outlet />
+            <Toaster />
+            <ReactQueryDevtools initialIsOpen={false} />
+          </NuqsAdapter>
         </TRPCProvider>
       </QueryClientProvider>
     </StarknetProvider>

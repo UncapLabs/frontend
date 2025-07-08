@@ -21,6 +21,7 @@ import { useAccount, useBalance } from "@starknet-react/core";
 import { TBTC_ADDRESS } from "~/lib/constants";
 import { toast } from "sonner";
 import { useBorrow } from "~/hooks/use-borrow";
+import { useQueryState } from "nuqs";
 
 function Borrow() {
   const { address } = useAccount();
@@ -28,6 +29,11 @@ function Borrow() {
     token: TBTC_ADDRESS,
     address: address,
     refetchInterval: 30000,
+  });
+
+  // Check if we have a transaction hash in URL
+  const [urlTransactionHash] = useQueryState('tx', {
+    defaultValue: '',
   });
 
   // Create properly typed default values
@@ -95,6 +101,7 @@ function Borrow() {
   const {
     send,
     isPending,
+    isSending,
     isError: isTransactionError,
     error: transactionError,
     transactionHash,
@@ -176,11 +183,8 @@ function Borrow() {
     form.reset();
   };
 
-  // Show transaction UI based on transaction state
-  const shouldShowTransactionUI =
-    isPending ||
-    isTransactionSuccess ||
-    (isTransactionError && !!transactionHash);
+  // Show transaction UI if we have a hash (either from current transaction or URL)
+  const shouldShowTransactionUI = !!transactionHash || !!urlTransactionHash;
 
   // Original form UI
   return (
@@ -195,7 +199,6 @@ function Borrow() {
         <div className="md:col-span-2">
           {shouldShowTransactionUI ? (
             <TransactionStatus
-              shouldShowLoading={isPending}
               shouldShowSuccess={isTransactionSuccess}
               transactionDetails={
                 collateralAmount && borrowAmount && transactionHash
@@ -358,12 +361,13 @@ function Borrow() {
                       !collateralAmount ||
                       !borrowAmount ||
                       borrowAmount <= 0 ||
+                      isSending || // Disable while wallet is open
                       isPending // Disable while transaction is pending
                     }
                     className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2 px-6 rounded-xl shadow-sm hover:shadow transition-all whitespace-nowrap"
                     onClick={handleBorrowClick}
                   >
-                    {isPending ? "Confirming..." : buttonText}
+                    {isSending ? "Confirm in wallet..." : isPending ? "Confirming..." : buttonText}
                   </Button>
                 </div>
 
