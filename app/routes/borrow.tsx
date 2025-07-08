@@ -1,39 +1,7 @@
 import { Button } from "~/components/ui/button";
-import { NumericFormat, type NumberFormatValues } from "react-number-format";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "~/components/ui/accordion";
-import {
-  RefreshCw,
-  HelpCircle,
-  ArrowDown,
-  Check,
-  CheckCircle2,
-  Loader2,
-  ExternalLink,
-  ArrowLeft,
-} from "lucide-react";
+import { Card, CardContent } from "~/components/ui/card";
+import { ArrowDown } from "lucide-react";
 import { Separator } from "~/components/ui/separator";
-import { Slider } from "~/components/ui/slider";
 import {
   CollateralInput,
   BorrowInput,
@@ -42,7 +10,7 @@ import {
   PositionSummary,
   TransactionStatus,
 } from "~/components/borrow";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useForm, useStore } from "@tanstack/react-form";
 import { type BorrowFormData } from "~/types/borrow";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
@@ -50,18 +18,12 @@ import { useFormCalculations } from "~/hooks/use-form-calculations";
 import { MAX_LIMIT, MAX_LTV, getAnnualInterestRate } from "~/lib/utils/calc";
 import type { Route } from "./+types/dashboard";
 import { useAccount, useBalance } from "@starknet-react/core";
-import {
-  INTEREST_RATE_SCALE_DOWN_FACTOR,
-  TBTC_ADDRESS,
-  TBTC_SYMBOL,
-} from "~/lib/constants";
-import { getLtvColor } from "~/lib/utils";
+import { TBTC_ADDRESS } from "~/lib/constants";
 import { toast } from "sonner";
-import { useOwnerPositions } from "~/hooks/use-owner-positions";
-import { useBorrowTransaction } from "~/hooks/use-borrow-transaction";
+import { useBorrow } from "~/hooks/use-borrow";
 
 function Borrow() {
-  const { address, account, connector } = useAccount();
+  const { address } = useAccount();
   const { data: bitcoinBalance } = useBalance({
     token: TBTC_ADDRESS,
     address: address,
@@ -129,24 +91,20 @@ function Borrow() {
     bitUSD?.price
   );
 
-  // Use the borrow transaction hook
+  // Use the borrow hook
   const {
     send,
     isPending,
     isError: isTransactionError,
     error: transactionError,
-    data,
+    transactionHash,
     isReady,
-    isTransactionSuccess,
-    transactionError: txError,
-  } = useBorrowTransaction({
+    isSuccess: isTransactionSuccess,
+  } = useBorrow({
     collateralAmount,
     borrowAmount,
     annualInterestRate,
   });
-
-  // Get transaction hash from the transaction data
-  const transactionHash = data?.transaction_hash;
 
   // Get form validation state
   const canSubmit = useStore(form.store, (state) => state.canSubmit);
@@ -174,7 +132,6 @@ function Borrow() {
   }, [address, collateralAmount, borrowAmount, isValid]);
 
   // Handlers using TanStack Form
-
   const handleLtvSliderChange = (value: number[]) => {
     const intendedLtvPercentage = Math.min(value[0], MAX_LTV * 100);
     const newBorrowAmount = computeBorrowFromLTV(intendedLtvPercentage);
@@ -219,13 +176,11 @@ function Borrow() {
     form.reset();
   };
 
-  // User rejection = error but no transaction hash (never signed)
-  const isUserRejection = isTransactionError && !transactionHash;
-
-  // Derive loading/success states from transaction hook state  
-  const shouldShowLoading = isPending;
-  const shouldShowSuccess = isTransactionSuccess;
-  const shouldShowTransactionUI = isPending || (isTransactionError && !isUserRejection) || (transactionHash && !isTransactionSuccess) || isTransactionSuccess;
+  // Show transaction UI based on transaction state
+  const shouldShowTransactionUI =
+    isPending ||
+    isTransactionSuccess ||
+    (isTransactionError && !!transactionHash);
 
   // Original form UI
   return (
@@ -240,19 +195,23 @@ function Borrow() {
         <div className="md:col-span-2">
           {shouldShowTransactionUI ? (
             <TransactionStatus
-              shouldShowLoading={shouldShowLoading}
-              shouldShowSuccess={shouldShowSuccess}
-              transactionDetails={collateralAmount && borrowAmount && transactionHash ? {
-                collateralAmount,
-                borrowAmount,
-                transactionHash,
-              } : null}
+              shouldShowLoading={isPending}
+              shouldShowSuccess={isTransactionSuccess}
+              transactionDetails={
+                collateralAmount && borrowAmount && transactionHash
+                  ? {
+                      collateralAmount,
+                      borrowAmount,
+                      transactionHash,
+                    }
+                  : null
+              }
               annualInterestRate={annualInterestRate}
               transactionHash={transactionHash}
               onNewBorrow={handleNewBorrow}
               isPending={isPending}
               isError={isTransactionError}
-              error={txError || transactionError}
+              error={transactionError}
             />
           ) : (
             <Card className="border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
@@ -266,7 +225,7 @@ function Borrow() {
                         if (!address) {
                           return "Please connect your wallet";
                         }
-                        
+
                         // Check balance if wallet is connected
                         if (address && bitcoinBalance) {
                           const balance = Number(bitcoinBalance.value) / 1e18;
@@ -274,7 +233,7 @@ function Borrow() {
                             return "Insufficient balance";
                           }
                         }
-                        
+
                         // Check against maximum limit
                         if (value >= MAX_LIMIT) {
                           return `Maximum collateral amount is ${MAX_LIMIT.toLocaleString()}`;
@@ -287,7 +246,9 @@ function Borrow() {
                   {(field) => (
                     <CollateralInput
                       value={field.state.value}
-                      onChange={(values) => field.handleChange(Number(values.value) || undefined)}
+                      onChange={(values) =>
+                        field.handleChange(Number(values.value) || undefined)
+                      }
                       onBlur={field.handleBlur}
                       bitcoin={bitcoin}
                       bitcoinBalance={bitcoinBalance}
@@ -298,7 +259,9 @@ function Borrow() {
                         field.state.meta.errors?.length
                           ? Array.isArray(field.state.meta.errors)
                             ? field.state.meta.errors
-                            : [field.state.meta.errors].filter(Boolean) as string[]
+                            : ([field.state.meta.errors].filter(
+                                Boolean
+                              ) as string[])
                           : undefined
                       }
                     />
@@ -341,12 +304,12 @@ function Borrow() {
                             return "Minimum borrow amount is $2,000";
                           }
                         }
-                        
+
                         // Check against debt limit
                         if (value > debtLimit) {
                           return "Exceeds maximum borrowable amount";
                         }
-                        
+
                         // Check LTV ratio
                         if (ltvValue > MAX_LTV * 100) {
                           return "LTV ratio too high";
@@ -359,7 +322,9 @@ function Borrow() {
                   {(field) => (
                     <BorrowInput
                       value={field.state.value}
-                      onChange={(values) => field.handleChange(Number(values.value) || undefined)}
+                      onChange={(values) =>
+                        field.handleChange(Number(values.value) || undefined)
+                      }
                       onBlur={field.handleBlur}
                       bitUSD={bitUSD}
                       onPercentageClick={(percentage) =>
@@ -369,7 +334,9 @@ function Borrow() {
                         field.state.meta.errors?.length
                           ? Array.isArray(field.state.meta.errors)
                             ? field.state.meta.errors
-                            : [field.state.meta.errors].filter(Boolean) as string[]
+                            : ([field.state.meta.errors].filter(
+                                Boolean
+                              ) as string[])
                           : undefined
                       }
                     />
