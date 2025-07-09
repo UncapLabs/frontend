@@ -47,8 +47,6 @@ export const positionsRouter = router({
     .query(async ({ ctx, input }) => {
       const { userAddress } = input;
 
-      console.log("Fetching owner positions for address:", userAddress);
-
       if (!process.env.NODE_URL) {
         console.error("NODE_URL environment variable is not defined");
         throw new Error("RPC node URL not configured");
@@ -67,8 +65,6 @@ export const positionsRouter = router({
       try {
         const ownerPositionsResult =
           await troveManagerContract.get_owner_to_positions(userAddress);
-
-        console.log("Raw contract response:", ownerPositionsResult);
 
         if (
           ownerPositionsResult === undefined ||

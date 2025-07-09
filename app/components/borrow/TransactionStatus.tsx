@@ -7,37 +7,62 @@ import {
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import { NumericFormat } from "react-number-format";
-import { TBTC_SYMBOL, INTEREST_RATE_SCALE_DOWN_FACTOR } from "~/lib/constants";
 import { useQueryState } from "nuqs";
 import { useTransactionReceipt } from "@starknet-react/core";
+import type { ReactNode } from "react";
 
-interface TransactionDetails {
-  collateralAmount: number;
-  borrowAmount: number;
-  transactionHash: string;
+interface TransactionDetail {
+  label: string;
+  value: ReactNode;
 }
 
 interface TransactionStatusProps {
-  shouldShowSuccess: boolean;
-  transactionDetails: TransactionDetails | null;
-  annualInterestRate: bigint;
+  // Transaction state
   transactionHash?: string;
-  onNewBorrow: () => void;
   isPending?: boolean;
   isError?: boolean;
+  isSuccess?: boolean;
   error?: Error | null;
+
+  // Content customization
+  successTitle?: string;
+  successSubtitle?: string;
+  errorTitle?: string;
+  errorSubtitle?: string;
+  pendingTitle?: string;
+  pendingSubtitle?: string;
+
+  // Transaction details to display
+  details?: TransactionDetail[];
+
+  // Actions
+  onComplete?: () => void;
+  completeButtonText?: string;
+  errorButtonText?: string;
+
+  // Optional: hide certain elements
+  hideTransactionLink?: boolean;
+  hideCompleteButton?: boolean;
 }
 
 export function TransactionStatus({
-  shouldShowSuccess,
-  transactionDetails,
-  annualInterestRate,
   transactionHash,
-  onNewBorrow,
   isPending = false,
   isError = false,
+  isSuccess = false,
   error = null,
+  successTitle = "Transaction Successful!",
+  successSubtitle = "Your transaction has been completed successfully.",
+  errorTitle = "Transaction Failed",
+  errorSubtitle,
+  pendingTitle = "Processing Transaction",
+  pendingSubtitle = "Please wait while we confirm your transaction...",
+  details,
+  onComplete,
+  completeButtonText = "Done",
+  errorButtonText = "Try Again",
+  hideTransactionLink = false,
+  hideCompleteButton = false,
 }: TransactionStatusProps) {
   // Read URL state for transaction hash (managed by parent)
   const [urlTransactionHash] = useQueryState("tx", {
@@ -46,7 +71,6 @@ export function TransactionStatus({
 
   // Fetch transaction receipt if we have a URL hash but no active transaction
   const {
-    data: urlReceipt,
     isSuccess: urlTxSuccess,
     isError: urlTxError,
     error: urlError,
@@ -58,17 +82,12 @@ export function TransactionStatus({
 
   // Determine which state to show (prioritize props over URL)
   const displayHash = transactionHash || urlTransactionHash;
-  const displayIsSuccess = transactionHash ? shouldShowSuccess : urlTxSuccess;
+  const displayIsSuccess = transactionHash ? isSuccess : urlTxSuccess;
   const displayIsError = transactionHash ? isError : urlTxError;
   const displayError = transactionHash ? error : urlError;
   const displayIsPending = transactionHash
     ? isPending
     : !!urlTransactionHash && !urlTxSuccess && !urlTxError;
-
-  // Handle new position
-  const handleNewPosition = () => {
-    onNewBorrow();
-  };
 
   // Determine the current state
   const getStatusIcon = () => {
@@ -96,20 +115,22 @@ export function TransactionStatus({
   const getStatusText = () => {
     if (displayIsError) {
       return {
-        title: "Transaction Failed",
+        title: errorTitle,
         subtitle:
-          displayError?.message || "Something went wrong with your transaction",
+          errorSubtitle ||
+          displayError?.message ||
+          "Something went wrong with your transaction",
       };
     }
     if (displayIsSuccess) {
       return {
-        title: "Borrow Successful!",
-        subtitle: "Your position has been created successfully.",
+        title: successTitle,
+        subtitle: successSubtitle,
       };
     }
     return {
-      title: "Processing Transaction",
-      subtitle: "Please wait while we confirm your transaction...",
+      title: pendingTitle,
+      subtitle: pendingSubtitle,
     };
   };
 
@@ -134,46 +155,16 @@ export function TransactionStatus({
           </div>
 
           {/* Transaction Details - Only show when we have them */}
-          {transactionDetails && !displayIsError && (
+          {details && details.length > 0 && !displayIsError && (
             <div className="w-full bg-slate-50 rounded-xl p-4 space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-600">
-                  Collateral Deposited
-                </span>
-                <span className="font-semibold text-slate-800">
-                  <NumericFormat
-                    displayType="text"
-                    value={transactionDetails.collateralAmount}
-                    thousandSeparator=","
-                    decimalScale={7}
-                    fixedDecimalScale={false}
-                  />{" "}
-                  {TBTC_SYMBOL}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-600">Amount Borrowed</span>
-                <span className="font-semibold text-slate-800">
-                  <NumericFormat
-                    displayType="text"
-                    value={transactionDetails.borrowAmount}
-                    thousandSeparator=","
-                    decimalScale={2}
-                    fixedDecimalScale
-                  />{" "}
-                  bitUSD
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-600">
-                  Interest Rate (APR)
-                </span>
-                <span className="font-semibold text-slate-800">
-                  {Number(annualInterestRate) /
-                    Number(INTEREST_RATE_SCALE_DOWN_FACTOR)}
-                  %
-                </span>
-              </div>
+              {details.map((detail, index) => (
+                <div key={index} className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">{detail.label}</span>
+                  <span className="font-semibold text-slate-800">
+                    {detail.value}
+                  </span>
+                </div>
+              ))}
             </div>
           )}
 
@@ -186,7 +177,7 @@ export function TransactionStatus({
 
           {/* Actions */}
           <div className="w-full flex flex-col space-y-3 mt-auto">
-            {displayHash && !displayIsError && (
+            {displayHash && !displayIsError && !hideTransactionLink && (
               <a
                 href={`https://voyager.online/tx/${displayHash}`}
                 target="_blank"
@@ -197,16 +188,18 @@ export function TransactionStatus({
               </a>
             )}
 
-            {(displayIsSuccess || displayIsError) && (
-              <Button
-                onClick={handleNewPosition}
-                variant={displayIsError ? "default" : "outline"}
-                className="w-full"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                {displayIsError ? "Try Again" : "Create New Position"}
-              </Button>
-            )}
+            {(displayIsSuccess || displayIsError) &&
+              onComplete &&
+              !hideCompleteButton && (
+                <Button
+                  onClick={onComplete}
+                  variant={displayIsError ? "default" : "outline"}
+                  className="w-full"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  {displayIsError ? errorButtonText : completeButtonText}
+                </Button>
+              )}
           </div>
         </div>
       </CardContent>

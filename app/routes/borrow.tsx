@@ -8,8 +8,8 @@ import {
   InterestRateSelector,
   LtvSlider,
   PositionSummary,
-  TransactionStatus,
 } from "~/components/borrow";
+import { TransactionStatus } from "~/components/borrow/TransactionStatus";
 import { useState, useMemo } from "react";
 import { useForm, useStore } from "@tanstack/react-form";
 import { type BorrowFormData } from "~/types/borrow";
@@ -18,8 +18,9 @@ import { useFormCalculations } from "~/hooks/use-form-calculations";
 import { MAX_LIMIT, MAX_LTV, getAnnualInterestRate } from "~/lib/utils/calc";
 import type { Route } from "./+types/dashboard";
 import { useAccount, useBalance } from "@starknet-react/core";
-import { TBTC_ADDRESS } from "~/lib/constants";
+import { TBTC_ADDRESS, TBTC_SYMBOL, INTEREST_RATE_SCALE_DOWN_FACTOR } from "~/lib/constants";
 import { toast } from "sonner";
+import { NumericFormat } from "react-number-format";
 import { useBorrow } from "~/hooks/use-borrow";
 import { useQueryState } from "nuqs";
 
@@ -205,22 +206,55 @@ function Borrow() {
         <div className="md:col-span-2">
           {shouldShowTransactionUI ? (
             <TransactionStatus
-              shouldShowSuccess={isTransactionSuccess}
-              transactionDetails={
-                collateralAmount && borrowAmount && urlTransactionHash
-                  ? {
-                      collateralAmount,
-                      borrowAmount,
-                      transactionHash: urlTransactionHash,
-                    }
-                  : null
-              }
-              annualInterestRate={annualInterestRate}
               transactionHash={transactionHash}
-              onNewBorrow={handleNewBorrow}
               isPending={isPending}
               isError={isTransactionError}
+              isSuccess={isTransactionSuccess}
               error={transactionError}
+              successTitle="Borrow Successful!"
+              successSubtitle="Your position has been created successfully."
+              details={
+                collateralAmount && borrowAmount && urlTransactionHash
+                  ? [
+                      {
+                        label: "Collateral Deposited",
+                        value: (
+                          <>
+                            <NumericFormat
+                              displayType="text"
+                              value={collateralAmount}
+                              thousandSeparator=","
+                              decimalScale={7}
+                              fixedDecimalScale={false}
+                            />{" "}
+                            {TBTC_SYMBOL}
+                          </>
+                        ),
+                      },
+                      {
+                        label: "Amount Borrowed",
+                        value: (
+                          <>
+                            <NumericFormat
+                              displayType="text"
+                              value={borrowAmount}
+                              thousandSeparator=","
+                              decimalScale={2}
+                              fixedDecimalScale
+                            />{" "}
+                            bitUSD
+                          </>
+                        ),
+                      },
+                      {
+                        label: "Interest Rate (APR)",
+                        value: `${Number(annualInterestRate) / Number(INTEREST_RATE_SCALE_DOWN_FACTOR)}%`,
+                      },
+                    ]
+                  : undefined
+              }
+              onComplete={handleNewBorrow}
+              completeButtonText="Create New Position"
             />
           ) : (
             <Card className="border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
