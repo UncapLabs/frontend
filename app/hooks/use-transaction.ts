@@ -21,7 +21,7 @@ export function useTransaction(
 ): UseTransactionResult {
   // StarkNet transaction hook
   const {
-    send: sendTransaction,
+    sendAsync: sendTransaction,
     data,
     isPending: isSending,
     isError: isSendError,
@@ -45,8 +45,7 @@ export function useTransaction(
   // Derive transaction state
   const transactionHash = data?.transaction_hash;
   const isPending =
-    isSending ||
-    (!!transactionHash && !receipt && !isReceiptError);
+    isSending || (!!transactionHash && !receipt && !isReceiptError);
   const isSuccess = !!receipt;
   const isError = isSendError || isReceiptError;
   const error = sendError || receiptError || null;

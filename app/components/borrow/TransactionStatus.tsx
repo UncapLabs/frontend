@@ -1,4 +1,10 @@
-import { Loader2, CheckCircle2, XCircle, ExternalLink, ArrowLeft } from "lucide-react";
+import {
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  ExternalLink,
+  ArrowLeft,
+} from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { NumericFormat } from "react-number-format";
@@ -33,15 +39,10 @@ export function TransactionStatus({
   isError = false,
   error = null,
 }: TransactionStatusProps) {
-  // URL state for transaction hash
-  const [urlTransactionHash, setUrlTransactionHash] = useQueryState('tx', {
-    defaultValue: '',
+  // Read URL state for transaction hash (managed by parent)
+  const [urlTransactionHash] = useQueryState("tx", {
+    defaultValue: "",
   });
-
-  // Update URL when we get a transaction hash from props
-  if (transactionHash && !urlTransactionHash) {
-    setUrlTransactionHash(transactionHash);
-  }
 
   // Fetch transaction receipt if we have a URL hash but no active transaction
   const {
@@ -60,11 +61,12 @@ export function TransactionStatus({
   const displayIsSuccess = transactionHash ? shouldShowSuccess : urlTxSuccess;
   const displayIsError = transactionHash ? isError : urlTxError;
   const displayError = transactionHash ? error : urlError;
-  const displayIsPending = transactionHash ? isPending : (!!urlTransactionHash && !urlTxSuccess && !urlTxError);
+  const displayIsPending = transactionHash
+    ? isPending
+    : !!urlTransactionHash && !urlTxSuccess && !urlTxError;
 
-  // Enhanced onNewBorrow that also clears URL
+  // Handle new position
   const handleNewPosition = () => {
-    setUrlTransactionHash('');
     onNewBorrow();
   };
 
@@ -95,7 +97,8 @@ export function TransactionStatus({
     if (displayIsError) {
       return {
         title: "Transaction Failed",
-        subtitle: displayError?.message || "Something went wrong with your transaction",
+        subtitle:
+          displayError?.message || "Something went wrong with your transaction",
       };
     }
     if (displayIsSuccess) {

@@ -32,8 +32,8 @@ function Borrow() {
   });
 
   // Check if we have a transaction hash in URL
-  const [urlTransactionHash] = useQueryState('tx', {
-    defaultValue: '',
+  const [urlTransactionHash, setUrlTransactionHash] = useQueryState("tx", {
+    defaultValue: "",
   });
 
   // Create properly typed default values
@@ -181,10 +181,16 @@ function Borrow() {
 
   const handleNewBorrow = () => {
     form.reset();
+    setUrlTransactionHash("");
   };
 
-  // Show transaction UI if we have a hash (either from current transaction or URL)
-  const shouldShowTransactionUI = !!transactionHash || !!urlTransactionHash;
+  // Update URL when we get a transaction hash
+  if (transactionHash && transactionHash !== urlTransactionHash) {
+    setUrlTransactionHash(transactionHash);
+  }
+
+  // Show transaction UI if we have a hash in URL (single source of truth)
+  const shouldShowTransactionUI = !!urlTransactionHash;
 
   // Original form UI
   return (
@@ -201,11 +207,11 @@ function Borrow() {
             <TransactionStatus
               shouldShowSuccess={isTransactionSuccess}
               transactionDetails={
-                collateralAmount && borrowAmount && transactionHash
+                collateralAmount && borrowAmount && urlTransactionHash
                   ? {
                       collateralAmount,
                       borrowAmount,
-                      transactionHash,
+                      transactionHash: urlTransactionHash,
                     }
                   : null
               }
@@ -367,7 +373,11 @@ function Borrow() {
                     className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2 px-6 rounded-xl shadow-sm hover:shadow transition-all whitespace-nowrap"
                     onClick={handleBorrowClick}
                   >
-                    {isSending ? "Confirm in wallet..." : isPending ? "Confirming..." : buttonText}
+                    {isSending
+                      ? "Confirm in wallet..."
+                      : isPending
+                      ? "Confirming..."
+                      : buttonText}
                   </Button>
                 </div>
 
