@@ -18,7 +18,11 @@ import { useFormCalculations } from "~/hooks/use-form-calculations";
 import { MAX_LIMIT, MAX_LTV, getAnnualInterestRate } from "~/lib/utils/calc";
 import type { Route } from "./+types/dashboard";
 import { useAccount, useBalance } from "@starknet-react/core";
-import { TBTC_ADDRESS, TBTC_SYMBOL, INTEREST_RATE_SCALE_DOWN_FACTOR } from "~/lib/constants";
+import {
+  TBTC_ADDRESS,
+  TBTC_SYMBOL,
+  INTEREST_RATE_SCALE_DOWN_FACTOR,
+} from "~/lib/constants";
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
 import { useBorrow } from "~/hooks/use-borrow";
@@ -49,8 +53,22 @@ function Borrow() {
   const form = useForm({
     defaultValues: defaultBorrowFormValues,
     onSubmit: async ({ value }) => {
-      console.log("Form submitted:", value);
-      // This will be handled by the borrow transaction
+      if (!isReady) {
+        if (!address) {
+          toast.error("Please connect your wallet");
+        }
+        return;
+      }
+
+      if (!value.collateralAmount || !value.borrowAmount) {
+        return;
+      }
+
+      try {
+        await send();
+      } catch (error) {
+        console.error("Transaction error:", error);
+      }
     },
   });
 
@@ -161,23 +179,8 @@ function Borrow() {
     }
   };
 
-  const handleBorrowClick = async () => {
-    if (!isReady) {
-      if (!address) {
-        toast.error("Please connect your wallet");
-      }
-      return;
-    }
-
-    if (!canSubmit || !collateralAmount || !borrowAmount) {
-      return;
-    }
-
-    try {
-      await send();
-    } catch (error) {
-      console.error("Transaction error:", error);
-    }
+  const handleBorrowClick = () => {
+    form.handleSubmit();
   };
 
   const handleNewBorrow = () => {
@@ -248,7 +251,10 @@ function Borrow() {
                       },
                       {
                         label: "Interest Rate (APR)",
-                        value: `${Number(annualInterestRate) / Number(INTEREST_RATE_SCALE_DOWN_FACTOR)}%`,
+                        value: `${
+                          Number(annualInterestRate) /
+                          Number(INTEREST_RATE_SCALE_DOWN_FACTOR)
+                        }%`,
                       },
                     ]
                   : undefined
@@ -257,177 +263,185 @@ function Borrow() {
               completeButtonText="Create New Position"
             />
           ) : (
-            <Card className="border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
-              <CardContent className="pt-6 space-y-6">
-                {/* Deposit Collateral Section */}
-                <form.Field
-                  name="collateralAmount"
-                  validators={{
-                    onChange: ({ value }) => {
-                      if (value && value > 0) {
-                        if (!address) {
-                          return "Please connect your wallet";
-                        }
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                form.handleSubmit();
+              }}
+            >
+              <Card className="border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
+                <CardContent className="pt-6 space-y-6">
+                  {/* Deposit Collateral Section */}
+                  <form.Field
+                    name="collateralAmount"
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (value && value > 0) {
+                          if (!address) {
+                            return "Please connect your wallet";
+                          }
 
-                        // Check balance if wallet is connected
-                        if (address && bitcoinBalance) {
-                          const balance = Number(bitcoinBalance.value) / 1e18;
-                          if (value > balance) {
-                            return "Insufficient balance";
+                          // Check balance if wallet is connected
+                          if (address && bitcoinBalance) {
+                            const balance = Number(bitcoinBalance.value) / 1e18;
+                            if (value > balance) {
+                              return "Insufficient balance";
+                            }
+                          }
+
+                          // Check against maximum limit
+                          if (value >= MAX_LIMIT) {
+                            return `Maximum collateral amount is ${MAX_LIMIT.toLocaleString()}`;
                           }
                         }
-
-                        // Check against maximum limit
-                        if (value >= MAX_LIMIT) {
-                          return `Maximum collateral amount is ${MAX_LIMIT.toLocaleString()}`;
-                        }
-                      }
-                      return undefined;
-                    },
-                  }}
-                >
-                  {(field) => (
-                    <CollateralInput
-                      value={field.state.value}
-                      onChange={(values) =>
-                        field.handleChange(Number(values.value) || undefined)
-                      }
-                      onBlur={field.handleBlur}
-                      bitcoin={bitcoin}
-                      bitcoinBalance={bitcoinBalance}
-                      onPercentageClick={(percentage) =>
-                        handlePercentageClick(percentage, "collateral")
-                      }
-                      error={
-                        field.state.meta.errors?.length
-                          ? Array.isArray(field.state.meta.errors)
-                            ? field.state.meta.errors
-                            : ([field.state.meta.errors].filter(
-                                Boolean
-                              ) as string[])
-                          : undefined
-                      }
-                    />
-                  )}
-                </form.Field>
-
-                <div className="relative flex justify-center items-center py-3">
-                  <div className="w-full h-px bg-slate-200"></div>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="absolute bg-white rounded-full border border-slate-200 shadow-sm hover:shadow transition-shadow z-10"
+                        return undefined;
+                      },
+                    }}
                   >
-                    <ArrowDown className="h-4 w-4 text-slate-600" />
-                  </Button>
-                </div>
-
-                {/* Borrow Stablecoin Section */}
-                <form.Field
-                  name="borrowAmount"
-                  validators={{
-                    onChange: ({ value, fieldApi }) => {
-                      if (value && value > 0) {
-                        if (!address) {
-                          return "Please connect your wallet";
+                    {(field) => (
+                      <CollateralInput
+                        value={field.state.value}
+                        onChange={(values) =>
+                          field.handleChange(Number(values.value) || undefined)
                         }
-
-                        const collateral =
-                          fieldApi.form.getFieldValue("collateralAmount");
-
-                        // Require collateral if borrow amount is entered
-                        if (!collateral || collateral <= 0) {
-                          return "Please enter collateral amount first";
+                        onBlur={field.handleBlur}
+                        bitcoin={bitcoin}
+                        bitcoinBalance={bitcoinBalance}
+                        onPercentageClick={(percentage) =>
+                          handlePercentageClick(percentage, "collateral")
                         }
+                        error={
+                          field.state.meta.errors?.length
+                            ? Array.isArray(field.state.meta.errors)
+                              ? field.state.meta.errors
+                              : ([field.state.meta.errors].filter(
+                                  Boolean
+                                ) as string[])
+                            : undefined
+                        }
+                      />
+                    )}
+                  </form.Field>
 
-                        // Check minimum borrow amount
-                        if (bitUSD?.price) {
-                          const borrowValue = value * bitUSD.price;
-                          if (borrowValue < 2000) {
-                            return "Minimum borrow amount is $2,000";
+                  <div className="relative flex justify-center items-center py-3">
+                    <div className="w-full h-px bg-slate-200"></div>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="absolute bg-white rounded-full border border-slate-200 shadow-sm hover:shadow transition-shadow z-10"
+                    >
+                      <ArrowDown className="h-4 w-4 text-slate-600" />
+                    </Button>
+                  </div>
+
+                  {/* Borrow Stablecoin Section */}
+                  <form.Field
+                    name="borrowAmount"
+                    validators={{
+                      onChange: ({ value, fieldApi }) => {
+                        if (value && value > 0) {
+                          if (!address) {
+                            return "Please connect your wallet";
+                          }
+
+                          const collateral =
+                            fieldApi.form.getFieldValue("collateralAmount");
+
+                          // Require collateral if borrow amount is entered
+                          if (!collateral || collateral <= 0) {
+                            return "Please enter collateral amount first";
+                          }
+
+                          // Check minimum borrow amount
+                          if (bitUSD?.price) {
+                            const borrowValue = value * bitUSD.price;
+                            if (borrowValue < 2000) {
+                              return "Minimum borrow amount is $2,000";
+                            }
+                          }
+
+                          // Check against debt limit
+                          if (value > debtLimit) {
+                            return "Exceeds maximum borrowable amount";
+                          }
+
+                          // Check LTV ratio
+                          if (ltvValue > MAX_LTV * 100) {
+                            return "LTV ratio too high";
                           }
                         }
-
-                        // Check against debt limit
-                        if (value > debtLimit) {
-                          return "Exceeds maximum borrowable amount";
+                        return undefined;
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <BorrowInput
+                        value={field.state.value}
+                        onChange={(values) =>
+                          field.handleChange(Number(values.value) || undefined)
                         }
-
-                        // Check LTV ratio
-                        if (ltvValue > MAX_LTV * 100) {
-                          return "LTV ratio too high";
+                        onBlur={field.handleBlur}
+                        bitUSD={bitUSD}
+                        onPercentageClick={(percentage) =>
+                          handlePercentageClick(percentage, "borrow")
                         }
-                      }
-                      return undefined;
-                    },
-                  }}
-                >
-                  {(field) => (
-                    <BorrowInput
-                      value={field.state.value}
-                      onChange={(values) =>
-                        field.handleChange(Number(values.value) || undefined)
-                      }
-                      onBlur={field.handleBlur}
-                      bitUSD={bitUSD}
-                      onPercentageClick={(percentage) =>
-                        handlePercentageClick(percentage, "borrow")
-                      }
-                      error={
-                        field.state.meta.errors?.length
-                          ? Array.isArray(field.state.meta.errors)
-                            ? field.state.meta.errors
-                            : ([field.state.meta.errors].filter(
-                                Boolean
-                              ) as string[])
-                          : undefined
-                      }
+                        error={
+                          field.state.meta.errors?.length
+                            ? Array.isArray(field.state.meta.errors)
+                              ? field.state.meta.errors
+                              : ([field.state.meta.errors].filter(
+                                  Boolean
+                                ) as string[])
+                            : undefined
+                        }
+                      />
+                    )}
+                  </form.Field>
+
+                  {/* LTV Slider and Borrow Button */}
+                  <div className="flex flex-col items-start space-y-4 mt-6">
+                    <LtvSlider
+                      ltvValue={ltvValue}
+                      onValueChange={handleLtvSliderChange}
+                      disabled={!collateralAmount || collateralAmount <= 0}
                     />
-                  )}
-                </form.Field>
 
-                {/* LTV Slider and Borrow Button */}
-                <div className="flex flex-col items-start space-y-4 mt-6">
-                  <LtvSlider
-                    ltvValue={ltvValue}
-                    onValueChange={handleLtvSliderChange}
-                    disabled={!collateralAmount || collateralAmount <= 0}
-                  />
+                    <Button
+                      type="submit"
+                      disabled={
+                        !address ||
+                        !canSubmit ||
+                        !collateralAmount ||
+                        !borrowAmount ||
+                        borrowAmount <= 0 ||
+                        isSending || // Disable while wallet is open
+                        isPending // Disable while transaction is pending
+                      }
+                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2 px-6 rounded-xl shadow-sm hover:shadow transition-all whitespace-nowrap"
+                    >
+                      {isSending
+                        ? "Confirm in wallet..."
+                        : isPending
+                        ? "Confirming..."
+                        : buttonText}
+                    </Button>
+                  </div>
 
-                  <Button
-                    disabled={
-                      !address ||
-                      !canSubmit ||
-                      !collateralAmount ||
-                      !borrowAmount ||
-                      borrowAmount <= 0 ||
-                      isSending || // Disable while wallet is open
-                      isPending // Disable while transaction is pending
+                  {/* Interest Rate Options */}
+                  <InterestRateSelector
+                    selectedRate={selectedRate}
+                    selfManagedRate={selfManagedRate}
+                    onRateChange={(rate) =>
+                      form.setFieldValue("selectedRate", rate)
                     }
-                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2 px-6 rounded-xl shadow-sm hover:shadow transition-all whitespace-nowrap"
-                    onClick={handleBorrowClick}
-                  >
-                    {isSending
-                      ? "Confirm in wallet..."
-                      : isPending
-                      ? "Confirming..."
-                      : buttonText}
-                  </Button>
-                </div>
-
-                {/* Interest Rate Options */}
-                <InterestRateSelector
-                  selectedRate={selectedRate}
-                  selfManagedRate={selfManagedRate}
-                  onRateChange={(rate) =>
-                    form.setFieldValue("selectedRate", rate)
-                  }
-                  onSelfManagedRateChange={(rate) =>
-                    form.setFieldValue("selfManagedRate", rate)
-                  }
-                />
-              </CardContent>
-            </Card>
+                    onSelfManagedRateChange={(rate) =>
+                      form.setFieldValue("selfManagedRate", rate)
+                    }
+                  />
+                </CardContent>
+              </Card>
+            </form>
           )}
         </div>
 
