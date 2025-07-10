@@ -1831,3 +1831,18 @@ export const STABILITY_POOL_ABI = [
     ],
   },
 ] as const satisfies Abi;
+
+// Token definitions for reusable components
+export const TBTC_TOKEN = {
+  address: TBTC_ADDRESS,
+  symbol: TBTC_SYMBOL,
+  decimals: TBTC_DECIMALS,
+  icon: "/bitcoin.png",
+} as const;
+
+export const BITUSD_TOKEN = {
+  address: BITUSD_ADDRESS,
+  symbol: "bitUSD",
+  decimals: 18,
+  icon: "/bitusd.png",
+} as const;
