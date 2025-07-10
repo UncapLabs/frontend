@@ -10,7 +10,7 @@ import {
   PositionSummary,
 } from "~/components/borrow";
 import { TransactionStatus } from "~/components/borrow/TransactionStatus";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useForm, useStore } from "@tanstack/react-form";
 import { type BorrowFormData } from "~/types/borrow";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
@@ -90,12 +90,34 @@ function Borrow() {
     (state) => state.values.selfManagedRate
   );
 
+  // Track wallet connection changes and revalidate
+  const prevAddressRef = useRef(address);
+  useStore(form.store, () => {
+    if (prevAddressRef.current !== address && address) {
+      prevAddressRef.current = address;
+      // Revalidate fields when wallet connects
+      if (collateralAmount !== undefined) {
+        form.validateField("collateralAmount", "change");
+      }
+      if (borrowAmount !== undefined) {
+        form.validateField("borrowAmount", "change");
+      }
+    }
+  });
+
   // State for UI interactions
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Conditional price fetching
   const { bitcoin, bitUSD, refetchBitcoin, refetchBitUSD } =
     useFetchPrices(collateralAmount);
+
+  // Debug logging for prices
+  console.log("[DEBUG] Fetched Prices:", {
+    bitcoin,
+    bitUSD,
+    collateralAmount,
+  });
 
   // Calculate annual interest rate
   const annualInterestRate = useMemo(() => {
@@ -116,6 +138,18 @@ function Borrow() {
     bitUSD?.price
   );
 
+  // Debug logging for calculations
+  console.log("[DEBUG] Form Calculations:", {
+    collateralAmount,
+    borrowAmount,
+    bitcoinPrice: bitcoin?.price,
+    bitUSDPrice: bitUSD?.price,
+    debtLimit,
+    ltvValue,
+    MAX_LTV,
+    healthFactor,
+  });
+
   // Use the borrow hook
   const {
     send,
@@ -134,7 +168,17 @@ function Borrow() {
 
   // Get form validation state
   const canSubmit = useStore(form.store, (state) => state.canSubmit);
-  const isValid = useStore(form.store, (state) => state.isValid);
+
+  // Get field-specific errors reactively using the store
+  const collateralErrors = useStore(form.store, (state) => {
+    const field = state.fieldMeta.collateralAmount;
+    return field?.errors || [];
+  });
+
+  const borrowErrors = useStore(form.store, (state) => {
+    const field = state.fieldMeta.borrowAmount;
+    return field?.errors || [];
+  });
 
   // Create button text based on form state and validation
   const buttonText = useMemo(() => {
@@ -142,26 +186,40 @@ function Borrow() {
       return "Connect Wallet";
     }
 
+    // Show specific error messages in button
+    if (collateralErrors.length > 0) {
+      return collateralErrors[0];
+    }
+
+    if (borrowErrors.length > 0) {
+      return borrowErrors[0];
+    }
+
     if (!collateralAmount) {
-      return "Enter collateral amount";
+      return "Deposit collateral";
     }
 
     if (!borrowAmount) {
       return "Enter borrow amount";
     }
 
-    if (!isValid) {
-      return "Check inputs";
-    }
-
     return "Borrow";
-  }, [address, collateralAmount, borrowAmount, isValid]);
+  }, [address, collateralAmount, borrowAmount, collateralErrors, borrowErrors]);
 
   // Handlers using TanStack Form
   const handleLtvSliderChange = (value: number[]) => {
     const intendedLtvPercentage = Math.min(value[0], MAX_LTV * 100);
     const newBorrowAmount = computeBorrowFromLTV(intendedLtvPercentage);
+    console.log("[DEBUG] LTV slider change:", {
+      sliderValue: value[0],
+      intendedLtvPercentage,
+      newBorrowAmount,
+      collateralAmount,
+      bitcoinPrice: bitcoin?.price,
+    });
     form.setFieldValue("borrowAmount", newBorrowAmount);
+    // Manually trigger validation after setting value
+    form.validateField("borrowAmount", "change");
   };
 
   const handlePercentageClick = (
@@ -172,15 +230,23 @@ function Borrow() {
       const balance = bitcoinBalance?.value
         ? Number(bitcoinBalance.value) / 1e18
         : 0;
-      form.setFieldValue("collateralAmount", balance * percentage);
+      const newValue = balance * percentage;
+      form.setFieldValue("collateralAmount", newValue);
+      // Manually trigger validation after setting value
+      form.validateField("collateralAmount", "change");
     } else {
       const maxBorrowable = debtLimit;
-      form.setFieldValue("borrowAmount", maxBorrowable * percentage);
+      const newValue = maxBorrowable * percentage;
+      console.log("[DEBUG] Borrow percentage click:", {
+        percentage,
+        debtLimit,
+        maxBorrowable,
+        newValue,
+      });
+      form.setFieldValue("borrowAmount", newValue);
+      // Manually trigger validation after setting value
+      form.validateField("borrowAmount", "change");
     }
-  };
-
-  const handleBorrowClick = () => {
-    form.handleSubmit();
   };
 
   const handleNewBorrow = () => {
@@ -278,15 +344,11 @@ function Borrow() {
                     validators={{
                       onChange: ({ value }) => {
                         if (value && value > 0) {
-                          if (!address) {
-                            return "Please connect your wallet";
-                          }
-
-                          // Check balance if wallet is connected
+                          // Only validate balance if wallet is connected
                           if (address && bitcoinBalance) {
                             const balance = Number(bitcoinBalance.value) / 1e18;
                             if (value > balance) {
-                              return "Insufficient balance";
+                              return "Insufficient collateral balance";
                             }
                           }
 
@@ -296,6 +358,15 @@ function Borrow() {
                           }
                         }
                         return undefined;
+                      },
+                    }}
+                    listeners={{
+                      onChange: ({ fieldApi }) => {
+                        // When collateral changes, revalidate borrow amount
+                        // This ensures LTV and debt limit checks are re-run
+                        if (borrowAmount !== undefined && borrowAmount > 0) {
+                          fieldApi.form.validateField("borrowAmount", "change");
+                        }
                       },
                     }}
                   >
@@ -311,15 +382,7 @@ function Borrow() {
                         onPercentageClick={(percentage) =>
                           handlePercentageClick(percentage, "collateral")
                         }
-                        error={
-                          field.state.meta.errors?.length
-                            ? Array.isArray(field.state.meta.errors)
-                              ? field.state.meta.errors
-                              : ([field.state.meta.errors].filter(
-                                  Boolean
-                                ) as string[])
-                            : undefined
-                        }
+                        error={undefined}
                       />
                     )}
                   </form.Field>
@@ -341,10 +404,6 @@ function Borrow() {
                     validators={{
                       onChange: ({ value, fieldApi }) => {
                         if (value && value > 0) {
-                          if (!address) {
-                            return "Please connect your wallet";
-                          }
-
                           const collateral =
                             fieldApi.form.getFieldValue("collateralAmount");
 
@@ -356,18 +415,54 @@ function Borrow() {
                           // Check minimum borrow amount
                           if (bitUSD?.price) {
                             const borrowValue = value * bitUSD.price;
+                            console.log("[DEBUG] Minimum borrow check:", {
+                              borrowAmount: value,
+                              bitUSDPrice: bitUSD.price,
+                              borrowValueInUSD: borrowValue,
+                              minimumRequired: 2000,
+                            });
                             if (borrowValue < 2000) {
                               return "Minimum borrow amount is $2,000";
                             }
                           }
 
                           // Check against debt limit
-                          if (value > debtLimit) {
+                          // Calculate debt limit based on current collateral
+                          const collateralValue = collateral * (bitcoin?.price || 0);
+                          const currentDebtLimit = (collateralValue * MAX_LTV) / (bitUSD?.price || 1);
+                          
+                          if (value > currentDebtLimit) {
+                            console.log("[DEBUG] Debt limit validation failed:", {
+                              borrowValue: value,
+                              currentDebtLimit,
+                              calculatedFromHook: debtLimit,
+                              collateral,
+                              collateralValue,
+                              bitcoinPrice: bitcoin?.price,
+                              bitUSDPrice: bitUSD?.price,
+                              MAX_LTV,
+                            });
                             return "Exceeds maximum borrowable amount";
                           }
 
                           // Check LTV ratio
-                          if (ltvValue > MAX_LTV * 100) {
+                          // Calculate current LTV based on current values
+                          const currentCollateralValue = collateral * (bitcoin?.price || 0);
+                          const currentBorrowValue = value * (bitUSD?.price || 1);
+                          const currentLTV = currentCollateralValue > 0 
+                            ? (currentBorrowValue / currentCollateralValue) * 100 
+                            : 0;
+                          
+                          if (currentLTV > MAX_LTV * 100) {
+                            console.log("[DEBUG] LTV validation failed:", {
+                              currentLTV,
+                              ltvFromHook: ltvValue,
+                              maxLTV: MAX_LTV * 100,
+                              collateral,
+                              borrowValue: value,
+                              currentCollateralValue,
+                              currentBorrowValue,
+                            });
                             return "LTV ratio too high";
                           }
                         }
@@ -386,15 +481,7 @@ function Borrow() {
                         onPercentageClick={(percentage) =>
                           handlePercentageClick(percentage, "borrow")
                         }
-                        error={
-                          field.state.meta.errors?.length
-                            ? Array.isArray(field.state.meta.errors)
-                              ? field.state.meta.errors
-                              : ([field.state.meta.errors].filter(
-                                  Boolean
-                                ) as string[])
-                            : undefined
-                        }
+                        error={undefined}
                       />
                     )}
                   </form.Field>
@@ -411,12 +498,12 @@ function Borrow() {
                       type="submit"
                       disabled={
                         !address ||
-                        !canSubmit ||
                         !collateralAmount ||
                         !borrowAmount ||
                         borrowAmount <= 0 ||
                         isSending || // Disable while wallet is open
-                        isPending // Disable while transaction is pending
+                        isPending || // Disable while transaction is pending
+                        !canSubmit // Keep validation check but allow error messages to show
                       }
                       className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2 px-6 rounded-xl shadow-sm hover:shadow transition-all whitespace-nowrap"
                     >
