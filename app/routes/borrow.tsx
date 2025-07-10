@@ -2,12 +2,9 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { ArrowDown } from "lucide-react";
 import { Separator } from "~/components/ui/separator";
-import {
-  InterestRateSelector,
-  LtvSlider,
-} from "~/components/borrow";
+import { InterestRateSelector, LtvSlider } from "~/components/borrow";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
-import { TokenInput } from "~/components/ui/token-input";
+import { TokenInput } from "~/components/token-input";
 import { useMemo, useEffect } from "react";
 import { useForm, useStore } from "@tanstack/react-form";
 import { type BorrowFormData } from "~/types/borrow";
@@ -27,10 +24,9 @@ import {
   useStarknetkitConnectModal,
 } from "starknetkit";
 import {
-  TBTC_ADDRESS,
-  TBTC_SYMBOL,
   INTEREST_RATE_SCALE_DOWN_FACTOR,
   TBTC_TOKEN,
+  LBTC_TOKEN,
   BITUSD_TOKEN,
 } from "~/lib/constants";
 import { toast } from "sonner";
@@ -44,15 +40,29 @@ function Borrow() {
   const { starknetkitConnectModal } = useStarknetkitConnectModal({
     connectors: connectors as StarknetkitConnector[],
   });
-  const { data: bitcoinBalance } = useBalance({
-    token: TBTC_ADDRESS,
-    address: address,
-    refetchInterval: 30000,
-  });
-
+  
   // Check if we have a transaction hash in URL
   const [urlTransactionHash, setUrlTransactionHash] = useQueryState("tx", {
     defaultValue: "",
+  });
+  
+  // Available collateral tokens
+  const collateralTokens = [TBTC_TOKEN, LBTC_TOKEN];
+  
+  // Store selected collateral token in URL
+  const [selectedTokenSymbol, setSelectedTokenSymbol] = useQueryState("collateral", {
+    defaultValue: TBTC_TOKEN.symbol,
+  });
+  
+  // Get the full token object from the symbol
+  const selectedCollateralToken = collateralTokens.find(
+    token => token.symbol === selectedTokenSymbol
+  ) || TBTC_TOKEN;
+  
+  const { data: bitcoinBalance } = useBalance({
+    token: selectedCollateralToken.address,
+    address: address,
+    refetchInterval: 30000,
   });
 
   // Create properly typed default values
@@ -119,9 +129,6 @@ function Borrow() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address]); // Intentionally only re-run when wallet connection changes
-
-  // State for UI interactions
-  // const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Conditional price fetching
   const { bitcoin, bitUSD } = useFetchPrices(collateralAmount);
@@ -210,7 +217,7 @@ function Borrow() {
   ) => {
     if (type === "collateral") {
       const balance = bitcoinBalance?.value
-        ? Number(bitcoinBalance.value) / 1e18
+        ? Number(bitcoinBalance.value) / (10 ** selectedCollateralToken.decimals)
         : 0;
       const newValue = balance * percentage;
       form.setFieldValue("collateralAmount", newValue);
@@ -280,7 +287,7 @@ function Borrow() {
                               decimalScale={7}
                               fixedDecimalScale={false}
                             />{" "}
-                            {TBTC_SYMBOL}
+                            {selectedCollateralToken.symbol}
                           </>
                         ),
                       },
@@ -332,8 +339,10 @@ function Borrow() {
                     validators={{
                       onChange: ({ value }) => {
                         if (!address || !value) return undefined;
-                        
-                        const balance = bitcoinBalance ? Number(bitcoinBalance.value) / 1e18 : 0;
+
+                        const balance = bitcoinBalance
+                          ? Number(bitcoinBalance.value) / (10 ** selectedCollateralToken.decimals)
+                          : 0;
                         return validators.compose(
                           validators.insufficientBalance(value, balance),
                           validators.maximumAmount(value, MAX_LIMIT)
@@ -352,7 +361,13 @@ function Borrow() {
                   >
                     {(field) => (
                       <TokenInput
-                        token={TBTC_TOKEN}
+                        token={selectedCollateralToken}
+                        tokens={collateralTokens}
+                        onTokenChange={(token) => {
+                          setSelectedTokenSymbol(token.symbol);
+                          // Reset amount when token changes
+                          field.handleChange(undefined);
+                        }}
                         balance={bitcoinBalance}
                         price={bitcoin}
                         value={field.state.value}
@@ -387,19 +402,33 @@ function Borrow() {
                     validators={{
                       onChange: ({ value, fieldApi }) => {
                         if (!value) return undefined;
-                        
-                        const collateral = fieldApi.form.getFieldValue("collateralAmount");
-                        
+
+                        const collateral =
+                          fieldApi.form.getFieldValue("collateralAmount");
+
                         return validators.compose(
                           validators.requiresCollateral(value, collateral),
-                          validators.minimumUsdValue(value, bitUSD?.price || 1, 2000),
+                          validators.minimumUsdValue(
+                            value,
+                            bitUSD?.price || 1,
+                            2000
+                          ),
                           validators.debtLimit(value, debtLimit),
                           // LTV check
                           (() => {
-                            if (!collateral || !bitcoin?.price || !bitUSD?.price) return undefined;
+                            if (
+                              !collateral ||
+                              !bitcoin?.price ||
+                              !bitUSD?.price
+                            )
+                              return undefined;
                             const collateralValue = collateral * bitcoin.price;
                             const borrowValue = value * bitUSD.price;
-                            return validators.ltvRatio(borrowValue, collateralValue, MAX_LTV * 100);
+                            return validators.ltvRatio(
+                              borrowValue,
+                              collateralValue,
+                              MAX_LTV * 100
+                            );
                           })()
                         );
                       },
@@ -418,6 +447,7 @@ function Borrow() {
                         onPercentageClick={(percentage: number) =>
                           handlePercentageClick(percentage, "borrow")
                         }
+                        percentageButtonsDisabled={!debtLimit || debtLimit <= 0 || isSending || isPending}
                         error={field.state.meta.errors?.[0]}
                         disabled={isSending || isPending}
                         showBalance={false}

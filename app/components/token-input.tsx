@@ -2,15 +2,26 @@ import { NumericFormat, type NumberFormatValues } from "react-number-format";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Button } from "~/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import { MAX_LIMIT } from "~/lib/utils/calc";
 
+export interface Token {
+  address: string;
+  symbol: string;
+  decimals: number;
+  icon?: string;
+}
+
 interface TokenInputProps {
-  token: {
-    address: string;
-    symbol: string;
-    decimals: number;
-    icon?: string;
-  };
+  token: Token;
+  tokens?: Token[]; // Array of available tokens
+  onTokenChange?: (token: Token) => void; // Callback when token is changed
   balance?: {
     value: bigint;
     formatted: string;
@@ -24,6 +35,7 @@ interface TokenInputProps {
   percentageButtons?: boolean;
   percentageButtonsOnHover?: boolean;
   onPercentageClick?: (percentage: number) => void;
+  percentageButtonsDisabled?: boolean; // Custom override for percentage buttons disabled state
   disabled?: boolean;
   error?: string;
   showBalance?: boolean;
@@ -32,6 +44,8 @@ interface TokenInputProps {
 
 export function TokenInput({
   token,
+  tokens,
+  onTokenChange,
   balance,
   price,
   value,
@@ -42,6 +56,7 @@ export function TokenInput({
   percentageButtons = false,
   percentageButtonsOnHover = false,
   onPercentageClick,
+  percentageButtonsDisabled,
   disabled = false,
   error,
   showBalance = true,
@@ -54,7 +69,10 @@ export function TokenInput({
     onChange(values.floatValue);
   };
 
-  const shouldShowPercentageButtons = percentageButtons && onPercentageClick && (percentageButtonsOnHover || (balance && balance.value > 0n));
+  const shouldShowPercentageButtons = percentageButtons && onPercentageClick;
+  const shouldDisablePercentageButtons = percentageButtonsDisabled !== undefined 
+    ? percentageButtonsDisabled 
+    : (!balance || balance.value === 0n || disabled);
 
   return (
     <div className="bg-slate-50 rounded-xl p-4 space-y-3 group">
@@ -74,7 +92,7 @@ export function TokenInput({
                 variant="outline"
                 className="h-6 px-2 text-xs rounded-md bg-white border-slate-200 hover:bg-slate-100 transition-colors"
                 onClick={() => onPercentageClick(pct / 100)}
-                disabled={disabled}
+                disabled={shouldDisablePercentageButtons}
               >
                 {pct}%
               </Button>
@@ -84,7 +102,7 @@ export function TokenInput({
               variant="outline"
               className="h-6 px-2 text-xs rounded-md bg-white border-slate-200 hover:bg-slate-100 transition-colors font-medium"
               onClick={() => onPercentageClick(1)}
-              disabled={disabled}
+              disabled={shouldDisablePercentageButtons}
             >
               Max.
             </Button>
@@ -147,20 +165,53 @@ export function TokenInput({
         </div>
 
         <div className="text-right">
-          <div className="w-auto rounded-full h-10 px-4 border border-slate-200 bg-white shadow-sm flex items-center justify-start">
-            {token.icon && (
-              <div className="bg-blue-100 p-1 rounded-full mr-2">
-                <img
-                  src={token.icon}
-                  alt={token.symbol}
-                  className="h-5 w-5 object-cover"
-                />
-              </div>
-            )}
-            <span className="font-medium">{token.symbol}</span>
-          </div>
+          {tokens && tokens.length > 1 && onTokenChange ? (
+            <Select 
+              value={token.address} 
+              onValueChange={(address) => {
+                const selectedToken = tokens.find(t => t.address === address);
+                if (selectedToken) onTokenChange(selectedToken);
+              }}
+              disabled={disabled}
+            >
+              <SelectTrigger className="w-auto min-w-[120px] rounded-full h-10 pl-2 pr-3 border border-slate-200 bg-white shadow-sm hover:border-slate-300 transition-colors flex items-center">
+                <SelectValue placeholder="Token" />
+              </SelectTrigger>
+              <SelectContent className="border border-slate-200 shadow-md">
+                {tokens.map((t) => (
+                  <SelectItem key={t.address} value={t.address}>
+                    <div className="flex items-center">
+                      {t.icon && (
+                        <div className="bg-blue-100 p-1 rounded-full mr-2">
+                          <img
+                            src={t.icon}
+                            alt={t.symbol}
+                            className="h-5 w-5 object-cover"
+                          />
+                        </div>
+                      )}
+                      <span className="font-medium">{t.symbol}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <div className="w-auto rounded-full h-10 px-4 border border-slate-200 bg-white shadow-sm flex items-center justify-start">
+              {token.icon && (
+                <div className="bg-blue-100 p-1 rounded-full mr-2">
+                  <img
+                    src={token.icon}
+                    alt={token.symbol}
+                    className="h-5 w-5 object-cover"
+                  />
+                </div>
+              )}
+              <span className="font-medium">{token.symbol}</span>
+            </div>
+          )}
           
-          {showBalance && balance && balance.value > 0n && (
+          {showBalance && balance && (
             <div className="text-xs text-slate-500 mt-1">
               Balance:{" "}
               <NumericFormat

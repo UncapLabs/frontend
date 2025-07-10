@@ -1840,6 +1840,14 @@ export const TBTC_TOKEN = {
   icon: "/bitcoin.png",
 } as const;
 
+export const LBTC_ADDRESS = "0x123..."; // TODO: Replace with actual LBTC address
+export const LBTC_TOKEN = {
+  address: LBTC_ADDRESS,
+  symbol: "LBTC",
+  decimals: 18,
+  icon: "/bitcoin.png", // Same icon as TBTC
+} as const;
+
 export const BITUSD_TOKEN = {
   address: BITUSD_ADDRESS,
   symbol: "bitUSD",
