@@ -17,7 +17,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "~/lib/trpc";
 import {
   useAccount,
-  useBalance,
   useContract,
   useSendTransaction,
 } from "@starknet-react/core";
@@ -229,7 +228,7 @@ function StakePage() {
       : undefined;
 
   // Set up the transaction
-  const { send, isPending, isSuccess, error } = useSendTransaction({ calls });
+  const { send, isPending, isSuccess } = useSendTransaction({ calls });
 
   const getButtonText = () => {
     if (formErrors) {

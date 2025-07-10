@@ -19,7 +19,6 @@ interface TransactionDetail {
 interface TransactionStatusProps {
   // Transaction state
   transactionHash?: string;
-  isPending?: boolean;
   isError?: boolean;
   isSuccess?: boolean;
   error?: Error | null;
@@ -47,7 +46,6 @@ interface TransactionStatusProps {
 
 export function TransactionStatus({
   transactionHash,
-  isPending = false,
   isError = false,
   isSuccess = false,
   error = null,
@@ -85,9 +83,6 @@ export function TransactionStatus({
   const displayIsSuccess = transactionHash ? isSuccess : urlTxSuccess;
   const displayIsError = transactionHash ? isError : urlTxError;
   const displayError = transactionHash ? error : urlError;
-  const displayIsPending = transactionHash
-    ? isPending
-    : !!urlTransactionHash && !urlTxSuccess && !urlTxError;
 
   // Determine the current state
   const getStatusIcon = () => {

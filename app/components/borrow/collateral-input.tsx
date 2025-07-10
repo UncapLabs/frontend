@@ -1,5 +1,4 @@
 import { NumericFormat, type NumberFormatValues } from "react-number-format";
-import { Card } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
@@ -21,6 +20,7 @@ interface CollateralInputProps {
   bitcoinBalance?: { value: bigint; formatted: string };
   onPercentageClick: (percentage: number) => void;
   error?: string[];
+  disabled?: boolean;
 }
 
 export function CollateralInput({
@@ -31,6 +31,7 @@ export function CollateralInput({
   bitcoinBalance,
   onPercentageClick,
   error,
+  disabled = false,
 }: CollateralInputProps) {
   return (
     <div className="bg-slate-50 rounded-xl p-4 space-y-3 group">
@@ -44,30 +45,38 @@ export function CollateralInput({
         {bitcoinBalance?.value && bitcoinBalance.value > 0 && (
           <div className="flex items-center space-x-1">
             <Button
+              type="button"
               variant="outline"
               className="h-6 px-2 text-xs rounded-md bg-white border-slate-200 hover:bg-slate-100 transition-colors"
               onClick={() => onPercentageClick(0.25)}
+              disabled={disabled}
             >
               25%
             </Button>
             <Button
+              type="button"
               variant="outline"
               className="h-6 px-2 text-xs rounded-md bg-white border-slate-200 hover:bg-slate-100 transition-colors"
               onClick={() => onPercentageClick(0.5)}
+              disabled={disabled}
             >
               50%
             </Button>
             <Button
+              type="button"
               variant="outline"
               className="h-6 px-2 text-xs rounded-md bg-white border-slate-200 hover:bg-slate-100 transition-colors"
               onClick={() => onPercentageClick(0.75)}
+              disabled={disabled}
             >
               75%
             </Button>
             <Button
+              type="button"
               variant="outline"
               className="h-6 px-2 text-xs rounded-md bg-white border-slate-200 hover:bg-slate-100 transition-colors font-medium"
               onClick={() => onPercentageClick(1)}
+              disabled={disabled}
             >
               Max.
             </Button>
@@ -85,8 +94,9 @@ export function CollateralInput({
             allowNegative={false}
             decimalScale={7}
             value={value}
-            onValueChange={onChange}
+            onValueChange={disabled ? undefined : onChange}
             onBlur={onBlur}
+            disabled={disabled}
             isAllowed={(values) => {
               const { floatValue } = values;
               if (floatValue === undefined) return true;
@@ -105,15 +115,27 @@ export function CollateralInput({
           />
           {error && error.length > 0 && (
             <div className="flex items-start gap-1 mt-2">
-              <svg className="w-3 h-3 text-red-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-3 h-3 text-red-500 mt-0.5 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
-              <p className="text-xs text-red-600 font-medium">{error.join(" ")}</p>
+              <p className="text-xs text-red-600 font-medium">
+                {error.join(" ")}
+              </p>
             </div>
           )}
         </div>
         <div className="text-right">
-          <Select defaultValue="BTC">
+          <Select defaultValue="BTC" disabled={disabled}>
             <SelectTrigger className="w-auto min-w-[120px] rounded-full h-10 pl-2 pr-3 border border-slate-200 bg-white shadow-sm hover:border-slate-300 transition-colors flex items-center">
               <SelectValue placeholder="Token" />
             </SelectTrigger>

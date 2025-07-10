@@ -11,6 +11,7 @@ interface BorrowInputProps {
   bitUSD?: { price: number };
   onPercentageClick: (percentage: number) => void;
   error?: string[];
+  disabled?: boolean;
 }
 
 export function BorrowInput({
@@ -20,6 +21,7 @@ export function BorrowInput({
   bitUSD,
   onPercentageClick,
   error,
+  disabled = false,
 }: BorrowInputProps) {
   return (
     <div className="bg-slate-50 rounded-xl p-4 group">
@@ -30,32 +32,40 @@ export function BorrowInput({
         >
           You borrow
         </Label>
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out flex items-center space-x-1">
+        <div className={`${disabled ? 'opacity-50' : 'opacity-0 group-hover:opacity-100'} transition-opacity duration-300 ease-in-out flex items-center space-x-1`}>
           <Button
+            type="button"
             variant="outline"
             className="h-6 px-2 text-xs rounded-md bg-white border-slate-200 hover:bg-slate-100 transition-colors"
             onClick={() => onPercentageClick(0.25)}
+            disabled={disabled}
           >
             25%
           </Button>
           <Button
+            type="button"
             variant="outline"
             className="h-6 px-2 text-xs rounded-md bg-white border-slate-200 hover:bg-slate-100 transition-colors"
             onClick={() => onPercentageClick(0.5)}
+            disabled={disabled}
           >
             50%
           </Button>
           <Button
+            type="button"
             variant="outline"
             className="h-6 px-2 text-xs rounded-md bg-white border-slate-200 hover:bg-slate-100 transition-colors"
             onClick={() => onPercentageClick(0.75)}
+            disabled={disabled}
           >
             75%
           </Button>
           <Button
+            type="button"
             variant="outline"
             className="h-6 px-2 text-xs rounded-md bg-white border-slate-200 hover:bg-slate-100 transition-colors font-medium"
             onClick={() => onPercentageClick(1)}
+            disabled={disabled}
           >
             Max.
           </Button>
@@ -72,8 +82,9 @@ export function BorrowInput({
             allowNegative={false}
             decimalScale={7}
             value={value}
-            onValueChange={onChange}
+            onValueChange={disabled ? undefined : onChange}
             onBlur={onBlur}
+            disabled={disabled}
             isAllowed={(values) => {
               const { floatValue } = values;
               if (floatValue === undefined) return true;

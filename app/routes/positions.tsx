@@ -1,4 +1,4 @@
-import { useAccount, useContract } from "@starknet-react/core";
+import { useAccount } from "@starknet-react/core";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";

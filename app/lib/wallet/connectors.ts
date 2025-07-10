@@ -22,7 +22,7 @@ const isMobileDevice = () => {
   }
   getStarknet();
   // Primary method: User Agent + Touch support check
-  const userAgent = navigator.userAgent.toLowerCase();
+  const userAgent = navigator?.userAgent?.toLowerCase();
   const isMobileUA =
     /android|webos|iphone|ipad|ipod|blackberry|windows phone/.test(userAgent);
   const hasTouchSupport =

@@ -34,7 +34,6 @@ export function useTransaction(
   // Watch for transaction receipt
   const {
     data: receipt,
-    isSuccess: isReceiptSuccess,
     isError: isReceiptError,
     error: receiptError,
   } = useTransactionReceipt({
