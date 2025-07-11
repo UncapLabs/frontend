@@ -6,7 +6,8 @@ import {
 } from "@starknet-react/core";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
-import { TBTC_ABI, TBTC_ADDRESS } from "~/lib/constants";
+import { TBTC_ADDRESS } from "~/lib/contracts/constants";
+import { TBTC_ABI } from "~/lib/contracts/abis/tbtc";
 
 export function GetTestBtc() {
   const { address } = useAccount();

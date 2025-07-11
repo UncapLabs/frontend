@@ -3,11 +3,11 @@ import { publicProcedure, router } from "../trpc";
 import { Contract, RpcProvider } from "starknet";
 import {
   TM_ADDRESS,
-  TROVE_MANAGER_ABI,
   TBTC_DECIMALS,
   TBTC_SYMBOL,
-} from "~/lib/constants";
+} from "~/lib/contracts/constants";
 import { getBitcoinprice } from "workers/services/utils";
+import { TROVE_MANAGER_ABI } from "~/lib/contracts/abis/trove-manager";
 
 const BITUSD_DECIMALS = 18;
 const MCR_VALUE = 1.1;

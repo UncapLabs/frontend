@@ -28,7 +28,7 @@ import {
   TBTC_TOKEN,
   LBTC_TOKEN,
   BITUSD_TOKEN,
-} from "~/lib/constants";
+} from "~/lib/contracts/constants";
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
 import { useBorrow } from "~/hooks/use-borrow";
@@ -40,25 +40,28 @@ function Borrow() {
   const { starknetkitConnectModal } = useStarknetkitConnectModal({
     connectors: connectors as StarknetkitConnector[],
   });
-  
+
   // Check if we have a transaction hash in URL
   const [urlTransactionHash, setUrlTransactionHash] = useQueryState("tx", {
     defaultValue: "",
   });
-  
+
   // Available collateral tokens
   const collateralTokens = [TBTC_TOKEN, LBTC_TOKEN];
-  
+
   // Store selected collateral token in URL
-  const [selectedTokenSymbol, setSelectedTokenSymbol] = useQueryState("collateral", {
-    defaultValue: TBTC_TOKEN.symbol,
-  });
-  
+  const [selectedTokenSymbol, setSelectedTokenSymbol] = useQueryState(
+    "collateral",
+    {
+      defaultValue: TBTC_TOKEN.symbol,
+    }
+  );
+
   // Get the full token object from the symbol
-  const selectedCollateralToken = collateralTokens.find(
-    token => token.symbol === selectedTokenSymbol
-  ) || TBTC_TOKEN;
-  
+  const selectedCollateralToken =
+    collateralTokens.find((token) => token.symbol === selectedTokenSymbol) ||
+    TBTC_TOKEN;
+
   const { data: bitcoinBalance } = useBalance({
     token: selectedCollateralToken.address,
     address: address,
@@ -217,7 +220,7 @@ function Borrow() {
   ) => {
     if (type === "collateral") {
       const balance = bitcoinBalance?.value
-        ? Number(bitcoinBalance.value) / (10 ** selectedCollateralToken.decimals)
+        ? Number(bitcoinBalance.value) / 10 ** selectedCollateralToken.decimals
         : 0;
       const newValue = balance * percentage;
       form.setFieldValue("collateralAmount", newValue);
@@ -341,7 +344,8 @@ function Borrow() {
                         if (!address || !value) return undefined;
 
                         const balance = bitcoinBalance
-                          ? Number(bitcoinBalance.value) / (10 ** selectedCollateralToken.decimals)
+                          ? Number(bitcoinBalance.value) /
+                            10 ** selectedCollateralToken.decimals
                           : 0;
                         return validators.compose(
                           validators.insufficientBalance(value, balance),
@@ -447,7 +451,9 @@ function Borrow() {
                         onPercentageClick={(percentage: number) =>
                           handlePercentageClick(percentage, "borrow")
                         }
-                        percentageButtonsDisabled={!debtLimit || debtLimit <= 0 || isSending || isPending}
+                        percentageButtonsDisabled={
+                          !debtLimit || debtLimit <= 0 || isSending || isPending
+                        }
                         error={field.state.meta.errors?.[0]}
                         disabled={isSending || isPending}
                         showBalance={false}

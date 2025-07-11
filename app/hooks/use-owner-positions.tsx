@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAccount, useContract } from "@starknet-react/core";
-import { TM_ADDRESS, TROVE_MANAGER_ABI } from "~/lib/constants";
+import { TM_ADDRESS } from "~/lib/contracts/constants";
+import { TROVE_MANAGER_ABI } from "~/lib/contracts/abis/trove-manager";
 
 interface UseOwnerPositionsOptions {
   refetchInterval?: number;

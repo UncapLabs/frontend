@@ -23,9 +23,9 @@ import {
 import { MAX_LIMIT } from "~/lib/utils/calc";
 import {
   BITUSD_ADDRESS,
-  STABILITY_POOL_ABI,
   STABILITY_POOL_ADDRESS,
-} from "~/lib/constants";
+} from "~/lib/contracts/constants";
+import { STABILITY_POOL_ABI } from "~/lib/contracts/abis/stability-pool";
 
 // TODO: Define a schema for stake form validation if needed
 const createStakeFormSchema = (maxBalance?: number) =>

@@ -1,13 +1,9 @@
 import { useMemo } from "react";
-import { useAccount, useContract } from "@starknet-react/core";
-import {
-  TBTC_ABI,
-  TBTC_ADDRESS,
-  BORROWER_OPERATIONS_ABI,
-  BORROWER_OPERATIONS_ADDRESS,
-} from "~/lib/constants";
+import { useAccount } from "@starknet-react/core";
+import { contractCall } from "~/lib/contracts/calls";
 import { useOwnerPositions } from "./use-owner-positions";
 import { useTransaction } from "./use-transaction";
+import { BORROWER_OPERATIONS_ADDRESS } from "~/lib/contracts/constants";
 
 interface UseBorrowParams {
   collateralAmount?: number;
@@ -23,21 +19,9 @@ export function useBorrow({
   const { address } = useAccount();
   const { ownerIndex, isLoadingOwnerPositions } = useOwnerPositions();
 
-  const { contract: tbtcContract } = useContract({
-    abi: TBTC_ABI,
-    address: TBTC_ADDRESS,
-  });
-
-  const { contract: borrowerContract } = useContract({
-    abi: BORROWER_OPERATIONS_ABI,
-    address: BORROWER_OPERATIONS_ADDRESS,
-  });
-
-  // Prepare the calls
+  // Prepare the calls using our new abstraction
   const calls = useMemo(() => {
     if (
-      !tbtcContract ||
-      !borrowerContract ||
       !address ||
       !collateralAmount ||
       !borrowAmount ||
@@ -49,28 +33,21 @@ export function useBorrow({
 
     return [
       // 1. Approve TBTC spending
-      tbtcContract.populate("approve", [
+      contractCall.tbtc.approve(
         BORROWER_OPERATIONS_ADDRESS,
-        BigInt(Math.floor(collateralAmount * 1e18)),
-      ]),
+        BigInt(Math.floor(collateralAmount * 1e18))
+      ),
+
       // 2. Open trove
-      borrowerContract.populate("open_trove", [
-        address, // owner
-        ownerIndex, // owner_index
-        BigInt(Math.floor(collateralAmount * 1e18)), // coll_amount
-        BigInt(Math.floor(borrowAmount * 1e18)), // bitusd_amount
-        0n, // upper_hint
-        0n, // lower_hint
-        annualInterestRate, // annual_interest_rate
-        BigInt(2) ** BigInt(256) - BigInt(1), // max_upfront_fee
-        "0x0", // add_manager
-        "0x0", // remove_manager
-        "0x0", // receiver
-      ]),
+      contractCall.borrowerOperations.openTrove({
+        owner: address,
+        ownerIndex: ownerIndex,
+        collAmount: BigInt(Math.floor(collateralAmount * 1e18)),
+        bitUsdAmount: BigInt(Math.floor(borrowAmount * 1e18)),
+        annualInterestRate,
+      }),
     ];
   }, [
-    tbtcContract,
-    borrowerContract,
     address,
     collateralAmount,
     borrowAmount,
