@@ -43,6 +43,8 @@ export const USDU_ADDRESS =
 
 export const TBTC_DECIMALS = 18;
 export const TBTC_SYMBOL = "TBTC";
+export const USDU_DECIMALS = 18;
+export const USDU_SYMBOL = "USDU";
 
 export const TBTC_NAME = "Testnet Bitcoin";
 

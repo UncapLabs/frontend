@@ -172,6 +172,17 @@ export const contractCall = {
         calldata: [account],
       };
     },
+    /**
+     * Approve spending of BitUSD tokens
+     */
+    approve: (spender: string, amount: bigint) => {
+      // BitUSD has empty ABI, but follows standard ERC20 interface
+      return {
+        contractAddress: contractDefs.USDU.address,
+        entrypoint: "approve",
+        calldata: [spender, amount],
+      };
+    },
   },
 
   priceFeed: {

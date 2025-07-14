@@ -38,6 +38,7 @@ interface TokenInputProps {
   percentageButtonsDisabled?: boolean; // Custom override for percentage buttons disabled state
   disabled?: boolean;
   error?: string;
+  helperText?: string;
   showBalance?: boolean;
   maxValue?: number;
 }
@@ -59,6 +60,7 @@ export function TokenInput({
   percentageButtonsDisabled,
   disabled = false,
   error,
+  helperText,
   showBalance = true,
   maxValue = MAX_LIMIT,
 }: TokenInputProps) {
@@ -161,6 +163,10 @@ export function TokenInput({
               </svg>
               <p className="text-xs text-red-600 font-medium">{error}</p>
             </div>
+          )}
+          
+          {helperText && !error && (
+            <p className="text-xs text-slate-600 mt-2">{helperText}</p>
           )}
         </div>
 
