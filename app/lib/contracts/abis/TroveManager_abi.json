@@ -1,0 +1,1202 @@
+[
+  {
+    "type": "impl",
+    "name": "ITroveManagerImpl",
+    "interface_name": "bit_usd::TroveManager::ITroveManager"
+  },
+  {
+    "type": "struct",
+    "name": "core::integer::u256",
+    "members": [
+      {
+        "name": "low",
+        "type": "core::integer::u128"
+      },
+      {
+        "name": "high",
+        "type": "core::integer::u128"
+      }
+    ]
+  },
+  {
+    "type": "enum",
+    "name": "core::bool",
+    "variants": [
+      {
+        "name": "False",
+        "type": "()"
+      },
+      {
+        "name": "True",
+        "type": "()"
+      }
+    ]
+  },
+  {
+    "type": "struct",
+    "name": "bit_usd::TroveManager::LatestTroveData",
+    "members": [
+      {
+        "name": "entire_debt",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "entire_coll",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "redist_bit_usd_debt_gain",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "redist_coll_gain",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "accrued_interest",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "recorded_debt",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "annual_interest_rate",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "weighted_recorded_debt",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "accrued_batch_management_fee",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "last_interest_rate_adj_time",
+        "type": "core::integer::u256"
+      }
+    ]
+  },
+  {
+    "type": "enum",
+    "name": "bit_usd::TroveManager::Status",
+    "variants": [
+      {
+        "name": "NonExistent",
+        "type": "()"
+      },
+      {
+        "name": "Active",
+        "type": "()"
+      },
+      {
+        "name": "ClosedByOwner",
+        "type": "()"
+      },
+      {
+        "name": "ClosedByLiquidation",
+        "type": "()"
+      },
+      {
+        "name": "Zombie",
+        "type": "()"
+      }
+    ]
+  },
+  {
+    "type": "struct",
+    "name": "bit_usd::TroveManager::Trove",
+    "members": [
+      {
+        "name": "debt",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "coll",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "stake",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "status",
+        "type": "bit_usd::TroveManager::Status"
+      },
+      {
+        "name": "array_index",
+        "type": "core::integer::u64"
+      },
+      {
+        "name": "last_debt_update_time",
+        "type": "core::integer::u64"
+      },
+      {
+        "name": "last_interest_rate_adj_time",
+        "type": "core::integer::u64"
+      },
+      {
+        "name": "annual_interest_rate",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "interest_batch_manager",
+        "type": "core::starknet::contract_address::ContractAddress"
+      },
+      {
+        "name": "batch_debt_shares",
+        "type": "core::integer::u256"
+      }
+    ]
+  },
+  {
+    "type": "struct",
+    "name": "bit_usd::TroveManager::RewardSnapshots",
+    "members": [
+      {
+        "name": "coll",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "bit_usd_debt",
+        "type": "core::integer::u256"
+      }
+    ]
+  },
+  {
+    "type": "struct",
+    "name": "bit_usd::TroveManager::LatestBatchData",
+    "members": [
+      {
+        "name": "total_debt_shares",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "entire_debt_without_redistribution",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "entire_coll_without_redistribution",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "accrued_interest",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "recorded_debt",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "annual_interest_rate",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "weighted_recorded_debt",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "annual_management_fee",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "accrued_management_fee",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "weighted_recorded_batch_management_fee",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "last_debt_update_time",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "last_interest_rate_adj_time",
+        "type": "core::integer::u256"
+      }
+    ]
+  },
+  {
+    "type": "struct",
+    "name": "bit_usd::TroveManager::TroveChange",
+    "members": [
+      {
+        "name": "applied_redist_bit_usd_debt_gain",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "applied_redist_coll_gain",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "coll_increase",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "coll_decrease",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "debt_increase",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "debt_decrease",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "new_weighted_recorded_debt",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "old_weighted_recorded_debt",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "upfront_fee",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "batch_accrued_management_fee",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "new_weighted_recorded_batch_management_fee",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "old_weighted_recorded_batch_management_fee",
+        "type": "core::integer::u256"
+      }
+    ]
+  },
+  {
+    "type": "struct",
+    "name": "core::array::Span::<core::integer::u256>",
+    "members": [
+      {
+        "name": "snapshot",
+        "type": "@core::array::Array::<core::integer::u256>"
+      }
+    ]
+  },
+  {
+    "type": "struct",
+    "name": "bit_usd::TroveManager::OnSetInterestBatchManagerParams",
+    "members": [
+      {
+        "name": "trove_id",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "trove_coll",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "trove_debt",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "trove_change",
+        "type": "bit_usd::TroveManager::TroveChange"
+      },
+      {
+        "name": "new_batch_address",
+        "type": "core::starknet::contract_address::ContractAddress"
+      },
+      {
+        "name": "new_batch_coll",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "new_batch_debt",
+        "type": "core::integer::u256"
+      }
+    ]
+  },
+  {
+    "type": "interface",
+    "name": "bit_usd::TroveManager::ITroveManager",
+    "items": [
+      {
+        "type": "function",
+        "name": "initializer",
+        "inputs": [
+          {
+            "name": "addresses_registry",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "get_batch_manager",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_unbacked_portion_price_and_redeemability",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "(core::integer::u256, core::integer::u256, core::bool)"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_latest_trove_data",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "bit_usd::TroveManager::LatestTroveData"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_trove_ids_count",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u64"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_trove_from_trove_ids_array",
+        "inputs": [
+          {
+            "name": "index",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_trove_annual_interest_rate",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_trove_status",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "bit_usd::TroveManager::Status"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_trove_nft",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_trove_batch_debt_shares",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_borrower_operations",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_stability_pool",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_sorted_troves",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_CCR",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_troves",
+        "inputs": [
+          {
+            "name": "index",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "bit_usd::TroveManager::Trove"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_active_pool",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_reward_snapshots",
+        "inputs": [
+          {
+            "name": "index",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "bit_usd::TroveManager::RewardSnapshots"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_latest_batch_data",
+        "inputs": [
+          {
+            "name": "batch_manager",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "bit_usd::TroveManager::LatestBatchData"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_owner_to_positions",
+        "inputs": [
+          {
+            "name": "owner",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::array::Array::<core::integer::u256>"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_current_ICR",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "price",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_last_zombie_trove_id",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_shutdown_time",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_liquidation_manager",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_redemption_manager",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_total_coll_and_debt",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "(core::integer::u256, core::integer::u256)"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "update_last_zombie_trove_id",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "update_trove_reward_snapshots",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "update_stake_and_total_stakes",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_coll",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "update_trove_params",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_debt",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_coll",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "is_zombie",
+            "type": "core::bool"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "move_pending_trove_rewards_to_active_pool",
+        "inputs": [
+          {
+            "name": "redist_bit_usd_debt_gain",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "redist_coll_gain",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "close_trove",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "trove_change",
+            "type": "bit_usd::TroveManager::TroveChange"
+          },
+          {
+            "name": "batch_address",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "batch_coll",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "batch_debt",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "status",
+            "type": "bit_usd::TroveManager::Status"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "batch_liquidate_troves",
+        "inputs": [
+          {
+            "name": "trove_array",
+            "type": "core::array::Span::<core::integer::u256>"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "on_remove_from_batch",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_trove_coll",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_trove_debt",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "trove_change",
+            "type": "bit_usd::TroveManager::TroveChange"
+          },
+          {
+            "name": "batch_address",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "new_batch_coll",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_batch_debt",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_annual_interest_rate",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "on_set_interest_batch_manager",
+        "inputs": [
+          {
+            "name": "params",
+            "type": "bit_usd::TroveManager::OnSetInterestBatchManagerParams"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "on_open_trove_and_join_batch",
+        "inputs": [
+          {
+            "name": "owner",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "trove_change",
+            "type": "bit_usd::TroveManager::TroveChange"
+          },
+          {
+            "name": "batch_address",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "batch_coll",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "batch_debt",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "set_trove_status_to_active",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "on_adjust_trove_interest_rate",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_coll",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_debt",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_annual_interest_rate",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "trove_change",
+            "type": "bit_usd::TroveManager::TroveChange"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "on_adjust_trove",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_coll",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_debt",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "trove_change",
+            "type": "bit_usd::TroveManager::TroveChange"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "on_close_trove",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "trove_change",
+            "type": "bit_usd::TroveManager::TroveChange"
+          },
+          {
+            "name": "batch_address",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "new_batch_coll",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_batch_debt",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "on_open_trove",
+        "inputs": [
+          {
+            "name": "owner",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "trove_change",
+            "type": "bit_usd::TroveManager::TroveChange"
+          },
+          {
+            "name": "annual_interest_rate",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "on_adjust_trove_inside_batch",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_trove_coll",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_trove_debt",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "trove_change",
+            "type": "bit_usd::TroveManager::TroveChange"
+          },
+          {
+            "name": "batch_address",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "new_batch_coll",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_batch_debt",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "on_apply_trove_interest",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_trove_coll",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_trove_debt",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "batch_address",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "new_batch_coll",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_batch_debt",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "trove_change",
+            "type": "bit_usd::TroveManager::TroveChange"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "shutdown",
+        "inputs": [],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "set_trove_batch_debt_shares",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_batch_debt_shares",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "update_trove_id_coll",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_coll",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      }
+    ]
+  },
+  {
+    "type": "impl",
+    "name": "LiquityBaseImpl",
+    "interface_name": "bit_usd::dependencies::LiquityBase::ILiquityBase"
+  },
+  {
+    "type": "interface",
+    "name": "bit_usd::dependencies::LiquityBase::ILiquityBase",
+    "items": [
+      {
+        "type": "function",
+        "name": "get_entire_branch_coll",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_entire_branch_debt",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::ActivePoolAddressChanged",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "new_active_pool_address",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::DefaultPoolAddressChanged",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "new_default_pool_address",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::PriceFeedAddressChanged",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "new_price_feed_address",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::Event",
+    "kind": "enum",
+    "variants": [
+      {
+        "name": "ActivePoolAddressChanged",
+        "type": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::ActivePoolAddressChanged",
+        "kind": "nested"
+      },
+      {
+        "name": "DefaultPoolAddressChanged",
+        "type": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::DefaultPoolAddressChanged",
+        "kind": "nested"
+      },
+      {
+        "name": "PriceFeedAddressChanged",
+        "type": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::PriceFeedAddressChanged",
+        "kind": "nested"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::TroveManager::TroveManager::Event",
+    "kind": "enum",
+    "variants": [
+      {
+        "name": "LiquityBaseEvent",
+        "type": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::Event",
+        "kind": "flat"
+      }
+    ]
+  }
+]

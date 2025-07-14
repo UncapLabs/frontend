@@ -1,0 +1,276 @@
+[
+  {
+    "type": "impl",
+    "name": "HintHelpersImpl",
+    "interface_name": "bit_usd::HintHelpers::IHintHelpers"
+  },
+  {
+    "type": "struct",
+    "name": "core::integer::u256",
+    "members": [
+      {
+        "name": "low",
+        "type": "core::integer::u128"
+      },
+      {
+        "name": "high",
+        "type": "core::integer::u128"
+      }
+    ]
+  },
+  {
+    "type": "interface",
+    "name": "bit_usd::HintHelpers::IHintHelpers",
+    "items": [
+      {
+        "type": "function",
+        "name": "initializer",
+        "inputs": [
+          {
+            "name": "collateral_registry",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "get_collateral_registry",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_approx_hint",
+        "inputs": [
+          {
+            "name": "coll_index",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "interest_rate",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "num_trials",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "input_random_seed",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "(core::integer::u256, core::integer::u256, core::integer::u256)"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "predict_open_trove_upfront_fee",
+        "inputs": [
+          {
+            "name": "coll_index",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "borrowed_amount",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "interest_rate",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "predict_adjust_interest_rate_upfront_fee",
+        "inputs": [
+          {
+            "name": "coll_index",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_interest_rate",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "force_predict_adjust_interest_rate_upfront_fee",
+        "inputs": [
+          {
+            "name": "coll_index",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_interest_rate",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "predict_adjust_trove_upfront_fee",
+        "inputs": [
+          {
+            "name": "coll_index",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "debt_increase",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "predict_adjust_batch_interest_rate_upfront_fee",
+        "inputs": [
+          {
+            "name": "coll_index",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "batch_address",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "new_interest_rate",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "predict_open_trove_and_join_batch_upfront_fee",
+        "inputs": [
+          {
+            "name": "coll_index",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "borrowed_amount",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "batch_address",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "predict_join_batch_interest_rate_upfront_fee",
+        "inputs": [
+          {
+            "name": "coll_index",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "batch_address",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "predict_remove_from_batch_upfront_fee",
+        "inputs": [
+          {
+            "name": "coll_index",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_interest_rate",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::HintHelpers::HintHelpers::Event",
+    "kind": "enum",
+    "variants": []
+  }
+]

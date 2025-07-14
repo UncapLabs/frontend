@@ -22,10 +22,10 @@ import {
 } from "@starknet-react/core";
 import { MAX_LIMIT } from "~/lib/utils/calc";
 import {
-  BITUSD_ADDRESS,
+  USDU_ADDRESS,
   STABILITY_POOL_ADDRESS,
 } from "~/lib/contracts/constants";
-import { STABILITY_POOL_ABI } from "~/lib/contracts/abis/stability-pool";
+import { STABILITY_POOL_ABI } from "~/lib/contracts";
 
 // TODO: Define a schema for stake form validation if needed
 const createStakeFormSchema = (maxBalance?: number) =>
@@ -85,7 +85,7 @@ function StakePage() {
         state_mutability: "view",
       },
     ] as const,
-    address: BITUSD_ADDRESS,
+    address: USDU_ADDRESS,
   });
 
   // Custom balance query using the contract directly
@@ -256,7 +256,7 @@ function StakePage() {
   //     isLoading: isBalanceLoading,
   //     error: balanceError,
   //     address: address,
-  //     tokenAddress: BITUSD_ADDRESS,
+  //     tokenAddress: USDU_ADDRESS,
   //     contract: bitUSDContract
   // });
   // console.log("Staking Info debug:", {

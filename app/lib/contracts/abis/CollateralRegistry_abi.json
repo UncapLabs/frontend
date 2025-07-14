@@ -1,0 +1,262 @@
+[
+  {
+    "type": "impl",
+    "name": "CollateralRegistryImpl",
+    "interface_name": "bit_usd::CollateralRegistry::ICollateralRegistry"
+  },
+  {
+    "type": "struct",
+    "name": "core::array::Span::<core::starknet::contract_address::ContractAddress>",
+    "members": [
+      {
+        "name": "snapshot",
+        "type": "@core::array::Array::<core::starknet::contract_address::ContractAddress>"
+      }
+    ]
+  },
+  {
+    "type": "struct",
+    "name": "core::integer::u256",
+    "members": [
+      {
+        "name": "low",
+        "type": "core::integer::u128"
+      },
+      {
+        "name": "high",
+        "type": "core::integer::u128"
+      }
+    ]
+  },
+  {
+    "type": "interface",
+    "name": "bit_usd::CollateralRegistry::ICollateralRegistry",
+    "items": [
+      {
+        "type": "function",
+        "name": "initializer",
+        "inputs": [
+          {
+            "name": "bit_usd",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "collateral_tokens",
+            "type": "core::array::Span::<core::starknet::contract_address::ContractAddress>"
+          },
+          {
+            "name": "trove_managers",
+            "type": "core::array::Span::<core::starknet::contract_address::ContractAddress>"
+          },
+          {
+            "name": "redemption_managers",
+            "type": "core::array::Span::<core::starknet::contract_address::ContractAddress>"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "base_rate",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "last_fee_operation_time",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u64"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "redeem_collateral",
+        "inputs": [
+          {
+            "name": "bit_usd_amount",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "max_iterations_per_collateral",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "max_fee_percentage",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "get_collateral",
+        "inputs": [
+          {
+            "name": "index",
+            "type": "core::integer::u8"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_trove_manager",
+        "inputs": [
+          {
+            "name": "index",
+            "type": "core::integer::u8"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_redemption_manager",
+        "inputs": [
+          {
+            "name": "index",
+            "type": "core::integer::u8"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_redemption_rate",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_redemption_rate_with_decay",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_redemption_rate_for_redeemed_amount",
+        "inputs": [
+          {
+            "name": "redeemed_amount",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_redemption_fee_with_decay",
+        "inputs": [
+          {
+            "name": "eth_drawn",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_effective_redemption_fee_in_bitusd",
+        "inputs": [
+          {
+            "name": "redeemed_amount",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::CollateralRegistry::CollateralRegistry::BaseRateUpdated",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "base_rate",
+        "type": "core::integer::u256",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::CollateralRegistry::CollateralRegistry::LastFeeOpTimeUpdated",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "last_fee_op_time",
+        "type": "core::integer::u64",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::CollateralRegistry::CollateralRegistry::Event",
+    "kind": "enum",
+    "variants": [
+      {
+        "name": "BaseRateUpdated",
+        "type": "bit_usd::CollateralRegistry::CollateralRegistry::BaseRateUpdated",
+        "kind": "nested"
+      },
+      {
+        "name": "LastFeeOpTimeUpdated",
+        "type": "bit_usd::CollateralRegistry::CollateralRegistry::LastFeeOpTimeUpdated",
+        "kind": "nested"
+      }
+    ]
+  }
+]

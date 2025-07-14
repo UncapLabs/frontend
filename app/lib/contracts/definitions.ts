@@ -1,18 +1,21 @@
 import {
-  TBTC_ADDRESS,
+  UBTC_ADDRESS,
   BORROWER_OPERATIONS_ADDRESS,
-  BITUSD_ADDRESS,
-  TM_ADDRESS,
-  PRICE_FEED_BTC,
+  USDU_ADDRESS,
+  TROVE_MANAGER_ADDRESS,
+  PRICE_FEED_ADDRESS,
 } from "./constants";
-import { BORROWER_OPERATIONS_ABI } from "./abis/borrower-operations";
-import { TROVE_MANAGER_ABI } from "./abis/trove-manager";
-import { TBTC_ABI } from "./abis/tbtc";
-import { PRICE_FEED_ABI } from "./abis/price-feed";
+import {
+  BORROWER_OPERATIONS_ABI,
+  TROVE_MANAGER_ABI,
+  UBTC_ABI,
+  USDU_ABI,
+  PRICE_FEED_ABI,
+} from ".";
 
 export const TBTC = {
-  address: TBTC_ADDRESS,
-  abi: TBTC_ABI,
+  address: UBTC_ADDRESS,
+  abi: UBTC_ABI,
 };
 
 export const BorrowerOperations = {
@@ -20,18 +23,17 @@ export const BorrowerOperations = {
   abi: BORROWER_OPERATIONS_ABI,
 };
 
-export const BitUSD = {
-  address: BITUSD_ADDRESS,
-  // BitUSD ABI not needed for now per user request
-  abi: [],
+export const USDU = {
+  address: USDU_ADDRESS,
+  abi: USDU_ABI,
 };
 
 export const TroveManager = {
-  address: TM_ADDRESS,
+  address: TROVE_MANAGER_ADDRESS,
   abi: TROVE_MANAGER_ABI,
 };
 
 export const PriceFeed = {
-  address: PRICE_FEED_BTC,
+  address: PRICE_FEED_ADDRESS,
   abi: PRICE_FEED_ABI,
 };

@@ -1,0 +1,69 @@
+[
+  {
+    "type": "impl",
+    "name": "IPriceFeedImpl",
+    "interface_name": "bit_usd::PriceFeed::IPriceFeed"
+  },
+  {
+    "type": "struct",
+    "name": "core::integer::u256",
+    "members": [
+      {
+        "name": "low",
+        "type": "core::integer::u128"
+      },
+      {
+        "name": "high",
+        "type": "core::integer::u128"
+      }
+    ]
+  },
+  {
+    "type": "enum",
+    "name": "core::bool",
+    "variants": [
+      {
+        "name": "False",
+        "type": "()"
+      },
+      {
+        "name": "True",
+        "type": "()"
+      }
+    ]
+  },
+  {
+    "type": "interface",
+    "name": "bit_usd::PriceFeed::IPriceFeed",
+    "items": [
+      {
+        "type": "function",
+        "name": "fetch_price",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "(core::integer::u256, core::bool)"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "fetch_redemption_price",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "(core::integer::u256, core::bool)"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::PriceFeed::PriceFeed::Event",
+    "kind": "enum",
+    "variants": []
+  }
+]

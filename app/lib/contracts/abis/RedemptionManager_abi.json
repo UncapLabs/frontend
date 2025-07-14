@@ -1,0 +1,478 @@
+[
+  {
+    "type": "impl",
+    "name": "IRedemptionManagerImpl",
+    "interface_name": "bit_usd::RedemptionManager::IRedemptionManager"
+  },
+  {
+    "type": "struct",
+    "name": "core::integer::u256",
+    "members": [
+      {
+        "name": "low",
+        "type": "core::integer::u128"
+      },
+      {
+        "name": "high",
+        "type": "core::integer::u128"
+      }
+    ]
+  },
+  {
+    "type": "struct",
+    "name": "core::array::Span::<core::integer::u256>",
+    "members": [
+      {
+        "name": "snapshot",
+        "type": "@core::array::Array::<core::integer::u256>"
+      }
+    ]
+  },
+  {
+    "type": "interface",
+    "name": "bit_usd::RedemptionManager::IRedemptionManager",
+    "items": [
+      {
+        "type": "function",
+        "name": "initializer",
+        "inputs": [
+          {
+            "name": "addresses_registry",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "redeem_collateral",
+        "inputs": [
+          {
+            "name": "msg_sender",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "redeem_amount",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "price",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "redemption_rate",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "max_iterations",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "urgent_redemption",
+        "inputs": [
+          {
+            "name": "bit_usd_amount",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "trove_ids",
+            "type": "core::array::Span::<core::integer::u256>"
+          },
+          {
+            "name": "min_collateral",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::RedemptionManager::Redemption",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "attempted_bit_usd_amount",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "actual_bit_usd_amount",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "coll_sent",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "coll_fee",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "price",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "redemption_price",
+        "type": "core::integer::u256",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::events::TroveManagerEventsEmitter::BatchedTroveUpdated",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "trove_id",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "interest_batch_manager",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      },
+      {
+        "name": "batch_debt_shares",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "coll",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "stake",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "snapshot_of_total_coll_redist",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "snapshot_of_total_debt_redist",
+        "type": "core::integer::u256",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::events::TroveManagerEventsEmitter::TroveUpdated",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "trove_id",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "debt",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "coll",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "stake",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "annual_interest_rate",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "snapshot_of_total_coll_redist",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "snapshot_of_total_debt_redist",
+        "type": "core::integer::u256",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "enum",
+    "name": "bit_usd::TroveManager::Operation",
+    "variants": [
+      {
+        "name": "OpenTrove",
+        "type": "()"
+      },
+      {
+        "name": "CloseTrove",
+        "type": "()"
+      },
+      {
+        "name": "AdjustTrove",
+        "type": "()"
+      },
+      {
+        "name": "AdjustTroveInterestRate",
+        "type": "()"
+      },
+      {
+        "name": "ApplyPendingDebt",
+        "type": "()"
+      },
+      {
+        "name": "Liquidate",
+        "type": "()"
+      },
+      {
+        "name": "RedeemCollateral",
+        "type": "()"
+      },
+      {
+        "name": "OpenTroveAndJoinBatch",
+        "type": "()"
+      },
+      {
+        "name": "SetInterestBatchManager",
+        "type": "()"
+      },
+      {
+        "name": "RemoveFromBatch",
+        "type": "()"
+      }
+    ]
+  },
+  {
+    "type": "enum",
+    "name": "core::bool",
+    "variants": [
+      {
+        "name": "False",
+        "type": "()"
+      },
+      {
+        "name": "True",
+        "type": "()"
+      }
+    ]
+  },
+  {
+    "type": "struct",
+    "name": "bit_usd::utils::i257::i257",
+    "members": [
+      {
+        "name": "abs",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "is_negative",
+        "type": "core::bool"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::events::TroveManagerEventsEmitter::TroveOperation",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "trove_id",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "operation",
+        "type": "bit_usd::TroveManager::Operation",
+        "kind": "data"
+      },
+      {
+        "name": "annual_interest_rate",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "debt_increase_from_redist",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "debt_increase_from_upfront_fee",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "debt_change_from_operation",
+        "type": "bit_usd::utils::i257::i257",
+        "kind": "data"
+      },
+      {
+        "name": "coll_increase_from_redist",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "coll_change_from_operation",
+        "type": "bit_usd::utils::i257::i257",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::events::TroveManagerEventsEmitter::RedemptionFeePaidToTrove",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "trove_id",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "eth_fee",
+        "type": "core::integer::u256",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "enum",
+    "name": "bit_usd::events::TroveManagerEventsEmitter::BatchOperation",
+    "variants": [
+      {
+        "name": "RegisterBatchManager",
+        "type": "()"
+      },
+      {
+        "name": "LowerBatchManagerAnnualFee",
+        "type": "()"
+      },
+      {
+        "name": "SetBatchManagerAnnualInterestRate",
+        "type": "()"
+      },
+      {
+        "name": "ApplyBatchInterestAndFee",
+        "type": "()"
+      },
+      {
+        "name": "JoinBatch",
+        "type": "()"
+      },
+      {
+        "name": "ExitBatch",
+        "type": "()"
+      },
+      {
+        "name": "TroveChange",
+        "type": "()"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::events::TroveManagerEventsEmitter::BatchUpdated",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "interest_batch_manager",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      },
+      {
+        "name": "operation",
+        "type": "bit_usd::events::TroveManagerEventsEmitter::BatchOperation",
+        "kind": "data"
+      },
+      {
+        "name": "debt",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "coll",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "annual_interest_rate",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "annual_management_fee",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "total_debt_shares",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "debt_increase_from_upfront_fee",
+        "type": "core::integer::u256",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::RedemptionManager::RedemptionManager::Event",
+    "kind": "enum",
+    "variants": [
+      {
+        "name": "Redemption",
+        "type": "bit_usd::RedemptionManager::Redemption",
+        "kind": "nested"
+      },
+      {
+        "name": "BatchedTroveUpdated",
+        "type": "bit_usd::events::TroveManagerEventsEmitter::BatchedTroveUpdated",
+        "kind": "nested"
+      },
+      {
+        "name": "TroveUpdated",
+        "type": "bit_usd::events::TroveManagerEventsEmitter::TroveUpdated",
+        "kind": "nested"
+      },
+      {
+        "name": "TroveOperation",
+        "type": "bit_usd::events::TroveManagerEventsEmitter::TroveOperation",
+        "kind": "nested"
+      },
+      {
+        "name": "RedemptionFeePaidToTrove",
+        "type": "bit_usd::events::TroveManagerEventsEmitter::RedemptionFeePaidToTrove",
+        "kind": "nested"
+      },
+      {
+        "name": "BatchUpdated",
+        "type": "bit_usd::events::TroveManagerEventsEmitter::BatchUpdated",
+        "kind": "nested"
+      }
+    ]
+  }
+]

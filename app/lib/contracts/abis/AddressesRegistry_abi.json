@@ -1,0 +1,478 @@
+[
+  {
+    "type": "impl",
+    "name": "AddressesRegistryImpl",
+    "interface_name": "bit_usd::AddressesRegistry::IAddressesRegistry"
+  },
+  {
+    "type": "struct",
+    "name": "core::integer::u256",
+    "members": [
+      {
+        "name": "low",
+        "type": "core::integer::u128"
+      },
+      {
+        "name": "high",
+        "type": "core::integer::u128"
+      }
+    ]
+  },
+  {
+    "type": "interface",
+    "name": "bit_usd::AddressesRegistry::IAddressesRegistry",
+    "items": [
+      {
+        "type": "function",
+        "name": "initializer",
+        "inputs": [
+          {
+            "name": "active_pool",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "default_pool",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "price_feed",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "hint_helpers",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "multi_trove_getter",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "metadata_nft",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "eth",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "borrower_operations",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "trove_manager",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "trove_nft",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "gas_pool",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "coll_surplus_pool",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "sorted_troves",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "collateral_registry",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "bitusd",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "interest_router",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "stability_pool",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "coll_token",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "liquidation_manager",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "redemption_manager",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "batch_manager",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "trove_manager_events_emitter",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "get_active_pool",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_default_pool",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_price_pool",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_coll_token",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_trove_manager",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_borrower_operations",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_interest_router",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_stability_pool",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_liquidation_manager",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_redemption_manager",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_batch_manager",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_bitusd_token",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_liquidation_penalty_sp",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_liquidation_penalty_redistribution",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_CCR",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_SCR",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_MCR",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_BCR",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_trove_nft",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_gas_pool",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_coll_surplus_pool",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_sorted_troves",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_collateral_registry",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_eth",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_hint_helpers",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_multi_trove_getter",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_metadata_nft",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_price_feed",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_trove_manager_events_emitter",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "constructor",
+    "name": "constructor",
+    "inputs": [
+      {
+        "name": "ccr",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "mcr",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "bcr",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "scr",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "liquidation_penalty_sp",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "liquidation_penalty_redistribution",
+        "type": "core::integer::u256"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::AddressesRegistry::AddressesRegistry::Event",
+    "kind": "enum",
+    "variants": []
+  }
+]

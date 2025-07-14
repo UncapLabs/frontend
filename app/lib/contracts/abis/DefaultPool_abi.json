@@ -1,0 +1,150 @@
+[
+  {
+    "type": "impl",
+    "name": "IDefaultPoolImpl",
+    "interface_name": "bit_usd::DefaultPool::IDefaultPool"
+  },
+  {
+    "type": "struct",
+    "name": "core::integer::u256",
+    "members": [
+      {
+        "name": "low",
+        "type": "core::integer::u128"
+      },
+      {
+        "name": "high",
+        "type": "core::integer::u128"
+      }
+    ]
+  },
+  {
+    "type": "interface",
+    "name": "bit_usd::DefaultPool::IDefaultPool",
+    "items": [
+      {
+        "type": "function",
+        "name": "initializer",
+        "inputs": [
+          {
+            "name": "addresses_registry",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "get_coll_balance",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_bit_usd_debt",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "send_coll_to_active_pool",
+        "inputs": [
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "receive_coll",
+        "inputs": [
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "increase_bit_usd_debt",
+        "inputs": [
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "decrease_bit_usd_debt",
+        "inputs": [
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::DefaultPool::DefaultPool::DefaultPoolBitUSDDebtUpdated",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "bit_usd_debt",
+        "type": "core::integer::u256",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::DefaultPool::DefaultPool::DefaultPoolCollBalanceUpdated",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "coll_balance",
+        "type": "core::integer::u256",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::DefaultPool::DefaultPool::Event",
+    "kind": "enum",
+    "variants": [
+      {
+        "name": "DefaultPoolBitUSDDebtUpdated",
+        "type": "bit_usd::DefaultPool::DefaultPool::DefaultPoolBitUSDDebtUpdated",
+        "kind": "nested"
+      },
+      {
+        "name": "DefaultPoolCollBalanceUpdated",
+        "type": "bit_usd::DefaultPool::DefaultPool::DefaultPoolCollBalanceUpdated",
+        "kind": "nested"
+      }
+    ]
+  }
+]

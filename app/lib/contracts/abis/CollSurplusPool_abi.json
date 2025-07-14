@@ -1,0 +1,212 @@
+[
+  {
+    "type": "impl",
+    "name": "ICollSurplusPoolImpl",
+    "interface_name": "bit_usd::CollSurplusPool::ICollSurplusPool"
+  },
+  {
+    "type": "struct",
+    "name": "core::integer::u256",
+    "members": [
+      {
+        "name": "low",
+        "type": "core::integer::u128"
+      },
+      {
+        "name": "high",
+        "type": "core::integer::u128"
+      }
+    ]
+  },
+  {
+    "type": "interface",
+    "name": "bit_usd::CollSurplusPool::ICollSurplusPool",
+    "items": [
+      {
+        "type": "function",
+        "name": "initializer",
+        "inputs": [
+          {
+            "name": "addresses_registry",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "account_surplus",
+        "inputs": [
+          {
+            "name": "account",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "claim_coll",
+        "inputs": [
+          {
+            "name": "account",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "get_coll_token",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "get_coll_balance",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "get_borrower_operations",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "get_liquidation_manager",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "get_collateral",
+        "inputs": [
+          {
+            "name": "owner",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "external"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::CollSurplusPool::CollSurplusPool::TroveManagerAddressChanged",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "new_trove_manager_address",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::CollSurplusPool::CollSurplusPool::BorrowerOperationsAddressChanged",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "new_borrower_operations_address",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::CollSurplusPool::CollSurplusPool::CollBalanceUpdated",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "account",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      },
+      {
+        "name": "new_balance",
+        "type": "core::integer::u256",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::CollSurplusPool::CollSurplusPool::CollSent",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "account",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      },
+      {
+        "name": "amount",
+        "type": "core::integer::u256",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::CollSurplusPool::CollSurplusPool::Event",
+    "kind": "enum",
+    "variants": [
+      {
+        "name": "TroveManagerAddressChanged",
+        "type": "bit_usd::CollSurplusPool::CollSurplusPool::TroveManagerAddressChanged",
+        "kind": "nested"
+      },
+      {
+        "name": "BorrowerOperationsAddressChanged",
+        "type": "bit_usd::CollSurplusPool::CollSurplusPool::BorrowerOperationsAddressChanged",
+        "kind": "nested"
+      },
+      {
+        "name": "CollBalanceUpdated",
+        "type": "bit_usd::CollSurplusPool::CollSurplusPool::CollBalanceUpdated",
+        "kind": "nested"
+      },
+      {
+        "name": "CollSent",
+        "type": "bit_usd::CollSurplusPool::CollSurplusPool::CollSent",
+        "kind": "nested"
+      }
+    ]
+  }
+]

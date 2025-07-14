@@ -1,0 +1,18 @@
+[
+  {
+    "type": "constructor",
+    "name": "constructor",
+    "inputs": [
+      {
+        "name": "bitusd",
+        "type": "core::starknet::contract_address::ContractAddress"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "bit_usd::mocks::InterestRouterMock::InterestRouterMock::Event",
+    "kind": "enum",
+    "variants": []
+  }
+]

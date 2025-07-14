@@ -15,7 +15,10 @@ export const contractCall = {
      * Approve spending of TBTC tokens
      */
     approve: (spender: string, amount: bigint) => {
-      const contract = new Contract(contractDefs.TBTC.abi, contractDefs.TBTC.address);
+      const contract = new Contract(
+        contractDefs.TBTC.abi,
+        contractDefs.TBTC.address
+      );
       return contract.populate("approve", [spender, amount]);
     },
 
@@ -23,7 +26,10 @@ export const contractCall = {
      * Get TBTC balance of an account (for simulating calls)
      */
     balanceOf: (account: string) => {
-      const contract = new Contract(contractDefs.TBTC.abi, contractDefs.TBTC.address);
+      const contract = new Contract(
+        contractDefs.TBTC.abi,
+        contractDefs.TBTC.address
+      );
       return contract.populate("balanceOf", [account]);
     },
   },
@@ -161,7 +167,7 @@ export const contractCall = {
       // BitUSD has empty ABI, so we'll need to handle this differently
       // For now, return a basic call data structure
       return {
-        contractAddress: contractDefs.BitUSD.address,
+        contractAddress: contractDefs.USDU.address,
         entrypoint: "balanceOf",
         calldata: [account],
       };
@@ -233,16 +239,22 @@ export const contractCall = {
  * Use these when you need to pass a provider for actual calls
  */
 export const createContracts = (provider?: any) => ({
-  tbtc: new Contract(contractDefs.TBTC.abi, contractDefs.TBTC.address, provider),
+  tbtc: new Contract(
+    contractDefs.TBTC.abi,
+    contractDefs.TBTC.address,
+    provider
+  ),
   borrowerOperations: new Contract(
     contractDefs.BorrowerOperations.abi,
     contractDefs.BorrowerOperations.address,
     provider
   ),
   // BitUSD has empty ABI - handle separately if needed
-  bitUsd: contractDefs.BitUSD.abi.length > 0
-    ? new Contract(contractDefs.BitUSD.abi, contractDefs.BitUSD.address, provider)
-    : null,
+  bitUsd: new Contract(
+    contractDefs.USDU.abi,
+    contractDefs.USDU.address,
+    provider
+  ),
   priceFeed: new Contract(
     contractDefs.PriceFeed.abi,
     contractDefs.PriceFeed.address,

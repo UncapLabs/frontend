@@ -1,0 +1,8 @@
+[
+  {
+    "type": "event",
+    "name": "bit_usd::GasPool::GasPool::Event",
+    "kind": "enum",
+    "variants": []
+  }
+]

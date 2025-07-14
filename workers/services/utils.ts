@@ -1,6 +1,6 @@
 import { Contract, RpcProvider } from "starknet";
-import { PRICE_FEED_BTC } from "~/lib/contracts/constants";
-import { PRICE_FEED_ABI } from "~/lib/contracts/abis/price-feed";
+import { PRICE_FEED_ABI } from "~/lib/contracts";
+import { PRICE_FEED_ADDRESS } from "~/lib/contracts/constants";
 
 export const getBitcoinprice = async () => {
   const myProvider = new RpcProvider({
@@ -9,7 +9,7 @@ export const getBitcoinprice = async () => {
 
   const PriceFeedContract = new Contract(
     PRICE_FEED_ABI,
-    PRICE_FEED_BTC,
+    PRICE_FEED_ADDRESS,
     myProvider
   );
 

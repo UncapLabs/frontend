@@ -2,12 +2,12 @@ import { z } from "zod/v4";
 import { publicProcedure, router } from "../trpc";
 import { Contract, RpcProvider } from "starknet";
 import {
-  TM_ADDRESS,
+  TROVE_MANAGER_ADDRESS,
   TBTC_DECIMALS,
   TBTC_SYMBOL,
 } from "~/lib/contracts/constants";
 import { getBitcoinprice } from "workers/services/utils";
-import { TROVE_MANAGER_ABI } from "~/lib/contracts/abis/trove-manager";
+import { TROVE_MANAGER_ABI } from "~/lib/contracts";
 
 const BITUSD_DECIMALS = 18;
 const MCR_VALUE = 1.1;
@@ -58,7 +58,7 @@ export const positionsRouter = router({
 
       const troveManagerContract = new Contract(
         TROVE_MANAGER_ABI,
-        TM_ADDRESS,
+        TROVE_MANAGER_ADDRESS,
         myProvider
       );
 

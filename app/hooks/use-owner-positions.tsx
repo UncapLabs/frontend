@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAccount, useContract } from "@starknet-react/core";
-import { TM_ADDRESS } from "~/lib/contracts/constants";
-import { TROVE_MANAGER_ABI } from "~/lib/contracts/abis/trove-manager";
+import { TROVE_MANAGER_ADDRESS } from "~/lib/contracts/constants";
+import { TROVE_MANAGER_ABI } from "~/lib/contracts";
 
 interface UseOwnerPositionsOptions {
   refetchInterval?: number;
@@ -15,7 +15,7 @@ export function useOwnerPositions(options: UseOwnerPositionsOptions = {}) {
 
   const { contract: troveManagerContract } = useContract({
     abi: TROVE_MANAGER_ABI,
-    address: TM_ADDRESS,
+    address: TROVE_MANAGER_ADDRESS,
   });
 
   const {
@@ -23,7 +23,7 @@ export function useOwnerPositions(options: UseOwnerPositionsOptions = {}) {
     isLoading: isLoadingOwnerPositions,
     error,
   } = useQuery({
-    queryKey: ["ownerPositions", address, TM_ADDRESS],
+    queryKey: ["ownerPositions", address, TROVE_MANAGER_ADDRESS],
     queryFn: async () => {
       if (!troveManagerContract || !address) return null;
       try {

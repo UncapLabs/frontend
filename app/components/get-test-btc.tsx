@@ -6,18 +6,18 @@ import {
 } from "@starknet-react/core";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
-import { TBTC_ADDRESS } from "~/lib/contracts/constants";
-import { TBTC_ABI } from "~/lib/contracts/abis/tbtc";
+import { UBTC_ABI } from "~/lib/contracts";
+import { UBTC_ADDRESS } from "~/lib/contracts/constants";
 
 export function GetTestBtc() {
   const { address } = useAccount();
   const { data: balance } = useBalance({
     address,
-    token: TBTC_ADDRESS,
+    token: UBTC_ADDRESS,
   });
   const { contract } = useContract({
-    abi: TBTC_ABI,
-    address: TBTC_ADDRESS,
+    abi: UBTC_ABI,
+    address: UBTC_ADDRESS,
   });
 
   const { send, isPending } = useSendTransaction({
