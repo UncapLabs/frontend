@@ -4,17 +4,20 @@ import { contractCall } from "~/lib/contracts/calls";
 import { useOwnerPositions } from "./use-owner-positions";
 import { useTransaction } from "./use-transaction";
 import { BORROWER_OPERATIONS_ADDRESS } from "~/lib/contracts/constants";
+import type { Token } from "~/components/token-input";
 
 interface UseBorrowParams {
   collateralAmount?: number;
   borrowAmount?: number;
   annualInterestRate: bigint;
+  collateralToken?: Token;
 }
 
 export function useBorrow({
   collateralAmount,
   borrowAmount,
   annualInterestRate,
+  collateralToken,
 }: UseBorrowParams) {
   const { address } = useAccount();
   const { ownerIndex, isLoadingOwnerPositions } = useOwnerPositions();
@@ -25,6 +28,7 @@ export function useBorrow({
       !address ||
       !collateralAmount ||
       !borrowAmount ||
+      !collateralToken ||
       isLoadingOwnerPositions ||
       ownerIndex === undefined
     ) {
@@ -32,8 +36,9 @@ export function useBorrow({
     }
 
     return [
-      // 1. Approve TBTC spending
-      contractCall.tbtc.approve(
+      // 1. Approve collateral token spending
+      contractCall.token.approve(
+        collateralToken.address,
         BORROWER_OPERATIONS_ADDRESS,
         BigInt(Math.floor(collateralAmount * 1e18))
       ),
@@ -51,6 +56,7 @@ export function useBorrow({
     address,
     collateralAmount,
     borrowAmount,
+    collateralToken,
     isLoadingOwnerPositions,
     ownerIndex,
     annualInterestRate,

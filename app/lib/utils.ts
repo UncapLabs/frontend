@@ -16,3 +16,14 @@ export function getLtvColor(ltvValue: number): string {
   if (ltvValue <= 70) return "bg-yellow-500";
   return "bg-red-500";
 }
+
+/**
+ * Convert a decimal number to bigint with proper precision
+ * @param value - The decimal value to convert
+ * @param decimals - Number of decimals (default 18)
+ * @returns BigInt representation of the value
+ */
+export function toBigInt(value: number | undefined, decimals: number = 18): bigint {
+  if (value === undefined || value === null) return 0n;
+  return BigInt(Math.floor(value * 10 ** decimals));
+}

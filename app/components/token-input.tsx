@@ -64,7 +64,6 @@ export function TokenInput({
   showBalance = true,
   maxValue = MAX_LIMIT,
 }: TokenInputProps) {
-  const displayBalance = balance ? Number(balance.value) / 10 ** token.decimals : 0;
   const usdValue = value && price ? value * price.price : 0;
 
   const handleValueChange = (values: NumberFormatValues) => {
@@ -72,9 +71,10 @@ export function TokenInput({
   };
 
   const shouldShowPercentageButtons = percentageButtons && onPercentageClick;
-  const shouldDisablePercentageButtons = percentageButtonsDisabled !== undefined 
-    ? percentageButtonsDisabled 
-    : (!balance || balance.value === 0n || disabled);
+  const shouldDisablePercentageButtons =
+    percentageButtonsDisabled !== undefined
+      ? percentageButtonsDisabled
+      : !balance || balance.value === 0n || disabled;
 
   return (
     <div className="bg-slate-50 rounded-xl p-4 space-y-3 group">
@@ -86,7 +86,16 @@ export function TokenInput({
           {label}
         </Label>
         {shouldShowPercentageButtons && (
-          <div className={`${percentageButtonsOnHover ? (disabled ? 'opacity-50' : 'opacity-0 group-hover:opacity-100') + ' transition-opacity duration-300 ease-in-out' : ''} flex items-center space-x-1`}>
+          <div
+            className={`${
+              percentageButtonsOnHover
+                ? (disabled
+                    ? "opacity-50"
+                    : "opacity-0 group-hover:opacity-100") +
+                  " transition-opacity duration-300 ease-in-out"
+                : ""
+            } flex items-center space-x-1`}
+          >
             {[25, 50, 75].map((pct) => (
               <Button
                 key={pct}
@@ -133,7 +142,7 @@ export function TokenInput({
             }}
             className="text-3xl md:text-4xl font-semibold h-auto p-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none outline-none shadow-none tracking-tight text-slate-800"
           />
-          
+
           {usdValue > 0 && (
             <NumericFormat
               className="text-sm text-slate-500 mt-1"
@@ -164,7 +173,7 @@ export function TokenInput({
               <p className="text-xs text-red-600 font-medium">{error}</p>
             </div>
           )}
-          
+
           {helperText && !error && (
             <p className="text-xs text-slate-600 mt-2">{helperText}</p>
           )}
@@ -172,10 +181,10 @@ export function TokenInput({
 
         <div className="text-right">
           {tokens && tokens.length > 1 && onTokenChange ? (
-            <Select 
-              value={token.address} 
+            <Select
+              value={token.address}
               onValueChange={(address) => {
-                const selectedToken = tokens.find(t => t.address === address);
+                const selectedToken = tokens.find((t) => t.address === address);
                 if (selectedToken) onTokenChange(selectedToken);
               }}
               disabled={disabled}
@@ -216,7 +225,7 @@ export function TokenInput({
               <span className="font-medium">{token.symbol}</span>
             </div>
           )}
-          
+
           {showBalance && balance && (
             <div className="text-xs text-slate-500 mt-1">
               Balance:{" "}

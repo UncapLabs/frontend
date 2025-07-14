@@ -57,6 +57,27 @@ export const validators = {
     value > maxDebt ? "Exceeds maximum borrowable amount" : undefined,
 
   /**
+   * Validates minimum debt requirement ($2000)
+   */
+  minimumDebt: (value: number, minDebt: number = 2000) =>
+    value < minDebt ? `Minimum debt is $${minDebt.toLocaleString()}` : undefined,
+
+  /**
+   * Validates minimum collateral ratio for withdrawals
+   */
+  minimumCollateralRatio: (
+    newCollateralValue: number,
+    debtValue: number,
+    minRatio: number = 1.1 // 110% minimum
+  ) => {
+    if (debtValue <= 0) return undefined;
+    const ratio = newCollateralValue / debtValue;
+    return ratio < minRatio 
+      ? `Must maintain at least ${(minRatio * 100).toFixed(0)}% collateral ratio` 
+      : undefined;
+  },
+
+  /**
    * Validates wallet connection
    */
   requiresWallet: (value: any, isConnected: boolean) =>

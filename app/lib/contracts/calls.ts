@@ -10,6 +10,22 @@ import * as contractDefs from "./definitions";
  * Contract call builders using populate for type safety
  */
 export const contractCall = {
+  /**
+   * Generic ERC20 token calls that accept a token address
+   */
+  token: {
+    /**
+     * Approve spending of tokens
+     */
+    approve: (tokenAddress: string, spender: string, amount: bigint) => {
+      const contract = new Contract(
+        contractDefs.TBTC.abi, // ERC20 ABI is the same for all tokens
+        tokenAddress
+      );
+      return contract.populate("approve", [spender, amount]);
+    },
+  },
+
   tbtc: {
     /**
      * Approve spending of TBTC tokens
