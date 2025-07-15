@@ -22,6 +22,8 @@ export function useBorrow({
   const { address } = useAccount();
   const { ownerIndex, isLoadingOwnerPositions } = useOwnerPositions();
 
+  console.log("GOT HERE BROOO");
+
   // Prepare the calls using our new abstraction
   const calls = useMemo(() => {
     if (
