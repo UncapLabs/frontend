@@ -40,6 +40,15 @@ function getAdjustmentCalls(params: {
   } = params;
   const calls = [];
 
+  // Always approve ETH for gas payment
+  calls.push(
+    contractCall.token.approve(
+      "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+      BORROWER_OPERATIONS_ADDRESS,
+      BigInt(10e18) // Approve a reasonable amount for gas fees
+    )
+  );
+
   // If both collateral and debt are changing, use adjust_trove for efficiency
   if (collateralChange !== 0n && debtChange !== 0n) {
     // Need approvals for additions
@@ -171,6 +180,12 @@ export function useAdjustTrove({
         contractDefs.BorrowerOperations.address
       );
       return [
+        // Approve ETH for gas payment
+        contractCall.token.approve(
+          "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+          BORROWER_OPERATIONS_ADDRESS,
+          BigInt(10e18) // Approve a reasonable amount for gas fees
+        ),
         contract.populate("adjust_trove_interest_rate", [
           troveId,
           changes.newInterestRate,

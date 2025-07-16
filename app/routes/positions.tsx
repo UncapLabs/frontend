@@ -277,7 +277,7 @@ function PositionsPage() {
                       const amountBorrowable =
                         position.debtLimit - position.borrowedAmount;
                       const healthDisplay = getHealthFactorDisplay(
-                        position.healthFactor
+                        position?.healthFactor
                       );
                       return (
                         <tr
@@ -325,7 +325,7 @@ function PositionsPage() {
                           <td
                             className={`px-2 py-3 whitespace-nowrap text-sm font-semibold ${healthDisplay.color}`}
                           >
-                            {position.healthFactor.toFixed(2)}{" "}
+                            {position?.healthFactor?.toFixed(2)}{" "}
                             <span className="font-normal text-xs">
                               ({healthDisplay.text})
                             </span>
@@ -553,7 +553,7 @@ function PositionsPage() {
                 <p>
                   Current Health Factor:{" "}
                   <NumericFormat
-                    value={selectedPosition.healthFactor}
+                    value={selectedPosition?.healthFactor}
                     displayType="text"
                     decimalScale={2}
                   />

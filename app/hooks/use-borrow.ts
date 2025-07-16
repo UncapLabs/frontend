@@ -22,7 +22,7 @@ export function useBorrow({
   const { address } = useAccount();
   const { ownerIndex, isLoadingOwnerPositions } = useOwnerPositions();
 
-  console.log("GOT HERE BROOO");
+  console.log(ownerIndex); // NEED TO DEBUG HERE, it keeps getting logged to the console which is very weird
 
   // Prepare the calls using our new abstraction
   const calls = useMemo(() => {
@@ -45,7 +45,14 @@ export function useBorrow({
         BigInt(Math.floor(collateralAmount * 1e18))
       ),
 
-      // 2. Open trove
+      // 2. Approve ETH for gas payment
+      contractCall.token.approve(
+        "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+        BORROWER_OPERATIONS_ADDRESS,
+        BigInt(10e18) // Approve a reasonable amount for gas fees
+      ),
+
+      // 3. Open trove
       contractCall.borrowerOperations.openTrove({
         owner: address,
         ownerIndex: ownerIndex,
