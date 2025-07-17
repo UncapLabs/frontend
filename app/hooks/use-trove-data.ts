@@ -12,6 +12,7 @@ interface TroveData {
   debt: number;
   annualInterestRate: bigint;
   troveId: bigint;
+  lastInterestRateAdjTime: bigint;
 }
 
 export function useTroveData(troveId?: string) {
@@ -46,6 +47,7 @@ export function useTroveData(troveId?: string) {
           debt: Number(latestData.entire_debt) / Math.pow(10, USDU_DECIMALS),
           annualInterestRate: latestData.annual_interest_rate as bigint,
           troveId: troveIdBigInt,
+          lastInterestRateAdjTime: latestData.last_interest_rate_adj_time as bigint,
         } as TroveData;
       } catch (e) {
         console.error("Error fetching trove data:", e);
