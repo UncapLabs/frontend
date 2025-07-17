@@ -39,11 +39,11 @@ importers:
         specifier: 4.0.6
         version: 4.0.6
       '@starknet-react/chains':
-        specifier: 4.0.1-beta.1
-        version: 4.0.1-beta.1
+        specifier: 4.0.1-beta.3
+        version: 4.0.1-beta.3
       '@starknet-react/core':
-        specifier: 4.0.1-beta.1
-        version: 4.0.1-beta.1(get-starknet-core@4.0.0)(react@19.1.0)(starknet@7.6.2)(typescript@5.8.3)
+        specifier: 4.0.1-beta.4
+        version: 4.0.1-beta.4(get-starknet-core@4.0.0)(react@19.1.0)(starknet@7.6.2)(typescript@5.8.3)
       '@tanstack/form-core':
         specifier: ^1.12.3
         version: 1.12.3
@@ -1989,15 +1989,15 @@ packages:
   '@starknet-io/types-js@0.8.4':
     resolution: {integrity: sha512-0RZ3TZHcLsUTQaq1JhDSCM8chnzO4/XNsSCozwDET64JK5bjFDIf2ZUkta+tl5Nlbf4usoU7uZiDI/Q57kt2SQ==}
 
-  '@starknet-react/chains@4.0.1-beta.1':
-    resolution: {integrity: sha512-JLxbO5pUbJwpRK5bHlM2I4NUgNu1Kyb006L/9W+UTt8CkqaJxlKrwYw1OIAnvnaVZ1rXDDiT+anP2Ybgc4FOkA==}
+  '@starknet-react/chains@4.0.1-beta.3':
+    resolution: {integrity: sha512-Lzq+AJuKSBHZbt+fAwvibCMfLSO5QPIoFDe+0ScC8UgYDzPDg+h+cA4ubmqBfY4HOT86Micyqx5PogVhZ2RWGA==}
 
-  '@starknet-react/core@4.0.1-beta.1':
-    resolution: {integrity: sha512-J7Npd+v+hCs8YLWYR8TkMTWrZZzbptMlRZdN5qc1GHkzfQJl6f3ASK6pK0KTZqoM/IVoHqr3oqzkouvdrMYDbw==}
+  '@starknet-react/core@4.0.1-beta.4':
+    resolution: {integrity: sha512-/XF60jXFmIbfWW5DcjPI8uVTEdba0ZdUuvIi0ezagAKtCBr55HVwIu9h/A59FolZnpXm0LWp031CXglwjfCyng==}
     peerDependencies:
       get-starknet-core: ^4.0.0
       react: ^18.0
-      starknet: ^7.1.0
+      starknet: ^7.5.0
 
   '@tailwindcss/node@4.1.10':
     resolution: {integrity: sha512-2ACf1znY5fpRBwRhMgj9ZXvb2XZW8qs+oTfotJ2C5xR0/WNL7UHZ7zXl6s+rUqedL1mNi+0O+WQr5awGowS3PQ==}
@@ -7326,12 +7326,12 @@ snapshots:
 
   '@starknet-io/types-js@0.8.4': {}
 
-  '@starknet-react/chains@4.0.1-beta.1': {}
+  '@starknet-react/chains@4.0.1-beta.3': {}
 
-  '@starknet-react/core@4.0.1-beta.1(get-starknet-core@4.0.0)(react@19.1.0)(starknet@7.6.2)(typescript@5.8.3)':
+  '@starknet-react/core@4.0.1-beta.4(get-starknet-core@4.0.0)(react@19.1.0)(starknet@7.6.2)(typescript@5.8.3)':
     dependencies:
       '@starknet-io/types-js': 0.7.10
-      '@starknet-react/chains': 4.0.1-beta.1
+      '@starknet-react/chains': 4.0.1-beta.3
       '@tanstack/react-query': 5.81.2(react@19.1.0)
       abi-wan-kanabi: 2.2.4
       eventemitter3: 5.0.1

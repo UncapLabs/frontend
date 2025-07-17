@@ -27,9 +27,7 @@ export function useTransaction(
     isError: isSendError,
     error: sendError,
     reset: resetSend,
-  } = useSendTransaction({
-    calls,
-  });
+  } = useSendTransaction({});
 
   // Watch for transaction receipt
   const {
@@ -54,7 +52,7 @@ export function useTransaction(
     if (!calls) {
       throw new Error("Transaction not ready");
     }
-    await sendTransaction();
+    await sendTransaction(calls);
   }, [calls, sendTransaction]);
 
   return {

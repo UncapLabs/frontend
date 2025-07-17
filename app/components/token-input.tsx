@@ -23,8 +23,8 @@ interface TokenInputProps {
   tokens?: Token[]; // Array of available tokens
   onTokenChange?: (token: Token) => void; // Callback when token is changed
   balance?: {
-    value: bigint;
-    formatted: string;
+    value?: bigint;
+    formatted?: string;
   };
   price?: { price: number };
   value?: number;
@@ -231,7 +231,12 @@ export function TokenInput({
               Balance:{" "}
               <NumericFormat
                 displayType="text"
-                value={balance.formatted}
+                value={
+                  balance.formatted ??
+                  (balance.value
+                    ? Number(balance.value) / 10 ** token.decimals
+                    : 0)
+                }
                 thousandSeparator=","
                 decimalScale={3}
                 fixedDecimalScale
