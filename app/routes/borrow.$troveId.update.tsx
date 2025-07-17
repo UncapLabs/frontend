@@ -3,7 +3,7 @@ import { Card, CardContent } from "~/components/ui/card";
 import { ArrowLeft, ArrowDown } from "lucide-react";
 import { Separator } from "~/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { TransactionStatus } from "~/components/borrow/transaction-status";
+import { TransactionStatus, PositionSummaryCard, CurrentPositionInfo } from "~/components/borrow";
 import { TokenInput } from "~/components/token-input";
 import { useMemo, useEffect, useState } from "react";
 import { useForm, useStore } from "@tanstack/react-form";
@@ -360,41 +360,10 @@ function UpdatePosition() {
                 >
                   <div className="space-y-6">
                     {/* Current Position Info */}
-                    <div className="bg-slate-50 rounded-lg p-4 space-y-2">
-                      <h3 className="font-medium text-slate-700">
-                        Current Position
-                      </h3>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="text-slate-600">
-                            Collateral:
-                          </span>{" "}
-                          <span className="font-medium">
-                            <NumericFormat
-                              displayType="text"
-                              value={troveData.collateral}
-                              thousandSeparator=","
-                              decimalScale={7}
-                              fixedDecimalScale={false}
-                            />{" "}
-                            {selectedCollateralToken.symbol}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-slate-600">Debt:</span>{" "}
-                          <span className="font-medium">
-                            <NumericFormat
-                              displayType="text"
-                              value={troveData.debt}
-                              thousandSeparator=","
-                              decimalScale={2}
-                              fixedDecimalScale
-                            />{" "}
-                            bitUSD
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                    <CurrentPositionInfo
+                      troveData={troveData}
+                      selectedCollateralToken={selectedCollateralToken}
+                    />
 
                     {/* Collateral Adjustment Section */}
                     <div className="space-y-2">
@@ -634,15 +603,9 @@ function UpdatePosition() {
                       <form.Field
                         name="borrowAmount"
                         validators={{
-                          onChange: ({ value, fieldApi }) => {
+                          onChange: ({ value }) => {
                             if (!value) return undefined;
 
-                            const collateral =
-                              fieldApi.form.getFieldValue(
-                                "collateralAmount"
-                              ) ||
-                              troveData?.collateral ||
-                              0;
                             const currentDebt = troveData?.debt || 0;
                             const bitUsdBal = bitUsdBalance
                               ? Number(bitUsdBalance.value) /
@@ -818,66 +781,14 @@ function UpdatePosition() {
 
         {/* Right Panel - Position Summary */}
         <div className="md:col-span-1">
-          <Card className="border border-slate-200 shadow-sm sticky top-8">
-            <CardContent className="pt-6 space-y-4">
-              <h3 className="font-semibold text-lg text-slate-800">
-                Position Summary
-              </h3>
-
-              <div className="space-y-3">
-                <div className="flex justify-between items-baseline">
-                  <span className="text-sm text-slate-600">Collateral</span>
-                  <span className="font-medium">
-                    <NumericFormat
-                      displayType="text"
-                      value={collateralAmount || troveData.collateral}
-                      thousandSeparator=","
-                      decimalScale={7}
-                      fixedDecimalScale={false}
-                    />{" "}
-                    {selectedCollateralToken.symbol}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-baseline">
-                  <span className="text-sm text-slate-600">Debt</span>
-                  <span className="font-medium">
-                    <NumericFormat
-                      displayType="text"
-                      value={borrowAmount || troveData.debt}
-                      thousandSeparator=","
-                      decimalScale={2}
-                      fixedDecimalScale
-                    />{" "}
-                    bitUSD
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-baseline">
-                  <span className="text-sm text-slate-600">Interest Rate</span>
-                  <span className="font-medium">{interestRate}%</span>
-                </div>
-
-                <Separator className="bg-slate-100" />
-
-                <div className="flex justify-between items-baseline">
-                  <span className="text-sm text-slate-600">
-                    Liquidation Price
-                  </span>
-                  <span className="font-medium">
-                    <NumericFormat
-                      displayType="text"
-                      value={liquidationPrice}
-                      prefix="$"
-                      thousandSeparator=","
-                      decimalScale={2}
-                      fixedDecimalScale
-                    />
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <PositionSummaryCard
+            collateralAmount={collateralAmount}
+            borrowAmount={borrowAmount}
+            interestRate={interestRate}
+            liquidationPrice={liquidationPrice}
+            troveData={troveData}
+            selectedCollateralToken={selectedCollateralToken}
+          />
         </div>
       </div>
     </div>
