@@ -14,7 +14,6 @@ import {
   DollarSign,
   Percent,
 } from "lucide-react";
-// import type { Route } from "./+types/my-troves";
 
 function MyTroves() {
   const navigate = useNavigate();

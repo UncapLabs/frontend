@@ -103,19 +103,14 @@ function Borrow() {
     },
   });
 
-  // Get form values reactively
-  const collateralAmount = useStore(
-    form.store,
-    (state) => state.values.collateralAmount
-  );
-  const borrowAmount = useStore(
-    form.store,
-    (state) => state.values.borrowAmount
-  );
-  const selectedRate = useStore(
-    form.store,
-    (state) => state.values.interestRate
-  );
+  // Get form values needed for hooks/logic - combine into single subscription
+  const formValues = useStore(form.store, (state) => ({
+    collateralAmount: state.values.collateralAmount,
+    borrowAmount: state.values.borrowAmount,
+    interestRate: state.values.interestRate,
+  }));
+
+  const { collateralAmount, borrowAmount, interestRate: selectedRate } = formValues;
 
   // Revalidate fields when wallet connection changes
   useEffect(() => {
@@ -166,19 +161,14 @@ function Borrow() {
     collateralToken: selectedCollateralToken,
   });
 
-  // Get form validation state
-  const canSubmit = useStore(form.store, (state) => state.canSubmit);
+  // Get form validation state and errors - combine into single subscription
+  const formValidation = useStore(form.store, (state) => ({
+    canSubmit: state.canSubmit,
+    collateralErrors: state.fieldMeta.collateralAmount?.errors || [],
+    borrowErrors: state.fieldMeta.borrowAmount?.errors || [],
+  }));
 
-  // Get field-specific errors reactively using the store
-  const collateralErrors = useStore(form.store, (state) => {
-    const field = state.fieldMeta.collateralAmount;
-    return field?.errors || [];
-  });
-
-  const borrowErrors = useStore(form.store, (state) => {
-    const field = state.fieldMeta.borrowAmount;
-    return field?.errors || [];
-  });
+  const { canSubmit, collateralErrors, borrowErrors } = formValidation;
 
   // Create button text based on form state and validation
   const buttonText = useMemo(() => {

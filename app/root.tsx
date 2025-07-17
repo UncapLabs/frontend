@@ -1,3 +1,4 @@
+import { scan } from "react-scan";
 import {
   isRouteErrorResponse,
   Links,
@@ -12,6 +13,7 @@ import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import { Toaster } from "~/components/ui/sonner";
 import { TRPCProvider } from "./lib/trpc";
 import { useState } from "react";
+import { useEffect } from "react";
 import type { AppRouter } from "workers/router";
 import { NuqsAdapter } from "nuqs/adapters/react-router/v7";
 
@@ -34,6 +36,13 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    // Make sure to run react-scan only after hydration
+    scan({
+      enabled: true,
+    });
+  }, []);
+
   return (
     <html lang="en">
       <head>

@@ -22,8 +22,6 @@ export function useBorrow({
   const { address } = useAccount();
   const { ownerIndex, isLoadingOwnerPositions } = useOwnerPositions();
 
-  console.log(ownerIndex); // NEED TO DEBUG HERE, it keeps getting logged to the console which is very weird
-
   // Prepare the calls using our new abstraction
   const calls = useMemo(() => {
     if (
