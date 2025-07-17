@@ -510,6 +510,17 @@
       },
       {
         "type": "function",
+        "name": "get_mcr",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
         "name": "set_interest_individual_delegate",
         "inputs": [
           {

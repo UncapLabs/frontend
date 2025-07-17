@@ -1,5 +1,28 @@
 [
   {
+    "type": "impl",
+    "name": "GasPoolImpl",
+    "interface_name": "bit_usd::GasPool::IGasPool"
+  },
+  {
+    "type": "interface",
+    "name": "bit_usd::GasPool::IGasPool",
+    "items": [
+      {
+        "type": "function",
+        "name": "initializer",
+        "inputs": [
+          {
+            "name": "addresses_registry_address",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      }
+    ]
+  },
+  {
     "type": "event",
     "name": "bit_usd::GasPool::GasPool::Event",
     "kind": "enum",

@@ -496,6 +496,17 @@
       },
       {
         "type": "function",
+        "name": "get_trove_manager_events_emitter",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
         "name": "get_CCR",
         "inputs": [],
         "outputs": [

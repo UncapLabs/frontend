@@ -110,7 +110,11 @@ function Borrow() {
     interestRate: state.values.interestRate,
   }));
 
-  const { collateralAmount, borrowAmount, interestRate: selectedRate } = formValues;
+  const {
+    collateralAmount,
+    borrowAmount,
+    interestRate: selectedRate,
+  } = formValues;
 
   // Revalidate fields when wallet connection changes
   useEffect(() => {
