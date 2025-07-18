@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { NumericFormat, type NumberFormatValues } from "react-number-format";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -35,7 +36,6 @@ interface TokenInputProps {
   percentageButtons?: boolean;
   percentageButtonsOnHover?: boolean;
   onPercentageClick?: (percentage: number) => void;
-  percentageButtonsDisabled?: boolean; // Custom override for percentage buttons disabled state
   disabled?: boolean;
   error?: string;
   helperText?: string;
@@ -43,7 +43,7 @@ interface TokenInputProps {
   maxValue?: number;
 }
 
-export function TokenInput({
+export const TokenInput = memo(function TokenInput({
   token,
   tokens,
   onTokenChange,
@@ -57,7 +57,6 @@ export function TokenInput({
   percentageButtons = false,
   percentageButtonsOnHover = false,
   onPercentageClick,
-  percentageButtonsDisabled,
   disabled = false,
   error,
   helperText,
@@ -71,10 +70,6 @@ export function TokenInput({
   };
 
   const shouldShowPercentageButtons = percentageButtons && onPercentageClick;
-  const shouldDisablePercentageButtons =
-    percentageButtonsDisabled !== undefined
-      ? percentageButtonsDisabled
-      : !balance || balance.value === 0n || disabled;
 
   return (
     <div className="bg-slate-50 rounded-xl p-4 space-y-3 group">
@@ -89,10 +84,7 @@ export function TokenInput({
           <div
             className={`${
               percentageButtonsOnHover
-                ? (disabled
-                    ? "opacity-50"
-                    : "opacity-0 group-hover:opacity-100") +
-                  " transition-opacity duration-300 ease-in-out"
+                ? "opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out"
                 : ""
             } flex items-center space-x-1`}
           >
@@ -103,7 +95,6 @@ export function TokenInput({
                 variant="outline"
                 className="h-6 px-2 text-xs rounded-md bg-white border-slate-200 hover:bg-slate-100 transition-colors"
                 onClick={() => onPercentageClick(pct / 100)}
-                disabled={shouldDisablePercentageButtons}
               >
                 {pct}%
               </Button>
@@ -113,7 +104,6 @@ export function TokenInput({
               variant="outline"
               className="h-6 px-2 text-xs rounded-md bg-white border-slate-200 hover:bg-slate-100 transition-colors font-medium"
               onClick={() => onPercentageClick(1)}
-              disabled={shouldDisablePercentageButtons}
             >
               Max.
             </Button>
@@ -187,7 +177,6 @@ export function TokenInput({
                 const selectedToken = tokens.find((t) => t.address === address);
                 if (selectedToken) onTokenChange(selectedToken);
               }}
-              disabled={disabled}
             >
               <SelectTrigger className="w-auto min-w-[120px] rounded-full h-10 pl-2 pr-3 border border-slate-200 bg-white shadow-sm hover:border-slate-300 transition-colors flex items-center">
                 <SelectValue placeholder="Token" />
@@ -248,4 +237,4 @@ export function TokenInput({
       </div>
     </div>
   );
-}
+});

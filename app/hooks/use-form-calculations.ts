@@ -1,11 +1,8 @@
 import { useMemo } from "react";
 import {
-  computeBorrowAmountFromLTV,
   computeDebtLimit,
   computeHealthFactor,
   computeLiquidationPrice,
-  computeLTVFromBorrowAmount,
-  MAX_LTV,
 } from "~/lib/utils/calc";
 
 export function useFormCalculations(
@@ -14,23 +11,6 @@ export function useFormCalculations(
   bitcoinPrice: number | undefined,
   bitUSDPrice: number | undefined
 ) {
-  const ltvValue = useMemo(() => {
-    if (
-      collateralAmount &&
-      collateralAmount > 0 &&
-      borrowAmount !== undefined &&
-      bitcoinPrice &&
-      bitcoinPrice > 0
-    ) {
-      const ltv =
-        borrowAmount > 0
-          ? computeLTVFromBorrowAmount(borrowAmount, collateralAmount, bitcoinPrice)
-          : 0;
-      return Math.round(ltv * 100);
-    }
-    return 0;
-  }, [collateralAmount, borrowAmount, bitcoinPrice]);
-
   const debtLimit = useMemo(() => {
     return computeDebtLimit(collateralAmount || 0, bitcoinPrice || 0);
   }, [collateralAmount, bitcoinPrice]);
@@ -51,22 +31,9 @@ export function useFormCalculations(
     );
   }, [collateralAmount, borrowAmount, bitUSDPrice]);
 
-  const computeBorrowFromLTV = useMemo(() => {
-    return (ltvPercentage: number) => {
-      const cappedLTV = Math.min(ltvPercentage, MAX_LTV * 100);
-      return computeBorrowAmountFromLTV(
-        cappedLTV,
-        collateralAmount || 0,
-        bitcoinPrice || 0
-      );
-    };
-  }, [collateralAmount, bitcoinPrice]);
-
   return {
-    ltvValue,
     debtLimit,
     healthFactor,
     liquidationPrice,
-    computeBorrowFromLTV,
   };
 }

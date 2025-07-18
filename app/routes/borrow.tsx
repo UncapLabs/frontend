@@ -2,10 +2,10 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { ArrowDown } from "lucide-react";
 import { Separator } from "~/components/ui/separator";
-import { InterestRateSelector, LtvSlider } from "~/components/borrow";
+import { InterestRateSelector } from "~/components/borrow";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { TokenInput } from "~/components/token-input";
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useCallback } from "react";
 import { useForm, useStore } from "@tanstack/react-form";
 import { type BorrowFormData } from "~/types/borrow";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
@@ -79,23 +79,18 @@ function Borrow() {
   const form = useForm({
     defaultValues: defaultBorrowFormValues,
     onSubmit: async ({ value }) => {
-      console.log("GOT HERE1");
       if (!isReady) {
-        console.log("GOT HERE2");
         if (!address) {
           toast.error("Please connect your wallet");
         }
         return;
       }
-      console.log("GOT HERE3");
 
       if (!value.collateralAmount || !value.borrowAmount) {
-        console.log("GOT HERE4");
         return;
       }
 
       try {
-        console.log("GOT HERE5");
         await send();
       } catch (error) {
         console.error("Transaction error:", error);
@@ -103,18 +98,16 @@ function Borrow() {
     },
   });
 
-  // Get form values needed for hooks/logic - combine into single subscription
-  const formValues = useStore(form.store, (state) => ({
-    collateralAmount: state.values.collateralAmount,
-    borrowAmount: state.values.borrowAmount,
-    interestRate: state.values.interestRate,
-  }));
-
+  // Get form values needed for hooks/logic only - single subscription
   const {
     collateralAmount,
     borrowAmount,
     interestRate: selectedRate,
-  } = formValues;
+  } = useStore(form.store, (state) => ({
+    collateralAmount: state.values.collateralAmount,
+    borrowAmount: state.values.borrowAmount,
+    interestRate: state.values.interestRate,
+  }));
 
   // Revalidate fields when wallet connection changes
   useEffect(() => {
@@ -141,7 +134,7 @@ function Borrow() {
   }, [selectedRate]);
 
   // Use form calculations hook
-  const { ltvValue, debtLimit, computeBorrowFromLTV } = useFormCalculations(
+  const { debtLimit } = useFormCalculations(
     collateralAmount,
     borrowAmount,
     bitcoin?.price,
@@ -165,84 +158,52 @@ function Borrow() {
     collateralToken: selectedCollateralToken,
   });
 
-  // Get form validation state and errors - combine into single subscription
-  const formValidation = useStore(form.store, (state) => ({
-    canSubmit: state.canSubmit,
-    collateralErrors: state.fieldMeta.collateralAmount?.errors || [],
-    borrowErrors: state.fieldMeta.borrowAmount?.errors || [],
-  }));
+  const handlePercentageClick = useCallback(
+    (percentage: number, type: "collateral" | "borrow") => {
+      if (type === "collateral") {
+        const balance = bitcoinBalance?.value
+          ? Number(bitcoinBalance.value) /
+            10 ** selectedCollateralToken.decimals
+          : 0;
+        const newValue = balance * percentage;
+        form.setFieldValue("collateralAmount", newValue);
+        // Manually trigger validation after setting value
+        form.validateField("collateralAmount", "change");
+      } else {
+        const maxBorrowable = debtLimit;
+        const newValue = maxBorrowable * percentage;
+        form.setFieldValue("borrowAmount", newValue);
+        // Manually trigger validation after setting value
+        form.validateField("borrowAmount", "change");
+      }
+    },
+    [bitcoinBalance?.value, selectedCollateralToken.decimals, debtLimit, form]
+  );
 
-  const { canSubmit, collateralErrors, borrowErrors } = formValidation;
+  // Stable callbacks for percentage clicks
+  const handleCollateralPercentageClick = useCallback(
+    (percentage: number) => handlePercentageClick(percentage, "collateral"),
+    [handlePercentageClick]
+  );
 
-  // Create button text based on form state and validation
-  const buttonText = useMemo(() => {
-    if (!address) {
-      return "Connect Wallet";
-    }
+  const handleBorrowPercentageClick = useCallback(
+    (percentage: number) => handlePercentageClick(percentage, "borrow"),
+    [handlePercentageClick]
+  );
 
-    // Show specific error messages in button
-    if (collateralErrors.length > 0) {
-      return collateralErrors[0];
-    }
-
-    if (borrowErrors.length > 0) {
-      return borrowErrors[0];
-    }
-
-    if (!collateralAmount) {
-      return "Deposit collateral";
-    }
-
-    if (!borrowAmount) {
-      return "Enter borrow amount";
-    }
-
-    return "Borrow";
-  }, [address, collateralAmount, borrowAmount, collateralErrors, borrowErrors]);
-
-  // Handlers using TanStack Form
-  const handleLtvSliderChange = (value: number[]) => {
-    const intendedLtvPercentage = Math.min(value[0], MAX_LTV * 100);
-    const newBorrowAmount = computeBorrowFromLTV(intendedLtvPercentage);
-    form.setFieldValue("borrowAmount", newBorrowAmount);
-    // Manually trigger validation after setting value
-    form.validateField("borrowAmount", "change");
-  };
-
-  const handlePercentageClick = (
-    percentage: number,
-    type: "collateral" | "borrow"
-  ) => {
-    if (type === "collateral") {
-      const balance = bitcoinBalance?.value
-        ? Number(bitcoinBalance.value) / 10 ** selectedCollateralToken.decimals
-        : 0;
-      const newValue = balance * percentage;
-      form.setFieldValue("collateralAmount", newValue);
-      // Manually trigger validation after setting value
-      form.validateField("collateralAmount", "change");
-    } else {
-      const maxBorrowable = debtLimit;
-      const newValue = maxBorrowable * percentage;
-      form.setFieldValue("borrowAmount", newValue);
-      // Manually trigger validation after setting value
-      form.validateField("borrowAmount", "change");
-    }
-  };
-
-  const handleNewBorrow = () => {
+  const handleNewBorrow = useCallback(() => {
     form.reset();
     setUrlTransactionHash("");
-  };
+  }, [form, setUrlTransactionHash]);
 
-  // Handle wallet connection
-  const connectWallet = async () => {
+  // Handle wallet connection - memoized
+  const connectWallet = useCallback(async () => {
     const { connector } = await starknetkitConnectModal();
     if (!connector) {
       return;
     }
     connect({ connector: connector as Connector });
-  };
+  }, [starknetkitConnectModal, connect]);
 
   // Update URL when we get a transaction hash
   if (transactionHash && transactionHash !== urlTransactionHash) {
@@ -252,7 +213,6 @@ function Borrow() {
   // Show transaction UI if we have a hash in URL (single source of truth)
   const shouldShowTransactionUI = !!urlTransactionHash;
 
-  // Original form UI
   return (
     <div className="mx-auto max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
       <div className="flex justify-between items-baseline">
@@ -374,10 +334,7 @@ function Borrow() {
                         onBlur={field.handleBlur}
                         label="You deposit"
                         percentageButtons
-                        onPercentageClick={(percentage: number) =>
-                          handlePercentageClick(percentage, "collateral")
-                        }
-                        error={field.state.meta.errors?.[0]}
+                        onPercentageClick={handleCollateralPercentageClick}
                         disabled={isSending || isPending}
                       />
                     )}
@@ -443,53 +400,12 @@ function Borrow() {
                         label="You borrow"
                         percentageButtons
                         percentageButtonsOnHover
-                        onPercentageClick={(percentage: number) =>
-                          handlePercentageClick(percentage, "borrow")
-                        }
-                        percentageButtonsDisabled={
-                          !debtLimit || debtLimit <= 0 || isSending || isPending
-                        }
-                        error={field.state.meta.errors?.[0]}
+                        onPercentageClick={handleBorrowPercentageClick}
                         disabled={isSending || isPending}
                         showBalance={false}
                       />
                     )}
                   </form.Field>
-
-                  {/* LTV Slider and Borrow Button */}
-                  <div className="flex flex-col items-start space-y-4 mt-6">
-                    <LtvSlider
-                      ltvValue={ltvValue}
-                      onValueChange={handleLtvSliderChange}
-                      disabled={
-                        !collateralAmount ||
-                        collateralAmount <= 0 ||
-                        isSending ||
-                        isPending
-                      }
-                    />
-
-                    <Button
-                      type={address ? "submit" : "button"}
-                      onClick={!address ? connectWallet : undefined}
-                      disabled={
-                        address &&
-                        (!collateralAmount ||
-                          !borrowAmount ||
-                          borrowAmount <= 0 ||
-                          isSending || // Disable while wallet is open
-                          isPending || // Disable while transaction is pending
-                          !canSubmit) // Keep validation check but allow error messages to show
-                      }
-                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2 px-6 rounded-xl shadow-sm hover:shadow transition-all whitespace-nowrap"
-                    >
-                      {isSending
-                        ? "Confirm in wallet..."
-                        : isPending
-                        ? "Confirming..."
-                        : buttonText}
-                    </Button>
-                  </div>
 
                   {/* Interest Rate Options */}
                   <InterestRateSelector
@@ -501,6 +417,67 @@ function Borrow() {
                     }}
                     disabled={isSending || isPending}
                   />
+
+                  {/* Borrow Button */}
+                  <div className="flex flex-col items-start space-y-4 mt-6">
+                    <form.Subscribe
+                      selector={(state) => ({
+                        canSubmit: state.canSubmit,
+                        collateralErrors:
+                          state.fieldMeta.collateralAmount?.errors || [],
+                        borrowErrors:
+                          state.fieldMeta.borrowAmount?.errors || [],
+                        collateralAmount: state.values.collateralAmount,
+                        borrowAmount: state.values.borrowAmount,
+                      })}
+                    >
+                      {({
+                        canSubmit,
+                        collateralErrors,
+                        borrowErrors,
+                        collateralAmount,
+                        borrowAmount,
+                      }) => {
+                        // Button text logic localized to Subscribe
+                        let buttonText = "Borrow";
+
+                        if (!address) {
+                          buttonText = "Connect Wallet";
+                        } else if (collateralErrors.length > 0) {
+                          buttonText = collateralErrors[0];
+                        } else if (borrowErrors.length > 0) {
+                          buttonText = borrowErrors[0];
+                        } else if (!collateralAmount) {
+                          buttonText = "Deposit collateral";
+                        } else if (!borrowAmount) {
+                          buttonText = "Enter borrow amount";
+                        }
+
+                        return (
+                          <Button
+                            type={address ? "submit" : "button"}
+                            onClick={!address ? connectWallet : undefined}
+                            disabled={
+                              address &&
+                              (!collateralAmount ||
+                                !borrowAmount ||
+                                borrowAmount <= 0 ||
+                                isSending ||
+                                isPending ||
+                                !canSubmit)
+                            }
+                            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2 px-6 rounded-xl shadow-sm hover:shadow transition-all whitespace-nowrap"
+                          >
+                            {isSending
+                              ? "Confirm in wallet..."
+                              : isPending
+                              ? "Confirming..."
+                              : buttonText}
+                          </Button>
+                        );
+                      }}
+                    </form.Subscribe>
+                  </div>
                 </CardContent>
               </Card>
             </form>
