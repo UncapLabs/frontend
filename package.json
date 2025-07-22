@@ -50,6 +50,7 @@
     "starknet": "^7.2.0",
     "starknetkit": "^2.10.4",
     "tailwind-merge": "^3.2.0",
+    "usehooks-ts": "^3.1.1",
     "vaul": "^1.1.2",
     "zod": "3.25.0-beta.20250516T044623"
   },

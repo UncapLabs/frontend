@@ -9,8 +9,7 @@ import { useMemo, useEffect, useCallback } from "react";
 import { useForm, useStore } from "@tanstack/react-form";
 import { type BorrowFormData } from "~/types/borrow";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
-import { useFormCalculations } from "~/hooks/use-form-calculations";
-import { MAX_LIMIT, MAX_LTV, getAnnualInterestRate } from "~/lib/utils/calc";
+import { MAX_LIMIT, MAX_LTV, getAnnualInterestRate, computeDebtLimit } from "~/lib/utils/calc";
 import { validators } from "~/lib/validators";
 import type { Route } from "./+types/dashboard";
 import {
@@ -98,7 +97,6 @@ function Borrow() {
     },
   });
 
-  // Get form values needed for hooks/logic only - single subscription
   const {
     collateralAmount,
     borrowAmount,
@@ -133,13 +131,6 @@ function Borrow() {
     return getAnnualInterestRate(selectedRate);
   }, [selectedRate]);
 
-  // Use form calculations hook
-  const { debtLimit } = useFormCalculations(
-    collateralAmount,
-    borrowAmount,
-    bitcoin?.price,
-    bitUSD?.price
-  );
 
   // Use the borrow hook
   const {
@@ -170,14 +161,17 @@ function Borrow() {
         // Manually trigger validation after setting value
         form.validateField("collateralAmount", "change");
       } else {
-        const maxBorrowable = debtLimit;
+        // Calculate debt limit inline
+        const collateral = form.getFieldValue("collateralAmount") || 0;
+        const btcPrice = bitcoin?.price || 0;
+        const maxBorrowable = computeDebtLimit(collateral, btcPrice);
         const newValue = maxBorrowable * percentage;
         form.setFieldValue("borrowAmount", newValue);
         // Manually trigger validation after setting value
         form.validateField("borrowAmount", "change");
       }
     },
-    [bitcoinBalance?.value, selectedCollateralToken.decimals, debtLimit, form]
+    [bitcoinBalance?.value, selectedCollateralToken.decimals, bitcoin?.price, form]
   );
 
   // Stable callbacks for percentage clicks
@@ -224,59 +218,68 @@ function Borrow() {
         {/* Left Panel */}
         <div className="md:col-span-2">
           {shouldShowTransactionUI ? (
-            <TransactionStatus
-              transactionHash={transactionHash}
-              isError={isTransactionError}
-              isSuccess={isTransactionSuccess}
-              error={transactionError}
-              successTitle="Borrow Successful!"
-              successSubtitle="Your position has been created successfully."
-              details={
-                collateralAmount && borrowAmount && urlTransactionHash
-                  ? [
-                      {
-                        label: "Collateral Deposited",
-                        value: (
-                          <>
-                            <NumericFormat
-                              displayType="text"
-                              value={collateralAmount}
-                              thousandSeparator=","
-                              decimalScale={7}
-                              fixedDecimalScale={false}
-                            />{" "}
-                            {selectedCollateralToken.symbol}
-                          </>
-                        ),
-                      },
-                      {
-                        label: "Amount Borrowed",
-                        value: (
-                          <>
-                            <NumericFormat
-                              displayType="text"
-                              value={borrowAmount}
-                              thousandSeparator=","
-                              decimalScale={2}
-                              fixedDecimalScale
-                            />{" "}
-                            bitUSD
-                          </>
-                        ),
-                      },
-                      {
-                        label: "Interest Rate (APR)",
-                        value: `${
-                          Number(annualInterestRate) /
-                          Number(INTEREST_RATE_SCALE_DOWN_FACTOR)
-                        }%`,
-                      },
-                    ]
-                  : undefined
-              }
-              onComplete={handleNewBorrow}
-              completeButtonText="Create New Position"
-            />
+            <form.Subscribe
+              selector={(state) => ({
+                collateralAmount: state.values.collateralAmount,
+                borrowAmount: state.values.borrowAmount,
+              })}
+            >
+              {({ collateralAmount, borrowAmount }) => (
+                <TransactionStatus
+                  transactionHash={transactionHash}
+                  isError={isTransactionError}
+                  isSuccess={isTransactionSuccess}
+                  error={transactionError}
+                  successTitle="Borrow Successful!"
+                  successSubtitle="Your position has been created successfully."
+                  details={
+                    collateralAmount && borrowAmount && urlTransactionHash
+                      ? [
+                          {
+                            label: "Collateral Deposited",
+                            value: (
+                              <>
+                                <NumericFormat
+                                  displayType="text"
+                                  value={collateralAmount}
+                                  thousandSeparator=","
+                                  decimalScale={7}
+                                  fixedDecimalScale={false}
+                                />{" "}
+                                {selectedCollateralToken.symbol}
+                              </>
+                            ),
+                          },
+                          {
+                            label: "Amount Borrowed",
+                            value: (
+                              <>
+                                <NumericFormat
+                                  displayType="text"
+                                  value={borrowAmount}
+                                  thousandSeparator=","
+                                  decimalScale={2}
+                                  fixedDecimalScale
+                                />{" "}
+                                bitUSD
+                              </>
+                            ),
+                          },
+                          {
+                            label: "Interest Rate (APR)",
+                            value: `${
+                              Number(annualInterestRate) /
+                              Number(INTEREST_RATE_SCALE_DOWN_FACTOR)
+                            }%`,
+                          },
+                        ]
+                      : undefined
+                  }
+                  onComplete={handleNewBorrow}
+                  completeButtonText="Create New Position"
+                />
+              )}
+            </form.Subscribe>
           ) : (
             <form
               onSubmit={(e) => {
@@ -314,7 +317,12 @@ function Borrow() {
                       onChange: ({ fieldApi }) => {
                         // When collateral changes, revalidate borrow amount
                         // This ensures LTV and debt limit checks are re-run
-                        if (borrowAmount !== undefined && borrowAmount > 0) {
+                        const currentBorrowAmount =
+                          fieldApi.form.getFieldValue("borrowAmount");
+                        if (
+                          currentBorrowAmount !== undefined &&
+                          currentBorrowAmount > 0
+                        ) {
                           fieldApi.form.validateField("borrowAmount", "change");
                         }
                       },
@@ -364,6 +372,11 @@ function Borrow() {
 
                         const collateral =
                           fieldApi.form.getFieldValue("collateralAmount");
+
+                        // Calculate debt limit inline
+                        const debtLimit = collateral && bitcoin?.price 
+                          ? computeDebtLimit(collateral, bitcoin.price)
+                          : 0;
 
                         return validators.compose(
                           validators.requiresCollateral(value, collateral),
