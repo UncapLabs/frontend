@@ -99,14 +99,6 @@ export const TokenInput = memo(function TokenInput({
                 {pct}%
               </Button>
             ))}
-            <Button
-              type="button"
-              variant="outline"
-              className="h-6 px-2 text-xs rounded-md bg-white border-slate-200 hover:bg-slate-100 transition-colors font-medium"
-              onClick={() => onPercentageClick(1)}
-            >
-              Max.
-            </Button>
           </div>
         )}
       </div>

@@ -133,7 +133,18 @@ export function useBorrow({
     else if (persistedTxReceipt.data) {
       transactionState.setSuccess();
     } else if (persistedTxReceipt.isError && persistedTxReceipt.error) {
-      transactionState.setError(persistedTxReceipt.error);
+      // Check if this is just an RPC issue (transaction not found)
+      const errorMessage = persistedTxReceipt.error.message || '';
+      const isTransactionNotFound = 
+        errorMessage.includes('Transaction hash not found') ||
+        errorMessage.includes('starknet_getTransactionReceipt');
+      
+      // Only set error if it's not a "transaction not found" error
+      // This prevents RPC sync issues from being treated as transaction failures
+      if (!isTransactionNotFound) {
+        transactionState.setError(persistedTxReceipt.error);
+      }
+      // If transaction not found, stay in pending - it might still be processing
     }
   }
 

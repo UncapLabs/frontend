@@ -219,6 +219,9 @@ function Borrow() {
   const handleNewBorrow = useCallback(() => {
     form.reset();
     reset(); // Reset transaction state
+    setUrlBorrowAmount("");
+    setUrlCollateralAmount("");
+    setUrlInterestRate("5");
   }, [form, reset]);
 
   // Handle wallet connection - memoized
@@ -330,9 +333,10 @@ function Borrow() {
                         // Don't validate balance until it's loaded
                         if (!bitcoinBalance) return undefined;
 
-                        const balance = Number(bitcoinBalance.value) /
+                        const balance =
+                          Number(bitcoinBalance.value) /
                           10 ** selectedCollateralToken.decimals;
-                          
+
                         return validators.compose(
                           validators.insufficientBalance(value, balance),
                           validators.maximumAmount(value, MAX_LIMIT)
@@ -414,11 +418,7 @@ function Borrow() {
 
                         return validators.compose(
                           validators.requiresCollateral(value, collateral),
-                          validators.minimumUsdValue(
-                            value,
-                            bitUSD.price,
-                            2000
-                          ),
+                          validators.minimumUsdValue(value, bitUSD.price, 2000),
                           validators.debtLimit(value, debtLimit),
                           // LTV check
                           (() => {
