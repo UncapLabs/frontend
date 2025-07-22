@@ -1,10 +1,19 @@
-import { useMemo } from "react";
-import { useAccount } from "@starknet-react/core";
+import { useMemo, useCallback } from "react";
+import { useAccount, useTransactionReceipt } from "@starknet-react/core";
 import { contractCall } from "~/lib/contracts/calls";
 import { useOwnerPositions } from "./use-owner-positions";
 import { useTransaction } from "./use-transaction";
-import { BORROWER_OPERATIONS_ADDRESS } from "~/lib/contracts/constants";
+import { useTransactionState, TRANSACTION_STORAGE_KEYS } from "./use-transaction-state";
+import { BORROWER_OPERATIONS_ADDRESS, TBTC_TOKEN } from "~/lib/contracts/constants";
 import type { Token } from "~/components/token-input";
+
+// Borrow form data structure
+export interface BorrowFormData {
+  collateralAmount?: number;
+  borrowAmount?: number;
+  interestRate: number;
+  selectedCollateralToken: string;
+}
 
 interface UseBorrowParams {
   collateralAmount?: number;
@@ -21,6 +30,17 @@ export function useBorrow({
 }: UseBorrowParams) {
   const { address } = useAccount();
   const { ownerIndex, isLoadingOwnerPositions } = useOwnerPositions();
+
+  // Transaction state management
+  const transactionState = useTransactionState<BorrowFormData>({
+    storageKey: TRANSACTION_STORAGE_KEYS.borrow,
+    initialFormData: {
+      collateralAmount: undefined,
+      borrowAmount: undefined,
+      interestRate: 5, // Default to 5% APR
+      selectedCollateralToken: TBTC_TOKEN.symbol,
+    },
+  });
 
   // Prepare the calls using our new abstraction
   const calls = useMemo(() => {
@@ -72,8 +92,55 @@ export function useBorrow({
   // Use the generic transaction hook
   const transaction = useTransaction(calls);
 
+  // Watch for persisted transaction if we're in pending state
+  const persistedTxReceipt = useTransactionReceipt({
+    hash: transactionState.currentState === 'pending' && transactionState.transactionHash && !transaction.transactionHash
+      ? transactionState.transactionHash
+      : undefined,
+    watch: true,
+  });
+
+  // Create a wrapped send function that manages state transitions
+  const send = useCallback(async () => {
+    try {
+      transactionState.startConfirming();
+      const hash = await transaction.send();
+      
+      if (hash) {
+        // Transaction was sent successfully, move to pending
+        transactionState.setPending(hash);
+      } else {
+        // No hash returned, go back to editing
+        transactionState.startEditing();
+      }
+    } catch (error) {
+      // User rejected or error occurred - go back to editing
+      transactionState.startEditing();
+      throw error;
+    }
+  }, [transaction, transactionState]);
+
+  // Check if we need to update state based on transaction status
+  // This is purely derived state - no side effects
+  if (transactionState.currentState === 'pending') {
+    // Check active transaction first
+    if (transaction.isSuccess) {
+      transactionState.setSuccess();
+    } else if (transaction.isError && transaction.error) {
+      transactionState.setError(transaction.error);
+    }
+    // Check persisted transaction (after page refresh)
+    else if (persistedTxReceipt.data) {
+      transactionState.setSuccess();
+    } else if (persistedTxReceipt.isError && persistedTxReceipt.error) {
+      transactionState.setError(persistedTxReceipt.error);
+    }
+  }
+
   return {
     ...transaction,
+    ...transactionState,
+    send, // Override send with our wrapped version
     isReady: !!calls,
   };
 }

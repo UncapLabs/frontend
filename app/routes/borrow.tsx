@@ -7,9 +7,13 @@ import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { TokenInput } from "~/components/token-input";
 import { useMemo, useEffect, useCallback } from "react";
 import { useForm, useStore } from "@tanstack/react-form";
-import { type BorrowFormData } from "~/types/borrow";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
-import { MAX_LIMIT, MAX_LTV, getAnnualInterestRate, computeDebtLimit } from "~/lib/utils/calc";
+import {
+  MAX_LIMIT,
+  MAX_LTV,
+  getAnnualInterestRate,
+  computeDebtLimit,
+} from "~/lib/utils/calc";
 import { validators } from "~/lib/validators";
 import type { Route } from "./+types/dashboard";
 import {
@@ -30,7 +34,7 @@ import {
 } from "~/lib/contracts/constants";
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
-import { useBorrow } from "~/hooks/use-borrow";
+import { useBorrow, type BorrowFormData } from "~/hooks/use-borrow";
 import { useQueryState } from "nuqs";
 
 function Borrow() {
@@ -40,15 +44,10 @@ function Borrow() {
     connectors: connectors as StarknetkitConnector[],
   });
 
-  // Check if we have a transaction hash in URL
-  const [urlTransactionHash, setUrlTransactionHash] = useQueryState("tx", {
-    defaultValue: "",
-  });
-
   // Available collateral tokens
   const collateralTokens = [TBTC_TOKEN, LBTC_TOKEN];
 
-  // Store selected collateral token in URL
+  // URL state for form inputs
   const [selectedTokenSymbol, setSelectedTokenSymbol] = useQueryState(
     "collateral",
     {
@@ -56,27 +55,32 @@ function Borrow() {
     }
   );
 
-  // Get the full token object from the symbol
-  const selectedCollateralToken =
-    collateralTokens.find((token) => token.symbol === selectedTokenSymbol) ||
-    TBTC_TOKEN;
+  const [urlCollateralAmount, setUrlCollateralAmount] = useQueryState(
+    "amount",
+    {
+      defaultValue: "",
+    }
+  );
 
-  const { data: bitcoinBalance } = useBalance({
-    token: selectedCollateralToken.address,
-    address: address,
-    refetchInterval: 30000,
+  const [urlBorrowAmount, setUrlBorrowAmount] = useQueryState("borrow", {
+    defaultValue: "",
   });
 
-  // Create properly typed default values
-  const defaultBorrowFormValues: BorrowFormData = {
-    collateralAmount: undefined,
-    borrowAmount: undefined,
-    interestRate: 5, // Default to 5% APR
-  };
+  const [urlInterestRate, setUrlInterestRate] = useQueryState("rate", {
+    defaultValue: "5",
+  });
 
-  // Form setup with TanStack Form
+  // Initialize form with URL values
   const form = useForm({
-    defaultValues: defaultBorrowFormValues,
+    defaultValues: {
+      collateralAmount: urlCollateralAmount
+        ? parseFloat(urlCollateralAmount)
+        : (undefined as number | undefined),
+      borrowAmount: urlBorrowAmount
+        ? parseFloat(urlBorrowAmount)
+        : (undefined as number | undefined),
+      interestRate: parseInt(urlInterestRate) || 5,
+    },
     onSubmit: async ({ value }) => {
       if (!isReady) {
         if (!address) {
@@ -90,6 +94,14 @@ function Borrow() {
       }
 
       try {
+        // Update persisted form data before sending
+        updateFormData({
+          collateralAmount: value.collateralAmount,
+          borrowAmount: value.borrowAmount,
+          interestRate: value.interestRate,
+          selectedCollateralToken: selectedCollateralToken.symbol,
+        });
+
         await send();
       } catch (error) {
         console.error("Transaction error:", error);
@@ -123,31 +135,45 @@ function Borrow() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address]); // Intentionally only re-run when wallet connection changes
 
-  // Conditional price fetching
-  const { bitcoin, bitUSD } = useFetchPrices(collateralAmount);
-
   // Calculate annual interest rate
   const annualInterestRate = useMemo(() => {
     return getAnnualInterestRate(selectedRate);
   }, [selectedRate]);
 
+  // Get selected token from URL
+  const selectedCollateralToken =
+    collateralTokens.find((t) => t.symbol === selectedTokenSymbol) ||
+    TBTC_TOKEN;
 
-  // Use the borrow hook
+  // Use the borrow hook with integrated state management
   const {
     send,
     isPending,
-    isSending,
-    isError: isTransactionError,
     error: transactionError,
     transactionHash,
     isReady,
-    isSuccess: isTransactionSuccess,
+    currentState,
+    formData,
+    updateFormData,
+    reset,
+    transactionHash: persistedTransactionHash,
+    error: persistedError,
   } = useBorrow({
     collateralAmount,
     borrowAmount,
     annualInterestRate,
     collateralToken: selectedCollateralToken,
   });
+
+  // Balance for selected token
+  const { data: bitcoinBalance } = useBalance({
+    token: selectedCollateralToken.address,
+    address: address,
+    refetchInterval: 30000,
+  });
+
+  // Conditional price fetching
+  const { bitcoin, bitUSD } = useFetchPrices(collateralAmount);
 
   const handlePercentageClick = useCallback(
     (percentage: number, type: "collateral" | "borrow") => {
@@ -171,7 +197,12 @@ function Borrow() {
         form.validateField("borrowAmount", "change");
       }
     },
-    [bitcoinBalance?.value, selectedCollateralToken.decimals, bitcoin?.price, form]
+    [
+      bitcoinBalance?.value,
+      selectedCollateralToken.decimals,
+      bitcoin?.price,
+      form,
+    ]
   );
 
   // Stable callbacks for percentage clicks
@@ -187,8 +218,8 @@ function Borrow() {
 
   const handleNewBorrow = useCallback(() => {
     form.reset();
-    setUrlTransactionHash("");
-  }, [form, setUrlTransactionHash]);
+    reset(); // Reset transaction state
+  }, [form, reset]);
 
   // Handle wallet connection - memoized
   const connectWallet = useCallback(async () => {
@@ -199,13 +230,10 @@ function Borrow() {
     connect({ connector: connector as Connector });
   }, [starknetkitConnectModal, connect]);
 
-  // Update URL when we get a transaction hash
-  if (transactionHash && transactionHash !== urlTransactionHash) {
-    setUrlTransactionHash(transactionHash);
-  }
-
-  // Show transaction UI if we have a hash in URL (single source of truth)
-  const shouldShowTransactionUI = !!urlTransactionHash;
+  // Show transaction UI only for pending, success, or error states
+  const shouldShowTransactionUI = ["pending", "success", "error"].includes(
+    currentState
+  );
 
   return (
     <div className="mx-auto max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
@@ -218,68 +246,65 @@ function Borrow() {
         {/* Left Panel */}
         <div className="md:col-span-2">
           {shouldShowTransactionUI ? (
-            <form.Subscribe
-              selector={(state) => ({
-                collateralAmount: state.values.collateralAmount,
-                borrowAmount: state.values.borrowAmount,
-              })}
-            >
-              {({ collateralAmount, borrowAmount }) => (
-                <TransactionStatus
-                  transactionHash={transactionHash}
-                  isError={isTransactionError}
-                  isSuccess={isTransactionSuccess}
-                  error={transactionError}
-                  successTitle="Borrow Successful!"
-                  successSubtitle="Your position has been created successfully."
-                  details={
-                    collateralAmount && borrowAmount && urlTransactionHash
-                      ? [
-                          {
-                            label: "Collateral Deposited",
-                            value: (
-                              <>
-                                <NumericFormat
-                                  displayType="text"
-                                  value={collateralAmount}
-                                  thousandSeparator=","
-                                  decimalScale={7}
-                                  fixedDecimalScale={false}
-                                />{" "}
-                                {selectedCollateralToken.symbol}
-                              </>
-                            ),
-                          },
-                          {
-                            label: "Amount Borrowed",
-                            value: (
-                              <>
-                                <NumericFormat
-                                  displayType="text"
-                                  value={borrowAmount}
-                                  thousandSeparator=","
-                                  decimalScale={2}
-                                  fixedDecimalScale
-                                />{" "}
-                                bitUSD
-                              </>
-                            ),
-                          },
-                          {
-                            label: "Interest Rate (APR)",
-                            value: `${
-                              Number(annualInterestRate) /
-                              Number(INTEREST_RATE_SCALE_DOWN_FACTOR)
-                            }%`,
-                          },
-                        ]
-                      : undefined
-                  }
-                  onComplete={handleNewBorrow}
-                  completeButtonText="Create New Position"
-                />
-              )}
-            </form.Subscribe>
+            <TransactionStatus
+              transactionHash={transactionHash || persistedTransactionHash}
+              isError={currentState === "error"}
+              isSuccess={currentState === "success"}
+              error={
+                (currentState === "error" && persistedError
+                  ? { ...persistedError, name: "TransactionError" }
+                  : transactionError) as Error | null
+              }
+              successTitle="Borrow Successful!"
+              successSubtitle="Your position has been created successfully."
+              details={
+                formData.collateralAmount &&
+                formData.borrowAmount &&
+                (transactionHash || persistedTransactionHash)
+                  ? [
+                      {
+                        label: "Collateral Deposited",
+                        value: (
+                          <>
+                            <NumericFormat
+                              displayType="text"
+                              value={formData.collateralAmount}
+                              thousandSeparator=","
+                              decimalScale={7}
+                              fixedDecimalScale={false}
+                            />{" "}
+                            {selectedCollateralToken.symbol}
+                          </>
+                        ),
+                      },
+                      {
+                        label: "Amount Borrowed",
+                        value: (
+                          <>
+                            <NumericFormat
+                              displayType="text"
+                              value={formData.borrowAmount}
+                              thousandSeparator=","
+                              decimalScale={2}
+                              fixedDecimalScale
+                            />{" "}
+                            bitUSD
+                          </>
+                        ),
+                      },
+                      {
+                        label: "Interest Rate (APR)",
+                        value: `${
+                          Number(annualInterestRate) /
+                          Number(INTEREST_RATE_SCALE_DOWN_FACTOR)
+                        }%`,
+                      },
+                    ]
+                  : undefined
+              }
+              onComplete={handleNewBorrow}
+              completeButtonText="Create New Position"
+            />
           ) : (
             <form
               onSubmit={(e) => {
@@ -290,7 +315,7 @@ function Borrow() {
             >
               <Card
                 className={`border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden ${
-                  isSending || isPending ? "opacity-75" : ""
+                  currentState === "confirming" || isPending ? "opacity-75" : ""
                 }`}
               >
                 <CardContent className="pt-6 space-y-6">
@@ -302,10 +327,12 @@ function Borrow() {
                       onChangeAsync: async ({ value }) => {
                         if (!address || !value) return undefined;
 
-                        const balance = bitcoinBalance
-                          ? Number(bitcoinBalance.value) /
-                            10 ** selectedCollateralToken.decimals
-                          : 0;
+                        // Don't validate balance until it's loaded
+                        if (!bitcoinBalance) return undefined;
+
+                        const balance = Number(bitcoinBalance.value) /
+                          10 ** selectedCollateralToken.decimals;
+                          
                         return validators.compose(
                           validators.insufficientBalance(value, balance),
                           validators.maximumAmount(value, MAX_LIMIT)
@@ -335,17 +362,21 @@ function Borrow() {
                         onTokenChange={(token) => {
                           setSelectedTokenSymbol(token.symbol);
                           // Reset amount when token changes
-                          field.handleChange(undefined);
+                          field.handleChange(undefined as number | undefined);
                         }}
                         balance={bitcoinBalance}
                         price={bitcoin}
                         value={field.state.value}
-                        onChange={field.handleChange}
+                        onChange={(value) => {
+                          field.handleChange(value);
+                          // Update URL
+                          setUrlCollateralAmount(value ? value.toString() : "");
+                        }}
                         onBlur={field.handleBlur}
                         label="You deposit"
                         percentageButtons
                         onPercentageClick={handleCollateralPercentageClick}
-                        disabled={isSending || isPending}
+                        disabled={currentState === "confirming" || isPending}
                       />
                     )}
                   </form.Field>
@@ -373,8 +404,11 @@ function Borrow() {
                         const collateral =
                           fieldApi.form.getFieldValue("collateralAmount");
 
+                        // Don't validate until prices are loaded
+                        if (!bitcoin?.price || !bitUSD?.price) return undefined;
+
                         // Calculate debt limit inline
-                        const debtLimit = collateral && bitcoin?.price 
+                        const debtLimit = collateral
                           ? computeDebtLimit(collateral, bitcoin.price)
                           : 0;
 
@@ -382,18 +416,13 @@ function Borrow() {
                           validators.requiresCollateral(value, collateral),
                           validators.minimumUsdValue(
                             value,
-                            bitUSD?.price || 1,
+                            bitUSD.price,
                             2000
                           ),
                           validators.debtLimit(value, debtLimit),
                           // LTV check
                           (() => {
-                            if (
-                              !collateral ||
-                              !bitcoin?.price ||
-                              !bitUSD?.price
-                            )
-                              return undefined;
+                            if (!collateral) return undefined;
                             const collateralValue = collateral * bitcoin.price;
                             const borrowValue = value * bitUSD.price;
                             return validators.ltvRatio(
@@ -411,13 +440,17 @@ function Borrow() {
                         token={BITUSD_TOKEN}
                         price={bitUSD}
                         value={field.state.value}
-                        onChange={field.handleChange}
+                        onChange={(value) => {
+                          field.handleChange(value);
+                          // Update URL
+                          setUrlBorrowAmount(value ? value.toString() : "");
+                        }}
                         onBlur={field.handleBlur}
                         label="You borrow"
                         percentageButtons
                         percentageButtonsOnHover
                         onPercentageClick={handleBorrowPercentageClick}
-                        disabled={isSending || isPending}
+                        disabled={currentState === "confirming" || isPending}
                         showBalance={false}
                       />
                     )}
@@ -427,11 +460,13 @@ function Borrow() {
                   <InterestRateSelector
                     interestRate={selectedRate}
                     onInterestRateChange={(rate) => {
-                      if (!isSending && !isPending) {
+                      if (currentState !== "confirming" && !isPending) {
                         form.setFieldValue("interestRate", rate);
+                        // Update URL
+                        setUrlInterestRate(rate.toString());
                       }
                     }}
-                    disabled={isSending || isPending}
+                    disabled={currentState === "confirming" || isPending}
                   />
 
                   {/* Borrow Button */}
@@ -478,16 +513,16 @@ function Borrow() {
                               (!collateralAmount ||
                                 !borrowAmount ||
                                 borrowAmount <= 0 ||
-                                isSending ||
+                                currentState === "confirming" ||
                                 isPending ||
                                 !canSubmit)
                             }
                             className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2 px-6 rounded-xl shadow-sm hover:shadow transition-all whitespace-nowrap"
                           >
-                            {isSending
+                            {currentState === "confirming"
                               ? "Confirm in wallet..."
                               : isPending
-                              ? "Confirming..."
+                              ? "Transaction pending..."
                               : buttonText}
                           </Button>
                         );

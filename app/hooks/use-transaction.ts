@@ -6,7 +6,7 @@ import {
 import { type Call } from "starknet";
 
 interface UseTransactionResult {
-  send: () => Promise<void>;
+  send: () => Promise<string | undefined>;
   isPending: boolean;
   isSending: boolean;
   isSuccess: boolean;
@@ -47,12 +47,13 @@ export function useTransaction(
   const isError = isSendError || isReceiptError;
   const error = sendError || receiptError || null;
 
-  // Simple send wrapper
+  // Send wrapper that returns the transaction hash
   const send = useCallback(async () => {
     if (!calls) {
       throw new Error("Transaction not ready");
     }
-    await sendTransaction(calls);
+    const result = await sendTransaction(calls);
+    return result?.transaction_hash;
   }, [calls, sendTransaction]);
 
   return {
