@@ -294,8 +294,9 @@ function Borrow() {
                   {/* Deposit Collateral Section */}
                   <form.Field
                     name="collateralAmount"
+                    asyncDebounceMs={300}
                     validators={{
-                      onChange: ({ value }) => {
+                      onChangeAsync: async ({ value }) => {
                         if (!address || !value) return undefined;
 
                         const balance = bitcoinBalance
@@ -309,6 +310,7 @@ function Borrow() {
                       },
                     }}
                     listeners={{
+                      onChangeDebounceMs: 500,
                       onChange: ({ fieldApi }) => {
                         // When collateral changes, revalidate borrow amount
                         // This ensures LTV and debt limit checks are re-run
@@ -355,8 +357,9 @@ function Borrow() {
                   {/* Borrow Stablecoin Section */}
                   <form.Field
                     name="borrowAmount"
+                    asyncDebounceMs={300}
                     validators={{
-                      onChange: ({ value, fieldApi }) => {
+                      onChangeAsync: async ({ value, fieldApi }) => {
                         if (!value) return undefined;
 
                         const collateral =
