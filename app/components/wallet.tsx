@@ -1,17 +1,11 @@
 import {
-  Connector,
   useAccount,
-  useConnect,
   useDisconnect,
   useStarkProfile,
 } from "@starknet-react/core";
 import { AvatarIcon } from "./avatar-icon";
 import { toHexChainid, isMainnet } from "../lib/utils/chain-id";
 import { formatTruncatedAddress } from "../lib/utils/format-address";
-import {
-  type StarknetkitConnector,
-  useStarknetkitConnectModal,
-} from "starknetkit";
 import { useState } from "react";
 import {
   Dialog,
@@ -31,6 +25,7 @@ import {
 } from "./ui/drawer";
 import { Button } from "./ui/button";
 import { useMediaQuery } from "~/hooks/use-media-query";
+import { useWalletConnect } from "~/hooks/use-wallet-connect";
 
 // Internal component for displaying wallet info
 function WalletInfoDisplay({
@@ -136,19 +131,11 @@ export function WalletConnector() {
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
-
-  const { connect, connectors } = useConnect();
-  const { starknetkitConnectModal } = useStarknetkitConnectModal({
-    connectors: connectors as StarknetkitConnector[],
-  });
+  const { connectWallet: connectWalletHook } = useWalletConnect();
 
   async function connectWallet() {
     setIsOpen(false);
-    const { connector } = await starknetkitConnectModal();
-    if (!connector) {
-      return;
-    }
-    await connect({ connector: connector as Connector });
+    await connectWalletHook();
   }
 
   const { address, chainId, connector: activeConnector } = useAccount();

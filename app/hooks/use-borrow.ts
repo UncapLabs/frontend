@@ -3,8 +3,14 @@ import { useAccount, useTransactionReceipt } from "@starknet-react/core";
 import { contractCall } from "~/lib/contracts/calls";
 import { useOwnerPositions } from "./use-owner-positions";
 import { useTransaction } from "./use-transaction";
-import { useTransactionState, TRANSACTION_STORAGE_KEYS } from "./use-transaction-state";
-import { BORROWER_OPERATIONS_ADDRESS, TBTC_TOKEN } from "~/lib/contracts/constants";
+import {
+  useTransactionState,
+  TRANSACTION_STORAGE_KEYS,
+} from "./use-transaction-state";
+import {
+  BORROWER_OPERATIONS_ADDRESS,
+  TBTC_TOKEN,
+} from "~/lib/contracts/constants";
 import type { Token } from "~/components/token-input";
 
 // Borrow form data structure
@@ -18,14 +24,14 @@ export interface BorrowFormData {
 interface UseBorrowParams {
   collateralAmount?: number;
   borrowAmount?: number;
-  annualInterestRate: bigint;
+  interestRate: number;
   collateralToken?: Token;
 }
 
 export function useBorrow({
   collateralAmount,
   borrowAmount,
-  annualInterestRate,
+  interestRate,
   collateralToken,
 }: UseBorrowParams) {
   const { address } = useAccount();
@@ -63,11 +69,11 @@ export function useBorrow({
         BigInt(Math.floor(collateralAmount * 1e18))
       ),
 
-      // 2. Approve ETH for gas payment
+      // 2. Approve STRK for gas payment
       contractCall.token.approve(
-        "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+        "0x04718f5a0Fc34cC1AF16A1cdee98fFB20C31f5cD61D6Ab07201858f4287c938D",
         BORROWER_OPERATIONS_ADDRESS,
-        BigInt(10e18) // Approve a reasonable amount for gas fees
+        BigInt(50e18) // Approve 50 STRK for gas fees
       ),
 
       // 3. Open trove
@@ -76,7 +82,7 @@ export function useBorrow({
         ownerIndex: ownerIndex,
         collAmount: BigInt(Math.floor(collateralAmount * 1e18)),
         bitUsdAmount: BigInt(Math.floor(borrowAmount * 1e18)),
-        annualInterestRate,
+        annualInterestRate: BigInt(Math.floor((interestRate * 1e18) / 100)),
       }),
     ];
   }, [
@@ -86,7 +92,7 @@ export function useBorrow({
     collateralToken,
     isLoadingOwnerPositions,
     ownerIndex,
-    annualInterestRate,
+    interestRate,
   ]);
 
   // Use the generic transaction hook
@@ -94,9 +100,12 @@ export function useBorrow({
 
   // Watch for persisted transaction if we're in pending state
   const persistedTxReceipt = useTransactionReceipt({
-    hash: transactionState.currentState === 'pending' && transactionState.transactionHash && !transaction.transactionHash
-      ? transactionState.transactionHash
-      : undefined,
+    hash:
+      transactionState.currentState === "pending" &&
+      transactionState.transactionHash &&
+      !transaction.transactionHash
+        ? transactionState.transactionHash
+        : undefined,
     watch: true,
   });
 
@@ -105,7 +114,7 @@ export function useBorrow({
     try {
       transactionState.startConfirming();
       const hash = await transaction.send();
-      
+
       if (hash) {
         // Transaction was sent successfully, move to pending
         transactionState.setPending(hash);
@@ -122,7 +131,7 @@ export function useBorrow({
 
   // Check if we need to update state based on transaction status
   // This is purely derived state - no side effects
-  if (transactionState.currentState === 'pending') {
+  if (transactionState.currentState === "pending") {
     // Check active transaction first
     if (transaction.isSuccess) {
       transactionState.setSuccess();
@@ -134,11 +143,11 @@ export function useBorrow({
       transactionState.setSuccess();
     } else if (persistedTxReceipt.isError && persistedTxReceipt.error) {
       // Check if this is just an RPC issue (transaction not found)
-      const errorMessage = persistedTxReceipt.error.message || '';
-      const isTransactionNotFound = 
-        errorMessage.includes('Transaction hash not found') ||
-        errorMessage.includes('starknet_getTransactionReceipt');
-      
+      const errorMessage = persistedTxReceipt.error.message || "";
+      const isTransactionNotFound =
+        errorMessage.includes("Transaction hash not found") ||
+        errorMessage.includes("starknet_getTransactionReceipt");
+
       // Only set error if it's not a "transaction not found" error
       // This prevents RPC sync issues from being treated as transaction failures
       if (!isTransactionNotFound) {

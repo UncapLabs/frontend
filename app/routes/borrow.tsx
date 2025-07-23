@@ -5,69 +5,50 @@ import { Separator } from "~/components/ui/separator";
 import { InterestRateSelector } from "~/components/borrow";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { TokenInput } from "~/components/token-input";
-import { useMemo, useEffect, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import { useForm, useStore } from "@tanstack/react-form";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
-import {
-  MAX_LIMIT,
-  MAX_LTV,
-  getAnnualInterestRate,
-  computeDebtLimit,
-} from "~/lib/utils/calc";
+import { MAX_LIMIT, MAX_LTV, computeDebtLimit } from "~/lib/utils/calc";
 import { validators } from "~/lib/validators";
 import type { Route } from "./+types/dashboard";
-import {
-  useAccount,
-  useBalance,
-  useConnect,
-  type Connector,
-} from "@starknet-react/core";
-import {
-  type StarknetkitConnector,
-  useStarknetkitConnectModal,
-} from "starknetkit";
-import {
-  INTEREST_RATE_SCALE_DOWN_FACTOR,
-  TBTC_TOKEN,
-  LBTC_TOKEN,
-  BITUSD_TOKEN,
-} from "~/lib/contracts/constants";
+import { useAccount, useBalance } from "@starknet-react/core";
+import { BITUSD_TOKEN, COLLATERAL_TOKENS } from "~/lib/contracts/constants";
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
-import { useBorrow, type BorrowFormData } from "~/hooks/use-borrow";
+import { useBorrow } from "~/hooks/use-borrow";
 import { useQueryState } from "nuqs";
+import { useWalletConnect } from "~/hooks/use-wallet-connect";
+import { useCollateralToken } from "~/hooks/use-collateral-token";
 
 function Borrow() {
   const { address } = useAccount();
-  const { connect, connectors } = useConnect();
-  const { starknetkitConnectModal } = useStarknetkitConnectModal({
-    connectors: connectors as StarknetkitConnector[],
-  });
+  const { connectWallet } = useWalletConnect();
 
-  // Available collateral tokens
-  const collateralTokens = [TBTC_TOKEN, LBTC_TOKEN];
+  const {
+    selectedCollateralToken,
+    selectedTokenAddress,
+    setSelectedTokenAddress,
+  } = useCollateralToken();
 
   // URL state for form inputs
-  const [selectedTokenSymbol, setSelectedTokenSymbol] = useQueryState(
-    "collateral",
-    {
-      defaultValue: TBTC_TOKEN.symbol,
-    }
-  );
-
   const [urlCollateralAmount, setUrlCollateralAmount] = useQueryState(
     "amount",
     {
       defaultValue: "",
     }
   );
-
   const [urlBorrowAmount, setUrlBorrowAmount] = useQueryState("borrow", {
     defaultValue: "",
   });
-
   const [urlInterestRate, setUrlInterestRate] = useQueryState("rate", {
     defaultValue: "5",
+  });
+
+  // Balance for selected token
+  const { data: bitcoinBalance } = useBalance({
+    token: selectedCollateralToken.address,
+    address: address,
+    refetchInterval: 30000,
   });
 
   // Initialize form with URL values
@@ -119,31 +100,8 @@ function Borrow() {
     interestRate: state.values.interestRate,
   }));
 
-  // Revalidate fields when wallet connection changes
-  useEffect(() => {
-    // Only run validation if wallet just connected (not on disconnect)
-    if (address) {
-      // Validate collateral if user has entered a value
-      if (collateralAmount !== undefined && collateralAmount > 0) {
-        form.validateField("collateralAmount", "change");
-      }
-      // Validate borrow amount if user has entered a value
-      if (borrowAmount !== undefined && borrowAmount > 0) {
-        form.validateField("borrowAmount", "change");
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [address]); // Intentionally only re-run when wallet connection changes
-
-  // Calculate annual interest rate
-  const annualInterestRate = useMemo(() => {
-    return getAnnualInterestRate(selectedRate);
-  }, [selectedRate]);
-
-  // Get selected token from URL
-  const selectedCollateralToken =
-    collateralTokens.find((t) => t.symbol === selectedTokenSymbol) ||
-    TBTC_TOKEN;
+  // Conditional price fetching
+  const { bitcoin, bitUSD } = useFetchPrices(collateralAmount);
 
   // Use the borrow hook with integrated state management
   const {
@@ -161,19 +119,25 @@ function Borrow() {
   } = useBorrow({
     collateralAmount,
     borrowAmount,
-    annualInterestRate,
+    interestRate: selectedRate,
     collateralToken: selectedCollateralToken,
   });
 
-  // Balance for selected token
-  const { data: bitcoinBalance } = useBalance({
-    token: selectedCollateralToken.address,
-    address: address,
-    refetchInterval: 30000,
-  });
-
-  // Conditional price fetching
-  const { bitcoin, bitUSD } = useFetchPrices(collateralAmount);
+  // Revalidate fields when wallet connection changes
+  useEffect(() => {
+    // Only run validation if wallet just connected (not on disconnect)
+    if (address) {
+      // Validate collateral if user has entered a value
+      if (collateralAmount !== undefined && collateralAmount > 0) {
+        form.validateField("collateralAmount", "change");
+      }
+      // Validate borrow amount if user has entered a value
+      if (borrowAmount !== undefined && borrowAmount > 0) {
+        form.validateField("borrowAmount", "change");
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address]); // Intentionally only re-run when wallet connection changes
 
   const handlePercentageClick = useCallback(
     (percentage: number, type: "collateral" | "borrow") => {
@@ -224,20 +188,6 @@ function Borrow() {
     setUrlInterestRate("5");
   }, [form, reset]);
 
-  // Handle wallet connection - memoized
-  const connectWallet = useCallback(async () => {
-    const { connector } = await starknetkitConnectModal();
-    if (!connector) {
-      return;
-    }
-    connect({ connector: connector as Connector });
-  }, [starknetkitConnectModal, connect]);
-
-  // Show transaction UI only for pending, success, or error states
-  const shouldShowTransactionUI = ["pending", "success", "error"].includes(
-    currentState
-  );
-
   return (
     <div className="mx-auto max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
       <div className="flex justify-between items-baseline">
@@ -248,7 +198,7 @@ function Borrow() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Left Panel */}
         <div className="md:col-span-2">
-          {shouldShowTransactionUI ? (
+          {["pending", "success", "error"].includes(currentState) ? (
             <TransactionStatus
               transactionHash={transactionHash || persistedTransactionHash}
               isError={currentState === "error"}
@@ -297,10 +247,7 @@ function Borrow() {
                       },
                       {
                         label: "Interest Rate (APR)",
-                        value: `${
-                          Number(annualInterestRate) /
-                          Number(INTEREST_RATE_SCALE_DOWN_FACTOR)
-                        }%`,
+                        value: `${selectedRate}%`,
                       },
                     ]
                   : undefined
@@ -362,9 +309,9 @@ function Borrow() {
                     {(field) => (
                       <TokenInput
                         token={selectedCollateralToken}
-                        tokens={collateralTokens}
+                        tokens={COLLATERAL_TOKENS}
                         onTokenChange={(token) => {
-                          setSelectedTokenSymbol(token.symbol);
+                          setSelectedTokenAddress(token.address);
                           // Reset amount when token changes
                           field.handleChange(undefined as number | undefined);
                         }}

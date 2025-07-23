@@ -62,3 +62,11 @@ export const BITUSD_TOKEN = {
   decimals: 18,
   icon: "/bitusd.png",
 } as const;
+
+// Available collateral tokens
+export const COLLATERAL_TOKENS = [TBTC_TOKEN, LBTC_TOKEN];
+
+// Token lookup map by address for O(1) access
+export const COLLATERAL_TOKENS_BY_ADDRESS = Object.fromEntries(
+  COLLATERAL_TOKENS.map((token) => [token.address, token])
+) as Record<string, typeof TBTC_TOKEN>;
