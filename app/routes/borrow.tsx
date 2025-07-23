@@ -6,17 +6,21 @@ import { InterestRateSelector } from "~/components/borrow";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { TokenInput } from "~/components/token-input";
 import { useEffect, useCallback } from "react";
-import { useForm, useStore } from "@tanstack/react-form";
+import { useForm } from "@tanstack/react-form";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
 import { MAX_LIMIT, MAX_LTV, computeDebtLimit } from "~/lib/utils/calc";
 import { validators } from "~/lib/validators";
 import type { Route } from "./+types/dashboard";
 import { useAccount, useBalance } from "@starknet-react/core";
-import { BITUSD_TOKEN, COLLATERAL_TOKENS } from "~/lib/contracts/constants";
+import {
+  BITUSD_TOKEN,
+  COLLATERAL_TOKENS,
+  TBTC_TOKEN,
+} from "~/lib/contracts/constants";
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
 import { useBorrow } from "~/hooks/use-borrow";
-import { useQueryState } from "nuqs";
+import { useQueryState, parseAsFloat, parseAsInteger } from "nuqs";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { useCollateralToken } from "~/hooks/use-collateral-token";
 
@@ -24,25 +28,21 @@ function Borrow() {
   const { address } = useAccount();
   const { connectWallet } = useWalletConnect();
 
-  const {
-    selectedCollateralToken,
-    selectedTokenAddress,
-    setSelectedTokenAddress,
-  } = useCollateralToken();
-
-  // URL state for form inputs
-  const [urlCollateralAmount, setUrlCollateralAmount] = useQueryState(
+  // URL state for form inputs with built-in parsers
+  const [collateralAmount, setCollateralAmount] = useQueryState(
     "amount",
-    {
-      defaultValue: "",
-    }
+    parseAsFloat
   );
-  const [urlBorrowAmount, setUrlBorrowAmount] = useQueryState("borrow", {
-    defaultValue: "",
-  });
-  const [urlInterestRate, setUrlInterestRate] = useQueryState("rate", {
-    defaultValue: "5",
-  });
+  const [borrowAmount, setBorrowAmount] = useQueryState("borrow", parseAsFloat);
+  const [interestRate, setInterestRate] = useQueryState(
+    "rate",
+    parseAsInteger.withDefault(5)
+  );
+  const [selectedTokenAddress, setSelectedTokenAddress] =
+    useQueryState("collateral");
+  const { selectedCollateralToken } = useCollateralToken(
+    selectedTokenAddress || TBTC_TOKEN.address
+  );
 
   // Balance for selected token
   const { data: bitcoinBalance } = useBalance({
@@ -51,16 +51,14 @@ function Borrow() {
     refetchInterval: 30000,
   });
 
+  const { bitcoin, bitUSD } = useFetchPrices(collateralAmount ?? undefined);
+
   // Initialize form with URL values
   const form = useForm({
     defaultValues: {
-      collateralAmount: urlCollateralAmount
-        ? parseFloat(urlCollateralAmount)
-        : (undefined as number | undefined),
-      borrowAmount: urlBorrowAmount
-        ? parseFloat(urlBorrowAmount)
-        : (undefined as number | undefined),
-      interestRate: parseInt(urlInterestRate) || 5,
+      collateralAmount: collateralAmount ?? (undefined as number | undefined),
+      borrowAmount: borrowAmount ?? (undefined as number | undefined),
+      interestRate: interestRate ?? 5,
     },
     onSubmit: async ({ value }) => {
       if (!isReady) {
@@ -91,20 +89,6 @@ function Borrow() {
   });
 
   const {
-    collateralAmount,
-    borrowAmount,
-    interestRate: selectedRate,
-  } = useStore(form.store, (state) => ({
-    collateralAmount: state.values.collateralAmount,
-    borrowAmount: state.values.borrowAmount,
-    interestRate: state.values.interestRate,
-  }));
-
-  // Conditional price fetching
-  const { bitcoin, bitUSD } = useFetchPrices(collateralAmount);
-
-  // Use the borrow hook with integrated state management
-  const {
     send,
     isPending,
     error: transactionError,
@@ -117,9 +101,9 @@ function Borrow() {
     transactionHash: persistedTransactionHash,
     error: persistedError,
   } = useBorrow({
-    collateralAmount,
-    borrowAmount,
-    interestRate: selectedRate,
+    collateralAmount: collateralAmount ?? undefined,
+    borrowAmount: borrowAmount ?? undefined,
+    interestRate: interestRate ?? 5,
     collateralToken: selectedCollateralToken,
   });
 
@@ -128,11 +112,11 @@ function Borrow() {
     // Only run validation if wallet just connected (not on disconnect)
     if (address) {
       // Validate collateral if user has entered a value
-      if (collateralAmount !== undefined && collateralAmount > 0) {
+      if (collateralAmount && collateralAmount > 0) {
         form.validateField("collateralAmount", "change");
       }
       // Validate borrow amount if user has entered a value
-      if (borrowAmount !== undefined && borrowAmount > 0) {
+      if (borrowAmount && borrowAmount > 0) {
         form.validateField("borrowAmount", "change");
       }
     }
@@ -183,9 +167,9 @@ function Borrow() {
   const handleNewBorrow = useCallback(() => {
     form.reset();
     reset(); // Reset transaction state
-    setUrlBorrowAmount("");
-    setUrlCollateralAmount("");
-    setUrlInterestRate("5");
+    setBorrowAmount(null);
+    setCollateralAmount(null);
+    setInterestRate(5);
   }, [form, reset]);
 
   return (
@@ -247,7 +231,7 @@ function Borrow() {
                       },
                       {
                         label: "Interest Rate (APR)",
-                        value: `${selectedRate}%`,
+                        value: `${interestRate}%`,
                       },
                     ]
                   : undefined
@@ -321,7 +305,7 @@ function Borrow() {
                         onChange={(value) => {
                           field.handleChange(value);
                           // Update URL
-                          setUrlCollateralAmount(value ? value.toString() : "");
+                          setCollateralAmount(value || null);
                         }}
                         onBlur={field.handleBlur}
                         label="You deposit"
@@ -390,7 +374,7 @@ function Borrow() {
                         onChange={(value) => {
                           field.handleChange(value);
                           // Update URL
-                          setUrlBorrowAmount(value ? value.toString() : "");
+                          setBorrowAmount(value || null);
                         }}
                         onBlur={field.handleBlur}
                         label="You borrow"
@@ -405,12 +389,12 @@ function Borrow() {
 
                   {/* Interest Rate Options */}
                   <InterestRateSelector
-                    interestRate={selectedRate}
+                    interestRate={interestRate}
                     onInterestRateChange={(rate) => {
                       if (currentState !== "confirming" && !isPending) {
                         form.setFieldValue("interestRate", rate);
                         // Update URL
-                        setUrlInterestRate(rate.toString());
+                        setInterestRate(rate);
                       }
                     }}
                     disabled={currentState === "confirming" || isPending}
