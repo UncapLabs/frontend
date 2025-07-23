@@ -2,13 +2,13 @@ import { useCallback, useMemo } from "react";
 import { useLocalStorage } from "usehooks-ts";
 
 // Transaction state types
-export type TransactionStateType = 
-  | 'idle'        // Initial state, no data entered
-  | 'editing'     // User is filling form/preparing transaction
-  | 'confirming'  // Wallet confirmation in progress
-  | 'pending'     // Transaction submitted, waiting for chain confirmation
-  | 'success'     // Transaction completed successfully
-  | 'error';      // Transaction failed
+export type TransactionStateType =
+  | "idle" // Initial state, no data entered
+  | "editing" // User is filling form/preparing transaction
+  | "confirming" // Wallet confirmation in progress
+  | "pending" // Transaction submitted, waiting for chain confirmation
+  | "success" // Transaction completed successfully
+  | "error"; // Transaction failed
 
 // Configuration for the hook
 export interface TransactionConfig<TFormData> {
@@ -35,7 +35,7 @@ export interface UseTransactionStateReturn<TFormData> {
   formData: TFormData;
   transactionHash?: string;
   error?: { message: string; code?: string };
-  
+
   // State transitions
   startEditing: () => void;
   startConfirming: () => void;
@@ -43,10 +43,10 @@ export interface UseTransactionStateReturn<TFormData> {
   setSuccess: () => void;
   setError: (error: Error | { message: string; code?: string }) => void;
   reset: () => void;
-  
+
   // Form data management
   updateFormData: (data: Partial<TFormData>) => void;
-  
+
   // Utility
   isStale: boolean;
 }
@@ -57,20 +57,23 @@ const DEFAULT_STALE_TIMEOUT = 24 * 60 * 60 * 1000;
 export function useTransactionState<TFormData extends Record<string, any>>(
   config: TransactionConfig<TFormData>
 ): UseTransactionStateReturn<TFormData> {
-  const { storageKey, staleTimeout = DEFAULT_STALE_TIMEOUT, initialFormData } = config;
+  const {
+    storageKey,
+    staleTimeout = DEFAULT_STALE_TIMEOUT,
+    initialFormData,
+  } = config;
 
   // Initialize stored state with defaults
   const defaultStoredState: StoredTransactionState<TFormData> = {
-    state: 'idle',
+    state: "idle",
     formData: initialFormData,
     timestamp: Date.now(),
   };
 
   // Use localStorage hook
-  const [storedState, setStoredState] = useLocalStorage<StoredTransactionState<TFormData>>(
-    storageKey,
-    defaultStoredState
-  );
+  const [storedState, setStoredState] = useLocalStorage<
+    StoredTransactionState<TFormData>
+  >(storageKey, defaultStoredState);
 
   // Check if data is stale
   const isStale = useMemo(() => {
@@ -80,7 +83,7 @@ export function useTransactionState<TFormData extends Record<string, any>>(
 
   // Clear stale data on mount if needed
   const cleanedState = useMemo(() => {
-    if (isStale && storedState.state !== 'pending') {
+    if (isStale && storedState.state !== "pending") {
       // Reset to default if stale (unless transaction is pending)
       return defaultStoredState;
     }
@@ -89,68 +92,77 @@ export function useTransactionState<TFormData extends Record<string, any>>(
 
   // State transition functions
   const startEditing = useCallback(() => {
-    setStoredState(prev => ({
+    setStoredState((prev) => ({
       ...prev,
-      state: 'editing',
+      state: "editing",
       timestamp: Date.now(),
       error: undefined,
     }));
   }, [setStoredState]);
 
   const startConfirming = useCallback(() => {
-    setStoredState(prev => ({
+    setStoredState((prev) => ({
       ...prev,
-      state: 'confirming',
+      state: "confirming",
       timestamp: Date.now(),
     }));
   }, [setStoredState]);
 
-  const setPending = useCallback((hash: string) => {
-    setStoredState(prev => ({
-      ...prev,
-      state: 'pending',
-      transactionHash: hash,
-      timestamp: Date.now(),
-    }));
-  }, [setStoredState]);
+  const setPending = useCallback(
+    (hash: string) => {
+      setStoredState((prev) => ({
+        ...prev,
+        state: "pending",
+        transactionHash: hash,
+        timestamp: Date.now(),
+      }));
+    },
+    [setStoredState]
+  );
 
   const setSuccess = useCallback(() => {
-    setStoredState(prev => ({
+    setStoredState((prev) => ({
       ...prev,
-      state: 'success',
+      state: "success",
       timestamp: Date.now(),
     }));
   }, [setStoredState]);
 
-  const setError = useCallback((error: Error | { message: string; code?: string }) => {
-    setStoredState(prev => ({
-      ...prev,
-      state: 'error',
-      error: {
-        message: error.message,
-        code: 'code' in error ? error.code : undefined,
-      },
-      timestamp: Date.now(),
-    }));
-  }, [setStoredState]);
+  const setError = useCallback(
+    (error: Error | { message: string; code?: string }) => {
+      setStoredState((prev) => ({
+        ...prev,
+        state: "error",
+        error: {
+          message: error.message,
+          code: "code" in error ? error.code : undefined,
+        },
+        timestamp: Date.now(),
+      }));
+    },
+    [setStoredState]
+  );
 
   const reset = useCallback(() => {
     setStoredState({
-      state: 'idle',
+      state: "idle",
       formData: initialFormData,
       timestamp: Date.now(),
     });
   }, [setStoredState, initialFormData]);
 
-  const updateFormData = useCallback((data: Partial<TFormData>) => {
-    setStoredState(prev => ({
-      ...prev,
-      formData: { ...prev.formData, ...data },
-      timestamp: Date.now(),
-      // Automatically transition to editing if we're in idle state
-      state: prev.state === 'idle' ? 'editing' : prev.state,
-    }));
-  }, [setStoredState]);
+  const updateFormData = useCallback(
+    (data: Partial<TFormData>) => {
+      setStoredState((prev) => ({
+        ...prev,
+        formData: { ...prev.formData, ...data },
+        timestamp: Date.now(),
+        // Automatically transition to editing if we're in idle state
+        state: prev.state === "idle" ? "editing" : prev.state,
+      }));
+    },
+    [setStoredState]
+  );
 
   return {
     currentState: cleanedState.state,
@@ -170,10 +182,10 @@ export function useTransactionState<TFormData extends Record<string, any>>(
 
 // Storage keys for different transaction types
 export const TRANSACTION_STORAGE_KEYS = {
-  borrow: 'bitusd_tx_borrow',
-  claimRewards: 'bitusd_tx_claim_rewards',
-  modifyTrove: 'bitusd_tx_modify_trove',
-  repay: 'bitusd_tx_repay',
-  addCollateral: 'bitusd_tx_add_collateral',
-  withdrawCollateral: 'bitusd_tx_withdraw_collateral',
+  borrow: "tx_borrow",
+  claimRewards: "tx_claim_rewards",
+  modifyTrove: "tx_modify_trove",
+  repay: "tx_repay",
+  addCollateral: "tx_add_collateral",
+  withdrawCollateral: "tx_withdraw_collateral",
 } as const;

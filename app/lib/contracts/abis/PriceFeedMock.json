@@ -1,0 +1,125 @@
+[
+  {
+    "type": "impl",
+    "name": "IPriceFeedMockImpl",
+    "interface_name": "usdu::mocks::PriceFeedMock::IPriceFeedMock"
+  },
+  {
+    "type": "struct",
+    "name": "core::integer::u256",
+    "members": [
+      {
+        "name": "low",
+        "type": "core::integer::u128"
+      },
+      {
+        "name": "high",
+        "type": "core::integer::u128"
+      }
+    ]
+  },
+  {
+    "type": "enum",
+    "name": "core::bool",
+    "variants": [
+      {
+        "name": "False",
+        "type": "()"
+      },
+      {
+        "name": "True",
+        "type": "()"
+      }
+    ]
+  },
+  {
+    "type": "interface",
+    "name": "usdu::mocks::PriceFeedMock::IPriceFeedMock",
+    "items": [
+      {
+        "type": "function",
+        "name": "fetch_price",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "(core::integer::u256, core::bool)"
+          }
+        ],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "fetch_redemption_price",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "(core::integer::u256, core::bool)"
+          }
+        ],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "get_price",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "last_good_price",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "set_price",
+        "inputs": [
+          {
+            "name": "price",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::bool"
+          }
+        ],
+        "state_mutability": "external"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::mocks::PriceFeedMock::PriceFeedMock::LastGoodPriceUpdated",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "last_good_price",
+        "type": "core::integer::u256",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::mocks::PriceFeedMock::PriceFeedMock::Event",
+    "kind": "enum",
+    "variants": [
+      {
+        "name": "LastGoodPriceUpdated",
+        "type": "usdu::mocks::PriceFeedMock::PriceFeedMock::LastGoodPriceUpdated",
+        "kind": "nested"
+      }
+    ]
+  }
+]

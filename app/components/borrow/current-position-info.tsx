@@ -45,7 +45,7 @@ export const CurrentPositionInfo = memo(function CurrentPositionInfo({
               decimalScale={2}
               fixedDecimalScale
             />{" "}
-            bitUSD
+            USDU
           </span>
         </div>
       </div>

@@ -9,8 +9,12 @@ import { useTroveData } from "~/hooks/use-trove-data";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
 import {
   INTEREST_RATE_SCALE_DOWN_FACTOR,
-  TBTC_TOKEN,
+  UBTC_TOKEN,
+  GBTC_TOKEN,
+  type CollateralType,
 } from "~/lib/contracts/constants";
+import { useQueryState } from "nuqs";
+import type { CollateralType } from "~/lib/contracts/constants";
 
 const ACTION_CARDS = [
   {
@@ -40,17 +44,24 @@ function TroveOverviewIndex() {
   const { troveId } = useParams();
   const navigate = useNavigate();
 
-  // Fetch existing trove data
-  const { troveData, isLoading: isTroveLoading } = useTroveData(troveId);
+  // Get collateral type from URL or default to UBTC
+  const [troveCollateralType] = useQueryState("type", {
+    defaultValue: "UBTC",
+  });
 
-  // Get the collateral token from trove data (for now default to TBTC)
-  const selectedCollateralToken = TBTC_TOKEN; // TODO: Get from trove data
+  // Fetch existing trove data
+  const { troveData, isLoading: isTroveLoading } = useTroveData(troveId, {
+    collateralType: troveCollateralType as CollateralType,
+  });
+
+  // Get the collateral token based on collateral type
+  const selectedCollateralToken = troveCollateralType === "GBTC" ? GBTC_TOKEN : UBTC_TOKEN;
 
   // Conditional price fetching
-  const { bitcoin, bitUSD } = useFetchPrices(troveData?.collateral);
+  const { bitcoin, usdu } = useFetchPrices(troveData?.collateral);
 
   const handleActionClick = (route: string) => {
-    navigate(`/borrow/${troveId}/${route}`);
+    navigate(`/borrow/${troveId}/${route}?type=${troveCollateralType}`);
   };
 
   // Calculate key metrics
@@ -64,8 +75,8 @@ function TroveOverviewIndex() {
     : 0;
 
   // Calculate LTV
-  const ltvValue = troveData && bitcoin?.price && bitUSD?.price && troveData.collateral > 0
-    ? (troveData.debt * bitUSD.price) / (troveData.collateral * bitcoin.price) * 100
+  const ltvValue = troveData && bitcoin?.price && usdu?.price && troveData.collateral > 0
+    ? (troveData.debt * usdu.price) / (troveData.collateral * bitcoin.price) * 100
     : 0;
 
   // Check for special states
@@ -149,13 +160,13 @@ function TroveOverviewIndex() {
                       decimalScale={2}
                       fixedDecimalScale
                     />{" "}
-                    bitUSD
+                    USDU
                   </p>
-                  {bitUSD?.price && (
+                  {usdu?.price && (
                     <p className="text-sm text-slate-500">
                       ≈ $<NumericFormat
                         displayType="text"
-                        value={troveData.debt * bitUSD.price}
+                        value={troveData.debt * usdu.price}
                         thousandSeparator=","
                         decimalScale={2}
                         fixedDecimalScale
@@ -325,7 +336,7 @@ export default TroveOverviewIndex;
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Position Overview - BitUSD" },
-    { name: "description", content: "Manage your BitUSD borrowing position" },
+    { title: "Position Overview - USDU" },
+    { name: "description", content: "Manage your USDU borrowing position" },
   ];
 }

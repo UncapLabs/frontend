@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useContract } from "@starknet-react/core";
 import {
-  TROVE_MANAGER_ADDRESS,
-  TBTC_DECIMALS,
+  getCollateralAddresses,
+  UBTC_TOKEN,
+  GBTC_TOKEN,
+  type CollateralType,
   USDU_DECIMALS,
 } from "~/lib/contracts/constants";
 import { TROVE_MANAGER_ABI } from "~/lib/contracts";
@@ -15,10 +17,18 @@ interface TroveData {
   lastInterestRateAdjTime: bigint;
 }
 
-export function useTroveData(troveId?: string) {
+interface UseTroveDataOptions {
+  collateralType?: CollateralType;
+}
+
+export function useTroveData(troveId?: string, options: UseTroveDataOptions = {}) {
+  const { collateralType = "UBTC" } = options;
+  const addresses = getCollateralAddresses(collateralType);
+  const collateralToken = collateralType === "UBTC" ? UBTC_TOKEN : GBTC_TOKEN;
+  
   const { contract: troveManagerContract } = useContract({
     abi: TROVE_MANAGER_ABI,
-    address: TROVE_MANAGER_ADDRESS,
+    address: addresses.troveManager,
   });
 
   const {
@@ -27,7 +37,7 @@ export function useTroveData(troveId?: string) {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["troveData", troveId, TROVE_MANAGER_ADDRESS],
+    queryKey: ["troveData", troveId, collateralType, addresses.troveManager],
     queryFn: async () => {
       if (!troveManagerContract || !troveId) return null;
 
@@ -43,7 +53,7 @@ export function useTroveData(troveId?: string) {
 
         return {
           collateral:
-            Number(latestData.entire_coll) / Math.pow(10, TBTC_DECIMALS),
+            Number(latestData.entire_coll) / Math.pow(10, collateralToken.decimals),
           debt: Number(latestData.entire_debt) / Math.pow(10, USDU_DECIMALS),
           annualInterestRate: latestData.annual_interest_rate as bigint,
           troveId: troveIdBigInt,

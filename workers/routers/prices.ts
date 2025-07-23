@@ -9,7 +9,7 @@ export const priceRouter = router({
       price: Number(rawPrice) / 1e18,
     };
   }),
-  getBitUSDPrice: publicProcedure.query(({ ctx }) => {
+  getUSDUPrice: publicProcedure.query(({ ctx }) => {
     return {
       price: 1.0,
     };

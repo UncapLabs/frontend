@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "BorrowerOperationsImpl",
-    "interface_name": "bit_usd::BorrowerOperations::IBorrowerOperations"
+    "interface_name": "usdu::BorrowerOperations::IBorrowerOperations"
   },
   {
     "type": "struct",
@@ -20,7 +20,7 @@
   },
   {
     "type": "struct",
-    "name": "bit_usd::BorrowerOperations::BorrowerOperations::OpenTroveAndJoinInterestBatchManagerParams",
+    "name": "usdu::BorrowerOperations::BorrowerOperations::OpenTroveAndJoinInterestBatchManagerParams",
     "members": [
       {
         "name": "owner",
@@ -35,7 +35,7 @@
         "type": "core::integer::u256"
       },
       {
-        "name": "bitusd_amount",
+        "name": "usdu_amount",
         "type": "core::integer::u256"
       },
       {
@@ -84,7 +84,7 @@
   },
   {
     "type": "struct",
-    "name": "bit_usd::BorrowerOperations::BorrowerOperations::InterestIndividualDelegate",
+    "name": "usdu::BorrowerOperations::BorrowerOperations::InterestIndividualDelegate",
     "members": [
       {
         "name": "account",
@@ -106,7 +106,7 @@
   },
   {
     "type": "interface",
-    "name": "bit_usd::BorrowerOperations::IBorrowerOperations",
+    "name": "usdu::BorrowerOperations::IBorrowerOperations",
     "items": [
       {
         "type": "function",
@@ -119,6 +119,17 @@
         ],
         "outputs": [],
         "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "get_BCR",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
       },
       {
         "type": "function",
@@ -137,7 +148,7 @@
             "type": "core::integer::u256"
           },
           {
-            "name": "bitusd_amount",
+            "name": "usdu_amount",
             "type": "core::integer::u256"
           },
           {
@@ -182,7 +193,7 @@
         "inputs": [
           {
             "name": "params",
-            "type": "bit_usd::BorrowerOperations::BorrowerOperations::OpenTroveAndJoinInterestBatchManagerParams"
+            "type": "usdu::BorrowerOperations::BorrowerOperations::OpenTroveAndJoinInterestBatchManagerParams"
           }
         ],
         "outputs": [
@@ -226,14 +237,14 @@
       },
       {
         "type": "function",
-        "name": "withdraw_bitusd",
+        "name": "withdraw_usdu",
         "inputs": [
           {
             "name": "trove_id",
             "type": "core::integer::u256"
           },
           {
-            "name": "bitusd_amount",
+            "name": "usdu_amount",
             "type": "core::integer::u256"
           },
           {
@@ -246,14 +257,14 @@
       },
       {
         "type": "function",
-        "name": "repay_bitusd",
+        "name": "repay_usdu",
         "inputs": [
           {
             "name": "trove_id",
             "type": "core::integer::u256"
           },
           {
-            "name": "bitusd_amount",
+            "name": "usdu_amount",
             "type": "core::integer::u256"
           }
         ],
@@ -503,7 +514,7 @@
         ],
         "outputs": [
           {
-            "type": "bit_usd::BorrowerOperations::BorrowerOperations::InterestIndividualDelegate"
+            "type": "usdu::BorrowerOperations::BorrowerOperations::InterestIndividualDelegate"
           }
         ],
         "state_mutability": "external"
@@ -683,12 +694,12 @@
   },
   {
     "type": "impl",
-    "name": "LiquityBaseImpl",
-    "interface_name": "bit_usd::dependencies::LiquityBase::ILiquityBase"
+    "name": "UncapBaseImpl",
+    "interface_name": "usdu::dependencies::UncapBase::IUncapBase"
   },
   {
     "type": "interface",
-    "name": "bit_usd::dependencies::LiquityBase::ILiquityBase",
+    "name": "usdu::dependencies::UncapBase::IUncapBase",
     "items": [
       {
         "type": "function",
@@ -717,11 +728,11 @@
   {
     "type": "impl",
     "name": "AddRemoveManagersImpl",
-    "interface_name": "bit_usd::dependencies::AddRemoveManagers::IAddRemoveManagers"
+    "interface_name": "usdu::dependencies::AddRemoveManagers::IAddRemoveManagers"
   },
   {
     "type": "struct",
-    "name": "bit_usd::dependencies::AddRemoveManagers::RemoveManagerReceiver",
+    "name": "usdu::dependencies::AddRemoveManagers::RemoveManagerReceiver",
     "members": [
       {
         "name": "manager",
@@ -735,7 +746,7 @@
   },
   {
     "type": "interface",
-    "name": "bit_usd::dependencies::AddRemoveManagers::IAddRemoveManagers",
+    "name": "usdu::dependencies::AddRemoveManagers::IAddRemoveManagers",
     "items": [
       {
         "type": "function",
@@ -820,7 +831,7 @@
         ],
         "outputs": [
           {
-            "type": "bit_usd::dependencies::AddRemoveManagers::RemoveManagerReceiver"
+            "type": "usdu::dependencies::AddRemoveManagers::RemoveManagerReceiver"
           }
         ],
         "state_mutability": "view"
@@ -845,7 +856,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::BorrowerOperations::BorrowerOperations::TroveManagerAddressChanged",
+    "name": "usdu::BorrowerOperations::BorrowerOperations::TroveManagerAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -857,7 +868,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::BorrowerOperations::BorrowerOperations::GasPoolAddressChanged",
+    "name": "usdu::BorrowerOperations::BorrowerOperations::GasPoolAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -869,7 +880,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::BorrowerOperations::BorrowerOperations::CollSurplusPoolAddressChanged",
+    "name": "usdu::BorrowerOperations::BorrowerOperations::CollSurplusPoolAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -881,7 +892,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::BorrowerOperations::BorrowerOperations::SortedTrovesAddressChanged",
+    "name": "usdu::BorrowerOperations::BorrowerOperations::SortedTrovesAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -893,11 +904,11 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::BorrowerOperations::BorrowerOperations::BitUSDTokenAddressChanged",
+    "name": "usdu::BorrowerOperations::BorrowerOperations::USDUTokenAddressChanged",
     "kind": "struct",
     "members": [
       {
-        "name": "bitusd_token_address",
+        "name": "usdu_token_address",
         "type": "core::starknet::contract_address::ContractAddress",
         "kind": "data"
       }
@@ -905,7 +916,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::BorrowerOperations::BorrowerOperations::BatchManagerAddressChanged",
+    "name": "usdu::BorrowerOperations::BorrowerOperations::BatchManagerAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -917,7 +928,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::BorrowerOperations::BorrowerOperations::LiquidationManagerAddressChanged",
+    "name": "usdu::BorrowerOperations::BorrowerOperations::LiquidationManagerAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -929,7 +940,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::BorrowerOperations::BorrowerOperations::ShutDown",
+    "name": "usdu::BorrowerOperations::BorrowerOperations::ShutDown",
     "kind": "struct",
     "members": [
       {
@@ -941,7 +952,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::ActivePoolAddressChanged",
+    "name": "usdu::dependencies::UncapBase::UncapBaseComponent::ActivePoolAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -953,7 +964,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::DefaultPoolAddressChanged",
+    "name": "usdu::dependencies::UncapBase::UncapBaseComponent::DefaultPoolAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -965,7 +976,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::PriceFeedAddressChanged",
+    "name": "usdu::dependencies::UncapBase::UncapBaseComponent::PriceFeedAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -977,29 +988,29 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::Event",
+    "name": "usdu::dependencies::UncapBase::UncapBaseComponent::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "ActivePoolAddressChanged",
-        "type": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::ActivePoolAddressChanged",
+        "type": "usdu::dependencies::UncapBase::UncapBaseComponent::ActivePoolAddressChanged",
         "kind": "nested"
       },
       {
         "name": "DefaultPoolAddressChanged",
-        "type": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::DefaultPoolAddressChanged",
+        "type": "usdu::dependencies::UncapBase::UncapBaseComponent::DefaultPoolAddressChanged",
         "kind": "nested"
       },
       {
         "name": "PriceFeedAddressChanged",
-        "type": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::PriceFeedAddressChanged",
+        "type": "usdu::dependencies::UncapBase::UncapBaseComponent::PriceFeedAddressChanged",
         "kind": "nested"
       }
     ]
   },
   {
     "type": "event",
-    "name": "bit_usd::dependencies::AddRemoveManagers::AddRemoveManagersComponent::TroveNFTAddressChanged",
+    "name": "usdu::dependencies::AddRemoveManagers::AddRemoveManagersComponent::TroveNFTAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -1011,7 +1022,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::dependencies::AddRemoveManagers::AddRemoveManagersComponent::AddManagerUpdated",
+    "name": "usdu::dependencies::AddRemoveManagers::AddRemoveManagersComponent::AddManagerUpdated",
     "kind": "struct",
     "members": [
       {
@@ -1028,7 +1039,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::dependencies::AddRemoveManagers::AddRemoveManagersComponent::RemoveManagerAndReceiverUpdated",
+    "name": "usdu::dependencies::AddRemoveManagers::AddRemoveManagersComponent::RemoveManagerAndReceiverUpdated",
     "kind": "struct",
     "members": [
       {
@@ -1050,79 +1061,79 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::dependencies::AddRemoveManagers::AddRemoveManagersComponent::Event",
+    "name": "usdu::dependencies::AddRemoveManagers::AddRemoveManagersComponent::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "TroveNFTAddressChanged",
-        "type": "bit_usd::dependencies::AddRemoveManagers::AddRemoveManagersComponent::TroveNFTAddressChanged",
+        "type": "usdu::dependencies::AddRemoveManagers::AddRemoveManagersComponent::TroveNFTAddressChanged",
         "kind": "nested"
       },
       {
         "name": "AddManagerUpdated",
-        "type": "bit_usd::dependencies::AddRemoveManagers::AddRemoveManagersComponent::AddManagerUpdated",
+        "type": "usdu::dependencies::AddRemoveManagers::AddRemoveManagersComponent::AddManagerUpdated",
         "kind": "nested"
       },
       {
         "name": "RemoveManagerAndReceiverUpdated",
-        "type": "bit_usd::dependencies::AddRemoveManagers::AddRemoveManagersComponent::RemoveManagerAndReceiverUpdated",
+        "type": "usdu::dependencies::AddRemoveManagers::AddRemoveManagersComponent::RemoveManagerAndReceiverUpdated",
         "kind": "nested"
       }
     ]
   },
   {
     "type": "event",
-    "name": "bit_usd::BorrowerOperations::BorrowerOperations::Event",
+    "name": "usdu::BorrowerOperations::BorrowerOperations::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "TroveManagerAddressChanged",
-        "type": "bit_usd::BorrowerOperations::BorrowerOperations::TroveManagerAddressChanged",
+        "type": "usdu::BorrowerOperations::BorrowerOperations::TroveManagerAddressChanged",
         "kind": "nested"
       },
       {
         "name": "GasPoolAddressChanged",
-        "type": "bit_usd::BorrowerOperations::BorrowerOperations::GasPoolAddressChanged",
+        "type": "usdu::BorrowerOperations::BorrowerOperations::GasPoolAddressChanged",
         "kind": "nested"
       },
       {
         "name": "CollSurplusPoolAddressChanged",
-        "type": "bit_usd::BorrowerOperations::BorrowerOperations::CollSurplusPoolAddressChanged",
+        "type": "usdu::BorrowerOperations::BorrowerOperations::CollSurplusPoolAddressChanged",
         "kind": "nested"
       },
       {
         "name": "SortedTrovesAddressChanged",
-        "type": "bit_usd::BorrowerOperations::BorrowerOperations::SortedTrovesAddressChanged",
+        "type": "usdu::BorrowerOperations::BorrowerOperations::SortedTrovesAddressChanged",
         "kind": "nested"
       },
       {
-        "name": "BitUSDTokenAddressChanged",
-        "type": "bit_usd::BorrowerOperations::BorrowerOperations::BitUSDTokenAddressChanged",
+        "name": "USDUTokenAddressChanged",
+        "type": "usdu::BorrowerOperations::BorrowerOperations::USDUTokenAddressChanged",
         "kind": "nested"
       },
       {
         "name": "BatchManagerAddressChanged",
-        "type": "bit_usd::BorrowerOperations::BorrowerOperations::BatchManagerAddressChanged",
+        "type": "usdu::BorrowerOperations::BorrowerOperations::BatchManagerAddressChanged",
         "kind": "nested"
       },
       {
         "name": "LiquidationManagerAddressChanged",
-        "type": "bit_usd::BorrowerOperations::BorrowerOperations::LiquidationManagerAddressChanged",
+        "type": "usdu::BorrowerOperations::BorrowerOperations::LiquidationManagerAddressChanged",
         "kind": "nested"
       },
       {
         "name": "ShutDown",
-        "type": "bit_usd::BorrowerOperations::BorrowerOperations::ShutDown",
+        "type": "usdu::BorrowerOperations::BorrowerOperations::ShutDown",
         "kind": "nested"
       },
       {
-        "name": "LiquityBaseEvent",
-        "type": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::Event",
+        "name": "UncapBaseEvent",
+        "type": "usdu::dependencies::UncapBase::UncapBaseComponent::Event",
         "kind": "flat"
       },
       {
         "name": "AddRemoveManagersEvent",
-        "type": "bit_usd::dependencies::AddRemoveManagers::AddRemoveManagersComponent::Event",
+        "type": "usdu::dependencies::AddRemoveManagers::AddRemoveManagersComponent::Event",
         "kind": "flat"
       }
     ]

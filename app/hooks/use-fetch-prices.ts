@@ -11,17 +11,17 @@ export function useFetchPrices(collateralAmount: number | undefined) {
     refetchInterval: shouldFetchPrices ? 30000 : false,
   });
 
-  const bitUSDQuery = useQuery({
-    ...trpc.priceRouter.getBitUSDPrice.queryOptions(),
+  const usduQuery = useQuery({
+    ...trpc.priceRouter.getUSDUPrice.queryOptions(),
     enabled: shouldFetchPrices,
     refetchInterval: shouldFetchPrices ? 30000 : false,
   });
 
   return {
     bitcoin: bitcoinQuery.data,
-    bitUSD: bitUSDQuery.data,
-    isLoading: bitcoinQuery.isLoading || bitUSDQuery.isLoading,
+    usdu: usduQuery.data,
+    isLoading: bitcoinQuery.isLoading || usduQuery.isLoading,
     refetchBitcoin: bitcoinQuery.refetch,
-    refetchBitUSD: bitUSDQuery.refetch,
+    refetchUsdu: usduQuery.refetch,
   };
 }

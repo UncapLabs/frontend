@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "IBatchManagerImpl",
-    "interface_name": "bit_usd::BatchManagement::IBatchManagement"
+    "interface_name": "usdu::BatchManager::IBatchManager"
   },
   {
     "type": "struct",
@@ -20,7 +20,7 @@
   },
   {
     "type": "struct",
-    "name": "bit_usd::TroveManager::LatestBatchData",
+    "name": "usdu::TroveManager::LatestBatchData",
     "members": [
       {
         "name": "total_debt_shares",
@@ -74,7 +74,7 @@
   },
   {
     "type": "struct",
-    "name": "bit_usd::BatchManagement::Batch",
+    "name": "usdu::BatchManager::Batch",
     "members": [
       {
         "name": "debt",
@@ -112,10 +112,10 @@
   },
   {
     "type": "struct",
-    "name": "bit_usd::TroveManager::TroveChange",
+    "name": "usdu::TroveManager::TroveChange",
     "members": [
       {
-        "name": "applied_redist_bit_usd_debt_gain",
+        "name": "applied_redist_usdu_debt_gain",
         "type": "core::integer::u256"
       },
       {
@@ -180,7 +180,7 @@
   },
   {
     "type": "interface",
-    "name": "bit_usd::BatchManagement::IBatchManagement",
+    "name": "usdu::BatchManager::IBatchManager",
     "items": [
       {
         "type": "function",
@@ -237,7 +237,7 @@
         ],
         "outputs": [
           {
-            "type": "bit_usd::TroveManager::LatestBatchData"
+            "type": "usdu::TroveManager::LatestBatchData"
           }
         ],
         "state_mutability": "view"
@@ -253,7 +253,7 @@
         ],
         "outputs": [
           {
-            "type": "bit_usd::BatchManagement::Batch"
+            "type": "usdu::BatchManager::Batch"
           }
         ],
         "state_mutability": "view"
@@ -272,7 +272,7 @@
           },
           {
             "name": "trove_change",
-            "type": "bit_usd::TroveManager::TroveChange"
+            "type": "usdu::TroveManager::TroveChange"
           },
           {
             "name": "new_trove_debt",
@@ -384,7 +384,7 @@
           },
           {
             "name": "trove_change",
-            "type": "bit_usd::TroveManager::TroveChange"
+            "type": "usdu::TroveManager::TroveChange"
           },
           {
             "name": "batch_address",
@@ -426,7 +426,7 @@
   },
   {
     "type": "enum",
-    "name": "bit_usd::events::TroveManagerEventsEmitter::BatchOperation",
+    "name": "usdu::events::TroveManagerEventsEmitter::BatchOperation",
     "variants": [
       {
         "name": "RegisterBatchManager",
@@ -460,7 +460,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::events::TroveManagerEventsEmitter::BatchUpdated",
+    "name": "usdu::events::TroveManagerEventsEmitter::BatchUpdated",
     "kind": "struct",
     "members": [
       {
@@ -470,7 +470,7 @@
       },
       {
         "name": "operation",
-        "type": "bit_usd::events::TroveManagerEventsEmitter::BatchOperation",
+        "type": "usdu::events::TroveManagerEventsEmitter::BatchOperation",
         "kind": "data"
       },
       {
@@ -507,12 +507,12 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::BatchManagement::BatchManagement::Event",
+    "name": "usdu::BatchManager::BatchManager::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "BatchUpdated",
-        "type": "bit_usd::events::TroveManagerEventsEmitter::BatchUpdated",
+        "type": "usdu::events::TroveManagerEventsEmitter::BatchUpdated",
         "kind": "nested"
       }
     ]

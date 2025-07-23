@@ -3,7 +3,11 @@ import { Card, CardContent } from "~/components/ui/card";
 import { ArrowLeft, ArrowDown } from "lucide-react";
 import { Separator } from "~/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { TransactionStatus, PositionSummaryCard, CurrentPositionInfo } from "~/components/borrow";
+import {
+  TransactionStatus,
+  PositionSummaryCard,
+  CurrentPositionInfo,
+} from "~/components/borrow";
 import { TokenInput } from "~/components/token-input";
 import { useMemo, useEffect, useState } from "react";
 import { useForm, useStore } from "@tanstack/react-form";
@@ -26,9 +30,9 @@ import {
 } from "starknetkit";
 import {
   INTEREST_RATE_SCALE_DOWN_FACTOR,
-  TBTC_TOKEN,
-  LBTC_TOKEN,
-  BITUSD_TOKEN,
+  UBTC_TOKEN,
+  GBTC_TOKEN,
+  USDU_TOKEN,
 } from "~/lib/contracts/constants";
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
@@ -45,8 +49,15 @@ function UpdatePosition() {
     connectors: connectors as StarknetkitConnector[],
   });
 
+  // Get collateral type from URL or default to UBTC
+  const [troveCollateralType] = useQueryState("type", {
+    defaultValue: "UBTC",
+  });
+  
   // Fetch existing trove data
-  const { troveData, isLoading: isTroveLoading } = useTroveData(troveId);
+  const { troveData, isLoading: isTroveLoading } = useTroveData(troveId, {
+    collateralType: troveCollateralType as CollateralType,
+  });
 
   // Check if we have a transaction hash in URL
   const [urlTransactionHash, setUrlTransactionHash] = useQueryState("tx", {
@@ -54,11 +65,11 @@ function UpdatePosition() {
   });
 
   // Available collateral tokens
-  const collateralTokens = [TBTC_TOKEN, LBTC_TOKEN];
+  const collateralTokens = [UBTC_TOKEN, GBTC_TOKEN];
 
   // Store selected collateral token in URL
   const [selectedTokenSymbol] = useQueryState("collateral", {
-    defaultValue: TBTC_TOKEN.symbol,
+    defaultValue: UBTC_TOKEN.symbol,
   });
 
   // Sub-tabs state for collateral and debt
@@ -70,7 +81,7 @@ function UpdatePosition() {
   // Get the full token object from the symbol
   const selectedCollateralToken =
     collateralTokens.find((token) => token.symbol === selectedTokenSymbol) ||
-    TBTC_TOKEN;
+    UBTC_TOKEN;
 
   const { data: bitcoinBalance } = useBalance({
     token: selectedCollateralToken.address,
@@ -78,8 +89,8 @@ function UpdatePosition() {
     refetchInterval: 30000,
   });
 
-  const { data: bitUsdBalance } = useBalance({
-    token: BITUSD_TOKEN.address,
+  const { data: usduBalance } = useBalance({
+    token: USDU_TOKEN.address,
     address: address,
     refetchInterval: 30000,
   });
@@ -148,14 +159,14 @@ function UpdatePosition() {
   );
 
   // Conditional price fetching
-  const { bitcoin, bitUSD } = useFetchPrices(collateralAmount);
+  const { bitcoin, usdu } = useFetchPrices(collateralAmount);
 
   // Use form calculations hook
   const { debtLimit } = useFormCalculations(
     collateralAmount,
     borrowAmount,
     bitcoin?.price,
-    bitUSD?.price
+    usdu?.price
   );
 
   // Use the adjust trove hook
@@ -271,9 +282,10 @@ function UpdatePosition() {
   }
 
   // Calculate liquidation price
-  const liquidationPrice = borrowAmount && collateralAmount && collateralAmount > 0
-    ? (borrowAmount * 1.1) / collateralAmount
-    : 0;
+  const liquidationPrice =
+    borrowAmount && collateralAmount && collateralAmount > 0
+      ? (borrowAmount * 1.1) / collateralAmount
+      : 0;
 
   return (
     <div className="mx-auto max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
@@ -338,7 +350,7 @@ function UpdatePosition() {
                               decimalScale={2}
                               fixedDecimalScale
                             />{" "}
-                            bitUSD
+                            USDU
                           </>
                         ),
                       },
@@ -376,7 +388,10 @@ function UpdatePosition() {
                           onValueChange={(v) => {
                             setCollateralMode(v as "deposit" | "withdraw");
                             // Reset to current value when switching modes
-                            form.setFieldValue("collateralAmount", troveData?.collateral);
+                            form.setFieldValue(
+                              "collateralAmount",
+                              troveData?.collateral
+                            );
                           }}
                         >
                           <TabsList className="h-7">
@@ -395,10 +410,11 @@ function UpdatePosition() {
                           </TabsList>
                         </Tabs>
                       </div>
-                      
+
                       {/* Show current amount */}
                       <div className="text-sm text-slate-600 mb-2">
-                        Current: <span className="font-medium text-slate-800">
+                        Current:{" "}
+                        <span className="font-medium text-slate-800">
                           <NumericFormat
                             displayType="text"
                             value={troveData?.collateral || 0}
@@ -425,8 +441,7 @@ function UpdatePosition() {
 
                             // Check if withdrawing
                             if (value < currentCollateral) {
-                              const withdrawAmount =
-                                currentCollateral - value;
+                              const withdrawAmount = currentCollateral - value;
                               if (withdrawAmount > currentCollateral) {
                                 return "Cannot withdraw more than current collateral";
                               }
@@ -434,13 +449,12 @@ function UpdatePosition() {
                               // Check minimum collateral ratio after withdrawal
                               if (
                                 bitcoin?.price &&
-                                bitUSD?.price &&
+                                usdu?.price &&
                                 currentDebt > 0
                               ) {
                                 const newCollateralValue =
                                   value * bitcoin.price;
-                                const debtValue =
-                                  currentDebt * bitUSD.price;
+                                const debtValue = currentDebt * usdu.price;
                                 const ratioError =
                                   validators.minimumCollateralRatio(
                                     newCollateralValue,
@@ -482,10 +496,13 @@ function UpdatePosition() {
                       >
                         {(field) => {
                           // Derive the change amount from the current form value
-                          const changeAmount = field.state.value !== undefined && troveData
-                            ? Math.abs(field.state.value - troveData.collateral)
-                            : 0;
-                          
+                          const changeAmount =
+                            field.state.value !== undefined && troveData
+                              ? Math.abs(
+                                  field.state.value - troveData.collateral
+                                )
+                              : 0;
+
                           return (
                             <div className="space-y-3">
                               <TokenInput
@@ -495,26 +512,41 @@ function UpdatePosition() {
                                 value={changeAmount}
                                 onChange={(value) => {
                                   // Convert change amount to total
-                                  const newTotal = value !== undefined
-                                    ? (collateralMode === "deposit"
+                                  const newTotal =
+                                    value !== undefined
+                                      ? collateralMode === "deposit"
                                         ? troveData.collateral + value
-                                        : Math.max(0, troveData.collateral - value))
-                                    : troveData.collateral;
+                                        : Math.max(
+                                            0,
+                                            troveData.collateral - value
+                                          )
+                                      : troveData.collateral;
                                   field.handleChange(newTotal);
                                 }}
                                 onBlur={field.handleBlur}
-                                label={collateralMode === "withdraw" ? "Amount to Withdraw" : "Amount to Add"}
+                                label={
+                                  collateralMode === "withdraw"
+                                    ? "Amount to Withdraw"
+                                    : "Amount to Add"
+                                }
                                 percentageButtons
                                 onPercentageClick={(percentage: number) => {
-                                  const currentCollateral = troveData?.collateral || 0;
+                                  const currentCollateral =
+                                    troveData?.collateral || 0;
                                   const balance = bitcoinBalance?.value
-                                    ? Number(bitcoinBalance.value) / 10 ** selectedCollateralToken.decimals
+                                    ? Number(bitcoinBalance.value) /
+                                      10 ** selectedCollateralToken.decimals
                                     : 0;
-                                  const maxAvailable = collateralMode === "deposit" ? balance : currentCollateral;
-                                  const changeAmount = maxAvailable * percentage;
-                                  const newTotal = collateralMode === "deposit"
-                                    ? currentCollateral + changeAmount
-                                    : currentCollateral - changeAmount;
+                                  const maxAvailable =
+                                    collateralMode === "deposit"
+                                      ? balance
+                                      : currentCollateral;
+                                  const changeAmount =
+                                    maxAvailable * percentage;
+                                  const newTotal =
+                                    collateralMode === "deposit"
+                                      ? currentCollateral + changeAmount
+                                      : currentCollateral - changeAmount;
                                   field.handleChange(newTotal);
                                 }}
                                 error={field.state.meta.errors?.[0]}
@@ -522,11 +554,12 @@ function UpdatePosition() {
                                 showBalance={true}
                                 placeholder="0"
                               />
-                              
+
                               {/* Show new total if there's a change */}
                               {changeAmount > 0 && (
                                 <div className="text-sm text-slate-600">
-                                  New total: <span className="font-medium text-slate-800">
+                                  New total:{" "}
+                                  <span className="font-medium text-slate-800">
                                     <NumericFormat
                                       displayType="text"
                                       value={field.state.value}
@@ -586,10 +619,11 @@ function UpdatePosition() {
                           </TabsList>
                         </Tabs>
                       </div>
-                      
+
                       {/* Show current amount */}
                       <div className="text-sm text-slate-600 mb-2">
-                        Current: <span className="font-medium text-slate-800">
+                        Current:{" "}
+                        <span className="font-medium text-slate-800">
                           <NumericFormat
                             displayType="text"
                             value={troveData?.debt || 0}
@@ -597,7 +631,7 @@ function UpdatePosition() {
                             decimalScale={2}
                             fixedDecimalScale
                           />{" "}
-                          bitUSD
+                          USDU
                         </span>
                       </div>
                       <form.Field
@@ -607,20 +641,20 @@ function UpdatePosition() {
                             if (!value) return undefined;
 
                             const currentDebt = troveData?.debt || 0;
-                            const bitUsdBal = bitUsdBalance
-                              ? Number(bitUsdBalance.value) /
-                                10 ** BITUSD_TOKEN.decimals
+                            const usduBal = usduBalance
+                              ? Number(usduBalance.value) /
+                                10 ** USDU_TOKEN.decimals
                               : 0;
 
                             // Check if repaying more than available balance
                             if (value < currentDebt) {
                               const repayAmount = currentDebt - value;
-                              if (repayAmount > bitUsdBal) {
-                                return `Insufficient bitUSD balance. You have ${bitUsdBal.toFixed(
+                              if (repayAmount > usduBal) {
+                                return `Insufficient USDU balance. You have ${usduBal.toFixed(
                                   2
-                                )} bitUSD to repay ${repayAmount.toFixed(
+                                )} USDU to repay ${repayAmount.toFixed(
                                   2
-                                )} bitUSD`;
+                                )} USDU`;
                               }
                             }
 
@@ -630,58 +664,71 @@ function UpdatePosition() {
                             return validators.compose(
                               validators.minimumUsdValue(
                                 value,
-                                bitUSD?.price || 1,
+                                usdu?.price || 1,
                                 2000
                               ),
                               validators.minimumDebt(
-                                value * (bitUSD?.price || 1)
+                                value * (usdu?.price || 1)
                               ),
                               // Only check debt limit when increasing debt
                               isIncreasingDebt
                                 ? validators.debtLimit(value, debtLimit)
-                                : undefined,
+                                : undefined
                             );
                           },
                         }}
                       >
                         {(field) => {
                           // Derive the change amount from the current form value
-                          const changeAmount = field.state.value !== undefined && troveData
-                            ? Math.abs(field.state.value - troveData.debt)
-                            : 0;
-                          
+                          const changeAmount =
+                            field.state.value !== undefined && troveData
+                              ? Math.abs(field.state.value - troveData.debt)
+                              : 0;
+
                           return (
                             <div className="space-y-3">
                               <TokenInput
-                                token={BITUSD_TOKEN}
-                                balance={bitUsdBalance}
-                                price={bitUSD}
+                                token={USDU_TOKEN}
+                                balance={usduBalance}
+                                price={usdu}
                                 value={changeAmount}
                                 onChange={(value) => {
                                   // Convert change amount to total
-                                  const newTotal = value !== undefined
-                                    ? (debtMode === "borrow"
+                                  const newTotal =
+                                    value !== undefined
+                                      ? debtMode === "borrow"
                                         ? troveData.debt + value
-                                        : Math.max(0, troveData.debt - value))
-                                    : troveData.debt;
+                                        : Math.max(0, troveData.debt - value)
+                                      : troveData.debt;
                                   field.handleChange(newTotal);
                                 }}
                                 onBlur={field.handleBlur}
-                                label={debtMode === "repay" ? "Amount to Repay" : "Amount to Borrow"}
+                                label={
+                                  debtMode === "repay"
+                                    ? "Amount to Repay"
+                                    : "Amount to Borrow"
+                                }
                                 percentageButtons
                                 percentageButtonsOnHover
                                 onPercentageClick={(percentage: number) => {
                                   const currentDebt = troveData?.debt || 0;
-                                  const bitUsdBal = bitUsdBalance
-                                    ? Number(bitUsdBalance.value) / 10 ** BITUSD_TOKEN.decimals
+                                  const usduBal = usduBalance
+                                    ? Number(usduBalance.value) /
+                                      10 ** USDU_TOKEN.decimals
                                     : 0;
-                                  const maxAvailable = debtMode === "borrow" 
-                                    ? Math.max(0, (debtLimit || 0) - currentDebt)
-                                    : Math.min(currentDebt, bitUsdBal);
-                                  const changeAmount = maxAvailable * percentage;
-                                  const newTotal = debtMode === "borrow"
-                                    ? currentDebt + changeAmount
-                                    : currentDebt - changeAmount;
+                                  const maxAvailable =
+                                    debtMode === "borrow"
+                                      ? Math.max(
+                                          0,
+                                          (debtLimit || 0) - currentDebt
+                                        )
+                                      : Math.min(currentDebt, usduBal);
+                                  const changeAmount =
+                                    maxAvailable * percentage;
+                                  const newTotal =
+                                    debtMode === "borrow"
+                                      ? currentDebt + changeAmount
+                                      : currentDebt - changeAmount;
                                   field.handleChange(newTotal);
                                 }}
                                 percentageButtonsDisabled={
@@ -695,11 +742,12 @@ function UpdatePosition() {
                                 showBalance={true}
                                 placeholder="0"
                               />
-                              
+
                               {/* Show new total if there's a change */}
                               {changeAmount > 0 && (
                                 <div className="text-sm text-slate-600">
-                                  New total: <span className="font-medium text-slate-800">
+                                  New total:{" "}
+                                  <span className="font-medium text-slate-800">
                                     <NumericFormat
                                       displayType="text"
                                       value={field.state.value}
@@ -707,7 +755,7 @@ function UpdatePosition() {
                                       decimalScale={2}
                                       fixedDecimalScale
                                     />{" "}
-                                    bitUSD
+                                    USDU
                                   </span>
                                 </div>
                               )}
@@ -718,33 +766,37 @@ function UpdatePosition() {
                     </div>
 
                     {/* Fee Preview Section */}
-                    {changes && (changes.hasCollateralChange || changes.hasDebtChange) && (
-                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-2">
-                        <h4 className="font-medium text-amber-800">Transaction Preview</h4>
-                        <div className="space-y-1 text-sm text-amber-700">
-                          {/* TODO: Add actual fee calculations */}
-                          <div className="flex justify-between">
-                            <span>Estimated Fee:</span>
-                            <span className="font-medium">~0.5%</span>
-                          </div>
-                          {liquidationPrice > 0 && (
+                    {changes &&
+                      (changes.hasCollateralChange ||
+                        changes.hasDebtChange) && (
+                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-2">
+                          <h4 className="font-medium text-amber-800">
+                            Transaction Preview
+                          </h4>
+                          <div className="space-y-1 text-sm text-amber-700">
+                            {/* TODO: Add actual fee calculations */}
                             <div className="flex justify-between">
-                              <span>New Liquidation Price:</span>
-                              <span className="font-medium">
-                                <NumericFormat
-                                  displayType="text"
-                                  value={liquidationPrice}
-                                  prefix="$"
-                                  thousandSeparator=","
-                                  decimalScale={2}
-                                  fixedDecimalScale
-                                />
-                              </span>
+                              <span>Estimated Fee:</span>
+                              <span className="font-medium">~0.5%</span>
                             </div>
-                          )}
+                            {liquidationPrice > 0 && (
+                              <div className="flex justify-between">
+                                <span>New Liquidation Price:</span>
+                                <span className="font-medium">
+                                  <NumericFormat
+                                    displayType="text"
+                                    value={liquidationPrice}
+                                    prefix="$"
+                                    thousandSeparator=","
+                                    decimalScale={2}
+                                    fixedDecimalScale
+                                  />
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
                     {/* Update Button */}
                     <div className="flex flex-col items-start space-y-4 mt-6">
@@ -799,7 +851,7 @@ export default UpdatePosition;
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Update Position - BitUSD" },
-    { name: "description", content: "Update your BitUSD borrowing position" },
+    { title: "Update Position - Uncap" },
+    { name: "description", content: "Update your Uncap borrowing position" },
   ];
 }

@@ -1,21 +1,24 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAccount, useContract } from "@starknet-react/core";
-import { TROVE_MANAGER_ADDRESS } from "~/lib/contracts/constants";
+import { getCollateralAddresses, type CollateralType } from "~/lib/contracts/constants";
 import { TROVE_MANAGER_ABI } from "~/lib/contracts";
 
 interface UseOwnerPositionsOptions {
   refetchInterval?: number;
   enabled?: boolean;
+  collateralType?: CollateralType;
 }
 
 export function useOwnerPositions(options: UseOwnerPositionsOptions = {}) {
-  const { enabled = true } = options;
+  const { enabled = true, collateralType = "UBTC" } = options;
   const { address } = useAccount();
+  
+  const addresses = getCollateralAddresses(collateralType);
 
   const { contract: troveManagerContract } = useContract({
     abi: TROVE_MANAGER_ABI,
-    address: TROVE_MANAGER_ADDRESS,
+    address: addresses.troveManager,
   });
 
   const {
@@ -23,7 +26,7 @@ export function useOwnerPositions(options: UseOwnerPositionsOptions = {}) {
     isLoading: isLoadingOwnerPositions,
     error,
   } = useQuery({
-    queryKey: ["ownerPositions", address, TROVE_MANAGER_ADDRESS],
+    queryKey: ["ownerPositions", address, collateralType, addresses.troveManager],
     queryFn: async () => {
       if (!troveManagerContract || !address) return null;
       try {

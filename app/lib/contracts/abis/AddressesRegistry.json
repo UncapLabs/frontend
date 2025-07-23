@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "AddressesRegistryImpl",
-    "interface_name": "bit_usd::AddressesRegistry::IAddressesRegistry"
+    "interface_name": "usdu::AddressesRegistry::IAddressesRegistry"
   },
   {
     "type": "struct",
@@ -20,7 +20,7 @@
   },
   {
     "type": "interface",
-    "name": "bit_usd::AddressesRegistry::IAddressesRegistry",
+    "name": "usdu::AddressesRegistry::IAddressesRegistry",
     "items": [
       {
         "type": "function",
@@ -51,7 +51,7 @@
             "type": "core::starknet::contract_address::ContractAddress"
           },
           {
-            "name": "eth",
+            "name": "strk",
             "type": "core::starknet::contract_address::ContractAddress"
           },
           {
@@ -83,7 +83,7 @@
             "type": "core::starknet::contract_address::ContractAddress"
           },
           {
-            "name": "bitusd",
+            "name": "usdu",
             "type": "core::starknet::contract_address::ContractAddress"
           },
           {
@@ -241,7 +241,7 @@
       },
       {
         "type": "function",
-        "name": "get_bitusd_token",
+        "name": "get_usdu_token",
         "inputs": [],
         "outputs": [
           {
@@ -373,7 +373,7 @@
       },
       {
         "type": "function",
-        "name": "get_eth",
+        "name": "get_strk",
         "inputs": [],
         "outputs": [
           {
@@ -471,7 +471,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::AddressesRegistry::AddressesRegistry::Event",
+    "name": "usdu::AddressesRegistry::AddressesRegistry::Event",
     "kind": "enum",
     "variants": []
   }

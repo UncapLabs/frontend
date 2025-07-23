@@ -1,5 +1,10 @@
 [
   {
+    "type": "impl",
+    "name": "IMockSTRKImpl",
+    "interface_name": "usdu::mocks::MSTRK::IMockSTRK"
+  },
+  {
     "type": "struct",
     "name": "core::integer::u256",
     "members": [
@@ -14,32 +19,38 @@
     ]
   },
   {
-    "type": "function",
-    "name": "burn",
-    "inputs": [
+    "type": "interface",
+    "name": "usdu::mocks::MSTRK::IMockSTRK",
+    "items": [
       {
-        "name": "value",
-        "type": "core::integer::u256"
-      }
-    ],
-    "outputs": [],
-    "state_mutability": "external"
-  },
-  {
-    "type": "function",
-    "name": "mint",
-    "inputs": [
-      {
-        "name": "recipient",
-        "type": "core::starknet::contract_address::ContractAddress"
+        "type": "function",
+        "name": "mint",
+        "inputs": [
+          {
+            "name": "recipient",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
       },
       {
-        "name": "amount",
-        "type": "core::integer::u256"
+        "type": "function",
+        "name": "burn",
+        "inputs": [
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
       }
-    ],
-    "outputs": [],
-    "state_mutability": "external"
+    ]
   },
   {
     "type": "impl",
@@ -347,7 +358,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::mocks::UBTC::UBTC::Event",
+    "name": "usdu::mocks::MSTRK::MSTRK::Event",
     "kind": "enum",
     "variants": [
       {

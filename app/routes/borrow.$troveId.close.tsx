@@ -16,9 +16,10 @@ import {
   useStarknetkitConnectModal,
 } from "starknetkit";
 import {
-  TBTC_TOKEN,
-  LBTC_TOKEN,
-  BITUSD_TOKEN,
+  UBTC_TOKEN,
+  GBTC_TOKEN,
+  USDU_TOKEN,
+  type CollateralType,
 } from "~/lib/contracts/constants";
 import { NumericFormat } from "react-number-format";
 import { useTroveData } from "~/hooks/use-trove-data";
@@ -38,19 +39,26 @@ function ClosePosition() {
   // State for confirmation
   const [isConfirmed, setIsConfirmed] = useState(false);
 
+  // Get collateral type from URL or default to UBTC
+  const [troveCollateralType] = useQueryState("type", {
+    defaultValue: "UBTC",
+  });
+
   // Fetch existing trove data
-  const { troveData, isLoading: isTroveLoading } = useTroveData(troveId);
+  const { troveData, isLoading: isTroveLoading } = useTroveData(troveId, {
+    collateralType: troveCollateralType as CollateralType,
+  });
 
   // Check if we have a transaction hash in URL
   const [urlTransactionHash, setUrlTransactionHash] = useQueryState("tx", {
     defaultValue: "",
   });
 
-  // Get the collateral token from trove data (for now default to TBTC)
-  const selectedCollateralToken = TBTC_TOKEN; // TODO: Get from trove data
+  // Get the collateral token based on collateral type
+  const selectedCollateralToken = troveCollateralType === "GBTC" ? GBTC_TOKEN : UBTC_TOKEN;
 
-  const { data: bitUsdBalance } = useBalance({
-    token: BITUSD_TOKEN.address,
+  const { data: usduBalance } = useBalance({
+    token: USDU_TOKEN.address,
     address: address,
     refetchInterval: 30000,
   });
@@ -68,6 +76,7 @@ function ClosePosition() {
   } = useCloseTrove({
     troveId: troveData?.troveId,
     debt: troveData?.debt,
+    collateralType: troveCollateralType as CollateralType,
   });
 
   const handleComplete = () => {
@@ -107,15 +116,16 @@ function ClosePosition() {
     );
   }
 
-  // Check if user has enough bitUSD to repay
-  const bitUsdBal = bitUsdBalance
-    ? Number(bitUsdBalance.value) / 10 ** BITUSD_TOKEN.decimals
+  // Check if user has enough USDU to repay
+  const usduBal = usduBalance
+    ? Number(usduBalance.value) / 10 ** USDU_TOKEN.decimals
     : 0;
-  const hasEnoughBalance = bitUsdBal >= troveData.debt;
+  const hasEnoughBalance = usduBal >= troveData.debt;
 
   // Check if trove is zombie or redeemed
-  const isZombie = troveData.status === "zombie";
-  const isRedeemed = troveData.status === "redeemed";
+  // TODO: Implement status check from trove data
+  const isZombie = false;
+  const isRedeemed = false;
 
   const handleClosePosition = async () => {
     if (!address) {
@@ -176,7 +186,7 @@ function ClosePosition() {
                         decimalScale={2}
                         fixedDecimalScale
                       />{" "}
-                      bitUSD
+                      USDU
                     </>
                   ),
                 },
@@ -261,37 +271,37 @@ function ClosePosition() {
                             decimalScale={2}
                             fixedDecimalScale
                           />{" "}
-                          bitUSD
+                          USDU
                         </span>
                       </div>
                       
                       <div className="flex justify-between items-baseline">
                         <span className="text-sm text-slate-600">
-                          Your bitUSD Balance
+                          Your USDU Balance
                         </span>
                         <span className={`font-medium ${hasEnoughBalance ? "text-green-600" : "text-red-600"}`}>
                           <NumericFormat
                             displayType="text"
-                            value={bitUsdBal}
+                            value={usduBal}
                             thousandSeparator=","
                             decimalScale={2}
                             fixedDecimalScale
                           />{" "}
-                          bitUSD
+                          USDU
                         </span>
                       </div>
 
                       {!hasEnoughBalance && (
                         <div className="text-sm text-red-600 mt-2">
-                          ⚠️ Insufficient bitUSD balance. You need{" "}
+                          ⚠️ Insufficient USDU balance. You need{" "}
                           <NumericFormat
                             displayType="text"
-                            value={troveData.debt - bitUsdBal}
+                            value={troveData.debt - usduBal}
                             thousandSeparator=","
                             decimalScale={2}
                             fixedDecimalScale
                           />{" "}
-                          more bitUSD to close this position.
+                          more USDU to close this position.
                         </div>
                       )}
                     </div>
@@ -339,7 +349,7 @@ function ClosePosition() {
                             decimalScale={2}
                             fixedDecimalScale
                           />{" "}
-                          bitUSD
+                          USDU
                         </span>{" "}
                         and return my collateral.
                       </label>
@@ -363,7 +373,7 @@ function ClosePosition() {
                         : isPending
                         ? "Closing..."
                         : !hasEnoughBalance
-                        ? "Insufficient bitUSD Balance"
+                        ? "Insufficient USDU Balance"
                         : !isConfirmed
                         ? "Please confirm to proceed"
                         : "Close Position"}
@@ -403,7 +413,7 @@ function ClosePosition() {
                     Requirements
                   </h4>
                   <ul className="space-y-1 text-slate-600">
-                    <li>• Sufficient bitUSD to repay debt</li>
+                    <li>• Sufficient USDU to repay debt</li>
                     <li>• Gas fees for transaction</li>
                   </ul>
                 </div>
@@ -436,7 +446,7 @@ export default ClosePosition;
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Close Position - BitUSD" },
-    { name: "description", content: "Close your BitUSD borrowing position" },
+    { title: "Close Position - USDU" },
+    { name: "description", content: "Close your USDU borrowing position" },
   ];
 }

@@ -9,7 +9,7 @@ export function useFormCalculations(
   collateralAmount: number | undefined,
   borrowAmount: number | undefined,
   bitcoinPrice: number | undefined,
-  bitUSDPrice: number | undefined
+  usduPrice: number | undefined
 ) {
   const debtLimit = useMemo(() => {
     return computeDebtLimit(collateralAmount || 0, bitcoinPrice || 0);
@@ -27,9 +27,9 @@ export function useFormCalculations(
     return computeLiquidationPrice(
       collateralAmount || 0,
       borrowAmount || 0,
-      bitUSDPrice || 0
+      usduPrice || 0
     );
-  }, [collateralAmount, borrowAmount, bitUSDPrice]);
+  }, [collateralAmount, borrowAmount, usduPrice]);
 
   return {
     debtLimit,

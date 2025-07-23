@@ -7,17 +7,17 @@ import {
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { UBTC_ABI } from "~/lib/contracts";
-import { UBTC_ADDRESS } from "~/lib/contracts/constants";
+import { UBTC_TOKEN } from "~/lib/contracts/constants";
 
 export function GetTestBtc() {
   const { address } = useAccount();
   const { data: balance } = useBalance({
     address,
-    token: UBTC_ADDRESS,
+    token: UBTC_TOKEN.address,
   });
   const { contract } = useContract({
     abi: UBTC_ABI,
-    address: UBTC_ADDRESS,
+    address: UBTC_TOKEN.address,
   });
 
   const { send, isPending } = useSendTransaction({
@@ -43,7 +43,7 @@ export function GetTestBtc() {
     return null;
   }
 
-  // Don't show button if user has 1 TBTC or more
+  // Don't show button if user has 1 UBTC or more
   const hasEnoughBalance = balance && balance.value >= 1000000000000000000n;
   if (hasEnoughBalance) {
     return null;
@@ -55,7 +55,7 @@ export function GetTestBtc() {
       disabled={!contract || isPending}
       className="bg-blue-600 hover:bg-blue-700 text-white"
     >
-      {isPending ? "Minting..." : "Mint TBTC"}
+      {isPending ? "Minting..." : "Mint UBTC"}
     </Button>
   );
 }

@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "IDefaultPoolImpl",
-    "interface_name": "bit_usd::DefaultPool::IDefaultPool"
+    "interface_name": "usdu::DefaultPool::IDefaultPool"
   },
   {
     "type": "struct",
@@ -20,7 +20,7 @@
   },
   {
     "type": "interface",
-    "name": "bit_usd::DefaultPool::IDefaultPool",
+    "name": "usdu::DefaultPool::IDefaultPool",
     "items": [
       {
         "type": "function",
@@ -47,7 +47,7 @@
       },
       {
         "type": "function",
-        "name": "get_bit_usd_debt",
+        "name": "get_usdu_debt",
         "inputs": [],
         "outputs": [
           {
@@ -82,7 +82,7 @@
       },
       {
         "type": "function",
-        "name": "increase_bit_usd_debt",
+        "name": "increase_usdu_debt",
         "inputs": [
           {
             "name": "amount",
@@ -94,7 +94,7 @@
       },
       {
         "type": "function",
-        "name": "decrease_bit_usd_debt",
+        "name": "decrease_usdu_debt",
         "inputs": [
           {
             "name": "amount",
@@ -108,11 +108,11 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::DefaultPool::DefaultPool::DefaultPoolBitUSDDebtUpdated",
+    "name": "usdu::DefaultPool::DefaultPool::DefaultPoolUSDUDebtUpdated",
     "kind": "struct",
     "members": [
       {
-        "name": "bit_usd_debt",
+        "name": "usdu_debt",
         "type": "core::integer::u256",
         "kind": "data"
       }
@@ -120,7 +120,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::DefaultPool::DefaultPool::DefaultPoolCollBalanceUpdated",
+    "name": "usdu::DefaultPool::DefaultPool::DefaultPoolCollBalanceUpdated",
     "kind": "struct",
     "members": [
       {
@@ -132,17 +132,17 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::DefaultPool::DefaultPool::Event",
+    "name": "usdu::DefaultPool::DefaultPool::Event",
     "kind": "enum",
     "variants": [
       {
-        "name": "DefaultPoolBitUSDDebtUpdated",
-        "type": "bit_usd::DefaultPool::DefaultPool::DefaultPoolBitUSDDebtUpdated",
+        "name": "DefaultPoolUSDUDebtUpdated",
+        "type": "usdu::DefaultPool::DefaultPool::DefaultPoolUSDUDebtUpdated",
         "kind": "nested"
       },
       {
         "name": "DefaultPoolCollBalanceUpdated",
-        "type": "bit_usd::DefaultPool::DefaultPool::DefaultPoolCollBalanceUpdated",
+        "type": "usdu::DefaultPool::DefaultPool::DefaultPoolCollBalanceUpdated",
         "kind": "nested"
       }
     ]

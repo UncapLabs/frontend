@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "IRedemptionManagerImpl",
-    "interface_name": "bit_usd::RedemptionManager::IRedemptionManager"
+    "interface_name": "usdu::RedemptionManager::IRedemptionManager"
   },
   {
     "type": "struct",
@@ -30,7 +30,7 @@
   },
   {
     "type": "interface",
-    "name": "bit_usd::RedemptionManager::IRedemptionManager",
+    "name": "usdu::RedemptionManager::IRedemptionManager",
     "items": [
       {
         "type": "function",
@@ -81,7 +81,7 @@
         "name": "urgent_redemption",
         "inputs": [
           {
-            "name": "bit_usd_amount",
+            "name": "usdu_amount",
             "type": "core::integer::u256"
           },
           {
@@ -100,16 +100,16 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::RedemptionManager::Redemption",
+    "name": "usdu::RedemptionManager::Redemption",
     "kind": "struct",
     "members": [
       {
-        "name": "attempted_bit_usd_amount",
+        "name": "attempted_usdu_amount",
         "type": "core::integer::u256",
         "kind": "data"
       },
       {
-        "name": "actual_bit_usd_amount",
+        "name": "actual_usdu_amount",
         "type": "core::integer::u256",
         "kind": "data"
       },
@@ -137,7 +137,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::events::TroveManagerEventsEmitter::BatchedTroveUpdated",
+    "name": "usdu::events::TroveManagerEventsEmitter::BatchedTroveUpdated",
     "kind": "struct",
     "members": [
       {
@@ -179,7 +179,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::events::TroveManagerEventsEmitter::TroveUpdated",
+    "name": "usdu::events::TroveManagerEventsEmitter::TroveUpdated",
     "kind": "struct",
     "members": [
       {
@@ -221,7 +221,7 @@
   },
   {
     "type": "enum",
-    "name": "bit_usd::TroveManager::Operation",
+    "name": "usdu::TroveManager::Operation",
     "variants": [
       {
         "name": "OpenTrove",
@@ -281,7 +281,7 @@
   },
   {
     "type": "struct",
-    "name": "bit_usd::utils::i257::i257",
+    "name": "usdu::utils::i257::i257",
     "members": [
       {
         "name": "abs",
@@ -295,7 +295,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::events::TroveManagerEventsEmitter::TroveOperation",
+    "name": "usdu::events::TroveManagerEventsEmitter::TroveOperation",
     "kind": "struct",
     "members": [
       {
@@ -305,7 +305,7 @@
       },
       {
         "name": "operation",
-        "type": "bit_usd::TroveManager::Operation",
+        "type": "usdu::TroveManager::Operation",
         "kind": "data"
       },
       {
@@ -325,7 +325,7 @@
       },
       {
         "name": "debt_change_from_operation",
-        "type": "bit_usd::utils::i257::i257",
+        "type": "usdu::utils::i257::i257",
         "kind": "data"
       },
       {
@@ -335,14 +335,14 @@
       },
       {
         "name": "coll_change_from_operation",
-        "type": "bit_usd::utils::i257::i257",
+        "type": "usdu::utils::i257::i257",
         "kind": "data"
       }
     ]
   },
   {
     "type": "event",
-    "name": "bit_usd::events::TroveManagerEventsEmitter::RedemptionFeePaidToTrove",
+    "name": "usdu::events::TroveManagerEventsEmitter::RedemptionFeePaidToTrove",
     "kind": "struct",
     "members": [
       {
@@ -351,7 +351,7 @@
         "kind": "data"
       },
       {
-        "name": "eth_fee",
+        "name": "strk_fee",
         "type": "core::integer::u256",
         "kind": "data"
       }
@@ -359,7 +359,7 @@
   },
   {
     "type": "enum",
-    "name": "bit_usd::events::TroveManagerEventsEmitter::BatchOperation",
+    "name": "usdu::events::TroveManagerEventsEmitter::BatchOperation",
     "variants": [
       {
         "name": "RegisterBatchManager",
@@ -393,7 +393,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::events::TroveManagerEventsEmitter::BatchUpdated",
+    "name": "usdu::events::TroveManagerEventsEmitter::BatchUpdated",
     "kind": "struct",
     "members": [
       {
@@ -403,7 +403,7 @@
       },
       {
         "name": "operation",
-        "type": "bit_usd::events::TroveManagerEventsEmitter::BatchOperation",
+        "type": "usdu::events::TroveManagerEventsEmitter::BatchOperation",
         "kind": "data"
       },
       {
@@ -440,37 +440,37 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::RedemptionManager::RedemptionManager::Event",
+    "name": "usdu::RedemptionManager::RedemptionManager::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "Redemption",
-        "type": "bit_usd::RedemptionManager::Redemption",
+        "type": "usdu::RedemptionManager::Redemption",
         "kind": "nested"
       },
       {
         "name": "BatchedTroveUpdated",
-        "type": "bit_usd::events::TroveManagerEventsEmitter::BatchedTroveUpdated",
+        "type": "usdu::events::TroveManagerEventsEmitter::BatchedTroveUpdated",
         "kind": "nested"
       },
       {
         "name": "TroveUpdated",
-        "type": "bit_usd::events::TroveManagerEventsEmitter::TroveUpdated",
+        "type": "usdu::events::TroveManagerEventsEmitter::TroveUpdated",
         "kind": "nested"
       },
       {
         "name": "TroveOperation",
-        "type": "bit_usd::events::TroveManagerEventsEmitter::TroveOperation",
+        "type": "usdu::events::TroveManagerEventsEmitter::TroveOperation",
         "kind": "nested"
       },
       {
         "name": "RedemptionFeePaidToTrove",
-        "type": "bit_usd::events::TroveManagerEventsEmitter::RedemptionFeePaidToTrove",
+        "type": "usdu::events::TroveManagerEventsEmitter::RedemptionFeePaidToTrove",
         "kind": "nested"
       },
       {
         "name": "BatchUpdated",
-        "type": "bit_usd::events::TroveManagerEventsEmitter::BatchUpdated",
+        "type": "usdu::events::TroveManagerEventsEmitter::BatchUpdated",
         "kind": "nested"
       }
     ]

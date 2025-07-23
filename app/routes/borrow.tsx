@@ -13,9 +13,9 @@ import { validators } from "~/lib/validators";
 import type { Route } from "./+types/dashboard";
 import { useAccount, useBalance } from "@starknet-react/core";
 import {
-  BITUSD_TOKEN,
+  USDU_TOKEN,
   COLLATERAL_TOKENS,
-  TBTC_TOKEN,
+  UBTC_TOKEN,
 } from "~/lib/contracts/constants";
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
@@ -41,7 +41,7 @@ function Borrow() {
   const [selectedTokenAddress, setSelectedTokenAddress] =
     useQueryState("collateral");
   const { selectedCollateralToken } = useCollateralToken(
-    selectedTokenAddress || TBTC_TOKEN.address
+    selectedTokenAddress || UBTC_TOKEN.address
   );
 
   // Balance for selected token
@@ -51,7 +51,7 @@ function Borrow() {
     refetchInterval: 30000,
   });
 
-  const { bitcoin, bitUSD } = useFetchPrices(collateralAmount ?? undefined);
+  const { bitcoin, usdu } = useFetchPrices(collateralAmount ?? undefined);
 
   // Initialize form with URL values
   const form = useForm({
@@ -225,7 +225,7 @@ function Borrow() {
                               decimalScale={2}
                               fixedDecimalScale
                             />{" "}
-                            bitUSD
+                            USDU
                           </>
                         ),
                       },
@@ -340,7 +340,7 @@ function Borrow() {
                           fieldApi.form.getFieldValue("collateralAmount");
 
                         // Don't validate until prices are loaded
-                        if (!bitcoin?.price || !bitUSD?.price) return undefined;
+                        if (!bitcoin?.price || !usdu?.price) return undefined;
 
                         // Calculate debt limit inline
                         const debtLimit = collateral
@@ -349,13 +349,13 @@ function Borrow() {
 
                         return validators.compose(
                           validators.requiresCollateral(value, collateral),
-                          validators.minimumUsdValue(value, bitUSD.price, 2000),
+                          validators.minimumUsdValue(value, usdu.price, 2000),
                           validators.debtLimit(value, debtLimit),
                           // LTV check
                           (() => {
                             if (!collateral) return undefined;
                             const collateralValue = collateral * bitcoin.price;
-                            const borrowValue = value * bitUSD.price;
+                            const borrowValue = value * usdu.price;
                             return validators.ltvRatio(
                               borrowValue,
                               collateralValue,
@@ -368,8 +368,8 @@ function Borrow() {
                   >
                     {(field) => (
                       <TokenInput
-                        token={BITUSD_TOKEN}
-                        price={bitUSD}
+                        token={USDU_TOKEN}
+                        price={usdu}
                         value={field.state.value}
                         onChange={(value) => {
                           field.handleChange(value);
@@ -474,7 +474,7 @@ export default Borrow;
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "BitUSD" },
-    { name: "This is bitUSD", content: "Welcome to bitUSD!" },
+    { title: "Uncap" },
+    { name: "This is Uncap", content: "Welcome to Uncap!" },
   ];
 }

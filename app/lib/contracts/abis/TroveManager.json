@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "ITroveManagerImpl",
-    "interface_name": "bit_usd::TroveManager::ITroveManager"
+    "interface_name": "usdu::TroveManager::ITroveManager"
   },
   {
     "type": "struct",
@@ -34,7 +34,7 @@
   },
   {
     "type": "struct",
-    "name": "bit_usd::TroveManager::LatestTroveData",
+    "name": "usdu::TroveManager::LatestTroveData",
     "members": [
       {
         "name": "entire_debt",
@@ -45,7 +45,7 @@
         "type": "core::integer::u256"
       },
       {
-        "name": "redist_bit_usd_debt_gain",
+        "name": "redist_usdu_debt_gain",
         "type": "core::integer::u256"
       },
       {
@@ -80,7 +80,7 @@
   },
   {
     "type": "enum",
-    "name": "bit_usd::TroveManager::Status",
+    "name": "usdu::TroveManager::Status",
     "variants": [
       {
         "name": "NonExistent",
@@ -106,7 +106,7 @@
   },
   {
     "type": "struct",
-    "name": "bit_usd::TroveManager::Trove",
+    "name": "usdu::TroveManager::Trove",
     "members": [
       {
         "name": "debt",
@@ -122,7 +122,7 @@
       },
       {
         "name": "status",
-        "type": "bit_usd::TroveManager::Status"
+        "type": "usdu::TroveManager::Status"
       },
       {
         "name": "array_index",
@@ -152,21 +152,21 @@
   },
   {
     "type": "struct",
-    "name": "bit_usd::TroveManager::RewardSnapshots",
+    "name": "usdu::TroveManager::RewardSnapshots",
     "members": [
       {
         "name": "coll",
         "type": "core::integer::u256"
       },
       {
-        "name": "bit_usd_debt",
+        "name": "usdu_debt",
         "type": "core::integer::u256"
       }
     ]
   },
   {
     "type": "struct",
-    "name": "bit_usd::TroveManager::LatestBatchData",
+    "name": "usdu::TroveManager::LatestBatchData",
     "members": [
       {
         "name": "total_debt_shares",
@@ -220,10 +220,10 @@
   },
   {
     "type": "struct",
-    "name": "bit_usd::TroveManager::TroveChange",
+    "name": "usdu::TroveManager::TroveChange",
     "members": [
       {
-        "name": "applied_redist_bit_usd_debt_gain",
+        "name": "applied_redist_usdu_debt_gain",
         "type": "core::integer::u256"
       },
       {
@@ -284,7 +284,7 @@
   },
   {
     "type": "struct",
-    "name": "bit_usd::TroveManager::OnSetInterestBatchManagerParams",
+    "name": "usdu::TroveManager::OnSetInterestBatchManagerParams",
     "members": [
       {
         "name": "trove_id",
@@ -300,7 +300,7 @@
       },
       {
         "name": "trove_change",
-        "type": "bit_usd::TroveManager::TroveChange"
+        "type": "usdu::TroveManager::TroveChange"
       },
       {
         "name": "new_batch_address",
@@ -318,7 +318,7 @@
   },
   {
     "type": "interface",
-    "name": "bit_usd::TroveManager::ITroveManager",
+    "name": "usdu::TroveManager::ITroveManager",
     "items": [
       {
         "type": "function",
@@ -331,6 +331,17 @@
         ],
         "outputs": [],
         "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "get_addresses_registry",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
       },
       {
         "type": "function",
@@ -370,7 +381,7 @@
         ],
         "outputs": [
           {
-            "type": "bit_usd::TroveManager::LatestTroveData"
+            "type": "usdu::TroveManager::LatestTroveData"
           }
         ],
         "state_mutability": "view"
@@ -429,18 +440,7 @@
         ],
         "outputs": [
           {
-            "type": "bit_usd::TroveManager::Status"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "get_trove_nft",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::starknet::contract_address::ContractAddress"
+            "type": "usdu::TroveManager::Status"
           }
         ],
         "state_mutability": "view"
@@ -463,61 +463,6 @@
       },
       {
         "type": "function",
-        "name": "get_borrower_operations",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::starknet::contract_address::ContractAddress"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "get_stability_pool",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::starknet::contract_address::ContractAddress"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "get_sorted_troves",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::starknet::contract_address::ContractAddress"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "get_trove_manager_events_emitter",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::starknet::contract_address::ContractAddress"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "get_CCR",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::integer::u256"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
         "name": "get_troves",
         "inputs": [
           {
@@ -527,7 +472,7 @@
         ],
         "outputs": [
           {
-            "type": "bit_usd::TroveManager::Trove"
+            "type": "usdu::TroveManager::Trove"
           }
         ],
         "state_mutability": "view"
@@ -554,7 +499,7 @@
         ],
         "outputs": [
           {
-            "type": "bit_usd::TroveManager::RewardSnapshots"
+            "type": "usdu::TroveManager::RewardSnapshots"
           }
         ],
         "state_mutability": "view"
@@ -570,23 +515,7 @@
         ],
         "outputs": [
           {
-            "type": "bit_usd::TroveManager::LatestBatchData"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "get_owner_to_positions",
-        "inputs": [
-          {
-            "name": "owner",
-            "type": "core::starknet::contract_address::ContractAddress"
-          }
-        ],
-        "outputs": [
-          {
-            "type": "core::array::Array::<core::integer::u256>"
+            "type": "usdu::TroveManager::LatestBatchData"
           }
         ],
         "state_mutability": "view"
@@ -629,28 +558,6 @@
         "outputs": [
           {
             "type": "core::integer::u256"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "get_liquidation_manager",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::starknet::contract_address::ContractAddress"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "get_redemption_manager",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::starknet::contract_address::ContractAddress"
           }
         ],
         "state_mutability": "view"
@@ -739,7 +646,7 @@
         "name": "move_pending_trove_rewards_to_active_pool",
         "inputs": [
           {
-            "name": "redist_bit_usd_debt_gain",
+            "name": "redist_usdu_debt_gain",
             "type": "core::integer::u256"
           },
           {
@@ -760,7 +667,7 @@
           },
           {
             "name": "trove_change",
-            "type": "bit_usd::TroveManager::TroveChange"
+            "type": "usdu::TroveManager::TroveChange"
           },
           {
             "name": "batch_address",
@@ -776,7 +683,7 @@
           },
           {
             "name": "status",
-            "type": "bit_usd::TroveManager::Status"
+            "type": "usdu::TroveManager::Status"
           }
         ],
         "outputs": [],
@@ -812,7 +719,7 @@
           },
           {
             "name": "trove_change",
-            "type": "bit_usd::TroveManager::TroveChange"
+            "type": "usdu::TroveManager::TroveChange"
           },
           {
             "name": "batch_address",
@@ -840,7 +747,7 @@
         "inputs": [
           {
             "name": "params",
-            "type": "bit_usd::TroveManager::OnSetInterestBatchManagerParams"
+            "type": "usdu::TroveManager::OnSetInterestBatchManagerParams"
           }
         ],
         "outputs": [],
@@ -860,7 +767,7 @@
           },
           {
             "name": "trove_change",
-            "type": "bit_usd::TroveManager::TroveChange"
+            "type": "usdu::TroveManager::TroveChange"
           },
           {
             "name": "batch_address",
@@ -912,7 +819,7 @@
           },
           {
             "name": "trove_change",
-            "type": "bit_usd::TroveManager::TroveChange"
+            "type": "usdu::TroveManager::TroveChange"
           }
         ],
         "outputs": [],
@@ -936,7 +843,7 @@
           },
           {
             "name": "trove_change",
-            "type": "bit_usd::TroveManager::TroveChange"
+            "type": "usdu::TroveManager::TroveChange"
           }
         ],
         "outputs": [],
@@ -952,7 +859,7 @@
           },
           {
             "name": "trove_change",
-            "type": "bit_usd::TroveManager::TroveChange"
+            "type": "usdu::TroveManager::TroveChange"
           },
           {
             "name": "batch_address",
@@ -984,7 +891,7 @@
           },
           {
             "name": "trove_change",
-            "type": "bit_usd::TroveManager::TroveChange"
+            "type": "usdu::TroveManager::TroveChange"
           },
           {
             "name": "annual_interest_rate",
@@ -1012,7 +919,7 @@
           },
           {
             "name": "trove_change",
-            "type": "bit_usd::TroveManager::TroveChange"
+            "type": "usdu::TroveManager::TroveChange"
           },
           {
             "name": "batch_address",
@@ -1060,7 +967,7 @@
           },
           {
             "name": "trove_change",
-            "type": "bit_usd::TroveManager::TroveChange"
+            "type": "usdu::TroveManager::TroveChange"
           }
         ],
         "outputs": [],
@@ -1104,17 +1011,66 @@
         ],
         "outputs": [],
         "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "get_liquidation_penalty_sp",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_liquidation_penalty_redistribution",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_l_coll",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_interest_period",
+        "inputs": [
+          {
+            "name": "last_debt_update_time",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
       }
     ]
   },
   {
     "type": "impl",
-    "name": "LiquityBaseImpl",
-    "interface_name": "bit_usd::dependencies::LiquityBase::ILiquityBase"
+    "name": "UncapBaseImpl",
+    "interface_name": "usdu::dependencies::UncapBase::IUncapBase"
   },
   {
     "type": "interface",
-    "name": "bit_usd::dependencies::LiquityBase::ILiquityBase",
+    "name": "usdu::dependencies::UncapBase::IUncapBase",
     "items": [
       {
         "type": "function",
@@ -1142,7 +1098,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::ActivePoolAddressChanged",
+    "name": "usdu::dependencies::UncapBase::UncapBaseComponent::ActivePoolAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -1154,7 +1110,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::DefaultPoolAddressChanged",
+    "name": "usdu::dependencies::UncapBase::UncapBaseComponent::DefaultPoolAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -1166,7 +1122,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::PriceFeedAddressChanged",
+    "name": "usdu::dependencies::UncapBase::UncapBaseComponent::PriceFeedAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -1178,34 +1134,34 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::Event",
+    "name": "usdu::dependencies::UncapBase::UncapBaseComponent::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "ActivePoolAddressChanged",
-        "type": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::ActivePoolAddressChanged",
+        "type": "usdu::dependencies::UncapBase::UncapBaseComponent::ActivePoolAddressChanged",
         "kind": "nested"
       },
       {
         "name": "DefaultPoolAddressChanged",
-        "type": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::DefaultPoolAddressChanged",
+        "type": "usdu::dependencies::UncapBase::UncapBaseComponent::DefaultPoolAddressChanged",
         "kind": "nested"
       },
       {
         "name": "PriceFeedAddressChanged",
-        "type": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::PriceFeedAddressChanged",
+        "type": "usdu::dependencies::UncapBase::UncapBaseComponent::PriceFeedAddressChanged",
         "kind": "nested"
       }
     ]
   },
   {
     "type": "event",
-    "name": "bit_usd::TroveManager::TroveManager::Event",
+    "name": "usdu::TroveManager::TroveManager::Event",
     "kind": "enum",
     "variants": [
       {
-        "name": "LiquityBaseEvent",
-        "type": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::Event",
+        "name": "UncapBaseEvent",
+        "type": "usdu::dependencies::UncapBase::UncapBaseComponent::Event",
         "kind": "flat"
       }
     ]

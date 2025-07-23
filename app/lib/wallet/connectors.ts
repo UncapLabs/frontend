@@ -41,7 +41,7 @@ export const availableConnectors = (): any[] => {
       ArgentMobileConnector.init({
         options: {
           url: typeof window !== "undefined" ? window.location.href : "",
-          dappName: "BitUSD",
+          dappName: "Uncap",
           chainId: CHAIN_ID,
         },
       }),
@@ -58,7 +58,7 @@ export const availableConnectors = (): any[] => {
       ArgentMobileConnector.init({
         options: {
           url: typeof window !== "undefined" ? window.location.href : "",
-          dappName: "BitUSD",
+          dappName: "Uncap",
           chainId: CHAIN_ID,
         },
       }),
@@ -82,7 +82,7 @@ export const availableConnectors = (): any[] => {
       ArgentMobileConnector.init({
         options: {
           url: typeof window !== "undefined" ? window.location.href : "",
-          dappName: "BitUSD",
+          dappName: "Uncap",
           chainId: CHAIN_ID,
         },
       }),

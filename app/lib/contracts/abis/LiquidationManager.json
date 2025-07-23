@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "ILiquidationManagerImpl",
-    "interface_name": "bit_usd::LiquidationManager::ILiquidationManager"
+    "interface_name": "usdu::LiquidationManager::ILiquidationManager"
   },
   {
     "type": "struct",
@@ -30,10 +30,10 @@
   },
   {
     "type": "struct",
-    "name": "bit_usd::TroveManager::TroveChange",
+    "name": "usdu::TroveManager::TroveChange",
     "members": [
       {
-        "name": "applied_redist_bit_usd_debt_gain",
+        "name": "applied_redist_usdu_debt_gain",
         "type": "core::integer::u256"
       },
       {
@@ -84,7 +84,7 @@
   },
   {
     "type": "struct",
-    "name": "bit_usd::LiquidationManager::LiquidationValues",
+    "name": "usdu::LiquidationManager::LiquidationValues",
     "members": [
       {
         "name": "coll_gas_compensation",
@@ -111,7 +111,7 @@
         "type": "core::integer::u256"
       },
       {
-        "name": "eth_gas_compensation",
+        "name": "strk_gas_compensation",
         "type": "core::integer::u256"
       },
       {
@@ -126,7 +126,7 @@
   },
   {
     "type": "interface",
-    "name": "bit_usd::LiquidationManager::ILiquidationManager",
+    "name": "usdu::LiquidationManager::ILiquidationManager",
     "items": [
       {
         "type": "function",
@@ -155,7 +155,7 @@
         ],
         "outputs": [
           {
-            "type": "(bit_usd::TroveManager::TroveChange, bit_usd::LiquidationManager::LiquidationValues, core::integer::u256)"
+            "type": "(usdu::TroveManager::TroveChange, usdu::LiquidationManager::LiquidationValues, core::integer::u256)"
           }
         ],
         "state_mutability": "external"
@@ -164,7 +164,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::events::TroveManagerEventsEmitter::TroveUpdated",
+    "name": "usdu::events::TroveManagerEventsEmitter::TroveUpdated",
     "kind": "struct",
     "members": [
       {
@@ -206,7 +206,7 @@
   },
   {
     "type": "enum",
-    "name": "bit_usd::TroveManager::Operation",
+    "name": "usdu::TroveManager::Operation",
     "variants": [
       {
         "name": "OpenTrove",
@@ -266,7 +266,7 @@
   },
   {
     "type": "struct",
-    "name": "bit_usd::utils::i257::i257",
+    "name": "usdu::utils::i257::i257",
     "members": [
       {
         "name": "abs",
@@ -280,7 +280,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::events::TroveManagerEventsEmitter::TroveOperation",
+    "name": "usdu::events::TroveManagerEventsEmitter::TroveOperation",
     "kind": "struct",
     "members": [
       {
@@ -290,7 +290,7 @@
       },
       {
         "name": "operation",
-        "type": "bit_usd::TroveManager::Operation",
+        "type": "usdu::TroveManager::Operation",
         "kind": "data"
       },
       {
@@ -310,7 +310,7 @@
       },
       {
         "name": "debt_change_from_operation",
-        "type": "bit_usd::utils::i257::i257",
+        "type": "usdu::utils::i257::i257",
         "kind": "data"
       },
       {
@@ -320,14 +320,14 @@
       },
       {
         "name": "coll_change_from_operation",
-        "type": "bit_usd::utils::i257::i257",
+        "type": "usdu::utils::i257::i257",
         "kind": "data"
       }
     ]
   },
   {
     "type": "enum",
-    "name": "bit_usd::events::TroveManagerEventsEmitter::BatchOperation",
+    "name": "usdu::events::TroveManagerEventsEmitter::BatchOperation",
     "variants": [
       {
         "name": "RegisterBatchManager",
@@ -361,7 +361,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::events::TroveManagerEventsEmitter::BatchUpdated",
+    "name": "usdu::events::TroveManagerEventsEmitter::BatchUpdated",
     "kind": "struct",
     "members": [
       {
@@ -371,7 +371,7 @@
       },
       {
         "name": "operation",
-        "type": "bit_usd::events::TroveManagerEventsEmitter::BatchOperation",
+        "type": "usdu::events::TroveManagerEventsEmitter::BatchOperation",
         "kind": "data"
       },
       {
@@ -408,22 +408,22 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::LiquidationManager::LiquidationManager::Event",
+    "name": "usdu::LiquidationManager::LiquidationManager::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "TroveUpdated",
-        "type": "bit_usd::events::TroveManagerEventsEmitter::TroveUpdated",
+        "type": "usdu::events::TroveManagerEventsEmitter::TroveUpdated",
         "kind": "nested"
       },
       {
         "name": "TroveOperation",
-        "type": "bit_usd::events::TroveManagerEventsEmitter::TroveOperation",
+        "type": "usdu::events::TroveManagerEventsEmitter::TroveOperation",
         "kind": "nested"
       },
       {
         "name": "BatchUpdated",
-        "type": "bit_usd::events::TroveManagerEventsEmitter::BatchUpdated",
+        "type": "usdu::events::TroveManagerEventsEmitter::BatchUpdated",
         "kind": "nested"
       }
     ]

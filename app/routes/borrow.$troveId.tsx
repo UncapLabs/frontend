@@ -26,7 +26,7 @@ function TroveLayout() {
         </div>
       </div>
       <Separator className="mb-8 bg-slate-200" />
-      
+
       {/* Child routes will render here */}
       <Outlet />
     </div>
@@ -37,7 +37,7 @@ export default TroveLayout;
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Position - BitUSD" },
-    { name: "description", content: "Manage your BitUSD borrowing position" },
+    { title: "Position - Uncap" },
+    { name: "description", content: "Manage your Uncap borrowing position" },
   ];
 }

@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "IActivePoolImpl",
-    "interface_name": "bit_usd::ActivePool::IActivePool"
+    "interface_name": "usdu::ActivePool::IActivePool"
   },
   {
     "type": "struct",
@@ -20,10 +20,10 @@
   },
   {
     "type": "struct",
-    "name": "bit_usd::TroveManager::TroveChange",
+    "name": "usdu::TroveManager::TroveChange",
     "members": [
       {
-        "name": "applied_redist_bit_usd_debt_gain",
+        "name": "applied_redist_usdu_debt_gain",
         "type": "core::integer::u256"
       },
       {
@@ -88,7 +88,7 @@
   },
   {
     "type": "interface",
-    "name": "bit_usd::ActivePool::IActivePool",
+    "name": "usdu::ActivePool::IActivePool",
     "items": [
       {
         "type": "function",
@@ -152,7 +152,7 @@
         "inputs": [
           {
             "name": "trove_change",
-            "type": "bit_usd::TroveManager::TroveChange"
+            "type": "usdu::TroveManager::TroveChange"
           }
         ],
         "outputs": [
@@ -164,11 +164,88 @@
       },
       {
         "type": "function",
-        "name": "get_bit_usd_debt",
+        "name": "get_usdu_debt",
         "inputs": [],
         "outputs": [
           {
             "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_agg_recorded_debt",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_agg_weighted_debt_sum",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_last_agg_update_time",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u64"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_agg_batch_management_fees",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_agg_weighted_batch_management_fee_sum",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_last_agg_batch_management_fees_update_time",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u64"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_shutdown_time",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u64"
           }
         ],
         "state_mutability": "view"
@@ -231,7 +308,7 @@
         "inputs": [
           {
             "name": "trove_change",
-            "type": "bit_usd::TroveManager::TroveChange"
+            "type": "usdu::TroveManager::TroveChange"
           },
           {
             "name": "batch_address",
@@ -254,7 +331,7 @@
         "inputs": [
           {
             "name": "trove_change",
-            "type": "bit_usd::TroveManager::TroveChange"
+            "type": "usdu::TroveManager::TroveChange"
           },
           {
             "name": "batch_address",
@@ -286,7 +363,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::ActivePool::ActivePool::CollTokenAddressChanged",
+    "name": "usdu::ActivePool::ActivePool::CollTokenAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -298,7 +375,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::ActivePool::ActivePool::BorrowerOperationsAddressChanged",
+    "name": "usdu::ActivePool::ActivePool::BorrowerOperationsAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -310,7 +387,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::ActivePool::ActivePool::TroveManagerAddressChanged",
+    "name": "usdu::ActivePool::ActivePool::TroveManagerAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -322,7 +399,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::ActivePool::ActivePool::DefaultPoolAddressChanged",
+    "name": "usdu::ActivePool::ActivePool::DefaultPoolAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -334,7 +411,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::ActivePool::ActivePool::StabilityPoolAddressChanged",
+    "name": "usdu::ActivePool::ActivePool::StabilityPoolAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -346,7 +423,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::ActivePool::ActivePool::ActivePoolBoldDebtUpdated",
+    "name": "usdu::ActivePool::ActivePool::ActivePoolUSDUDebtUpdated",
     "kind": "struct",
     "members": [
       {
@@ -358,7 +435,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::ActivePool::ActivePool::ActivePoolCollBalanceUpdated",
+    "name": "usdu::ActivePool::ActivePool::ActivePoolCollBalanceUpdated",
     "kind": "struct",
     "members": [
       {
@@ -370,42 +447,42 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::ActivePool::ActivePool::Event",
+    "name": "usdu::ActivePool::ActivePool::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "CollTokenAddressChanged",
-        "type": "bit_usd::ActivePool::ActivePool::CollTokenAddressChanged",
+        "type": "usdu::ActivePool::ActivePool::CollTokenAddressChanged",
         "kind": "nested"
       },
       {
         "name": "BorrowerOperationsAddressChanged",
-        "type": "bit_usd::ActivePool::ActivePool::BorrowerOperationsAddressChanged",
+        "type": "usdu::ActivePool::ActivePool::BorrowerOperationsAddressChanged",
         "kind": "nested"
       },
       {
         "name": "TroveManagerAddressChanged",
-        "type": "bit_usd::ActivePool::ActivePool::TroveManagerAddressChanged",
+        "type": "usdu::ActivePool::ActivePool::TroveManagerAddressChanged",
         "kind": "nested"
       },
       {
         "name": "DefaultPoolAddressChanged",
-        "type": "bit_usd::ActivePool::ActivePool::DefaultPoolAddressChanged",
+        "type": "usdu::ActivePool::ActivePool::DefaultPoolAddressChanged",
         "kind": "nested"
       },
       {
         "name": "StabilityPoolAddressChanged",
-        "type": "bit_usd::ActivePool::ActivePool::StabilityPoolAddressChanged",
+        "type": "usdu::ActivePool::ActivePool::StabilityPoolAddressChanged",
         "kind": "nested"
       },
       {
-        "name": "ActivePoolBoldDebtUpdated",
-        "type": "bit_usd::ActivePool::ActivePool::ActivePoolBoldDebtUpdated",
+        "name": "ActivePoolUSDUDebtUpdated",
+        "type": "usdu::ActivePool::ActivePool::ActivePoolUSDUDebtUpdated",
         "kind": "nested"
       },
       {
         "name": "ActivePoolCollBalanceUpdated",
-        "type": "bit_usd::ActivePool::ActivePool::ActivePoolCollBalanceUpdated",
+        "type": "usdu::ActivePool::ActivePool::ActivePoolCollBalanceUpdated",
         "kind": "nested"
       }
     ]

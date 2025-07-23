@@ -6,8 +6,8 @@ import type { Route } from "./+types/test";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "BitUSD" },
-    { name: "This is bitUSD", content: "Welcome to bitUSD!" },
+    { title: "USDU" },
+    { name: "This is USDU", content: "Welcome to USDU!" },
   ];
 }
 

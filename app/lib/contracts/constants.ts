@@ -1,72 +1,99 @@
 // Import deployment configuration
-import deploymentData from "./addresses.json";
+import deploymentData from "./deployment_addresses.json";
 import type { Address } from "@starknet-react/chains";
 
 export const INTEREST_RATE_SCALE_DOWN_FACTOR = 10n ** 16n;
 
-// Contract addresses loaded from deployment file
-export const ACTIVE_POOL_ADDRESS = deploymentData.ActivePool as Address;
-export const ADDRESSES_REGISTRY_ADDRESS =
-  deploymentData.AddressesRegistry as Address;
-export const BORROWER_OPERATIONS_ADDRESS =
-  deploymentData.BorrowerOperations as Address;
-export const BATCH_MANAGER_ADDRESS = deploymentData.BatchManager as Address;
-export const COLLATERAL_REGISTRY_ADDRESS =
-  deploymentData.CollateralRegistry as Address;
-export const COLL_SURPLUS_POOL_ADDRESS =
-  deploymentData.CollSurplusPool as Address;
-export const DEFAULT_POOL_ADDRESS = deploymentData.DefaultPool as Address;
-export const GAS_POOL_ADDRESS = deploymentData.GasPool as Address;
-export const HINT_HELPERS_ADDRESS = deploymentData.HintHelpers as Address;
-export const INTEREST_ROUTER_ADDRESS = deploymentData.InterestRouter as Address;
-export const LIQUIDATION_MANAGER_ADDRESS =
-  deploymentData.LiquidationManager as Address;
-export const PRICE_FEED_ADDRESS = deploymentData.PriceFeed as Address;
-export const REDEMPTION_MANAGER_ADDRESS =
-  deploymentData.RedemptionManager as Address;
-export const SORTED_TROVES_ADDRESS = deploymentData.SortedTroves as Address;
-export const STABILITY_POOL_ADDRESS = deploymentData.StabilityPool as Address;
-export const TROVE_MANAGER_ADDRESS = deploymentData.TroveManager as Address;
-export const TROVE_MANAGER_EVENTS_EMITTER_ADDRESS =
-  deploymentData.TroveManagerEventsEmitter as Address;
-export const TROVE_NFT_ADDRESS = deploymentData.TroveNFT as Address;
-export const UBTC_ADDRESS = deploymentData.UBTC as Address;
-export const USDU_ADDRESS = deploymentData.USDU as Address;
+// Collateral types
+export type CollateralType = "UBTC" | "GBTC";
 
-export const TBTC_DECIMALS = 18;
-export const TBTC_SYMBOL = "TBTC";
+// Contract addresses by collateral type
+export const COLLATERAL_ADDRESSES = {
+  UBTC: {
+    collateral: deploymentData.UBTC.collateral as Address,
+    addressesRegistry: deploymentData.UBTC.addressesRegistry as Address,
+    borrowerOperations: deploymentData.UBTC.borrowerOperations as Address,
+    troveManager: deploymentData.UBTC.troveManager as Address,
+    troveNft: deploymentData.UBTC.troveNft as Address,
+    stabilityPool: deploymentData.UBTC.stabilityPool as Address,
+    sortedTroves: deploymentData.UBTC.sortedTroves as Address,
+    activePool: deploymentData.UBTC.activePool as Address,
+    defaultPool: deploymentData.UBTC.defaultPool as Address,
+    collSurplusPool: deploymentData.UBTC.collSurplusPool as Address,
+    gasPool: deploymentData.UBTC.gasPool as Address,
+    interestRouter: deploymentData.UBTC.interestRouter as Address,
+    liquidationManager: deploymentData.UBTC.liquidationManager as Address,
+    redemptionManager: deploymentData.UBTC.redemptionManager as Address,
+    batchManager: deploymentData.UBTC.batchManager as Address,
+    priceFeed: deploymentData.UBTC.priceFeed as Address,
+    hintHelpers: deploymentData.UBTC.hintHelpers as Address,
+    multiTroveGetter: deploymentData.UBTC.multiTroveGetter as Address,
+    troveManagerEventsEmitter: deploymentData.UBTC.troveManagerEventsEmitter as Address,
+  },
+  GBTC: {
+    collateral: deploymentData.GBTC.collateral as Address,
+    addressesRegistry: deploymentData.GBTC.addressesRegistry as Address,
+    borrowerOperations: deploymentData.GBTC.borrowerOperations as Address,
+    troveManager: deploymentData.GBTC.troveManager as Address,
+    troveNft: deploymentData.GBTC.troveNft as Address,
+    stabilityPool: deploymentData.GBTC.stabilityPool as Address,
+    sortedTroves: deploymentData.GBTC.sortedTroves as Address,
+    activePool: deploymentData.GBTC.activePool as Address,
+    defaultPool: deploymentData.GBTC.defaultPool as Address,
+    collSurplusPool: deploymentData.GBTC.collSurplusPool as Address,
+    gasPool: deploymentData.GBTC.gasPool as Address,
+    interestRouter: deploymentData.GBTC.interestRouter as Address,
+    liquidationManager: deploymentData.GBTC.liquidationManager as Address,
+    redemptionManager: deploymentData.GBTC.redemptionManager as Address,
+    batchManager: deploymentData.GBTC.batchManager as Address,
+    priceFeed: deploymentData.GBTC.priceFeed as Address,
+    hintHelpers: deploymentData.GBTC.hintHelpers as Address,
+    multiTroveGetter: deploymentData.GBTC.multiTroveGetter as Address,
+    troveManagerEventsEmitter: deploymentData.GBTC.troveManagerEventsEmitter as Address,
+  },
+} as const;
+
+// Global addresses (same for all collaterals)
+export const USDU_ADDRESS = deploymentData.USDU as Address;
+export const GAS_TOKEN_ADDRESS = deploymentData.gasToken as Address;
+export const COLLATERAL_REGISTRY_ADDRESS = deploymentData.collateralRegistry as Address;
+
 export const USDU_DECIMALS = 18;
 export const USDU_SYMBOL = "USDU";
 
-export const TBTC_NAME = "Testnet Bitcoin";
-
 // Token definitions
-export const TBTC_TOKEN = {
-  address: UBTC_ADDRESS,
-  symbol: TBTC_SYMBOL,
-  decimals: TBTC_DECIMALS,
-  icon: "/bitcoin.png",
-} as const;
-
-export const LBTC_ADDRESS = "0x123" as Address; // TODO: Replace with actual LBTC address when available
-export const LBTC_TOKEN = {
-  address: LBTC_ADDRESS,
-  symbol: "LBTC",
+export const UBTC_TOKEN = {
+  address: COLLATERAL_ADDRESSES.UBTC.collateral,
+  symbol: "UBTC",
   decimals: 18,
   icon: "/bitcoin.png",
+  collateralType: "UBTC" as CollateralType,
 } as const;
 
-export const BITUSD_TOKEN = {
+export const GBTC_TOKEN = {
+  address: COLLATERAL_ADDRESSES.GBTC.collateral,
+  symbol: "GBTC",
+  decimals: 18,
+  icon: "/bitcoin.png",
+  collateralType: "GBTC" as CollateralType,
+} as const;
+
+export const USDU_TOKEN = {
   address: USDU_ADDRESS,
-  symbol: "bitUSD",
+  symbol: "USDU",
   decimals: 18,
-  icon: "/bitusd.png",
+  icon: "/usdu.png",
 } as const;
 
 // Available collateral tokens
-export const COLLATERAL_TOKENS = [TBTC_TOKEN, LBTC_TOKEN];
+export const COLLATERAL_TOKENS = [UBTC_TOKEN, GBTC_TOKEN];
 
 // Token lookup map by address for O(1) access
 export const COLLATERAL_TOKENS_BY_ADDRESS = Object.fromEntries(
   COLLATERAL_TOKENS.map((token) => [token.address, token])
-) as Record<string, typeof TBTC_TOKEN>;
+) as Record<string, typeof UBTC_TOKEN | typeof GBTC_TOKEN>;
+
+// Helper function to get contract addresses for a specific collateral type
+export function getCollateralAddresses(collateralType: CollateralType) {
+  return COLLATERAL_ADDRESSES[collateralType];
+}

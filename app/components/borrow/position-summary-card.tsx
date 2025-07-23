@@ -56,7 +56,7 @@ export const PositionSummaryCard = memo(function PositionSummaryCard({
                 decimalScale={2}
                 fixedDecimalScale
               />{" "}
-              bitUSD
+              USDU
             </span>
           </div>
 

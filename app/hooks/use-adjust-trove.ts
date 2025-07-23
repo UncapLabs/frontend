@@ -2,10 +2,11 @@ import { useMemo } from "react";
 import { useAccount } from "@starknet-react/core";
 import { Contract } from "starknet";
 import { contractCall } from "~/lib/contracts/calls";
-import * as contractDefs from "~/lib/contracts/definitions";
+import { getContractDefinitions } from "~/lib/contracts/definitions";
 import { useTransaction } from "./use-transaction";
 import { toBigInt } from "~/lib/utils";
-import { BORROWER_OPERATIONS_ADDRESS } from "~/lib/contracts/constants";
+import { getCollateralAddresses, type CollateralType, GAS_TOKEN_ADDRESS } from "~/lib/contracts/constants";
+import { BORROWER_OPERATIONS_ABI } from "~/lib/contracts";
 
 interface UseAdjustTroveParams {
   troveId?: bigint;
@@ -16,7 +17,7 @@ interface UseAdjustTroveParams {
   newDebt?: number;
   newInterestRate?: bigint;
   maxUpfrontFee?: bigint;
-  collateralToken?: { address: string };
+  collateralToken?: { address: string; collateralType?: CollateralType };
 }
 
 // Determine which contract function to call based on changes
@@ -28,6 +29,7 @@ function getAdjustmentCalls(params: {
   isDebtIncrease: boolean;
   maxUpfrontFee: bigint;
   collateralTokenAddress?: string;
+  collateralType: CollateralType;
 }) {
   const {
     troveId,
@@ -37,14 +39,18 @@ function getAdjustmentCalls(params: {
     isDebtIncrease,
     maxUpfrontFee,
     collateralTokenAddress,
+    collateralType,
   } = params;
   const calls = [];
+  
+  // Get contract addresses for this collateral type
+  const addresses = getCollateralAddresses(collateralType);
 
-  // Always approve ETH for gas payment
+  // Always approve STRK for gas payment
   calls.push(
     contractCall.token.approve(
-      "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
-      BORROWER_OPERATIONS_ADDRESS,
+      GAS_TOKEN_ADDRESS,
+      addresses.borrowerOperations,
       BigInt(10e18) // Approve a reasonable amount for gas fees
     )
   );
@@ -54,13 +60,13 @@ function getAdjustmentCalls(params: {
     // Need approvals for additions
     if (isCollIncrease && collateralTokenAddress) {
       calls.push(
-        contractCall.token.approve(collateralTokenAddress, BORROWER_OPERATIONS_ADDRESS, collateralChange)
+        contractCall.token.approve(collateralTokenAddress, addresses.borrowerOperations, collateralChange)
       );
     }
     if (!isDebtIncrease) {
-      // Repaying debt - need to approve BitUSD spending
+      // Repaying debt - need to approve USDU spending
       calls.push(
-        contractCall.bitUsd.approve(BORROWER_OPERATIONS_ADDRESS, debtChange)
+        contractCall.usdu.approve(addresses.borrowerOperations, debtChange)
       );
     }
 
@@ -72,6 +78,7 @@ function getAdjustmentCalls(params: {
         debtChange,
         isDebtIncrease,
         maxUpfrontFee,
+        collateralType,
       })
     );
     return calls;
@@ -85,35 +92,36 @@ function getAdjustmentCalls(params: {
         calls.push(
           contractCall.token.approve(
             collateralTokenAddress,
-            BORROWER_OPERATIONS_ADDRESS,
+            addresses.borrowerOperations,
             collateralChange
           )
         );
       }
       calls.push(
-        contractCall.borrowerOperations.addColl(troveId, collateralChange)
+        contractCall.borrowerOperations.addColl(troveId, collateralChange, collateralType)
       );
     } else {
       // Withdrawing collateral
       calls.push(
-        contractCall.borrowerOperations.withdrawColl(troveId, collateralChange)
+        contractCall.borrowerOperations.withdrawColl(troveId, collateralChange, collateralType)
       );
     }
   } else if (debtChange !== 0n) {
     if (isDebtIncrease) {
       // Borrowing more
       calls.push(
-        contractCall.borrowerOperations.withdrawBitUsd(
+        contractCall.borrowerOperations.withdrawUsdu(
           troveId,
           debtChange,
-          maxUpfrontFee
+          maxUpfrontFee,
+          collateralType
         )
       );
     } else {
       // Repaying debt
       calls.push(
-        contractCall.bitUsd.approve(BORROWER_OPERATIONS_ADDRESS, debtChange),
-        contractCall.borrowerOperations.repayBitUsd(troveId, debtChange)
+        contractCall.usdu.approve(addresses.borrowerOperations, debtChange),
+        contractCall.borrowerOperations.repayUsdu(troveId, debtChange, collateralType)
       );
     }
   }
@@ -164,9 +172,16 @@ export function useAdjustTrove({
 
   // Prepare the calls using smart routing
   const calls = useMemo(() => {
-    if (!address || !troveId || !changes) {
+    if (!address || !troveId || !changes || !collateralToken) {
       return undefined;
     }
+
+    // Determine collateral type
+    const collateralType: CollateralType = collateralToken.collateralType || 
+      (collateralToken.address === getCollateralAddresses("UBTC").collateral ? "UBTC" : "GBTC");
+    
+    // Get addresses for this collateral type
+    const addresses = getCollateralAddresses(collateralType);
 
     // No changes
     if (!changes.hasCollateralChange && !changes.hasDebtChange && !changes.hasInterestRateChange) {
@@ -176,14 +191,14 @@ export function useAdjustTrove({
     // If only interest rate is changing, use adjust_trove_interest_rate
     if (!changes.hasCollateralChange && !changes.hasDebtChange && changes.hasInterestRateChange) {
       const contract = new Contract(
-        contractDefs.BorrowerOperations.abi,
-        contractDefs.BorrowerOperations.address
+        BORROWER_OPERATIONS_ABI,
+        addresses.borrowerOperations
       );
       return [
-        // Approve ETH for gas payment
+        // Approve STRK for gas payment
         contractCall.token.approve(
-          "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
-          BORROWER_OPERATIONS_ADDRESS,
+          GAS_TOKEN_ADDRESS,
+          addresses.borrowerOperations,
           BigInt(10e18) // Approve a reasonable amount for gas fees
         ),
         contract.populate("adjust_trove_interest_rate", [
@@ -205,7 +220,8 @@ export function useAdjustTrove({
       isCollIncrease: changes.isCollIncrease,
       isDebtIncrease: changes.isDebtIncrease,
       maxUpfrontFee,
-      collateralTokenAddress: collateralToken?.address,
+      collateralTokenAddress: collateralToken.address,
+      collateralType,
     });
   }, [address, troveId, changes, maxUpfrontFee, collateralToken]);
 

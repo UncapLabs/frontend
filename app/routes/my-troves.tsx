@@ -24,8 +24,9 @@ function MyTroves() {
     navigate("/");
   };
 
-  const handleAdjustTrove = (troveId: string) => {
-    navigate(`/borrow/${troveId}`);
+  const handleAdjustTrove = (troveId: string, collateralAsset: string) => {
+    const collateralType = collateralAsset === "GBTC" ? "GBTC" : "UBTC";
+    navigate(`/borrow/${troveId}?type=${collateralType}`);
   };
 
   const getHealthBadgeColor = (healthFactor: number) => {
@@ -87,7 +88,7 @@ function MyTroves() {
             </h3>
             <p className="text-slate-600 text-center mb-6 max-w-md">
               You don't have any active borrowing positions yet. Create your
-              first trove to start borrowing bitUSD against your Bitcoin
+              first trove to start borrowing USDU against your Bitcoin
               collateral.
             </p>
             <Button
@@ -105,7 +106,7 @@ function MyTroves() {
             <Card
               key={trove.id}
               className="border border-slate-200 hover:shadow-lg transition-all duration-300 cursor-pointer"
-              onClick={() => handleAdjustTrove(trove.id)}
+              onClick={() => handleAdjustTrove(trove.id, trove.collateralAsset)}
             >
               <CardHeader className="pb-4">
                 <div className="flex justify-between items-start">
@@ -199,7 +200,7 @@ function MyTroves() {
                   className="w-full justify-between hover:bg-slate-50"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleAdjustTrove(trove.id);
+                    handleAdjustTrove(trove.id, trove.collateralAsset);
                   }}
                 >
                   Adjust Position
@@ -218,7 +219,7 @@ export default MyTroves;
 
 export function meta() {
   return [
-    { title: "My Troves - BitUSD" },
-    { name: "description", content: "Manage your BitUSD borrowing positions" },
+    { title: "My Troves - USDU" },
+    { name: "description", content: "Manage your USDU borrowing positions" },
   ];
 }

@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "IPriceFeedImpl",
-    "interface_name": "bit_usd::PriceFeed::IPriceFeed"
+    "interface_name": "usdu::PriceFeed::IPriceFeed"
   },
   {
     "type": "struct",
@@ -34,7 +34,7 @@
   },
   {
     "type": "interface",
-    "name": "bit_usd::PriceFeed::IPriceFeed",
+    "name": "usdu::PriceFeed::IPriceFeed",
     "items": [
       {
         "type": "function",
@@ -62,7 +62,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::PriceFeed::PriceFeed::Event",
+    "name": "usdu::PriceFeed::PriceFeed::Event",
     "kind": "enum",
     "variants": []
   }

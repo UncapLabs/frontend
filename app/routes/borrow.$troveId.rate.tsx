@@ -17,8 +17,9 @@ import {
 } from "starknetkit";
 import {
   INTEREST_RATE_SCALE_DOWN_FACTOR,
-  TBTC_TOKEN,
-  LBTC_TOKEN,
+  UBTC_TOKEN,
+  GBTC_TOKEN,
+  type CollateralType,
 } from "~/lib/contracts/constants";
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
@@ -36,19 +37,23 @@ function InterestRateAdjustment() {
     connectors: connectors as StarknetkitConnector[],
   });
 
+  // Get collateral type from URL or default to UBTC
+  const [troveCollateralType] = useQueryState("type", {
+    defaultValue: "UBTC",
+  });
+
   // Fetch existing trove data
-  const { troveData, isLoading: isTroveLoading } = useTroveData(troveId);
+  const { troveData, isLoading: isTroveLoading } = useTroveData(troveId, {
+    collateralType: troveCollateralType as CollateralType,
+  });
 
   // Check if we have a transaction hash in URL
   const [urlTransactionHash, setUrlTransactionHash] = useQueryState("tx", {
     defaultValue: "",
   });
 
-  // Available collateral tokens (to determine which one the trove uses)
-  const collateralTokens = [TBTC_TOKEN, LBTC_TOKEN];
-
-  // Get the collateral token from trove data (for now default to TBTC)
-  const selectedCollateralToken = TBTC_TOKEN; // TODO: Get from trove data
+  // Get the collateral token based on collateral type
+  const selectedCollateralToken = troveCollateralType === "GBTC" ? GBTC_TOKEN : UBTC_TOKEN;
 
   // Create properly typed default values from existing trove
   const defaultFormValues: Partial<BorrowFormData> = useMemo(
@@ -309,7 +314,7 @@ function InterestRateAdjustment() {
                                 decimalScale={2}
                                 fixedDecimalScale
                               />{" "}
-                              bitUSD/year
+                              USDU/year
                             </span>
                           </div>
                           <div className="flex justify-between">
@@ -425,7 +430,7 @@ export default InterestRateAdjustment;
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Adjust Interest Rate - BitUSD" },
+    { title: "Adjust Interest Rate - USDU" },
     { name: "description", content: "Adjust your position's interest rate" },
   ];
 }

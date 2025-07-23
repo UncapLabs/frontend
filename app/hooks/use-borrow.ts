@@ -8,8 +8,10 @@ import {
   TRANSACTION_STORAGE_KEYS,
 } from "./use-transaction-state";
 import {
-  BORROWER_OPERATIONS_ADDRESS,
-  TBTC_TOKEN,
+  getCollateralAddresses,
+  UBTC_TOKEN,
+  GAS_TOKEN_ADDRESS,
+  type CollateralType,
 } from "~/lib/contracts/constants";
 import type { Token } from "~/components/token-input";
 
@@ -21,11 +23,15 @@ export interface BorrowFormData {
   selectedCollateralToken: string;
 }
 
+interface TokenWithCollateralType extends Token {
+  collateralType?: CollateralType;
+}
+
 interface UseBorrowParams {
   collateralAmount?: number;
   borrowAmount?: number;
   interestRate: number;
-  collateralToken?: Token;
+  collateralToken?: TokenWithCollateralType;
 }
 
 export function useBorrow({
@@ -35,7 +41,14 @@ export function useBorrow({
   collateralToken,
 }: UseBorrowParams) {
   const { address } = useAccount();
-  const { ownerIndex, isLoadingOwnerPositions } = useOwnerPositions();
+  
+  // Determine collateral type from token
+  const collateralType: CollateralType = collateralToken?.collateralType || 
+    (collateralToken?.symbol === "UBTC" ? "UBTC" : "GBTC");
+    
+  const { ownerIndex, isLoadingOwnerPositions } = useOwnerPositions({
+    collateralType
+  });
 
   // Transaction state management
   const transactionState = useTransactionState<BorrowFormData>({
@@ -44,7 +57,7 @@ export function useBorrow({
       collateralAmount: undefined,
       borrowAmount: undefined,
       interestRate: 5, // Default to 5% APR
-      selectedCollateralToken: TBTC_TOKEN.symbol,
+      selectedCollateralToken: UBTC_TOKEN.symbol,
     },
   });
 
@@ -61,18 +74,21 @@ export function useBorrow({
       return undefined;
     }
 
+    // Get addresses for this collateral type
+    const addresses = getCollateralAddresses(collateralType);
+
     return [
       // 1. Approve collateral token spending
       contractCall.token.approve(
         collateralToken.address,
-        BORROWER_OPERATIONS_ADDRESS,
+        addresses.borrowerOperations,
         BigInt(Math.floor(collateralAmount * 1e18))
       ),
 
       // 2. Approve STRK for gas payment
       contractCall.token.approve(
-        "0x04718f5a0Fc34cC1AF16A1cdee98fFB20C31f5cD61D6Ab07201858f4287c938D",
-        BORROWER_OPERATIONS_ADDRESS,
+        GAS_TOKEN_ADDRESS,
+        addresses.borrowerOperations,
         BigInt(50e18) // Approve 50 STRK for gas fees
       ),
 
@@ -81,8 +97,9 @@ export function useBorrow({
         owner: address,
         ownerIndex: ownerIndex,
         collAmount: BigInt(Math.floor(collateralAmount * 1e18)),
-        bitUsdAmount: BigInt(Math.floor(borrowAmount * 1e18)),
+        usduAmount: BigInt(Math.floor(borrowAmount * 1e18)),
         annualInterestRate: BigInt(Math.floor((interestRate * 1e18) / 100)),
+        collateralType: collateralType,
       }),
     ];
   }, [

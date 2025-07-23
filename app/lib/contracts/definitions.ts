@@ -1,9 +1,7 @@
 import {
-  UBTC_ADDRESS,
-  BORROWER_OPERATIONS_ADDRESS,
   USDU_ADDRESS,
-  TROVE_MANAGER_ADDRESS,
-  PRICE_FEED_ADDRESS,
+  getCollateralAddresses,
+  type CollateralType,
 } from "./constants";
 import {
   BORROWER_OPERATIONS_ABI,
@@ -13,27 +11,32 @@ import {
   PRICE_FEED_ABI,
 } from ".";
 
-export const TBTC = {
-  address: UBTC_ADDRESS,
-  abi: UBTC_ABI,
-};
+// Helper function to create contract definitions for a specific collateral type
+export function getContractDefinitions(collateralType: CollateralType) {
+  const addresses = getCollateralAddresses(collateralType);
+  
+  return {
+    collateral: {
+      address: addresses.collateral,
+      abi: UBTC_ABI, // All collaterals use same ERC20 ABI
+    },
+    borrowerOperations: {
+      address: addresses.borrowerOperations,
+      abi: BORROWER_OPERATIONS_ABI,
+    },
+    troveManager: {
+      address: addresses.troveManager,
+      abi: TROVE_MANAGER_ABI,
+    },
+    priceFeed: {
+      address: addresses.priceFeed,
+      abi: PRICE_FEED_ABI,
+    },
+  };
+}
 
-export const BorrowerOperations = {
-  address: BORROWER_OPERATIONS_ADDRESS,
-  abi: BORROWER_OPERATIONS_ABI,
-};
-
+// Global contract definitions (same for all collaterals)
 export const USDU = {
   address: USDU_ADDRESS,
   abi: USDU_ABI,
-};
-
-export const TroveManager = {
-  address: TROVE_MANAGER_ADDRESS,
-  abi: TROVE_MANAGER_ABI,
-};
-
-export const PriceFeed = {
-  address: PRICE_FEED_ADDRESS,
-  abi: PRICE_FEED_ABI,
 };

@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "CollateralRegistryImpl",
-    "interface_name": "bit_usd::CollateralRegistry::ICollateralRegistry"
+    "interface_name": "usdu::CollateralRegistry::ICollateralRegistry"
   },
   {
     "type": "struct",
@@ -30,14 +30,14 @@
   },
   {
     "type": "interface",
-    "name": "bit_usd::CollateralRegistry::ICollateralRegistry",
+    "name": "usdu::CollateralRegistry::ICollateralRegistry",
     "items": [
       {
         "type": "function",
         "name": "initializer",
         "inputs": [
           {
-            "name": "bit_usd",
+            "name": "usdu",
             "type": "core::starknet::contract_address::ContractAddress"
           },
           {
@@ -83,7 +83,7 @@
         "name": "redeem_collateral",
         "inputs": [
           {
-            "name": "bit_usd_amount",
+            "name": "usdu_amount",
             "type": "core::integer::u256"
           },
           {
@@ -189,7 +189,7 @@
         "name": "get_redemption_fee_with_decay",
         "inputs": [
           {
-            "name": "eth_drawn",
+            "name": "collat_drawn",
             "type": "core::integer::u256"
           }
         ],
@@ -202,7 +202,7 @@
       },
       {
         "type": "function",
-        "name": "get_effective_redemption_fee_in_bitusd",
+        "name": "get_effective_redemption_fee_in_usdu",
         "inputs": [
           {
             "name": "redeemed_amount",
@@ -226,12 +226,23 @@
           }
         ],
         "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "minutes_passed_since_last_fee_op",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u64"
+          }
+        ],
+        "state_mutability": "view"
       }
     ]
   },
   {
     "type": "event",
-    "name": "bit_usd::CollateralRegistry::CollateralRegistry::BaseRateUpdated",
+    "name": "usdu::CollateralRegistry::CollateralRegistry::BaseRateUpdated",
     "kind": "struct",
     "members": [
       {
@@ -243,7 +254,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::CollateralRegistry::CollateralRegistry::LastFeeOpTimeUpdated",
+    "name": "usdu::CollateralRegistry::CollateralRegistry::LastFeeOpTimeUpdated",
     "kind": "struct",
     "members": [
       {
@@ -255,17 +266,17 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::CollateralRegistry::CollateralRegistry::Event",
+    "name": "usdu::CollateralRegistry::CollateralRegistry::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "BaseRateUpdated",
-        "type": "bit_usd::CollateralRegistry::CollateralRegistry::BaseRateUpdated",
+        "type": "usdu::CollateralRegistry::CollateralRegistry::BaseRateUpdated",
         "kind": "nested"
       },
       {
         "name": "LastFeeOpTimeUpdated",
-        "type": "bit_usd::CollateralRegistry::CollateralRegistry::LastFeeOpTimeUpdated",
+        "type": "usdu::CollateralRegistry::CollateralRegistry::LastFeeOpTimeUpdated",
         "kind": "nested"
       }
     ]

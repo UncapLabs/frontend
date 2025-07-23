@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "StabilityPoolImpl",
-    "interface_name": "bit_usd::StabilityPool::IStabilityPool"
+    "interface_name": "usdu::StabilityPool::IStabilityPool"
   },
   {
     "type": "struct",
@@ -34,7 +34,7 @@
   },
   {
     "type": "interface",
-    "name": "bit_usd::StabilityPool::IStabilityPool",
+    "name": "usdu::StabilityPool::IStabilityPool",
     "items": [
       {
         "type": "function",
@@ -77,7 +77,7 @@
       },
       {
         "type": "function",
-        "name": "get_total_bitusd_deposits",
+        "name": "get_total_usdu_deposits",
         "inputs": [],
         "outputs": [
           {
@@ -208,6 +208,22 @@
       },
       {
         "type": "function",
+        "name": "get_stashed_coll",
+        "inputs": [
+          {
+            "name": "depositor",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
         "name": "provide_to_sp",
         "inputs": [
           {
@@ -247,10 +263,10 @@
       },
       {
         "type": "function",
-        "name": "trigger_bitusd_rewards",
+        "name": "trigger_usdu_rewards",
         "inputs": [
           {
-            "name": "bitusd_yield",
+            "name": "usdu_yield",
             "type": "core::integer::u256"
           }
         ],
@@ -307,7 +323,7 @@
       },
       {
         "type": "function",
-        "name": "get_compounded_bitusd_deposit",
+        "name": "get_compounded_usdu_deposit",
         "inputs": [
           {
             "name": "depositor",
@@ -341,12 +357,12 @@
   },
   {
     "type": "impl",
-    "name": "LiquityBaseImpl",
-    "interface_name": "bit_usd::dependencies::LiquityBase::ILiquityBase"
+    "name": "UncapBaseImpl",
+    "interface_name": "usdu::dependencies::UncapBase::IUncapBase"
   },
   {
     "type": "interface",
-    "name": "bit_usd::dependencies::LiquityBase::ILiquityBase",
+    "name": "usdu::dependencies::UncapBase::IUncapBase",
     "items": [
       {
         "type": "function",
@@ -374,7 +390,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::StabilityPool::StabilityPool::StabilityPoolCollBalanceUpdated",
+    "name": "usdu::StabilityPool::StabilityPool::StabilityPoolCollBalanceUpdated",
     "kind": "struct",
     "members": [
       {
@@ -386,7 +402,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::StabilityPool::StabilityPool::StabilityPoolBitUSDBalanceUpdated",
+    "name": "usdu::StabilityPool::StabilityPool::StabilityPoolUSDUBalanceUpdated",
     "kind": "struct",
     "members": [
       {
@@ -398,7 +414,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::StabilityPool::StabilityPool::P_Updated",
+    "name": "usdu::StabilityPool::StabilityPool::P_Updated",
     "kind": "struct",
     "members": [
       {
@@ -410,7 +426,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::StabilityPool::StabilityPool::S_Updated",
+    "name": "usdu::StabilityPool::StabilityPool::S_Updated",
     "kind": "struct",
     "members": [
       {
@@ -427,7 +443,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::StabilityPool::StabilityPool::B_Updated",
+    "name": "usdu::StabilityPool::StabilityPool::B_Updated",
     "kind": "struct",
     "members": [
       {
@@ -444,7 +460,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::StabilityPool::StabilityPool::ScaleUpdated",
+    "name": "usdu::StabilityPool::StabilityPool::ScaleUpdated",
     "kind": "struct",
     "members": [
       {
@@ -456,7 +472,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::StabilityPool::StabilityPool::DepositUpdated",
+    "name": "usdu::StabilityPool::StabilityPool::DepositUpdated",
     "kind": "struct",
     "members": [
       {
@@ -498,7 +514,7 @@
   },
   {
     "type": "enum",
-    "name": "bit_usd::StabilityPool::StabilityPool::Operation",
+    "name": "usdu::StabilityPool::StabilityPool::Operation",
     "variants": [
       {
         "name": "provide_to_sp",
@@ -516,7 +532,7 @@
   },
   {
     "type": "struct",
-    "name": "bit_usd::utils::i257::i257",
+    "name": "usdu::utils::i257::i257",
     "members": [
       {
         "name": "abs",
@@ -530,7 +546,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::StabilityPool::StabilityPool::DepositOperation",
+    "name": "usdu::StabilityPool::StabilityPool::DepositOperation",
     "kind": "struct",
     "members": [
       {
@@ -540,7 +556,7 @@
       },
       {
         "name": "operation",
-        "type": "bit_usd::StabilityPool::StabilityPool::Operation",
+        "type": "usdu::StabilityPool::StabilityPool::Operation",
         "kind": "data"
       },
       {
@@ -550,7 +566,7 @@
       },
       {
         "name": "top_up_or_withdrawal",
-        "type": "bit_usd::utils::i257::i257",
+        "type": "usdu::utils::i257::i257",
         "kind": "data"
       },
       {
@@ -564,12 +580,12 @@
         "kind": "data"
       },
       {
-        "name": "eth_gain_since_last_operation",
+        "name": "col_gain_since_last_operation",
         "type": "core::integer::u256",
         "kind": "data"
       },
       {
-        "name": "eth_gain_claimed",
+        "name": "col_gain_claimed",
         "type": "core::integer::u256",
         "kind": "data"
       }
@@ -577,7 +593,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::StabilityPool::StabilityPool::TroveManagerAddressChanged",
+    "name": "usdu::StabilityPool::StabilityPool::TroveManagerAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -589,11 +605,11 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::StabilityPool::StabilityPool::BitUSDTokenAddressChanged",
+    "name": "usdu::StabilityPool::StabilityPool::USDUTokenAddressChanged",
     "kind": "struct",
     "members": [
       {
-        "name": "new_bitusd_token_address",
+        "name": "new_usdu_token_address",
         "type": "core::starknet::contract_address::ContractAddress",
         "kind": "data"
       }
@@ -601,7 +617,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::ActivePoolAddressChanged",
+    "name": "usdu::dependencies::UncapBase::UncapBaseComponent::ActivePoolAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -613,7 +629,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::DefaultPoolAddressChanged",
+    "name": "usdu::dependencies::UncapBase::UncapBaseComponent::DefaultPoolAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -625,7 +641,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::PriceFeedAddressChanged",
+    "name": "usdu::dependencies::UncapBase::UncapBaseComponent::PriceFeedAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -637,84 +653,84 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::Event",
+    "name": "usdu::dependencies::UncapBase::UncapBaseComponent::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "ActivePoolAddressChanged",
-        "type": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::ActivePoolAddressChanged",
+        "type": "usdu::dependencies::UncapBase::UncapBaseComponent::ActivePoolAddressChanged",
         "kind": "nested"
       },
       {
         "name": "DefaultPoolAddressChanged",
-        "type": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::DefaultPoolAddressChanged",
+        "type": "usdu::dependencies::UncapBase::UncapBaseComponent::DefaultPoolAddressChanged",
         "kind": "nested"
       },
       {
         "name": "PriceFeedAddressChanged",
-        "type": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::PriceFeedAddressChanged",
+        "type": "usdu::dependencies::UncapBase::UncapBaseComponent::PriceFeedAddressChanged",
         "kind": "nested"
       }
     ]
   },
   {
     "type": "event",
-    "name": "bit_usd::StabilityPool::StabilityPool::Event",
+    "name": "usdu::StabilityPool::StabilityPool::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "StabilityPoolCollBalanceUpdated",
-        "type": "bit_usd::StabilityPool::StabilityPool::StabilityPoolCollBalanceUpdated",
+        "type": "usdu::StabilityPool::StabilityPool::StabilityPoolCollBalanceUpdated",
         "kind": "nested"
       },
       {
-        "name": "StabilityPoolBitUSDBalanceUpdated",
-        "type": "bit_usd::StabilityPool::StabilityPool::StabilityPoolBitUSDBalanceUpdated",
+        "name": "StabilityPoolUSDUBalanceUpdated",
+        "type": "usdu::StabilityPool::StabilityPool::StabilityPoolUSDUBalanceUpdated",
         "kind": "nested"
       },
       {
         "name": "P_Updated",
-        "type": "bit_usd::StabilityPool::StabilityPool::P_Updated",
+        "type": "usdu::StabilityPool::StabilityPool::P_Updated",
         "kind": "nested"
       },
       {
         "name": "S_Updated",
-        "type": "bit_usd::StabilityPool::StabilityPool::S_Updated",
+        "type": "usdu::StabilityPool::StabilityPool::S_Updated",
         "kind": "nested"
       },
       {
         "name": "B_Updated",
-        "type": "bit_usd::StabilityPool::StabilityPool::B_Updated",
+        "type": "usdu::StabilityPool::StabilityPool::B_Updated",
         "kind": "nested"
       },
       {
         "name": "ScaleUpdated",
-        "type": "bit_usd::StabilityPool::StabilityPool::ScaleUpdated",
+        "type": "usdu::StabilityPool::StabilityPool::ScaleUpdated",
         "kind": "nested"
       },
       {
         "name": "DepositUpdated",
-        "type": "bit_usd::StabilityPool::StabilityPool::DepositUpdated",
+        "type": "usdu::StabilityPool::StabilityPool::DepositUpdated",
         "kind": "nested"
       },
       {
         "name": "DepositOperation",
-        "type": "bit_usd::StabilityPool::StabilityPool::DepositOperation",
+        "type": "usdu::StabilityPool::StabilityPool::DepositOperation",
         "kind": "nested"
       },
       {
         "name": "TroveManagerAddressChanged",
-        "type": "bit_usd::StabilityPool::StabilityPool::TroveManagerAddressChanged",
+        "type": "usdu::StabilityPool::StabilityPool::TroveManagerAddressChanged",
         "kind": "nested"
       },
       {
-        "name": "BitUSDTokenAddressChanged",
-        "type": "bit_usd::StabilityPool::StabilityPool::BitUSDTokenAddressChanged",
+        "name": "USDUTokenAddressChanged",
+        "type": "usdu::StabilityPool::StabilityPool::USDUTokenAddressChanged",
         "kind": "nested"
       },
       {
-        "name": "LiquityBaseEvent",
-        "type": "bit_usd::dependencies::LiquityBase::LiquityBaseComponent::Event",
+        "name": "UncapBaseEvent",
+        "type": "usdu::dependencies::UncapBase::UncapBaseComponent::Event",
         "kind": "flat"
       }
     ]

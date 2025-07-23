@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "HintHelpersImpl",
-    "interface_name": "bit_usd::HintHelpers::IHintHelpers"
+    "interface_name": "usdu::HintHelpers::IHintHelpers"
   },
   {
     "type": "struct",
@@ -20,7 +20,7 @@
   },
   {
     "type": "interface",
-    "name": "bit_usd::HintHelpers::IHintHelpers",
+    "name": "usdu::HintHelpers::IHintHelpers",
     "items": [
       {
         "type": "function",
@@ -269,7 +269,7 @@
   },
   {
     "type": "event",
-    "name": "bit_usd::HintHelpers::HintHelpers::Event",
+    "name": "usdu::HintHelpers::HintHelpers::Event",
     "kind": "enum",
     "variants": []
   }
