@@ -56,6 +56,7 @@ export const contractCall = {
         BORROWER_OPERATIONS_ABI,
         addresses.borrowerOperations
       );
+
       return contract.populate("open_trove", [
         params.owner,
         params.ownerIndex,

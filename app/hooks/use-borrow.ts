@@ -41,13 +41,14 @@ export function useBorrow({
   collateralToken,
 }: UseBorrowParams) {
   const { address } = useAccount();
-  
+
   // Determine collateral type from token
-  const collateralType: CollateralType = collateralToken?.collateralType || 
+  const collateralType: CollateralType =
+    collateralToken?.collateralType ||
     (collateralToken?.symbol === "UBTC" ? "UBTC" : "GBTC");
-    
+
   const { ownerIndex, isLoadingOwnerPositions } = useOwnerPositions({
-    collateralType
+    collateralType,
   });
 
   // Transaction state management
