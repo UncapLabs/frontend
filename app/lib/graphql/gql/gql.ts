@@ -1,0 +1,64 @@
+/* eslint-disable */
+import * as types from './graphql';
+import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
+
+/**
+ * Map of all GraphQL operations in the project.
+ *
+ * This map has several performance disadvantages:
+ * 1. It is not tree-shakeable, so it will include all operations in the project.
+ * 2. It is not minifiable, so the string of a GraphQL query will be multiple times inside the bundle.
+ * 3. It does not support dead code elimination, so it will add unused operations.
+ *
+ * Therefore it is highly recommended to use the babel or swc plugin for production.
+ * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
+ */
+type Documents = {
+    "\n  query GetOwnerPositions($owner: String!) {\n    troves(where: { borrower: $owner }) {\n      id\n      troveId\n      borrower\n      debt\n      deposit\n      interestRate\n      status\n      collateral {\n        id\n      }\n      createdAt\n      updatedAt\n    }\n  }\n": typeof types.GetOwnerPositionsDocument,
+    "\n  query GetTroveById($troveId: ID!) {\n    trove(id: $troveId) {\n      id\n      troveId\n      borrower\n      debt\n      deposit\n      interestRate\n      status\n      interestBatch {\n        id\n        batchManager\n        debt\n        coll\n      }\n      collateral {\n        id\n      }\n    }\n  }\n": typeof types.GetTroveByIdDocument,
+    "\n  query GetTrovesByCollateral($collateralId: ID, $first: Int!, $skip: Int!) {\n    troves(\n      where: { collateral: $collateralId, status: \"active\" }\n      first: $first\n      skip: $skip\n      orderBy: debt\n      orderDirection: desc\n    ) {\n      id\n      troveId\n      borrower\n      debt\n      deposit\n      interestRate\n    }\n  }\n": typeof types.GetTrovesByCollateralDocument,
+    "\n  query GetAllCollaterals {\n    collaterals {\n      id\n      collIndex\n    }\n  }\n": typeof types.GetAllCollateralsDocument,
+};
+const documents: Documents = {
+    "\n  query GetOwnerPositions($owner: String!) {\n    troves(where: { borrower: $owner }) {\n      id\n      troveId\n      borrower\n      debt\n      deposit\n      interestRate\n      status\n      collateral {\n        id\n      }\n      createdAt\n      updatedAt\n    }\n  }\n": types.GetOwnerPositionsDocument,
+    "\n  query GetTroveById($troveId: ID!) {\n    trove(id: $troveId) {\n      id\n      troveId\n      borrower\n      debt\n      deposit\n      interestRate\n      status\n      interestBatch {\n        id\n        batchManager\n        debt\n        coll\n      }\n      collateral {\n        id\n      }\n    }\n  }\n": types.GetTroveByIdDocument,
+    "\n  query GetTrovesByCollateral($collateralId: ID, $first: Int!, $skip: Int!) {\n    troves(\n      where: { collateral: $collateralId, status: \"active\" }\n      first: $first\n      skip: $skip\n      orderBy: debt\n      orderDirection: desc\n    ) {\n      id\n      troveId\n      borrower\n      debt\n      deposit\n      interestRate\n    }\n  }\n": types.GetTrovesByCollateralDocument,
+    "\n  query GetAllCollaterals {\n    collaterals {\n      id\n      collIndex\n    }\n  }\n": types.GetAllCollateralsDocument,
+};
+
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ *
+ *
+ * @example
+ * ```ts
+ * const query = graphql(`query GetUser($id: ID!) { user(id: $id) { name } }`);
+ * ```
+ *
+ * The query argument is unknown!
+ * Please regenerate the types.
+ */
+export function graphql(source: string): unknown;
+
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetOwnerPositions($owner: String!) {\n    troves(where: { borrower: $owner }) {\n      id\n      troveId\n      borrower\n      debt\n      deposit\n      interestRate\n      status\n      collateral {\n        id\n      }\n      createdAt\n      updatedAt\n    }\n  }\n"): (typeof documents)["\n  query GetOwnerPositions($owner: String!) {\n    troves(where: { borrower: $owner }) {\n      id\n      troveId\n      borrower\n      debt\n      deposit\n      interestRate\n      status\n      collateral {\n        id\n      }\n      createdAt\n      updatedAt\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetTroveById($troveId: ID!) {\n    trove(id: $troveId) {\n      id\n      troveId\n      borrower\n      debt\n      deposit\n      interestRate\n      status\n      interestBatch {\n        id\n        batchManager\n        debt\n        coll\n      }\n      collateral {\n        id\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetTroveById($troveId: ID!) {\n    trove(id: $troveId) {\n      id\n      troveId\n      borrower\n      debt\n      deposit\n      interestRate\n      status\n      interestBatch {\n        id\n        batchManager\n        debt\n        coll\n      }\n      collateral {\n        id\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetTrovesByCollateral($collateralId: ID, $first: Int!, $skip: Int!) {\n    troves(\n      where: { collateral: $collateralId, status: \"active\" }\n      first: $first\n      skip: $skip\n      orderBy: debt\n      orderDirection: desc\n    ) {\n      id\n      troveId\n      borrower\n      debt\n      deposit\n      interestRate\n    }\n  }\n"): (typeof documents)["\n  query GetTrovesByCollateral($collateralId: ID, $first: Int!, $skip: Int!) {\n    troves(\n      where: { collateral: $collateralId, status: \"active\" }\n      first: $first\n      skip: $skip\n      orderBy: debt\n      orderDirection: desc\n    ) {\n      id\n      troveId\n      borrower\n      debt\n      deposit\n      interestRate\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetAllCollaterals {\n    collaterals {\n      id\n      collIndex\n    }\n  }\n"): (typeof documents)["\n  query GetAllCollaterals {\n    collaterals {\n      id\n      collIndex\n    }\n  }\n"];
+
+export function graphql(source: string) {
+  return (documents as any)[source] ?? {};
+}
+
+export type DocumentType<TDocumentNode extends DocumentNode<any, any>> = TDocumentNode extends DocumentNode<  infer TType,  any>  ? TType  : never;

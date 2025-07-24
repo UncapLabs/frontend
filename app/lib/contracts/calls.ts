@@ -236,15 +236,6 @@ export const contractCall = {
       const contract = new Contract(TROVE_MANAGER_ABI, addresses.troveManager);
       return contract.populate("get_trove_status", [troveId]);
     },
-
-    /**
-     * Get positions owned by an address
-     */
-    getOwnerToPositions: (owner: string, collateralType: CollateralType) => {
-      const addresses = getCollateralAddresses(collateralType);
-      const contract = new Contract(TROVE_MANAGER_ABI, addresses.troveManager);
-      return contract.populate("get_owner_to_positions", [owner]);
-    },
   },
 };
 

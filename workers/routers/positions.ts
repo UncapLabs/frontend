@@ -9,6 +9,9 @@ import {
 } from "~/lib/contracts/constants";
 import { getBitcoinprice } from "workers/services/utils";
 import { TROVE_MANAGER_ABI } from "~/lib/contracts";
+import { createGraphQLClient } from "~/lib/graphql/client";
+import { GET_OWNER_POSITIONS } from "~/lib/graphql/documents";
+import type { GetOwnerPositionsQuery } from "~/lib/graphql/gql/graphql";
 
 const USDU_DECIMALS = 18;
 const MCR_VALUE = 1.1;
@@ -58,47 +61,54 @@ export const positionsRouter = router({
       });
 
       try {
-        // Get positions for all collateral types
-        const allPositions: Position[] = [];
+        // Create GraphQL client with appropriate endpoint
+        const graphqlEndpoint = process.env.GRAPHQL_ENDPOINT || 'http://localhost:3000/graphql';
+        const graphqlClient = createGraphQLClient(graphqlEndpoint);
+
+        // Query positions from GraphQL
+        const graphQLData = await graphqlClient.request<GetOwnerPositionsQuery>(
+          GET_OWNER_POSITIONS,
+          { owner: userAddress }
+        );
+
+        const troves = graphQLData?.troves || [];
         
-        // Query UBTC positions
+        // Separate troves by collateral type
+        const ubtcTroves = troves.filter((t) => t.collateral?.id === "0");
+        const gbtcTroves = troves.filter((t) => t.collateral?.id === "1");
+
+        // Get trove managers for each collateral type
         const ubtcAddresses = getCollateralAddresses("UBTC");
         const ubtcTroveManager = new Contract(
           TROVE_MANAGER_ABI,
           ubtcAddresses.troveManager,
           myProvider
         );
-        
-        const ubtcPositionsResult = await ubtcTroveManager.get_owner_to_positions(userAddress);
-        const ubtcTroveIds: bigint[] = Array.isArray(ubtcPositionsResult) ? ubtcPositionsResult : [];
-        
-        // Query GBTC positions
+
         const gbtcAddresses = getCollateralAddresses("GBTC");
         const gbtcTroveManager = new Contract(
           TROVE_MANAGER_ABI,
           gbtcAddresses.troveManager,
           myProvider
         );
-        
-        const gbtcPositionsResult = await gbtcTroveManager.get_owner_to_positions(userAddress);
-        const gbtcTroveIds: bigint[] = Array.isArray(gbtcPositionsResult) ? gbtcPositionsResult : [];
 
         // Fetch Bitcoin price once outside the loop
         const bitcoinPrice = await getBitcoinprice();
 
-        // Process UBTC positions
-        const processPositions = async (
-          troveIds: bigint[],
+        // Process troves from GraphQL data
+        const processTroves = async (
+          troves: GetOwnerPositionsQuery['troves'],
           troveManager: Contract,
           collateralToken: typeof UBTC_TOKEN | typeof GBTC_TOKEN
         ): Promise<(Position | null)[]> => {
           const batchSize = 1;
           const resolvedPositions: (Position | null)[] = [];
 
-          for (let i = 0; i < troveIds.length; i += batchSize) {
-            const batch = troveIds.slice(i, i + batchSize);
-            const batchPromises = batch.map(async (troveId: bigint) => {
+          for (let i = 0; i < troves.length; i += batchSize) {
+            const batch = troves.slice(i, i + batchSize);
+            const batchPromises = batch.map(async (trove) => {
               try {
+                const troveId = BigInt(trove.troveId);
                 const latestTroveData = await troveManager.get_latest_trove_data(troveId);
 
                 if (
@@ -154,7 +164,7 @@ export const positionsRouter = router({
                   interestRate,
                 } as Position;
               } catch (error) {
-                console.error(`Error fetching data for trove ${troveId}:`, error);
+                console.error(`Error fetching data for trove ${trove.id}:`, error);
                 return null;
               }
             });
@@ -163,7 +173,7 @@ export const positionsRouter = router({
             resolvedPositions.push(...batchResults);
 
             // Add small delay between batches if needed
-            if (i + batchSize < troveIds.length) {
+            if (i + batchSize < troves.length) {
               await new Promise((resolve) => setTimeout(resolve, 100));
             }
           }
@@ -171,14 +181,14 @@ export const positionsRouter = router({
           return resolvedPositions;
         };
 
-        // Process positions for both collateral types
-        const [ubtcPositions, gbtcPositions] = await Promise.all([
-          processPositions(ubtcTroveIds, ubtcTroveManager, UBTC_TOKEN),
-          processPositions(gbtcTroveIds, gbtcTroveManager, GBTC_TOKEN)
+        // Process troves for both collateral types
+        const [processedUbtcPositions, processedGbtcPositions] = await Promise.all([
+          processTroves(ubtcTroves, ubtcTroveManager, UBTC_TOKEN),
+          processTroves(gbtcTroves, gbtcTroveManager, GBTC_TOKEN)
         ]);
 
         // Combine all positions
-        const allResolvedPositions = [...ubtcPositions, ...gbtcPositions];
+        const allResolvedPositions = [...processedUbtcPositions, ...processedGbtcPositions];
         const filteredPositions = allResolvedPositions.filter(
           (p) => p !== null
         ) as Position[];

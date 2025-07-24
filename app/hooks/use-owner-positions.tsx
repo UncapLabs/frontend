@@ -1,8 +1,10 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useAccount, useContract } from "@starknet-react/core";
-import { getCollateralAddresses, type CollateralType } from "~/lib/contracts/constants";
-import { TROVE_MANAGER_ABI } from "~/lib/contracts";
+import { useAccount } from "@starknet-react/core";
+import { type CollateralType } from "~/lib/contracts/constants";
+import { graphqlClient } from "~/lib/graphql/client";
+import { GET_OWNER_POSITIONS } from "~/lib/graphql/documents";
+import type { GetOwnerPositionsQuery } from "~/lib/graphql/gql/graphql";
 
 interface UseOwnerPositionsOptions {
   refetchInterval?: number;
@@ -13,37 +15,40 @@ interface UseOwnerPositionsOptions {
 export function useOwnerPositions(options: UseOwnerPositionsOptions = {}) {
   const { enabled = true, collateralType = "UBTC" } = options;
   const { address } = useAccount();
-  
-  const addresses = getCollateralAddresses(collateralType);
-
-  const { contract: troveManagerContract } = useContract({
-    abi: TROVE_MANAGER_ABI,
-    address: addresses.troveManager,
-  });
 
   const {
     data: ownerPositions,
     isLoading: isLoadingOwnerPositions,
     error,
   } = useQuery({
-    queryKey: ["ownerPositions", address, collateralType, addresses.troveManager],
+    queryKey: ["ownerPositions", address, collateralType],
     queryFn: async () => {
-      if (!troveManagerContract || !address) return null;
+      if (!address) return null;
       try {
-        const positions = await troveManagerContract.get_owner_to_positions(
-          address
+        const data = await graphqlClient.request<GetOwnerPositionsQuery>(
+          GET_OWNER_POSITIONS,
+          { owner: address }
         );
-        return positions as bigint[];
+        
+        // Filter troves by collateral type if needed
+        const troves = data?.troves || [];
+        return troves
+          .filter((t) => {
+            if (collateralType === "UBTC") {
+              return t.collateral?.id === "0";
+            } else if (collateralType === "GBTC") {
+              return t.collateral?.id === "1";
+            }
+            return true;
+          })
+          .map((t) => BigInt(t.troveId));
       } catch (e) {
         console.error("Error fetching owner positions:", e);
         return null;
       }
     },
-    enabled: !!troveManagerContract && !!address && enabled,
-    refetchInterval: 30000,
-    // ...(options.refetchInterval && {
-    //   refetchInterval: options.refetchInterval,
-    // }),
+    enabled: !!address && enabled,
+    refetchInterval: options.refetchInterval || 30000,
   });
 
   const ownerIndex = useMemo(() => {
