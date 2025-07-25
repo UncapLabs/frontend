@@ -204,10 +204,29 @@ export async function fetchPositionById(
 
     // Parse the contract call responses
     const batchManagerAddress = batchManager[0];
+    
+    // Parse u256 values from the raw data
+    // Each u256 is represented as two fields (low, high)
+    // According to the ABI, LatestTroveData struct has fields in this order:
+    // 1. entire_debt (u256) - indices 0,1
+    // 2. entire_coll (u256) - indices 2,3
+    // 3. annual_interest_rate (u256) - indices 4,5
+    // 4. weighted_recorded_debt (u256) - indices 6,7
+    // 5. pending_interest (u256) - indices 8,9
+    // 6. accrued_interest (u256) - indices 10,11
+    // 7. accrued_interest_borrow_fee (u256) - indices 12,13
+    // 8. accrued_batch_management_fee (u256) - indices 14,15
+    // 9. accrued_interest_router_fee (u256) - indices 16,17
+    // 10. last_interest_rate_adj_time (u64) - index 18
+    
+    const parseU256 = (low: string, high: string): bigint => {
+      return BigInt(low) + (BigInt(high) << 128n);
+    };
+    
     const troveData = {
-      entire_coll: BigInt(latestTroveData[0]),
-      entire_debt: BigInt(latestTroveData[1]),
-      annual_interest_rate: BigInt(latestTroveData[2]),
+      entire_debt: parseU256(latestTroveData[0], latestTroveData[1]),
+      entire_coll: parseU256(latestTroveData[2], latestTroveData[3]),
+      annual_interest_rate: parseU256(latestTroveData[4], latestTroveData[5]),
     };
 
     if (
@@ -260,7 +279,7 @@ export async function fetchPositionById(
     const isZombie = onChainStatusValue === TROVE_STATUS_ZOMBIE;
 
     return {
-      id: troveId,
+      id: fullId,
       collateralAsset: collateralToken.symbol,
       collateralAmount,
       collateralValue,

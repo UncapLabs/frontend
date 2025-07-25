@@ -43,6 +43,14 @@ function MyTroves() {
     return "Critical";
   };
 
+  const truncateTroveId = (fullId: string) => {
+    const id = fullId.split(':')[1] || fullId;
+    if (id.length > 10) {
+      return `${id.slice(0, 6)}...${id.slice(-4)}`;
+    }
+    return id;
+  };
+
   if (!address) {
     return (
       <div className="mx-auto max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
@@ -110,7 +118,7 @@ function MyTroves() {
             >
               <CardHeader className="pb-4">
                 <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg">Trove #{trove.id}</CardTitle>
+                  <CardTitle className="text-lg">Trove #{truncateTroveId(trove.id)}</CardTitle>
                   <Badge
                     variant="secondary"
                     className={getHealthBadgeColor(trove.healthFactor)}
