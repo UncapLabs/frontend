@@ -4,8 +4,29 @@ import type { Address } from "@starknet-react/chains";
 
 export const INTEREST_RATE_SCALE_DOWN_FACTOR = 10n ** 16n;
 
-// Collateral types
+// Collateral types and branch mapping
 export type CollateralType = "UBTC" | "GBTC";
+export type BranchId = 0 | 1;
+
+// Mapping between collateral types and branch IDs
+export const COLLATERAL_TO_BRANCH: Record<CollateralType, BranchId> = {
+  UBTC: 0,
+  GBTC: 1,
+} as const;
+
+export const BRANCH_TO_COLLATERAL: Record<BranchId, CollateralType> = {
+  0: "UBTC",
+  1: "GBTC",
+} as const;
+
+// Helper functions
+export function getBranchId(collateralType: CollateralType): BranchId {
+  return COLLATERAL_TO_BRANCH[collateralType];
+}
+
+export function getCollateralType(branchId: BranchId): CollateralType {
+  return BRANCH_TO_COLLATERAL[branchId];
+}
 
 // Contract addresses by collateral type
 export const COLLATERAL_ADDRESSES = {

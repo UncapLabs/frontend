@@ -1,6 +1,13 @@
 import { Contract, RpcProvider } from "starknet";
 import { PRICE_FEED_ABI } from "~/lib/contracts";
-import { getCollateralAddresses } from "~/lib/contracts/constants";
+import {
+  getCollateralAddresses,
+  INTEREST_RATE_SCALE_DOWN_FACTOR,
+} from "~/lib/contracts/constants";
+
+// Prefixed trove ID format: "branchId:troveId"
+type PrefixedTroveId = string;
+type BranchId = string; // "0" for UBTC, "1" for GBTC
 
 export const getBitcoinprice = async () => {
   const myProvider = new RpcProvider({
@@ -18,4 +25,35 @@ export const getBitcoinprice = async () => {
   const price = await PriceFeedContract.fetch_price();
 
   return price;
+};
+
+// Helper functions for prefixed trove IDs
+export function isPrefixedTroveId(id: string | null): id is PrefixedTroveId {
+  if (!id) return false;
+  const parts = id.split(":");
+  return parts.length === 2 && !isNaN(Number(parts[0]));
+}
+
+export function parsePrefixedTroveId(prefixedId: PrefixedTroveId): {
+  branchId: BranchId;
+  troveId: string;
+} {
+  const [branchId, troveId] = prefixedId.split(":");
+  if (!branchId || !troveId) {
+    throw new Error(`Invalid prefixed trove ID: ${prefixedId}`);
+  }
+  return { branchId, troveId };
+}
+
+export const formatBigIntToNumber = (
+  value: bigint,
+  decimals: number
+): number => {
+  if (decimals === 0) return Number(value);
+  const factor = Math.pow(10, decimals);
+  return Number(value.toString()) / factor;
+};
+
+export const formatInterestRateForDisplay = (rawValue: bigint): number => {
+  return Number(rawValue) / Number(INTEREST_RATE_SCALE_DOWN_FACTOR);
 };

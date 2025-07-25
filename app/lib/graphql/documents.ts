@@ -118,3 +118,11 @@ export const GET_ALL_COLLATERALS = graphql(/* GraphQL */ `
     }
   }
 `);
+
+export const NEXT_OWNER_INDEX_BY_BORROWER = graphql(/* GraphQL */ `
+  query NextOwnerIndexesByBorrower($id: ID!) {
+    borrowerinfo(id: $id) {
+      nextOwnerIndexes
+    }
+  }
+`);

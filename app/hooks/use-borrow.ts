@@ -1,7 +1,7 @@
 import { useMemo, useCallback } from "react";
 import { useAccount, useTransactionReceipt } from "@starknet-react/core";
 import { contractCall } from "~/lib/contracts/calls";
-import { useOwnerPositions } from "./use-owner-positions";
+import { useNextOwnerIndex } from "./use-next-owner-index";
 import { useTransaction } from "./use-transaction";
 import {
   useTransactionState,
@@ -47,9 +47,11 @@ export function useBorrow({
     collateralToken?.collateralType ||
     (collateralToken?.symbol === "UBTC" ? "UBTC" : "GBTC");
 
-  const { ownerIndex, isLoadingOwnerPositions } = useOwnerPositions({
-    collateralType,
-  });
+  const { nextOwnerIndex, isLoading: isLoadingNextOwnerIndex } =
+    useNextOwnerIndex({
+      address,
+      collateralType,
+    });
 
   // Transaction state management
   const transactionState = useTransactionState<BorrowFormData>({
@@ -69,8 +71,8 @@ export function useBorrow({
       !collateralAmount ||
       !borrowAmount ||
       !collateralToken ||
-      isLoadingOwnerPositions ||
-      ownerIndex === undefined
+      isLoadingNextOwnerIndex ||
+      nextOwnerIndex === undefined
     ) {
       return undefined;
     }
@@ -96,11 +98,12 @@ export function useBorrow({
       // 3. Open trove
       contractCall.borrowerOperations.openTrove({
         owner: address,
-        ownerIndex: ownerIndex,
+        ownerIndex: nextOwnerIndex,
         collAmount: BigInt(Math.floor(collateralAmount * 1e18)),
         usduAmount: BigInt(Math.floor(borrowAmount * 1e18)),
         annualInterestRate: BigInt(Math.floor((interestRate * 1e18) / 100)),
         collateralType: collateralType,
+        maxUpfrontFee: 2n ** 256n - 1n,
       }),
     ];
   }, [
@@ -108,8 +111,8 @@ export function useBorrow({
     collateralAmount,
     borrowAmount,
     collateralToken,
-    isLoadingOwnerPositions,
-    ownerIndex,
+    isLoadingNextOwnerIndex,
+    nextOwnerIndex,
     interestRate,
   ]);
 

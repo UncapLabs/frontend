@@ -3,55 +3,39 @@ import {
   TROVE_BY_ID,
   TROVES_AS_BORROWER,
   TROVES_AS_PREVIOUS_OWNER,
+  NEXT_OWNER_INDEX_BY_BORROWER,
 } from "~/lib/graphql/documents";
 import type {
   TrovesAsBorrowerQuery,
   TrovesAsPreviousOwnerQuery,
   TroveByIdQuery,
+  NextOwnerIndexesByBorrowerQuery,
 } from "~/lib/graphql/gql/graphql";
 import type { GraphQLClient } from "graphql-request";
 import {
   UBTC_TOKEN,
   GBTC_TOKEN,
   type CollateralType,
+  getBranchId,
+  getCollateralType,
+  type BranchId,
 } from "~/lib/contracts/constants";
-import { getBitcoinprice } from "workers/services/utils";
+import {
+  formatBigIntToNumber,
+  formatInterestRateForDisplay,
+  getBitcoinprice,
+  isPrefixedTroveId,
+  parsePrefixedTroveId,
+} from "workers/services/utils";
 import { contractCall } from "~/lib/contracts/calls";
 
 const USDU_DECIMALS = 18;
 const MCR_VALUE = 1.1;
 const CCR_VALUE = 1.5;
-const INTEREST_RATE_SCALE_DOWN_FACTOR = 10n ** 16n;
 const TROVE_STATUS_ZOMBIE = 5n;
 
 // Prefixed trove ID format: "branchId:troveId"
 type PrefixedTroveId = string;
-type BranchId = string; // "0" for UBTC, "1" for GBTC
-
-// Helper functions for prefixed trove IDs
-function isPrefixedTroveId(id: string | null): id is PrefixedTroveId {
-  if (!id) return false;
-  const parts = id.split(":");
-  return parts.length === 2 && !isNaN(Number(parts[0]));
-}
-
-function parsePrefixedTroveId(prefixedId: PrefixedTroveId): {
-  branchId: BranchId;
-  troveId: string;
-} {
-  const [branchId, troveId] = prefixedId.split(":");
-  if (!branchId || !troveId) {
-    throw new Error(`Invalid prefixed trove ID: ${prefixedId}`);
-  }
-  return { branchId, troveId };
-}
-
-function getPrefixedTroveId(
-  branchId: BranchId,
-  troveId: string
-): PrefixedTroveId {
-  return `${branchId}:${troveId}`;
-}
 
 export interface IndexedTrove {
   id: string;
@@ -76,16 +60,6 @@ export interface Position {
   status: "active" | "zombie" | "closed" | "non-existent";
   batchManager: string | null;
 }
-
-const formatBigIntToNumber = (value: bigint, decimals: number): number => {
-  if (decimals === 0) return Number(value);
-  const factor = Math.pow(10, decimals);
-  return Number(value.toString()) / factor;
-};
-
-const formatInterestRateForDisplay = (rawValue: bigint): number => {
-  return Number(rawValue) / Number(INTEREST_RATE_SCALE_DOWN_FACTOR);
-};
 
 export async function getIndexedTroveById(
   graphqlClient: GraphQLClient,
@@ -165,8 +139,8 @@ export async function fetchPositionById(
   const troveIdBigInt = BigInt(troveId);
 
   // Get the appropriate contracts based on branchId
-  const collateralType: CollateralType = branchId === "0" ? "UBTC" : "GBTC";
-  const collateralToken = branchId === "0" ? UBTC_TOKEN : GBTC_TOKEN;
+  const collateralType = getCollateralType(Number(branchId) as BranchId);
+  const collateralToken = collateralType === "UBTC" ? UBTC_TOKEN : GBTC_TOKEN;
 
   try {
     const bitcoinPrice = await getBitcoinprice();
@@ -204,7 +178,7 @@ export async function fetchPositionById(
 
     // Parse the contract call responses
     const batchManagerAddress = batchManager[0];
-    
+
     // Parse u256 values from the raw data
     // Each u256 is represented as two fields (low, high)
     // According to the ABI, LatestTroveData struct has fields in this order:
@@ -218,11 +192,11 @@ export async function fetchPositionById(
     // 8. accrued_batch_management_fee (u256) - indices 14,15
     // 9. accrued_interest_router_fee (u256) - indices 16,17
     // 10. last_interest_rate_adj_time (u64) - index 18
-    
+
     const parseU256 = (low: string, high: string): bigint => {
       return BigInt(low) + (BigInt(high) << 128n);
     };
-    
+
     const troveData = {
       entire_debt: parseU256(latestTroveData[0], latestTroveData[1]),
       entire_coll: parseU256(latestTroveData[2], latestTroveData[3]),
@@ -317,4 +291,20 @@ export async function fetchLoansByAccount(
   );
 
   return results.filter((result): result is Position => result !== null);
+}
+
+export async function getNextOwnerIndex(
+  graphqlClient: GraphQLClient,
+  borrower: string,
+  collateralType: CollateralType
+): Promise<number> {
+  const branchId = getBranchId(collateralType);
+
+  const { borrowerinfo } =
+    await graphqlClient.request<NextOwnerIndexesByBorrowerQuery>(
+      NEXT_OWNER_INDEX_BY_BORROWER,
+      { id: borrower.toLowerCase() }
+    );
+
+  return Number(borrowerinfo?.nextOwnerIndexes[branchId] ?? 0);
 }

@@ -2,7 +2,10 @@ import { z } from "zod/v4";
 import { publicProcedure, router } from "../trpc";
 import { RpcProvider } from "starknet";
 import { createGraphQLClient } from "~/lib/graphql/client";
-import { fetchLoansByAccount } from "../services/trove-service";
+import {
+  fetchLoansByAccount,
+  getNextOwnerIndex,
+} from "../services/trove-service";
 
 export const positionsRouter = router({
   getUserOnChainPositions: publicProcedure
@@ -38,6 +41,34 @@ export const positionsRouter = router({
       } catch (error) {
         console.error("Error fetching user positions:", error);
         throw new Error("Failed to fetch on-chain positions");
+      }
+    }),
+
+  getNextOwnerIndex: publicProcedure
+    .input(
+      z.object({
+        borrower: z.string(),
+        collateralType: z.enum(["UBTC", "GBTC"]),
+      })
+    )
+    .query(async ({ input }) => {
+      const { borrower, collateralType } = input;
+
+      try {
+        const graphqlEndpoint =
+          process.env.GRAPHQL_ENDPOINT || "http://localhost:3000/graphql";
+        const graphqlClient = createGraphQLClient(graphqlEndpoint);
+
+        const nextOwnerIndex = await getNextOwnerIndex(
+          graphqlClient,
+          borrower,
+          collateralType
+        );
+
+        return { nextOwnerIndex };
+      } catch (error) {
+        console.error("Error fetching next owner index:", error);
+        throw new Error("Failed to fetch next owner index");
       }
     }),
 });
