@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "BorrowerOperationsImpl",
-    "interface_name": "usdu::BorrowerOperations::IBorrowerOperations"
+    "interface_name": "usdu::branch::BorrowerOperations::IBorrowerOperations"
   },
   {
     "type": "struct",
@@ -20,7 +20,7 @@
   },
   {
     "type": "struct",
-    "name": "usdu::BorrowerOperations::BorrowerOperations::OpenTroveAndJoinInterestBatchManagerParams",
+    "name": "usdu::branch::BorrowerOperations::BorrowerOperations::OpenTroveAndJoinInterestBatchManagerParams",
     "members": [
       {
         "name": "owner",
@@ -84,7 +84,7 @@
   },
   {
     "type": "struct",
-    "name": "usdu::BorrowerOperations::BorrowerOperations::InterestIndividualDelegate",
+    "name": "usdu::branch::BorrowerOperations::BorrowerOperations::InterestIndividualDelegate",
     "members": [
       {
         "name": "account",
@@ -106,7 +106,7 @@
   },
   {
     "type": "interface",
-    "name": "usdu::BorrowerOperations::IBorrowerOperations",
+    "name": "usdu::branch::BorrowerOperations::IBorrowerOperations",
     "items": [
       {
         "type": "function",
@@ -193,7 +193,7 @@
         "inputs": [
           {
             "name": "params",
-            "type": "usdu::BorrowerOperations::BorrowerOperations::OpenTroveAndJoinInterestBatchManagerParams"
+            "type": "usdu::branch::BorrowerOperations::BorrowerOperations::OpenTroveAndJoinInterestBatchManagerParams"
           }
         ],
         "outputs": [
@@ -505,6 +505,22 @@
       },
       {
         "type": "function",
+        "name": "get_interest_batch_manager_of",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
         "name": "get_interest_individual_delegate_of",
         "inputs": [
           {
@@ -514,7 +530,7 @@
         ],
         "outputs": [
           {
-            "type": "usdu::BorrowerOperations::BorrowerOperations::InterestIndividualDelegate"
+            "type": "usdu::branch::BorrowerOperations::BorrowerOperations::InterestIndividualDelegate"
           }
         ],
         "state_mutability": "external"
@@ -695,11 +711,11 @@
   {
     "type": "impl",
     "name": "UncapBaseImpl",
-    "interface_name": "usdu::dependencies::UncapBase::IUncapBase"
+    "interface_name": "usdu::components::UncapBase::IUncapBase"
   },
   {
     "type": "interface",
-    "name": "usdu::dependencies::UncapBase::IUncapBase",
+    "name": "usdu::components::UncapBase::IUncapBase",
     "items": [
       {
         "type": "function",
@@ -728,11 +744,11 @@
   {
     "type": "impl",
     "name": "AddRemoveManagersImpl",
-    "interface_name": "usdu::dependencies::AddRemoveManagers::IAddRemoveManagers"
+    "interface_name": "usdu::components::AddRemoveManagers::IAddRemoveManagers"
   },
   {
     "type": "struct",
-    "name": "usdu::dependencies::AddRemoveManagers::RemoveManagerReceiver",
+    "name": "usdu::components::AddRemoveManagers::RemoveManagerReceiver",
     "members": [
       {
         "name": "manager",
@@ -746,7 +762,7 @@
   },
   {
     "type": "interface",
-    "name": "usdu::dependencies::AddRemoveManagers::IAddRemoveManagers",
+    "name": "usdu::components::AddRemoveManagers::IAddRemoveManagers",
     "items": [
       {
         "type": "function",
@@ -831,7 +847,7 @@
         ],
         "outputs": [
           {
-            "type": "usdu::dependencies::AddRemoveManagers::RemoveManagerReceiver"
+            "type": "usdu::components::AddRemoveManagers::RemoveManagerReceiver"
           }
         ],
         "state_mutability": "view"
@@ -856,7 +872,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::BorrowerOperations::BorrowerOperations::TroveManagerAddressChanged",
+    "name": "usdu::branch::BorrowerOperations::BorrowerOperations::TroveManagerAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -868,7 +884,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::BorrowerOperations::BorrowerOperations::GasPoolAddressChanged",
+    "name": "usdu::branch::BorrowerOperations::BorrowerOperations::GasPoolAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -880,7 +896,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::BorrowerOperations::BorrowerOperations::CollSurplusPoolAddressChanged",
+    "name": "usdu::branch::BorrowerOperations::BorrowerOperations::CollSurplusPoolAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -892,7 +908,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::BorrowerOperations::BorrowerOperations::SortedTrovesAddressChanged",
+    "name": "usdu::branch::BorrowerOperations::BorrowerOperations::SortedTrovesAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -904,7 +920,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::BorrowerOperations::BorrowerOperations::USDUTokenAddressChanged",
+    "name": "usdu::branch::BorrowerOperations::BorrowerOperations::USDUTokenAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -916,7 +932,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::BorrowerOperations::BorrowerOperations::BatchManagerAddressChanged",
+    "name": "usdu::branch::BorrowerOperations::BorrowerOperations::BatchManagerAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -928,7 +944,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::BorrowerOperations::BorrowerOperations::LiquidationManagerAddressChanged",
+    "name": "usdu::branch::BorrowerOperations::BorrowerOperations::LiquidationManagerAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -940,7 +956,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::BorrowerOperations::BorrowerOperations::ShutDown",
+    "name": "usdu::branch::BorrowerOperations::BorrowerOperations::ShutDown",
     "kind": "struct",
     "members": [
       {
@@ -952,7 +968,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::dependencies::UncapBase::UncapBaseComponent::ActivePoolAddressChanged",
+    "name": "usdu::components::UncapBase::UncapBaseComponent::ActivePoolAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -964,7 +980,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::dependencies::UncapBase::UncapBaseComponent::DefaultPoolAddressChanged",
+    "name": "usdu::components::UncapBase::UncapBaseComponent::DefaultPoolAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -976,7 +992,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::dependencies::UncapBase::UncapBaseComponent::PriceFeedAddressChanged",
+    "name": "usdu::components::UncapBase::UncapBaseComponent::PriceFeedAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -988,29 +1004,29 @@
   },
   {
     "type": "event",
-    "name": "usdu::dependencies::UncapBase::UncapBaseComponent::Event",
+    "name": "usdu::components::UncapBase::UncapBaseComponent::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "ActivePoolAddressChanged",
-        "type": "usdu::dependencies::UncapBase::UncapBaseComponent::ActivePoolAddressChanged",
+        "type": "usdu::components::UncapBase::UncapBaseComponent::ActivePoolAddressChanged",
         "kind": "nested"
       },
       {
         "name": "DefaultPoolAddressChanged",
-        "type": "usdu::dependencies::UncapBase::UncapBaseComponent::DefaultPoolAddressChanged",
+        "type": "usdu::components::UncapBase::UncapBaseComponent::DefaultPoolAddressChanged",
         "kind": "nested"
       },
       {
         "name": "PriceFeedAddressChanged",
-        "type": "usdu::dependencies::UncapBase::UncapBaseComponent::PriceFeedAddressChanged",
+        "type": "usdu::components::UncapBase::UncapBaseComponent::PriceFeedAddressChanged",
         "kind": "nested"
       }
     ]
   },
   {
     "type": "event",
-    "name": "usdu::dependencies::AddRemoveManagers::AddRemoveManagersComponent::TroveNFTAddressChanged",
+    "name": "usdu::components::AddRemoveManagers::AddRemoveManagersComponent::TroveNFTAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -1022,7 +1038,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::dependencies::AddRemoveManagers::AddRemoveManagersComponent::AddManagerUpdated",
+    "name": "usdu::components::AddRemoveManagers::AddRemoveManagersComponent::AddManagerUpdated",
     "kind": "struct",
     "members": [
       {
@@ -1039,7 +1055,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::dependencies::AddRemoveManagers::AddRemoveManagersComponent::RemoveManagerAndReceiverUpdated",
+    "name": "usdu::components::AddRemoveManagers::AddRemoveManagersComponent::RemoveManagerAndReceiverUpdated",
     "kind": "struct",
     "members": [
       {
@@ -1061,79 +1077,79 @@
   },
   {
     "type": "event",
-    "name": "usdu::dependencies::AddRemoveManagers::AddRemoveManagersComponent::Event",
+    "name": "usdu::components::AddRemoveManagers::AddRemoveManagersComponent::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "TroveNFTAddressChanged",
-        "type": "usdu::dependencies::AddRemoveManagers::AddRemoveManagersComponent::TroveNFTAddressChanged",
+        "type": "usdu::components::AddRemoveManagers::AddRemoveManagersComponent::TroveNFTAddressChanged",
         "kind": "nested"
       },
       {
         "name": "AddManagerUpdated",
-        "type": "usdu::dependencies::AddRemoveManagers::AddRemoveManagersComponent::AddManagerUpdated",
+        "type": "usdu::components::AddRemoveManagers::AddRemoveManagersComponent::AddManagerUpdated",
         "kind": "nested"
       },
       {
         "name": "RemoveManagerAndReceiverUpdated",
-        "type": "usdu::dependencies::AddRemoveManagers::AddRemoveManagersComponent::RemoveManagerAndReceiverUpdated",
+        "type": "usdu::components::AddRemoveManagers::AddRemoveManagersComponent::RemoveManagerAndReceiverUpdated",
         "kind": "nested"
       }
     ]
   },
   {
     "type": "event",
-    "name": "usdu::BorrowerOperations::BorrowerOperations::Event",
+    "name": "usdu::branch::BorrowerOperations::BorrowerOperations::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "TroveManagerAddressChanged",
-        "type": "usdu::BorrowerOperations::BorrowerOperations::TroveManagerAddressChanged",
+        "type": "usdu::branch::BorrowerOperations::BorrowerOperations::TroveManagerAddressChanged",
         "kind": "nested"
       },
       {
         "name": "GasPoolAddressChanged",
-        "type": "usdu::BorrowerOperations::BorrowerOperations::GasPoolAddressChanged",
+        "type": "usdu::branch::BorrowerOperations::BorrowerOperations::GasPoolAddressChanged",
         "kind": "nested"
       },
       {
         "name": "CollSurplusPoolAddressChanged",
-        "type": "usdu::BorrowerOperations::BorrowerOperations::CollSurplusPoolAddressChanged",
+        "type": "usdu::branch::BorrowerOperations::BorrowerOperations::CollSurplusPoolAddressChanged",
         "kind": "nested"
       },
       {
         "name": "SortedTrovesAddressChanged",
-        "type": "usdu::BorrowerOperations::BorrowerOperations::SortedTrovesAddressChanged",
+        "type": "usdu::branch::BorrowerOperations::BorrowerOperations::SortedTrovesAddressChanged",
         "kind": "nested"
       },
       {
         "name": "USDUTokenAddressChanged",
-        "type": "usdu::BorrowerOperations::BorrowerOperations::USDUTokenAddressChanged",
+        "type": "usdu::branch::BorrowerOperations::BorrowerOperations::USDUTokenAddressChanged",
         "kind": "nested"
       },
       {
         "name": "BatchManagerAddressChanged",
-        "type": "usdu::BorrowerOperations::BorrowerOperations::BatchManagerAddressChanged",
+        "type": "usdu::branch::BorrowerOperations::BorrowerOperations::BatchManagerAddressChanged",
         "kind": "nested"
       },
       {
         "name": "LiquidationManagerAddressChanged",
-        "type": "usdu::BorrowerOperations::BorrowerOperations::LiquidationManagerAddressChanged",
+        "type": "usdu::branch::BorrowerOperations::BorrowerOperations::LiquidationManagerAddressChanged",
         "kind": "nested"
       },
       {
         "name": "ShutDown",
-        "type": "usdu::BorrowerOperations::BorrowerOperations::ShutDown",
+        "type": "usdu::branch::BorrowerOperations::BorrowerOperations::ShutDown",
         "kind": "nested"
       },
       {
         "name": "UncapBaseEvent",
-        "type": "usdu::dependencies::UncapBase::UncapBaseComponent::Event",
+        "type": "usdu::components::UncapBase::UncapBaseComponent::Event",
         "kind": "flat"
       },
       {
         "name": "AddRemoveManagersEvent",
-        "type": "usdu::dependencies::AddRemoveManagers::AddRemoveManagersComponent::Event",
+        "type": "usdu::components::AddRemoveManagers::AddRemoveManagersComponent::Event",
         "kind": "flat"
       }
     ]

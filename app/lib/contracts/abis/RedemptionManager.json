@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "IRedemptionManagerImpl",
-    "interface_name": "usdu::RedemptionManager::IRedemptionManager"
+    "interface_name": "usdu::branch::trove::RedemptionManager::IRedemptionManager"
   },
   {
     "type": "struct",
@@ -30,7 +30,7 @@
   },
   {
     "type": "interface",
-    "name": "usdu::RedemptionManager::IRedemptionManager",
+    "name": "usdu::branch::trove::RedemptionManager::IRedemptionManager",
     "items": [
       {
         "type": "function",
@@ -100,7 +100,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::RedemptionManager::Redemption",
+    "name": "usdu::branch::trove::RedemptionManager::Redemption",
     "kind": "struct",
     "members": [
       {
@@ -137,7 +137,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::BatchedTroveUpdated",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::BatchedTroveUpdated",
     "kind": "struct",
     "members": [
       {
@@ -179,7 +179,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::TroveUpdated",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::TroveUpdated",
     "kind": "struct",
     "members": [
       {
@@ -221,7 +221,7 @@
   },
   {
     "type": "enum",
-    "name": "usdu::TroveManager::Operation",
+    "name": "usdu::branch::trove::TroveManager::Operation",
     "variants": [
       {
         "name": "OpenTrove",
@@ -295,7 +295,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::TroveOperation",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::TroveOperation",
     "kind": "struct",
     "members": [
       {
@@ -305,7 +305,7 @@
       },
       {
         "name": "operation",
-        "type": "usdu::TroveManager::Operation",
+        "type": "usdu::branch::trove::TroveManager::Operation",
         "kind": "data"
       },
       {
@@ -342,7 +342,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::RedemptionFeePaidToTrove",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::RedemptionFeePaidToTrove",
     "kind": "struct",
     "members": [
       {
@@ -359,7 +359,7 @@
   },
   {
     "type": "enum",
-    "name": "usdu::events::TroveManagerEventsEmitter::BatchOperation",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::BatchOperation",
     "variants": [
       {
         "name": "RegisterBatchManager",
@@ -393,7 +393,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::BatchUpdated",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::BatchUpdated",
     "kind": "struct",
     "members": [
       {
@@ -403,7 +403,7 @@
       },
       {
         "name": "operation",
-        "type": "usdu::events::TroveManagerEventsEmitter::BatchOperation",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::BatchOperation",
         "kind": "data"
       },
       {
@@ -440,37 +440,37 @@
   },
   {
     "type": "event",
-    "name": "usdu::RedemptionManager::RedemptionManager::Event",
+    "name": "usdu::branch::trove::RedemptionManager::RedemptionManager::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "Redemption",
-        "type": "usdu::RedemptionManager::Redemption",
+        "type": "usdu::branch::trove::RedemptionManager::Redemption",
         "kind": "nested"
       },
       {
         "name": "BatchedTroveUpdated",
-        "type": "usdu::events::TroveManagerEventsEmitter::BatchedTroveUpdated",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::BatchedTroveUpdated",
         "kind": "nested"
       },
       {
         "name": "TroveUpdated",
-        "type": "usdu::events::TroveManagerEventsEmitter::TroveUpdated",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::TroveUpdated",
         "kind": "nested"
       },
       {
         "name": "TroveOperation",
-        "type": "usdu::events::TroveManagerEventsEmitter::TroveOperation",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::TroveOperation",
         "kind": "nested"
       },
       {
         "name": "RedemptionFeePaidToTrove",
-        "type": "usdu::events::TroveManagerEventsEmitter::RedemptionFeePaidToTrove",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::RedemptionFeePaidToTrove",
         "kind": "nested"
       },
       {
         "name": "BatchUpdated",
-        "type": "usdu::events::TroveManagerEventsEmitter::BatchUpdated",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::BatchUpdated",
         "kind": "nested"
       }
     ]

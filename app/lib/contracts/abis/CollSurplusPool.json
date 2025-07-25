@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "ICollSurplusPoolImpl",
-    "interface_name": "usdu::CollSurplusPool::ICollSurplusPool"
+    "interface_name": "usdu::branch::CollSurplusPool::ICollSurplusPool"
   },
   {
     "type": "struct",
@@ -20,7 +20,7 @@
   },
   {
     "type": "interface",
-    "name": "usdu::CollSurplusPool::ICollSurplusPool",
+    "name": "usdu::branch::CollSurplusPool::ICollSurplusPool",
     "items": [
       {
         "type": "function",
@@ -126,7 +126,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::CollSurplusPool::CollSurplusPool::TroveManagerAddressChanged",
+    "name": "usdu::branch::CollSurplusPool::CollSurplusPool::TroveManagerAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -138,7 +138,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::CollSurplusPool::CollSurplusPool::BorrowerOperationsAddressChanged",
+    "name": "usdu::branch::CollSurplusPool::CollSurplusPool::BorrowerOperationsAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -150,7 +150,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::CollSurplusPool::CollSurplusPool::CollBalanceUpdated",
+    "name": "usdu::branch::CollSurplusPool::CollSurplusPool::CollBalanceUpdated",
     "kind": "struct",
     "members": [
       {
@@ -167,7 +167,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::CollSurplusPool::CollSurplusPool::CollSent",
+    "name": "usdu::branch::CollSurplusPool::CollSurplusPool::CollSent",
     "kind": "struct",
     "members": [
       {
@@ -184,27 +184,27 @@
   },
   {
     "type": "event",
-    "name": "usdu::CollSurplusPool::CollSurplusPool::Event",
+    "name": "usdu::branch::CollSurplusPool::CollSurplusPool::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "TroveManagerAddressChanged",
-        "type": "usdu::CollSurplusPool::CollSurplusPool::TroveManagerAddressChanged",
+        "type": "usdu::branch::CollSurplusPool::CollSurplusPool::TroveManagerAddressChanged",
         "kind": "nested"
       },
       {
         "name": "BorrowerOperationsAddressChanged",
-        "type": "usdu::CollSurplusPool::CollSurplusPool::BorrowerOperationsAddressChanged",
+        "type": "usdu::branch::CollSurplusPool::CollSurplusPool::BorrowerOperationsAddressChanged",
         "kind": "nested"
       },
       {
         "name": "CollBalanceUpdated",
-        "type": "usdu::CollSurplusPool::CollSurplusPool::CollBalanceUpdated",
+        "type": "usdu::branch::CollSurplusPool::CollSurplusPool::CollBalanceUpdated",
         "kind": "nested"
       },
       {
         "name": "CollSent",
-        "type": "usdu::CollSurplusPool::CollSurplusPool::CollSent",
+        "type": "usdu::branch::CollSurplusPool::CollSurplusPool::CollSent",
         "kind": "nested"
       }
     ]

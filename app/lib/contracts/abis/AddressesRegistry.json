@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "AddressesRegistryImpl",
-    "interface_name": "usdu::AddressesRegistry::IAddressesRegistry"
+    "interface_name": "usdu::branch::AddressesRegistry::IAddressesRegistry"
   },
   {
     "type": "struct",
@@ -20,7 +20,7 @@
   },
   {
     "type": "interface",
-    "name": "usdu::AddressesRegistry::IAddressesRegistry",
+    "name": "usdu::branch::AddressesRegistry::IAddressesRegistry",
     "items": [
       {
         "type": "function",
@@ -471,7 +471,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::AddressesRegistry::AddressesRegistry::Event",
+    "name": "usdu::branch::AddressesRegistry::AddressesRegistry::Event",
     "kind": "enum",
     "variants": []
   }

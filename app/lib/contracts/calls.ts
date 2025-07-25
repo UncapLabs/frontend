@@ -179,6 +179,21 @@ export const contractCall = {
         params.maxUpfrontFee,
       ]);
     },
+
+    /**
+     * Get the batch manager of a trove (for interest rate delegation)
+     */
+    interestBatchManagerOf: (
+      troveId: bigint,
+      collateralType: CollateralType
+    ) => {
+      const addresses = getCollateralAddresses(collateralType);
+      const contract = new Contract(
+        BORROWER_OPERATIONS_ABI,
+        addresses.borrowerOperations
+      );
+      return contract.populate("get_interest_batch_manager_of", [troveId]);
+    },
   },
 
   usdu: {

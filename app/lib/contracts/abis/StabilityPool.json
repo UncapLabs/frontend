@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "StabilityPoolImpl",
-    "interface_name": "usdu::StabilityPool::IStabilityPool"
+    "interface_name": "usdu::branch::StabilityPool::IStabilityPool"
   },
   {
     "type": "struct",
@@ -34,7 +34,7 @@
   },
   {
     "type": "interface",
-    "name": "usdu::StabilityPool::IStabilityPool",
+    "name": "usdu::branch::StabilityPool::IStabilityPool",
     "items": [
       {
         "type": "function",
@@ -358,11 +358,11 @@
   {
     "type": "impl",
     "name": "UncapBaseImpl",
-    "interface_name": "usdu::dependencies::UncapBase::IUncapBase"
+    "interface_name": "usdu::components::UncapBase::IUncapBase"
   },
   {
     "type": "interface",
-    "name": "usdu::dependencies::UncapBase::IUncapBase",
+    "name": "usdu::components::UncapBase::IUncapBase",
     "items": [
       {
         "type": "function",
@@ -390,7 +390,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::StabilityPool::StabilityPool::StabilityPoolCollBalanceUpdated",
+    "name": "usdu::branch::StabilityPool::StabilityPool::StabilityPoolCollBalanceUpdated",
     "kind": "struct",
     "members": [
       {
@@ -402,7 +402,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::StabilityPool::StabilityPool::StabilityPoolUSDUBalanceUpdated",
+    "name": "usdu::branch::StabilityPool::StabilityPool::StabilityPoolUSDUBalanceUpdated",
     "kind": "struct",
     "members": [
       {
@@ -414,7 +414,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::StabilityPool::StabilityPool::P_Updated",
+    "name": "usdu::branch::StabilityPool::StabilityPool::P_Updated",
     "kind": "struct",
     "members": [
       {
@@ -426,7 +426,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::StabilityPool::StabilityPool::S_Updated",
+    "name": "usdu::branch::StabilityPool::StabilityPool::S_Updated",
     "kind": "struct",
     "members": [
       {
@@ -443,7 +443,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::StabilityPool::StabilityPool::B_Updated",
+    "name": "usdu::branch::StabilityPool::StabilityPool::B_Updated",
     "kind": "struct",
     "members": [
       {
@@ -460,7 +460,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::StabilityPool::StabilityPool::ScaleUpdated",
+    "name": "usdu::branch::StabilityPool::StabilityPool::ScaleUpdated",
     "kind": "struct",
     "members": [
       {
@@ -472,7 +472,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::StabilityPool::StabilityPool::DepositUpdated",
+    "name": "usdu::branch::StabilityPool::StabilityPool::DepositUpdated",
     "kind": "struct",
     "members": [
       {
@@ -514,7 +514,7 @@
   },
   {
     "type": "enum",
-    "name": "usdu::StabilityPool::StabilityPool::Operation",
+    "name": "usdu::branch::StabilityPool::StabilityPool::Operation",
     "variants": [
       {
         "name": "provide_to_sp",
@@ -546,7 +546,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::StabilityPool::StabilityPool::DepositOperation",
+    "name": "usdu::branch::StabilityPool::StabilityPool::DepositOperation",
     "kind": "struct",
     "members": [
       {
@@ -556,7 +556,7 @@
       },
       {
         "name": "operation",
-        "type": "usdu::StabilityPool::StabilityPool::Operation",
+        "type": "usdu::branch::StabilityPool::StabilityPool::Operation",
         "kind": "data"
       },
       {
@@ -593,7 +593,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::StabilityPool::StabilityPool::TroveManagerAddressChanged",
+    "name": "usdu::branch::StabilityPool::StabilityPool::TroveManagerAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -605,7 +605,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::StabilityPool::StabilityPool::USDUTokenAddressChanged",
+    "name": "usdu::branch::StabilityPool::StabilityPool::USDUTokenAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -617,7 +617,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::dependencies::UncapBase::UncapBaseComponent::ActivePoolAddressChanged",
+    "name": "usdu::components::UncapBase::UncapBaseComponent::ActivePoolAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -629,7 +629,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::dependencies::UncapBase::UncapBaseComponent::DefaultPoolAddressChanged",
+    "name": "usdu::components::UncapBase::UncapBaseComponent::DefaultPoolAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -641,7 +641,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::dependencies::UncapBase::UncapBaseComponent::PriceFeedAddressChanged",
+    "name": "usdu::components::UncapBase::UncapBaseComponent::PriceFeedAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -653,84 +653,84 @@
   },
   {
     "type": "event",
-    "name": "usdu::dependencies::UncapBase::UncapBaseComponent::Event",
+    "name": "usdu::components::UncapBase::UncapBaseComponent::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "ActivePoolAddressChanged",
-        "type": "usdu::dependencies::UncapBase::UncapBaseComponent::ActivePoolAddressChanged",
+        "type": "usdu::components::UncapBase::UncapBaseComponent::ActivePoolAddressChanged",
         "kind": "nested"
       },
       {
         "name": "DefaultPoolAddressChanged",
-        "type": "usdu::dependencies::UncapBase::UncapBaseComponent::DefaultPoolAddressChanged",
+        "type": "usdu::components::UncapBase::UncapBaseComponent::DefaultPoolAddressChanged",
         "kind": "nested"
       },
       {
         "name": "PriceFeedAddressChanged",
-        "type": "usdu::dependencies::UncapBase::UncapBaseComponent::PriceFeedAddressChanged",
+        "type": "usdu::components::UncapBase::UncapBaseComponent::PriceFeedAddressChanged",
         "kind": "nested"
       }
     ]
   },
   {
     "type": "event",
-    "name": "usdu::StabilityPool::StabilityPool::Event",
+    "name": "usdu::branch::StabilityPool::StabilityPool::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "StabilityPoolCollBalanceUpdated",
-        "type": "usdu::StabilityPool::StabilityPool::StabilityPoolCollBalanceUpdated",
+        "type": "usdu::branch::StabilityPool::StabilityPool::StabilityPoolCollBalanceUpdated",
         "kind": "nested"
       },
       {
         "name": "StabilityPoolUSDUBalanceUpdated",
-        "type": "usdu::StabilityPool::StabilityPool::StabilityPoolUSDUBalanceUpdated",
+        "type": "usdu::branch::StabilityPool::StabilityPool::StabilityPoolUSDUBalanceUpdated",
         "kind": "nested"
       },
       {
         "name": "P_Updated",
-        "type": "usdu::StabilityPool::StabilityPool::P_Updated",
+        "type": "usdu::branch::StabilityPool::StabilityPool::P_Updated",
         "kind": "nested"
       },
       {
         "name": "S_Updated",
-        "type": "usdu::StabilityPool::StabilityPool::S_Updated",
+        "type": "usdu::branch::StabilityPool::StabilityPool::S_Updated",
         "kind": "nested"
       },
       {
         "name": "B_Updated",
-        "type": "usdu::StabilityPool::StabilityPool::B_Updated",
+        "type": "usdu::branch::StabilityPool::StabilityPool::B_Updated",
         "kind": "nested"
       },
       {
         "name": "ScaleUpdated",
-        "type": "usdu::StabilityPool::StabilityPool::ScaleUpdated",
+        "type": "usdu::branch::StabilityPool::StabilityPool::ScaleUpdated",
         "kind": "nested"
       },
       {
         "name": "DepositUpdated",
-        "type": "usdu::StabilityPool::StabilityPool::DepositUpdated",
+        "type": "usdu::branch::StabilityPool::StabilityPool::DepositUpdated",
         "kind": "nested"
       },
       {
         "name": "DepositOperation",
-        "type": "usdu::StabilityPool::StabilityPool::DepositOperation",
+        "type": "usdu::branch::StabilityPool::StabilityPool::DepositOperation",
         "kind": "nested"
       },
       {
         "name": "TroveManagerAddressChanged",
-        "type": "usdu::StabilityPool::StabilityPool::TroveManagerAddressChanged",
+        "type": "usdu::branch::StabilityPool::StabilityPool::TroveManagerAddressChanged",
         "kind": "nested"
       },
       {
         "name": "USDUTokenAddressChanged",
-        "type": "usdu::StabilityPool::StabilityPool::USDUTokenAddressChanged",
+        "type": "usdu::branch::StabilityPool::StabilityPool::USDUTokenAddressChanged",
         "kind": "nested"
       },
       {
         "name": "UncapBaseEvent",
-        "type": "usdu::dependencies::UncapBase::UncapBaseComponent::Event",
+        "type": "usdu::components::UncapBase::UncapBaseComponent::Event",
         "kind": "flat"
       }
     ]

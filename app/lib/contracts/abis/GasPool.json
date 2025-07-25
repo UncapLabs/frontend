@@ -2,11 +2,11 @@
   {
     "type": "impl",
     "name": "GasPoolImpl",
-    "interface_name": "usdu::GasPool::IGasPool"
+    "interface_name": "usdu::branch::GasPool::IGasPool"
   },
   {
     "type": "interface",
-    "name": "usdu::GasPool::IGasPool",
+    "name": "usdu::branch::GasPool::IGasPool",
     "items": [
       {
         "type": "function",
@@ -24,7 +24,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::GasPool::GasPool::Event",
+    "name": "usdu::branch::GasPool::GasPool::Event",
     "kind": "enum",
     "variants": []
   }

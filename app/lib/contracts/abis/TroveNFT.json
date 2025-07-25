@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "ITroveNFTImpl",
-    "interface_name": "usdu::TroveNFT::ITroveNFT"
+    "interface_name": "usdu::branch::TroveNFT::ITroveNFT"
   },
   {
     "type": "struct",
@@ -38,7 +38,7 @@
   },
   {
     "type": "interface",
-    "name": "usdu::TroveNFT::ITroveNFT",
+    "name": "usdu::branch::TroveNFT::ITroveNFT",
     "items": [
       {
         "type": "function",
@@ -456,7 +456,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::TroveNFT::TroveNFT::Event",
+    "name": "usdu::branch::TroveNFT::TroveNFT::Event",
     "kind": "enum",
     "variants": [
       {

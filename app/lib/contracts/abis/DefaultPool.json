@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "IDefaultPoolImpl",
-    "interface_name": "usdu::DefaultPool::IDefaultPool"
+    "interface_name": "usdu::branch::DefaultPool::IDefaultPool"
   },
   {
     "type": "struct",
@@ -20,7 +20,7 @@
   },
   {
     "type": "interface",
-    "name": "usdu::DefaultPool::IDefaultPool",
+    "name": "usdu::branch::DefaultPool::IDefaultPool",
     "items": [
       {
         "type": "function",
@@ -108,7 +108,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::DefaultPool::DefaultPool::DefaultPoolUSDUDebtUpdated",
+    "name": "usdu::branch::DefaultPool::DefaultPool::DefaultPoolUSDUDebtUpdated",
     "kind": "struct",
     "members": [
       {
@@ -120,7 +120,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::DefaultPool::DefaultPool::DefaultPoolCollBalanceUpdated",
+    "name": "usdu::branch::DefaultPool::DefaultPool::DefaultPoolCollBalanceUpdated",
     "kind": "struct",
     "members": [
       {
@@ -132,17 +132,17 @@
   },
   {
     "type": "event",
-    "name": "usdu::DefaultPool::DefaultPool::Event",
+    "name": "usdu::branch::DefaultPool::DefaultPool::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "DefaultPoolUSDUDebtUpdated",
-        "type": "usdu::DefaultPool::DefaultPool::DefaultPoolUSDUDebtUpdated",
+        "type": "usdu::branch::DefaultPool::DefaultPool::DefaultPoolUSDUDebtUpdated",
         "kind": "nested"
       },
       {
         "name": "DefaultPoolCollBalanceUpdated",
-        "type": "usdu::DefaultPool::DefaultPool::DefaultPoolCollBalanceUpdated",
+        "type": "usdu::branch::DefaultPool::DefaultPool::DefaultPoolCollBalanceUpdated",
         "kind": "nested"
       }
     ]

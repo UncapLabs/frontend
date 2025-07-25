@@ -18,7 +18,7 @@ import {
 function MyTroves() {
   const navigate = useNavigate();
   const { address } = useAccount();
-  const { troves, isLoading, hasActiveTroves } = useUserTroves();
+  const { troves, isLoading, hasActiveTroves } = useUserTroves(address);
 
   const handleCreateNew = () => {
     navigate("/");

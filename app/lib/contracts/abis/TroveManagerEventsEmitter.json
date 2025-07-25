@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "ITroveManagerEventsEmitterImpl",
-    "interface_name": "usdu::events::TroveManagerEventsEmitter::ITroveManagerEventsEmitter"
+    "interface_name": "usdu::branch::trove::TroveManagerEventsEmitter::ITroveManagerEventsEmitter"
   },
   {
     "type": "struct",
@@ -20,7 +20,7 @@
   },
   {
     "type": "struct",
-    "name": "usdu::LiquidationManager::LiquidationValues",
+    "name": "usdu::branch::trove::LiquidationManager::LiquidationValues",
     "members": [
       {
         "name": "coll_gas_compensation",
@@ -62,7 +62,7 @@
   },
   {
     "type": "enum",
-    "name": "usdu::events::TroveManagerEventsEmitter::BatchOperation",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::BatchOperation",
     "variants": [
       {
         "name": "RegisterBatchManager",
@@ -96,7 +96,7 @@
   },
   {
     "type": "struct",
-    "name": "usdu::TroveManager::TroveChange",
+    "name": "usdu::branch::trove::TroveManager::TroveChange",
     "members": [
       {
         "name": "applied_redist_usdu_debt_gain",
@@ -150,7 +150,7 @@
   },
   {
     "type": "interface",
-    "name": "usdu::events::TroveManagerEventsEmitter::ITroveManagerEventsEmitter",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::ITroveManagerEventsEmitter",
     "items": [
       {
         "type": "function",
@@ -174,7 +174,7 @@
         "inputs": [
           {
             "name": "totals",
-            "type": "usdu::LiquidationManager::LiquidationValues"
+            "type": "usdu::branch::trove::LiquidationManager::LiquidationValues"
           },
           {
             "name": "l_coll",
@@ -202,7 +202,7 @@
           },
           {
             "name": "operation",
-            "type": "usdu::events::TroveManagerEventsEmitter::BatchOperation"
+            "type": "usdu::branch::trove::TroveManagerEventsEmitter::BatchOperation"
           },
           {
             "name": "batch_debt",
@@ -250,7 +250,7 @@
           },
           {
             "name": "trove_change",
-            "type": "usdu::TroveManager::TroveChange"
+            "type": "usdu::branch::trove::TroveManager::TroveChange"
           },
           {
             "name": "batch_address",
@@ -294,7 +294,7 @@
           },
           {
             "name": "trove_change",
-            "type": "usdu::TroveManager::TroveChange"
+            "type": "usdu::branch::trove::TroveManager::TroveChange"
           }
         ],
         "outputs": [],
@@ -310,7 +310,7 @@
           },
           {
             "name": "trove_change",
-            "type": "usdu::TroveManager::TroveChange"
+            "type": "usdu::branch::trove::TroveManager::TroveChange"
           },
           {
             "name": "new_stake",
@@ -342,7 +342,7 @@
           },
           {
             "name": "trove_change",
-            "type": "usdu::TroveManager::TroveChange"
+            "type": "usdu::branch::trove::TroveManager::TroveChange"
           },
           {
             "name": "batch_address",
@@ -386,7 +386,7 @@
           },
           {
             "name": "trove_change",
-            "type": "usdu::TroveManager::TroveChange"
+            "type": "usdu::branch::trove::TroveManager::TroveChange"
           }
         ],
         "outputs": [],
@@ -426,7 +426,7 @@
           },
           {
             "name": "trove_change",
-            "type": "usdu::TroveManager::TroveChange"
+            "type": "usdu::branch::trove::TroveManager::TroveChange"
           }
         ],
         "outputs": [],
@@ -442,7 +442,7 @@
           },
           {
             "name": "trove_change",
-            "type": "usdu::TroveManager::TroveChange"
+            "type": "usdu::branch::trove::TroveManager::TroveChange"
           },
           {
             "name": "new_stake",
@@ -502,7 +502,7 @@
           },
           {
             "name": "trove_change",
-            "type": "usdu::TroveManager::TroveChange"
+            "type": "usdu::branch::trove::TroveManager::TroveChange"
           }
         ],
         "outputs": [],
@@ -542,7 +542,7 @@
           },
           {
             "name": "trove_change",
-            "type": "usdu::TroveManager::TroveChange"
+            "type": "usdu::branch::trove::TroveManager::TroveChange"
           }
         ],
         "outputs": [],
@@ -552,7 +552,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::TroveManagerEventsEmitter::TroveNFTAddressChanged",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::TroveNFTAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -564,7 +564,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::TroveManagerEventsEmitter::BorrowerOperationsAddressChanged",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::BorrowerOperationsAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -576,7 +576,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::TroveManagerEventsEmitter::USDUTokenAddressChanged",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::USDUTokenAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -588,7 +588,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::TroveManagerEventsEmitter::StabilityPoolAddressChanged",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::StabilityPoolAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -600,7 +600,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::TroveManagerEventsEmitter::GasPoolAddressChanged",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::GasPoolAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -612,7 +612,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::TroveManagerEventsEmitter::CollSurplusPoolAddressChanged",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::CollSurplusPoolAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -624,7 +624,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::TroveManagerEventsEmitter::SortedTrovesAddressChanged",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::SortedTrovesAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -636,7 +636,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::TroveManagerEventsEmitter::CollateralRegistryAddressChanged",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::CollateralRegistryAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -648,7 +648,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::TroveUpdated",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::TroveUpdated",
     "kind": "struct",
     "members": [
       {
@@ -690,7 +690,7 @@
   },
   {
     "type": "enum",
-    "name": "usdu::TroveManager::Operation",
+    "name": "usdu::branch::trove::TroveManager::Operation",
     "variants": [
       {
         "name": "OpenTrove",
@@ -764,7 +764,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::TroveOperation",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::TroveOperation",
     "kind": "struct",
     "members": [
       {
@@ -774,7 +774,7 @@
       },
       {
         "name": "operation",
-        "type": "usdu::TroveManager::Operation",
+        "type": "usdu::branch::trove::TroveManager::Operation",
         "kind": "data"
       },
       {
@@ -811,7 +811,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::BatchUpdated",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::BatchUpdated",
     "kind": "struct",
     "members": [
       {
@@ -821,7 +821,7 @@
       },
       {
         "name": "operation",
-        "type": "usdu::events::TroveManagerEventsEmitter::BatchOperation",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::BatchOperation",
         "kind": "data"
       },
       {
@@ -858,7 +858,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::BatchedTroveUpdated",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::BatchedTroveUpdated",
     "kind": "struct",
     "members": [
       {
@@ -900,7 +900,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::Liquidation",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::Liquidation",
     "kind": "struct",
     "members": [
       {
@@ -957,7 +957,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::RedemptionFeePaidToTrove",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::RedemptionFeePaidToTrove",
     "kind": "struct",
     "members": [
       {
@@ -974,7 +974,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::Redemption",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::Redemption",
     "kind": "struct",
     "members": [
       {
@@ -1011,82 +1011,82 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::TroveManagerEventsEmitter::Event",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "TroveNFTAddressChanged",
-        "type": "usdu::events::TroveManagerEventsEmitter::TroveManagerEventsEmitter::TroveNFTAddressChanged",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::TroveNFTAddressChanged",
         "kind": "nested"
       },
       {
         "name": "BorrowerOperationsAddressChanged",
-        "type": "usdu::events::TroveManagerEventsEmitter::TroveManagerEventsEmitter::BorrowerOperationsAddressChanged",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::BorrowerOperationsAddressChanged",
         "kind": "nested"
       },
       {
         "name": "USDUTokenAddressChanged",
-        "type": "usdu::events::TroveManagerEventsEmitter::TroveManagerEventsEmitter::USDUTokenAddressChanged",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::USDUTokenAddressChanged",
         "kind": "nested"
       },
       {
         "name": "StabilityPoolAddressChanged",
-        "type": "usdu::events::TroveManagerEventsEmitter::TroveManagerEventsEmitter::StabilityPoolAddressChanged",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::StabilityPoolAddressChanged",
         "kind": "nested"
       },
       {
         "name": "GasPoolAddressChanged",
-        "type": "usdu::events::TroveManagerEventsEmitter::TroveManagerEventsEmitter::GasPoolAddressChanged",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::GasPoolAddressChanged",
         "kind": "nested"
       },
       {
         "name": "CollSurplusPoolAddressChanged",
-        "type": "usdu::events::TroveManagerEventsEmitter::TroveManagerEventsEmitter::CollSurplusPoolAddressChanged",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::CollSurplusPoolAddressChanged",
         "kind": "nested"
       },
       {
         "name": "SortedTrovesAddressChanged",
-        "type": "usdu::events::TroveManagerEventsEmitter::TroveManagerEventsEmitter::SortedTrovesAddressChanged",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::SortedTrovesAddressChanged",
         "kind": "nested"
       },
       {
         "name": "CollateralRegistryAddressChanged",
-        "type": "usdu::events::TroveManagerEventsEmitter::TroveManagerEventsEmitter::CollateralRegistryAddressChanged",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::CollateralRegistryAddressChanged",
         "kind": "nested"
       },
       {
         "name": "TroveUpdated",
-        "type": "usdu::events::TroveManagerEventsEmitter::TroveUpdated",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::TroveUpdated",
         "kind": "nested"
       },
       {
         "name": "TroveOperation",
-        "type": "usdu::events::TroveManagerEventsEmitter::TroveOperation",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::TroveOperation",
         "kind": "nested"
       },
       {
         "name": "BatchUpdated",
-        "type": "usdu::events::TroveManagerEventsEmitter::BatchUpdated",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::BatchUpdated",
         "kind": "nested"
       },
       {
         "name": "BatchedTroveUpdated",
-        "type": "usdu::events::TroveManagerEventsEmitter::BatchedTroveUpdated",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::BatchedTroveUpdated",
         "kind": "nested"
       },
       {
         "name": "Liquidation",
-        "type": "usdu::events::TroveManagerEventsEmitter::Liquidation",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::Liquidation",
         "kind": "nested"
       },
       {
         "name": "RedemptionFeePaidToTrove",
-        "type": "usdu::events::TroveManagerEventsEmitter::RedemptionFeePaidToTrove",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::RedemptionFeePaidToTrove",
         "kind": "nested"
       },
       {
         "name": "Redemption",
-        "type": "usdu::events::TroveManagerEventsEmitter::Redemption",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::Redemption",
         "kind": "nested"
       }
     ]

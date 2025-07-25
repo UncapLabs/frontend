@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "IActivePoolImpl",
-    "interface_name": "usdu::ActivePool::IActivePool"
+    "interface_name": "usdu::branch::ActivePool::IActivePool"
   },
   {
     "type": "struct",
@@ -20,7 +20,7 @@
   },
   {
     "type": "struct",
-    "name": "usdu::TroveManager::TroveChange",
+    "name": "usdu::branch::trove::TroveManager::TroveChange",
     "members": [
       {
         "name": "applied_redist_usdu_debt_gain",
@@ -88,7 +88,7 @@
   },
   {
     "type": "interface",
-    "name": "usdu::ActivePool::IActivePool",
+    "name": "usdu::branch::ActivePool::IActivePool",
     "items": [
       {
         "type": "function",
@@ -152,7 +152,7 @@
         "inputs": [
           {
             "name": "trove_change",
-            "type": "usdu::TroveManager::TroveChange"
+            "type": "usdu::branch::trove::TroveManager::TroveChange"
           }
         ],
         "outputs": [
@@ -308,7 +308,7 @@
         "inputs": [
           {
             "name": "trove_change",
-            "type": "usdu::TroveManager::TroveChange"
+            "type": "usdu::branch::trove::TroveManager::TroveChange"
           },
           {
             "name": "batch_address",
@@ -331,7 +331,7 @@
         "inputs": [
           {
             "name": "trove_change",
-            "type": "usdu::TroveManager::TroveChange"
+            "type": "usdu::branch::trove::TroveManager::TroveChange"
           },
           {
             "name": "batch_address",
@@ -363,7 +363,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::ActivePool::ActivePool::CollTokenAddressChanged",
+    "name": "usdu::branch::ActivePool::ActivePool::CollTokenAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -375,7 +375,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::ActivePool::ActivePool::BorrowerOperationsAddressChanged",
+    "name": "usdu::branch::ActivePool::ActivePool::BorrowerOperationsAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -387,7 +387,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::ActivePool::ActivePool::TroveManagerAddressChanged",
+    "name": "usdu::branch::ActivePool::ActivePool::TroveManagerAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -399,7 +399,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::ActivePool::ActivePool::DefaultPoolAddressChanged",
+    "name": "usdu::branch::ActivePool::ActivePool::DefaultPoolAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -411,7 +411,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::ActivePool::ActivePool::StabilityPoolAddressChanged",
+    "name": "usdu::branch::ActivePool::ActivePool::StabilityPoolAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -423,7 +423,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::ActivePool::ActivePool::ActivePoolUSDUDebtUpdated",
+    "name": "usdu::branch::ActivePool::ActivePool::ActivePoolUSDUDebtUpdated",
     "kind": "struct",
     "members": [
       {
@@ -435,7 +435,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::ActivePool::ActivePool::ActivePoolCollBalanceUpdated",
+    "name": "usdu::branch::ActivePool::ActivePool::ActivePoolCollBalanceUpdated",
     "kind": "struct",
     "members": [
       {
@@ -447,42 +447,42 @@
   },
   {
     "type": "event",
-    "name": "usdu::ActivePool::ActivePool::Event",
+    "name": "usdu::branch::ActivePool::ActivePool::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "CollTokenAddressChanged",
-        "type": "usdu::ActivePool::ActivePool::CollTokenAddressChanged",
+        "type": "usdu::branch::ActivePool::ActivePool::CollTokenAddressChanged",
         "kind": "nested"
       },
       {
         "name": "BorrowerOperationsAddressChanged",
-        "type": "usdu::ActivePool::ActivePool::BorrowerOperationsAddressChanged",
+        "type": "usdu::branch::ActivePool::ActivePool::BorrowerOperationsAddressChanged",
         "kind": "nested"
       },
       {
         "name": "TroveManagerAddressChanged",
-        "type": "usdu::ActivePool::ActivePool::TroveManagerAddressChanged",
+        "type": "usdu::branch::ActivePool::ActivePool::TroveManagerAddressChanged",
         "kind": "nested"
       },
       {
         "name": "DefaultPoolAddressChanged",
-        "type": "usdu::ActivePool::ActivePool::DefaultPoolAddressChanged",
+        "type": "usdu::branch::ActivePool::ActivePool::DefaultPoolAddressChanged",
         "kind": "nested"
       },
       {
         "name": "StabilityPoolAddressChanged",
-        "type": "usdu::ActivePool::ActivePool::StabilityPoolAddressChanged",
+        "type": "usdu::branch::ActivePool::ActivePool::StabilityPoolAddressChanged",
         "kind": "nested"
       },
       {
         "name": "ActivePoolUSDUDebtUpdated",
-        "type": "usdu::ActivePool::ActivePool::ActivePoolUSDUDebtUpdated",
+        "type": "usdu::branch::ActivePool::ActivePool::ActivePoolUSDUDebtUpdated",
         "kind": "nested"
       },
       {
         "name": "ActivePoolCollBalanceUpdated",
-        "type": "usdu::ActivePool::ActivePool::ActivePoolCollBalanceUpdated",
+        "type": "usdu::branch::ActivePool::ActivePool::ActivePoolCollBalanceUpdated",
         "kind": "nested"
       }
     ]

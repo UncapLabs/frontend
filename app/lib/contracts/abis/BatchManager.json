@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "IBatchManagerImpl",
-    "interface_name": "usdu::BatchManager::IBatchManager"
+    "interface_name": "usdu::branch::trove::BatchManager::IBatchManager"
   },
   {
     "type": "struct",
@@ -20,7 +20,7 @@
   },
   {
     "type": "struct",
-    "name": "usdu::TroveManager::LatestBatchData",
+    "name": "usdu::branch::trove::TroveManager::LatestBatchData",
     "members": [
       {
         "name": "total_debt_shares",
@@ -74,7 +74,7 @@
   },
   {
     "type": "struct",
-    "name": "usdu::BatchManager::Batch",
+    "name": "usdu::branch::trove::BatchManager::Batch",
     "members": [
       {
         "name": "debt",
@@ -112,7 +112,7 @@
   },
   {
     "type": "struct",
-    "name": "usdu::TroveManager::TroveChange",
+    "name": "usdu::branch::trove::TroveManager::TroveChange",
     "members": [
       {
         "name": "applied_redist_usdu_debt_gain",
@@ -180,7 +180,7 @@
   },
   {
     "type": "interface",
-    "name": "usdu::BatchManager::IBatchManager",
+    "name": "usdu::branch::trove::BatchManager::IBatchManager",
     "items": [
       {
         "type": "function",
@@ -237,7 +237,7 @@
         ],
         "outputs": [
           {
-            "type": "usdu::TroveManager::LatestBatchData"
+            "type": "usdu::branch::trove::TroveManager::LatestBatchData"
           }
         ],
         "state_mutability": "view"
@@ -253,7 +253,7 @@
         ],
         "outputs": [
           {
-            "type": "usdu::BatchManager::Batch"
+            "type": "usdu::branch::trove::BatchManager::Batch"
           }
         ],
         "state_mutability": "view"
@@ -272,7 +272,7 @@
           },
           {
             "name": "trove_change",
-            "type": "usdu::TroveManager::TroveChange"
+            "type": "usdu::branch::trove::TroveManager::TroveChange"
           },
           {
             "name": "new_trove_debt",
@@ -384,7 +384,7 @@
           },
           {
             "name": "trove_change",
-            "type": "usdu::TroveManager::TroveChange"
+            "type": "usdu::branch::trove::TroveManager::TroveChange"
           },
           {
             "name": "batch_address",
@@ -426,7 +426,7 @@
   },
   {
     "type": "enum",
-    "name": "usdu::events::TroveManagerEventsEmitter::BatchOperation",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::BatchOperation",
     "variants": [
       {
         "name": "RegisterBatchManager",
@@ -460,7 +460,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::BatchUpdated",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::BatchUpdated",
     "kind": "struct",
     "members": [
       {
@@ -470,7 +470,7 @@
       },
       {
         "name": "operation",
-        "type": "usdu::events::TroveManagerEventsEmitter::BatchOperation",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::BatchOperation",
         "kind": "data"
       },
       {
@@ -507,12 +507,12 @@
   },
   {
     "type": "event",
-    "name": "usdu::BatchManager::BatchManager::Event",
+    "name": "usdu::branch::trove::BatchManager::BatchManager::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "BatchUpdated",
-        "type": "usdu::events::TroveManagerEventsEmitter::BatchUpdated",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::BatchUpdated",
         "kind": "nested"
       }
     ]

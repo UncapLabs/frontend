@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "ILiquidationManagerImpl",
-    "interface_name": "usdu::LiquidationManager::ILiquidationManager"
+    "interface_name": "usdu::branch::trove::LiquidationManager::ILiquidationManager"
   },
   {
     "type": "struct",
@@ -30,7 +30,7 @@
   },
   {
     "type": "struct",
-    "name": "usdu::TroveManager::TroveChange",
+    "name": "usdu::branch::trove::TroveManager::TroveChange",
     "members": [
       {
         "name": "applied_redist_usdu_debt_gain",
@@ -84,7 +84,7 @@
   },
   {
     "type": "struct",
-    "name": "usdu::LiquidationManager::LiquidationValues",
+    "name": "usdu::branch::trove::LiquidationManager::LiquidationValues",
     "members": [
       {
         "name": "coll_gas_compensation",
@@ -126,7 +126,7 @@
   },
   {
     "type": "interface",
-    "name": "usdu::LiquidationManager::ILiquidationManager",
+    "name": "usdu::branch::trove::LiquidationManager::ILiquidationManager",
     "items": [
       {
         "type": "function",
@@ -155,7 +155,7 @@
         ],
         "outputs": [
           {
-            "type": "(usdu::TroveManager::TroveChange, usdu::LiquidationManager::LiquidationValues, core::integer::u256)"
+            "type": "(usdu::branch::trove::TroveManager::TroveChange, usdu::branch::trove::LiquidationManager::LiquidationValues, core::integer::u256)"
           }
         ],
         "state_mutability": "external"
@@ -164,7 +164,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::TroveUpdated",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::TroveUpdated",
     "kind": "struct",
     "members": [
       {
@@ -206,7 +206,7 @@
   },
   {
     "type": "enum",
-    "name": "usdu::TroveManager::Operation",
+    "name": "usdu::branch::trove::TroveManager::Operation",
     "variants": [
       {
         "name": "OpenTrove",
@@ -280,7 +280,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::TroveOperation",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::TroveOperation",
     "kind": "struct",
     "members": [
       {
@@ -290,7 +290,7 @@
       },
       {
         "name": "operation",
-        "type": "usdu::TroveManager::Operation",
+        "type": "usdu::branch::trove::TroveManager::Operation",
         "kind": "data"
       },
       {
@@ -327,7 +327,7 @@
   },
   {
     "type": "enum",
-    "name": "usdu::events::TroveManagerEventsEmitter::BatchOperation",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::BatchOperation",
     "variants": [
       {
         "name": "RegisterBatchManager",
@@ -361,7 +361,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::events::TroveManagerEventsEmitter::BatchUpdated",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::BatchUpdated",
     "kind": "struct",
     "members": [
       {
@@ -371,7 +371,7 @@
       },
       {
         "name": "operation",
-        "type": "usdu::events::TroveManagerEventsEmitter::BatchOperation",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::BatchOperation",
         "kind": "data"
       },
       {
@@ -408,22 +408,22 @@
   },
   {
     "type": "event",
-    "name": "usdu::LiquidationManager::LiquidationManager::Event",
+    "name": "usdu::branch::trove::LiquidationManager::LiquidationManager::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "TroveUpdated",
-        "type": "usdu::events::TroveManagerEventsEmitter::TroveUpdated",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::TroveUpdated",
         "kind": "nested"
       },
       {
         "name": "TroveOperation",
-        "type": "usdu::events::TroveManagerEventsEmitter::TroveOperation",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::TroveOperation",
         "kind": "nested"
       },
       {
         "name": "BatchUpdated",
-        "type": "usdu::events::TroveManagerEventsEmitter::BatchUpdated",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::BatchUpdated",
         "kind": "nested"
       }
     ]

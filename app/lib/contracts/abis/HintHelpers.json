@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "HintHelpersImpl",
-    "interface_name": "usdu::HintHelpers::IHintHelpers"
+    "interface_name": "usdu::branch::HintHelpers::IHintHelpers"
   },
   {
     "type": "struct",
@@ -20,7 +20,7 @@
   },
   {
     "type": "interface",
-    "name": "usdu::HintHelpers::IHintHelpers",
+    "name": "usdu::branch::HintHelpers::IHintHelpers",
     "items": [
       {
         "type": "function",
@@ -269,7 +269,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::HintHelpers::HintHelpers::Event",
+    "name": "usdu::branch::HintHelpers::HintHelpers::Event",
     "kind": "enum",
     "variants": []
   }

@@ -758,7 +758,12 @@ export type Trove = {
   id: Scalars['ID']['output'];
   interestBatch?: Maybe<InterestBatch>;
   interestRate: Scalars['BigDecimalU256']['output'];
+  lastUserActionAt: Scalars['Int']['output'];
   mightBeLeveraged: Scalars['Boolean']['output'];
+  previousOwner: Scalars['String']['output'];
+  redeemedColl: Scalars['BigDecimalU256']['output'];
+  redeemedDebt: Scalars['BigDecimalU256']['output'];
+  redemptionCount: Scalars['Int']['output'];
   stake: Scalars['BigDecimalU256']['output'];
   status: Scalars['String']['output'];
   troveId: Scalars['String']['output'];
@@ -966,10 +971,50 @@ export type Trove_Filter = {
   interestRate_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
   interestRate_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
   interestRate_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  lastUserActionAt?: InputMaybe<Scalars['Int']['input']>;
+  lastUserActionAt_gt?: InputMaybe<Scalars['Int']['input']>;
+  lastUserActionAt_gte?: InputMaybe<Scalars['Int']['input']>;
+  lastUserActionAt_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  lastUserActionAt_lt?: InputMaybe<Scalars['Int']['input']>;
+  lastUserActionAt_lte?: InputMaybe<Scalars['Int']['input']>;
+  lastUserActionAt_not?: InputMaybe<Scalars['Int']['input']>;
+  lastUserActionAt_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
   mightBeLeveraged?: InputMaybe<Scalars['Boolean']['input']>;
   mightBeLeveraged_in?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   mightBeLeveraged_not?: InputMaybe<Scalars['Boolean']['input']>;
   mightBeLeveraged_not_in?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
+  previousOwner?: InputMaybe<Scalars['String']['input']>;
+  previousOwner_contains?: InputMaybe<Scalars['String']['input']>;
+  previousOwner_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  previousOwner_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  previousOwner_not?: InputMaybe<Scalars['String']['input']>;
+  previousOwner_not_contains?: InputMaybe<Scalars['String']['input']>;
+  previousOwner_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  previousOwner_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  redeemedColl?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  redeemedColl_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  redeemedColl_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  redeemedColl_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  redeemedColl_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  redeemedColl_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  redeemedColl_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  redeemedColl_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  redeemedDebt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  redeemedDebt_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  redeemedDebt_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  redeemedDebt_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  redeemedDebt_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  redeemedDebt_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  redeemedDebt_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  redeemedDebt_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  redemptionCount?: InputMaybe<Scalars['Int']['input']>;
+  redemptionCount_gt?: InputMaybe<Scalars['Int']['input']>;
+  redemptionCount_gte?: InputMaybe<Scalars['Int']['input']>;
+  redemptionCount_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  redemptionCount_lt?: InputMaybe<Scalars['Int']['input']>;
+  redemptionCount_lte?: InputMaybe<Scalars['Int']['input']>;
+  redemptionCount_not?: InputMaybe<Scalars['Int']['input']>;
+  redemptionCount_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
   stake?: InputMaybe<Scalars['BigDecimalU256']['input']>;
   stake_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
   stake_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
@@ -1015,7 +1060,12 @@ export enum Trove_OrderBy {
   Id = 'id',
   InterestBatch = 'interestBatch',
   InterestRate = 'interestRate',
+  LastUserActionAt = 'lastUserActionAt',
   MightBeLeveraged = 'mightBeLeveraged',
+  PreviousOwner = 'previousOwner',
+  RedeemedColl = 'redeemedColl',
+  RedeemedDebt = 'redeemedDebt',
+  RedemptionCount = 'redemptionCount',
   Stake = 'stake',
   Status = 'status',
   TroveId = 'troveId',
@@ -1108,12 +1158,19 @@ export enum _Metadata_OrderBy {
   Value = 'value'
 }
 
-export type GetOwnerPositionsQueryVariables = Exact<{
-  owner: Scalars['String']['input'];
+export type TrovesAsBorrowerQueryVariables = Exact<{
+  account: Scalars['String']['input'];
 }>;
 
 
-export type GetOwnerPositionsQuery = { __typename?: 'Query', troves: Array<{ __typename?: 'Trove', id: string, troveId: string, borrower: string, debt: any, deposit: any, interestRate: any, status: string, createdAt: number, updatedAt: number, collateral: { __typename?: 'Collateral', id: string } }> };
+export type TrovesAsBorrowerQuery = { __typename?: 'Query', troves: Array<{ __typename?: 'Trove', id: string, troveId: string, borrower: string, debt: any, deposit: any, interestRate: any, status: string, closedAt?: number | null, createdAt: number, updatedAt: number, mightBeLeveraged: boolean, previousOwner: string, collateral: { __typename?: 'Collateral', id: string } }> };
+
+export type TrovesAsPreviousOwnerQueryVariables = Exact<{
+  account: Scalars['String']['input'];
+}>;
+
+
+export type TrovesAsPreviousOwnerQuery = { __typename?: 'Query', troves: Array<{ __typename?: 'Trove', id: string, troveId: string, borrower: string, debt: any, deposit: any, interestRate: any, status: string, closedAt?: number | null, createdAt: number, updatedAt: number, mightBeLeveraged: boolean, previousOwner: string, collateral: { __typename?: 'Collateral', id: string } }> };
 
 export type GetTroveByIdQueryVariables = Exact<{
   troveId: Scalars['ID']['input'];
@@ -1121,6 +1178,13 @@ export type GetTroveByIdQueryVariables = Exact<{
 
 
 export type GetTroveByIdQuery = { __typename?: 'Query', trove?: { __typename?: 'Trove', id: string, troveId: string, borrower: string, debt: any, deposit: any, interestRate: any, status: string, interestBatch?: { __typename?: 'InterestBatch', id: string, batchManager: string, debt: any, coll: any } | null, collateral: { __typename?: 'Collateral', id: string } } | null };
+
+export type TroveByIdQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type TroveByIdQuery = { __typename?: 'Query', trove?: { __typename?: 'Trove', id: string, borrower: string, closedAt?: number | null, createdAt: number, mightBeLeveraged: boolean, status: string, previousOwner: string } | null };
 
 export type GetTrovesByCollateralQueryVariables = Exact<{
   collateralId?: InputMaybe<Scalars['ID']['input']>;
@@ -1137,7 +1201,9 @@ export type GetAllCollateralsQueryVariables = Exact<{ [key: string]: never; }>;
 export type GetAllCollateralsQuery = { __typename?: 'Query', collaterals: Array<{ __typename?: 'Collateral', id: string, collIndex: number }> };
 
 
-export const GetOwnerPositionsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetOwnerPositions"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"owner"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"troves"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"borrower"},"value":{"kind":"Variable","name":{"kind":"Name","value":"owner"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"troveId"}},{"kind":"Field","name":{"kind":"Name","value":"borrower"}},{"kind":"Field","name":{"kind":"Name","value":"debt"}},{"kind":"Field","name":{"kind":"Name","value":"deposit"}},{"kind":"Field","name":{"kind":"Name","value":"interestRate"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"collateral"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}}]}}]} as unknown as DocumentNode<GetOwnerPositionsQuery, GetOwnerPositionsQueryVariables>;
+export const TrovesAsBorrowerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"TrovesAsBorrower"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"account"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"troves"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"borrower"},"value":{"kind":"Variable","name":{"kind":"Name","value":"account"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"status_in"},"value":{"kind":"ListValue","values":[{"kind":"StringValue","value":"active","block":false},{"kind":"StringValue","value":"redeemed","block":false}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"updatedAt"}},{"kind":"Argument","name":{"kind":"Name","value":"orderDirection"},"value":{"kind":"EnumValue","value":"desc"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"troveId"}},{"kind":"Field","name":{"kind":"Name","value":"borrower"}},{"kind":"Field","name":{"kind":"Name","value":"debt"}},{"kind":"Field","name":{"kind":"Name","value":"deposit"}},{"kind":"Field","name":{"kind":"Name","value":"interestRate"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"collateral"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"closedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"mightBeLeveraged"}},{"kind":"Field","name":{"kind":"Name","value":"previousOwner"}}]}}]}}]} as unknown as DocumentNode<TrovesAsBorrowerQuery, TrovesAsBorrowerQueryVariables>;
+export const TrovesAsPreviousOwnerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"TrovesAsPreviousOwner"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"account"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"troves"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"previousOwner"},"value":{"kind":"Variable","name":{"kind":"Name","value":"account"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"status"},"value":{"kind":"StringValue","value":"liquidated","block":false}}]}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"updatedAt"}},{"kind":"Argument","name":{"kind":"Name","value":"orderDirection"},"value":{"kind":"EnumValue","value":"desc"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"troveId"}},{"kind":"Field","name":{"kind":"Name","value":"borrower"}},{"kind":"Field","name":{"kind":"Name","value":"debt"}},{"kind":"Field","name":{"kind":"Name","value":"deposit"}},{"kind":"Field","name":{"kind":"Name","value":"interestRate"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"collateral"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"closedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"mightBeLeveraged"}},{"kind":"Field","name":{"kind":"Name","value":"previousOwner"}}]}}]}}]} as unknown as DocumentNode<TrovesAsPreviousOwnerQuery, TrovesAsPreviousOwnerQueryVariables>;
 export const GetTroveByIdDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetTroveById"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"troveId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"trove"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"troveId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"troveId"}},{"kind":"Field","name":{"kind":"Name","value":"borrower"}},{"kind":"Field","name":{"kind":"Name","value":"debt"}},{"kind":"Field","name":{"kind":"Name","value":"deposit"}},{"kind":"Field","name":{"kind":"Name","value":"interestRate"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"interestBatch"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"batchManager"}},{"kind":"Field","name":{"kind":"Name","value":"debt"}},{"kind":"Field","name":{"kind":"Name","value":"coll"}}]}},{"kind":"Field","name":{"kind":"Name","value":"collateral"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]} as unknown as DocumentNode<GetTroveByIdQuery, GetTroveByIdQueryVariables>;
+export const TroveByIdDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"TroveById"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"trove"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"borrower"}},{"kind":"Field","name":{"kind":"Name","value":"closedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"mightBeLeveraged"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"previousOwner"}}]}}]}}]} as unknown as DocumentNode<TroveByIdQuery, TroveByIdQueryVariables>;
 export const GetTrovesByCollateralDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetTrovesByCollateral"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"collateralId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"skip"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"troves"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"collateral"},"value":{"kind":"Variable","name":{"kind":"Name","value":"collateralId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"status"},"value":{"kind":"StringValue","value":"active","block":false}}]}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"skip"},"value":{"kind":"Variable","name":{"kind":"Name","value":"skip"}}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"debt"}},{"kind":"Argument","name":{"kind":"Name","value":"orderDirection"},"value":{"kind":"EnumValue","value":"desc"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"troveId"}},{"kind":"Field","name":{"kind":"Name","value":"borrower"}},{"kind":"Field","name":{"kind":"Name","value":"debt"}},{"kind":"Field","name":{"kind":"Name","value":"deposit"}},{"kind":"Field","name":{"kind":"Name","value":"interestRate"}}]}}]}}]} as unknown as DocumentNode<GetTrovesByCollateralQuery, GetTrovesByCollateralQueryVariables>;
 export const GetAllCollateralsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAllCollaterals"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"collaterals"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"collIndex"}}]}}]}}]} as unknown as DocumentNode<GetAllCollateralsQuery, GetAllCollateralsQueryVariables>;

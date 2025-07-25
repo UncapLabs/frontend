@@ -3,8 +3,7 @@ import { useAccount } from "@starknet-react/core";
 import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "~/lib/trpc";
 
-export function useUserTroves() {
-  const { address } = useAccount();
+export function useUserTroves(address: `0x${string}` | undefined) {
   const trpc = useTRPC();
 
   const {

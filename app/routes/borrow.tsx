@@ -162,7 +162,7 @@ function Borrow() {
     setBorrowAmount(null);
     setCollateralAmount(null);
     setInterestRate(5);
-  }, [form, reset]);
+  }, [form, reset, setBorrowAmount, setCollateralAmount, setInterestRate]);
 
   return (
     <div className="mx-auto max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">

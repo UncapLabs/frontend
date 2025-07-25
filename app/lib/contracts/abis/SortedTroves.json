@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "ISortedTrovesImpl",
-    "interface_name": "usdu::SortedTroves::ISortedTroves"
+    "interface_name": "usdu::branch::SortedTroves::ISortedTroves"
   },
   {
     "type": "struct",
@@ -34,7 +34,7 @@
   },
   {
     "type": "struct",
-    "name": "usdu::SortedTroves::Batch",
+    "name": "usdu::branch::SortedTroves::Batch",
     "members": [
       {
         "name": "head",
@@ -48,7 +48,7 @@
   },
   {
     "type": "struct",
-    "name": "usdu::SortedTroves::Node",
+    "name": "usdu::branch::SortedTroves::Node",
     "members": [
       {
         "name": "next_id",
@@ -70,7 +70,7 @@
   },
   {
     "type": "interface",
-    "name": "usdu::SortedTroves::ISortedTroves",
+    "name": "usdu::branch::SortedTroves::ISortedTroves",
     "items": [
       {
         "type": "function",
@@ -277,7 +277,7 @@
         ],
         "outputs": [
           {
-            "type": "usdu::SortedTroves::Batch"
+            "type": "usdu::branch::SortedTroves::Batch"
           }
         ],
         "state_mutability": "view"
@@ -293,7 +293,7 @@
         ],
         "outputs": [
           {
-            "type": "usdu::SortedTroves::Node"
+            "type": "usdu::branch::SortedTroves::Node"
           }
         ],
         "state_mutability": "view"
@@ -442,7 +442,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::SortedTroves::SortedTroves::TroveManagerAddressChanged",
+    "name": "usdu::branch::SortedTroves::SortedTroves::TroveManagerAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -454,7 +454,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::SortedTroves::SortedTroves::BorrowerOperationsAddressChanged",
+    "name": "usdu::branch::SortedTroves::SortedTroves::BorrowerOperationsAddressChanged",
     "kind": "struct",
     "members": [
       {
@@ -466,17 +466,17 @@
   },
   {
     "type": "event",
-    "name": "usdu::SortedTroves::SortedTroves::Event",
+    "name": "usdu::branch::SortedTroves::SortedTroves::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "TroveManagerAddressChanged",
-        "type": "usdu::SortedTroves::SortedTroves::TroveManagerAddressChanged",
+        "type": "usdu::branch::SortedTroves::SortedTroves::TroveManagerAddressChanged",
         "kind": "nested"
       },
       {
         "name": "BorrowerOperationsAddressChanged",
-        "type": "usdu::SortedTroves::SortedTroves::BorrowerOperationsAddressChanged",
+        "type": "usdu::branch::SortedTroves::SortedTroves::BorrowerOperationsAddressChanged",
         "kind": "nested"
       }
     ]
