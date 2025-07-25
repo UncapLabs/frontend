@@ -1,5 +1,5 @@
 import { Contract } from "starknet";
-import { USDU, getContractDefinitions } from "./definitions";
+import { USDU } from "./definitions";
 import { getCollateralAddresses, type CollateralType } from "./constants";
 import {
   BORROWER_OPERATIONS_ABI,

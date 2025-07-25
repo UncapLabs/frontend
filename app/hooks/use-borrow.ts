@@ -130,22 +130,32 @@ export function useBorrow({
   // Create a wrapped send function that manages state transitions
   const send = useCallback(async () => {
     try {
-      transactionState.startConfirming();
       const hash = await transaction.send();
 
       if (hash) {
         // Transaction was sent successfully, move to pending
+        // Now we update the form data since user accepted
+        transactionState.updateFormData({
+          collateralAmount,
+          borrowAmount,
+          interestRate,
+          selectedCollateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
+        });
         transactionState.setPending(hash);
-      } else {
-        // No hash returned, go back to editing
-        transactionState.startEditing();
       }
+      // If no hash returned, transaction.send already handles the error
     } catch (error) {
-      // User rejected or error occurred - go back to editing
-      transactionState.startEditing();
+      // User rejected or error occurred - just re-throw
       throw error;
     }
-  }, [transaction, transactionState]);
+  }, [
+    transaction,
+    transactionState,
+    collateralAmount,
+    borrowAmount,
+    interestRate,
+    collateralToken,
+  ]);
 
   // Check if we need to update state based on transaction status
   // This is purely derived state - no side effects
@@ -180,5 +190,7 @@ export function useBorrow({
     ...transactionState,
     send, // Override send with our wrapped version
     isReady: !!calls,
+    // Pass through isSending for UI state
+    isSending: transaction.isSending,
   };
 }

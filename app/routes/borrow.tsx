@@ -73,14 +73,6 @@ function Borrow() {
       }
 
       try {
-        // Update persisted form data before sending
-        updateFormData({
-          collateralAmount: value.collateralAmount,
-          borrowAmount: value.borrowAmount,
-          interestRate: value.interestRate,
-          selectedCollateralToken: selectedCollateralToken.symbol,
-        });
-
         await send();
       } catch (error) {
         console.error("Transaction error:", error);
@@ -91,12 +83,12 @@ function Borrow() {
   const {
     send,
     isPending,
+    isSending,
     error: transactionError,
     transactionHash,
     isReady,
     currentState,
     formData,
-    updateFormData,
     reset,
     transactionHash: persistedTransactionHash,
     error: persistedError,
@@ -249,7 +241,7 @@ function Borrow() {
             >
               <Card
                 className={`border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden ${
-                  currentState === "confirming" || isPending ? "opacity-75" : ""
+                  isSending || isPending ? "opacity-75" : ""
                 }`}
               >
                 <CardContent className="pt-6 space-y-6">
@@ -311,7 +303,7 @@ function Borrow() {
                         label="You deposit"
                         percentageButtons
                         onPercentageClick={handleCollateralPercentageClick}
-                        disabled={currentState === "confirming" || isPending}
+                        disabled={isSending || isPending}
                       />
                     )}
                   </form.Field>
@@ -381,7 +373,7 @@ function Borrow() {
                         percentageButtons
                         percentageButtonsOnHover
                         onPercentageClick={handleBorrowPercentageClick}
-                        disabled={currentState === "confirming" || isPending}
+                        disabled={isSending || isPending}
                         showBalance={false}
                       />
                     )}
@@ -391,13 +383,13 @@ function Borrow() {
                   <InterestRateSelector
                     interestRate={interestRate}
                     onInterestRateChange={(rate) => {
-                      if (currentState !== "confirming" && !isPending) {
+                      if (!isSending && !isPending) {
                         form.setFieldValue("interestRate", rate);
                         // Update URL
                         setInterestRate(rate);
                       }
                     }}
-                    disabled={currentState === "confirming" || isPending}
+                    disabled={isSending || isPending}
                   />
 
                   {/* Borrow Button */}
@@ -444,13 +436,13 @@ function Borrow() {
                               (!collateralAmount ||
                                 !borrowAmount ||
                                 borrowAmount <= 0 ||
-                                currentState === "confirming" ||
+                                isSending ||
                                 isPending ||
                                 !canSubmit)
                             }
                             className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2 px-6 rounded-xl shadow-sm hover:shadow transition-all whitespace-nowrap"
                           >
-                            {currentState === "confirming"
+                            {isSending
                               ? "Confirm in wallet..."
                               : isPending
                               ? "Transaction pending..."

@@ -5,7 +5,6 @@ import { useLocalStorage } from "usehooks-ts";
 export type TransactionStateType =
   | "idle" // Initial state, no data entered
   | "editing" // User is filling form/preparing transaction
-  | "confirming" // Wallet confirmation in progress
   | "pending" // Transaction submitted, waiting for chain confirmation
   | "success" // Transaction completed successfully
   | "error"; // Transaction failed
@@ -101,12 +100,9 @@ export function useTransactionState<TFormData extends Record<string, any>>(
   }, [setStoredState]);
 
   const startConfirming = useCallback(() => {
-    setStoredState((prev) => ({
-      ...prev,
-      state: "confirming",
-      timestamp: Date.now(),
-    }));
-  }, [setStoredState]);
+    // This method is no longer used but kept for backward compatibility
+    // The confirming state is now handled by isSending from useTransaction
+  }, []);
 
   const setPending = useCallback(
     (hash: string) => {
