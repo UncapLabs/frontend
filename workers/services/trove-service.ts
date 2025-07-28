@@ -1,4 +1,4 @@
-import { RpcProvider } from "starknet";
+import { RpcProvider, Contract, type GetTransactionReceiptResponse } from "starknet";
 import {
   TROVE_BY_ID,
   TROVES_AS_BORROWER,
@@ -19,6 +19,7 @@ import {
   getBranchId,
   getCollateralType,
   type BranchId,
+  getCollateralAddresses,
 } from "~/lib/contracts/constants";
 import {
   formatBigIntToNumber,
@@ -27,7 +28,8 @@ import {
   isPrefixedTroveId,
   parsePrefixedTroveId,
 } from "workers/services/utils";
-import { contractCall } from "~/lib/contracts/calls";
+import { contractRead } from "~/lib/contracts/calls";
+import TroveManagerEventsEmitterAbi from "~/lib/contracts/abis/TroveManagerEventsEmitter.json";
 
 const USDU_DECIMALS = 18;
 const MCR_VALUE = 1.1;
@@ -91,6 +93,8 @@ export async function getIndexedTrovesByAccount(
   graphqlClient: GraphQLClient,
   account: string
 ): Promise<IndexedTrove[]> {
+  console.log(`[getIndexedTrovesByAccount] Fetching troves for account: ${account}`);
+  
   // Execute both queries in parallel to get all troves associated with the account
   const [borrowerResult, previousOwnerResult] = await Promise.all([
     graphqlClient.request<TrovesAsBorrowerQuery>(TROVES_AS_BORROWER, {
@@ -104,13 +108,16 @@ export async function getIndexedTrovesByAccount(
     ),
   ]);
 
+  console.log(`[getIndexedTrovesByAccount] Borrower troves: ${borrowerResult.troves?.length || 0}`);
+  console.log(`[getIndexedTrovesByAccount] Previous owner troves: ${previousOwnerResult.troves?.length || 0}`);
+
   // Combine results from both queries
   const allTroves = [
     ...(borrowerResult.troves || []),
     ...(previousOwnerResult.troves || []),
   ];
 
-  return allTroves.map((trove) => ({
+  const result = allTroves.map((trove) => ({
     id: trove.id,
     // For liquidated troves, the borrower is the previousOwner (the account that was liquidated)
     borrower:
@@ -125,6 +132,10 @@ export async function getIndexedTrovesByAccount(
     mightBeLeveraged: trove.mightBeLeveraged || false,
     status: trove.status,
   }));
+  
+  console.log(`[getIndexedTrovesByAccount] Returning ${result.length} total troves`);
+  
+  return result;
 }
 
 export async function fetchPositionById(
@@ -133,10 +144,18 @@ export async function fetchPositionById(
   fullId: PrefixedTroveId | null,
   maybeIndexedTrove?: IndexedTrove
 ): Promise<Position | null> {
-  if (!isPrefixedTroveId(fullId)) return null;
+  console.log(`[fetchPositionById] Starting fetch for: ${fullId}`);
+  
+  if (!isPrefixedTroveId(fullId)) {
+    console.error(`[fetchPositionById] Invalid prefixed trove ID: ${fullId}`);
+    return null;
+  }
 
   const { branchId, troveId } = parsePrefixedTroveId(fullId);
   const troveIdBigInt = BigInt(troveId);
+  
+  console.log(`[fetchPositionById] Parsed - branchId: ${branchId}, troveId: ${troveId}`);
+  console.log(`[fetchPositionById] Indexed trove provided: ${!!maybeIndexedTrove}`);
 
   // Get the appropriate contracts based on branchId
   const collateralType = getCollateralType(Number(branchId) as BranchId);
@@ -145,70 +164,65 @@ export async function fetchPositionById(
   try {
     const bitcoinPrice = await getBitcoinprice();
 
-    // Prepare contract calls using the calls abstraction
-    const batchManagerCall =
-      contractCall.borrowerOperations.interestBatchManagerOf(
-        troveIdBigInt,
-        collateralType
-      );
-    const troveDataCall = contractCall.troveManager.getLatestTroveData(
-      troveIdBigInt,
-      collateralType
-    );
-    const troveStatusCall = contractCall.troveManager.getTroveStatus(
-      troveIdBigInt,
-      collateralType
-    );
-
     // Fetch indexed trove data and on-chain data in parallel
-    const [indexedTrove, [batchManager, latestTroveData, troveStatus]] =
-      await Promise.all([
-        maybeIndexedTrove ?? getIndexedTroveById(graphqlClient, fullId),
-        Promise.all([
-          provider.callContract(batchManagerCall),
-          provider.callContract(troveDataCall),
-          provider.callContract(troveStatusCall),
-        ]),
-      ]);
-
-    if (!indexedTrove) {
-      console.warn(`No indexed trove found for troveId: ${troveId}`);
+    console.log(`[fetchPositionById] Fetching on-chain data...`);
+    
+    let indexedTrove, batchManagerAddress, troveData, troveStatus;
+    
+    try {
+      [indexedTrove, batchManagerAddress, troveData, troveStatus] =
+        await Promise.all([
+          maybeIndexedTrove ?? getIndexedTroveById(graphqlClient, fullId).catch(err => {
+            console.warn(`[fetchPositionById] Failed to get indexed trove: ${err.message}`);
+            return null;
+          }),
+          contractRead.borrowerOperations.getInterestBatchManagerOf(
+            provider,
+            troveIdBigInt,
+            collateralType
+          ).catch(err => {
+            console.error(`[fetchPositionById] Failed to get batch manager: ${err.message}`);
+            throw err;
+          }),
+          contractRead.troveManager.getLatestTroveData(
+            provider,
+            troveIdBigInt,
+            collateralType
+          ).catch(err => {
+            console.error(`[fetchPositionById] Failed to get trove data: ${err.message}`);
+            throw err;
+          }),
+          contractRead.troveManager.getTroveStatus(
+            provider,
+            troveIdBigInt,
+            collateralType
+          ).catch(err => {
+            console.error(`[fetchPositionById] Failed to get trove status: ${err.message}`);
+            throw err;
+          }),
+        ]);
+    } catch (error) {
+      console.error(`[fetchPositionById] Failed to fetch on-chain data for ${fullId}:`, error);
       return null;
     }
 
-    // Parse the contract call responses
-    const batchManagerAddress = batchManager[0];
-
-    // Parse u256 values from the raw data
-    // Each u256 is represented as two fields (low, high)
-    // According to the ABI, LatestTroveData struct has fields in this order:
-    // 1. entire_debt (u256) - indices 0,1
-    // 2. entire_coll (u256) - indices 2,3
-    // 3. annual_interest_rate (u256) - indices 4,5
-    // 4. weighted_recorded_debt (u256) - indices 6,7
-    // 5. pending_interest (u256) - indices 8,9
-    // 6. accrued_interest (u256) - indices 10,11
-    // 7. accrued_interest_borrow_fee (u256) - indices 12,13
-    // 8. accrued_batch_management_fee (u256) - indices 14,15
-    // 9. accrued_interest_router_fee (u256) - indices 16,17
-    // 10. last_interest_rate_adj_time (u64) - index 18
-
-    const parseU256 = (low: string, high: string): bigint => {
-      return BigInt(low) + (BigInt(high) << 128n);
-    };
-
-    const troveData = {
-      entire_debt: parseU256(latestTroveData[0], latestTroveData[1]),
-      entire_coll: parseU256(latestTroveData[2], latestTroveData[3]),
-      annual_interest_rate: parseU256(latestTroveData[4], latestTroveData[5]),
-    };
+    // Log if no indexed trove found, but continue with on-chain data
+    if (!indexedTrove) {
+      console.info(`[fetchPositionById] No indexed trove found for troveId: ${troveId}, using on-chain data only`);
+    }
+    
+    console.log(`[fetchPositionById] Trove data received:`, {
+      entire_debt: troveData?.entire_debt?.toString(),
+      entire_coll: troveData?.entire_coll?.toString(),
+      annual_interest_rate: troveData?.annual_interest_rate?.toString(),
+    });
 
     if (
       !troveData ||
       typeof troveData.entire_coll === "undefined" ||
       typeof troveData.entire_debt === "undefined"
     ) {
-      console.warn(`Incomplete trove data for troveId: ${troveId}`);
+      console.error(`[fetchPositionById] Incomplete trove data for troveId: ${troveId}`, troveData);
       return null;
     }
 
@@ -248,9 +262,7 @@ export async function fetchPositionById(
       batchManagerAddress === "0x0" || BigInt(batchManagerAddress) === 0n;
 
     // Check if zombie (for status enrichment)
-    // troveStatus is returned as an array from callContract
-    const onChainStatusValue = BigInt(troveStatus[0] || 0);
-    const isZombie = onChainStatusValue === TROVE_STATUS_ZOMBIE;
+    const isZombie = troveStatus === TROVE_STATUS_ZOMBIE;
 
     return {
       id: fullId,
@@ -263,7 +275,7 @@ export async function fetchPositionById(
       liquidationPrice,
       debtLimit,
       interestRate,
-      status: isZombie ? "zombie" : (indexedTrove.status as Position["status"]),
+      status: isZombie ? "zombie" : (indexedTrove?.status as Position["status"] ?? "active"),
       batchManager: isZeroAddress ? null : batchManagerAddress,
     };
   } catch (error) {
@@ -277,20 +289,31 @@ export async function fetchLoansByAccount(
   graphqlClient: GraphQLClient,
   account: string | null | undefined
 ): Promise<Position[]> {
+  console.log(`[fetchLoansByAccount] Starting fetch for account: ${account}`);
+  
   if (!account) return [];
 
   const troves = await getIndexedTrovesByAccount(graphqlClient, account);
+  
+  console.log(`[fetchLoansByAccount] Found ${troves.length} indexed troves:`, 
+    troves.map(t => ({ id: t.id, status: t.status }))
+  );
 
   const results = await Promise.all(
     troves.map((trove) => {
       if (!isPrefixedTroveId(trove.id)) {
+        console.error(`[fetchLoansByAccount] Invalid prefixed trove ID: ${trove.id}`);
         throw new Error(`Invalid prefixed trove ID: ${trove.id}`);
       }
       return fetchPositionById(provider, graphqlClient, trove.id, trove);
     })
   );
-
-  return results.filter((result): result is Position => result !== null);
+  
+  const validResults = results.filter((result): result is Position => result !== null);
+  
+  console.log(`[fetchLoansByAccount] Returning ${validResults.length} valid positions out of ${results.length} total`);
+  
+  return validResults;
 }
 
 export async function getNextOwnerIndex(
@@ -307,4 +330,50 @@ export async function getNextOwnerIndex(
     );
 
   return Number(borrowerinfo?.nextOwnerIndexes[branchId] ?? 0);
+}
+
+/**
+ * Parse TroveOperation events from a transaction receipt to extract trove IDs
+ * @param receipt The transaction receipt
+ * @param collateralType The collateral type for the trove
+ * @returns Array of prefixed trove IDs found in the events
+ */
+export function parseTroveOperationEvents(
+  receipt: GetTransactionReceiptResponse,
+  collateralType: CollateralType
+): string[] {
+  const troveIds: string[] = [];
+  
+  try {
+    // Get the TroveManagerEventsEmitter contract address for this collateral type
+    const addresses = getCollateralAddresses(collateralType);
+    const branchId = getBranchId(collateralType);
+    
+    // Create contract instance to parse events
+    const contract = new Contract(
+      TroveManagerEventsEmitterAbi,
+      addresses.troveManagerEventsEmitter,
+      {} as any // Provider not needed for event parsing
+    );
+    
+    // Parse events from the receipt
+    const events = contract.parseEvents(receipt);
+    
+    // Look for TroveOperation events
+    for (const event of events) {
+      if (event.TroveOperation) {
+        const troveId = event.TroveOperation.trove_id;
+        if (troveId) {
+          // Convert BigInt to hex string and create prefixed ID
+          const troveIdHex = `0x${troveId.toString(16)}`;
+          const prefixedId = `${branchId}:${troveIdHex}`;
+          troveIds.push(prefixedId);
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error parsing TroveOperation events:", error);
+  }
+  
+  return [...new Set(troveIds)]; // Remove duplicates
 }

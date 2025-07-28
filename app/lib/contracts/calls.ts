@@ -1,4 +1,4 @@
-import { Contract } from "starknet";
+import { Contract, type RpcProvider } from "starknet";
 import { USDU } from "./definitions";
 import { getCollateralAddresses, type CollateralType } from "./constants";
 import {
@@ -250,6 +250,83 @@ export const contractCall = {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(TROVE_MANAGER_ABI, addresses.troveManager);
       return contract.populate("get_trove_status", [troveId]);
+    },
+  },
+};
+
+/**
+ * Contract readers that execute calls and return parsed responses
+ * These use the contract instances with provider to get properly parsed data
+ */
+export const contractRead = {
+  borrowerOperations: {
+    /**
+     * Get the batch manager of a trove with parsed response
+     */
+    getInterestBatchManagerOf: async (
+      provider: RpcProvider,
+      troveId: bigint,
+      collateralType: CollateralType
+    ): Promise<string> => {
+      const addresses = getCollateralAddresses(collateralType);
+      const contract = new Contract(
+        BORROWER_OPERATIONS_ABI,
+        addresses.borrowerOperations,
+        provider
+      );
+      const result = await contract.call("get_interest_batch_manager_of", [troveId]);
+      return result as string;
+    },
+  },
+
+  troveManager: {
+    /**
+     * Get the latest trove data with parsed response
+     */
+    getLatestTroveData: async (
+      provider: RpcProvider,
+      troveId: bigint,
+      collateralType: CollateralType
+    ) => {
+      const addresses = getCollateralAddresses(collateralType);
+      const contract = new Contract(
+        TROVE_MANAGER_ABI,
+        addresses.troveManager,
+        provider
+      );
+      const result = await contract.call("get_latest_trove_data", [troveId]) as any;
+      
+      // The contract returns a struct with all fields properly parsed by Starknet.js
+      return {
+        entire_debt: result.entire_debt,
+        entire_coll: result.entire_coll,
+        redist_usdu_debt_gain: result.redist_usdu_debt_gain,
+        redist_coll_gain: result.redist_coll_gain,
+        accrued_interest: result.accrued_interest,
+        recorded_debt: result.recorded_debt,
+        annual_interest_rate: result.annual_interest_rate,
+        weighted_recorded_debt: result.weighted_recorded_debt,
+        accrued_batch_management_fee: result.accrued_batch_management_fee,
+        last_interest_rate_adj_time: result.last_interest_rate_adj_time,
+      };
+    },
+
+    /**
+     * Get trove status with parsed response
+     */
+    getTroveStatus: async (
+      provider: RpcProvider,
+      troveId: bigint,
+      collateralType: CollateralType
+    ): Promise<bigint> => {
+      const addresses = getCollateralAddresses(collateralType);
+      const contract = new Contract(
+        TROVE_MANAGER_ABI,
+        addresses.troveManager,
+        provider
+      );
+      const result = await contract.call("get_trove_status", [troveId]);
+      return result as bigint;
     },
   },
 };

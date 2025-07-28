@@ -44,7 +44,7 @@ function MyTroves() {
   };
 
   const truncateTroveId = (fullId: string) => {
-    const id = fullId.split(':')[1] || fullId;
+    const id = fullId.split(":")[1] || fullId;
     if (id.length > 10) {
       return `${id.slice(0, 6)}...${id.slice(-4)}`;
     }
@@ -118,7 +118,9 @@ function MyTroves() {
             >
               <CardHeader className="pb-4">
                 <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg">Trove #{truncateTroveId(trove.id)}</CardTitle>
+                  <CardTitle className="text-lg">
+                    Trove #{truncateTroveId(trove.id)}
+                  </CardTitle>
                   <Badge
                     variant="secondary"
                     className={getHealthBadgeColor(trove.healthFactor)}

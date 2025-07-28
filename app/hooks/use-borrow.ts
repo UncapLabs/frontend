@@ -14,6 +14,8 @@ import {
   type CollateralType,
 } from "~/lib/contracts/constants";
 import type { Token } from "~/components/token-input";
+import { useQueryClient } from "@tanstack/react-query";
+import { useTRPC } from "~/lib/trpc";
 
 // Borrow form data structure
 export interface BorrowFormData {
@@ -32,6 +34,7 @@ interface UseBorrowParams {
   borrowAmount?: number;
   interestRate: number;
   collateralToken?: TokenWithCollateralType;
+  onSuccess?: () => void;
 }
 
 export function useBorrow({
@@ -39,8 +42,11 @@ export function useBorrow({
   borrowAmount,
   interestRate,
   collateralToken,
+  onSuccess,
 }: UseBorrowParams) {
   const { address } = useAccount();
+  const queryClient = useQueryClient();
+  const trpc = useTRPC();
 
   // Determine collateral type from token
   const collateralType: CollateralType =
@@ -166,12 +172,50 @@ export function useBorrow({
     // Check active transaction first
     if (transaction.isSuccess) {
       transactionState.setSuccess();
+
+      // Just invalidate to trigger polling when transaction is successful
+      if (
+        address &&
+        transactionState.formData.collateralAmount &&
+        transactionState.formData.borrowAmount &&
+        collateralToken
+      ) {
+        queryClient.invalidateQueries({
+          queryKey: trpc.positionsRouter.getUserOnChainPositions.queryKey({
+            userAddress: address,
+          }),
+        });
+      }
+
+      // Call custom onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
     } else if (transaction.isError && transaction.error) {
       transactionState.setError(transaction.error);
     }
     // Check persisted transaction (after page refresh)
     else if (persistedTxReceipt.data) {
       transactionState.setSuccess();
+
+      // Just invalidate to trigger polling when transaction is confirmed after refresh
+      if (
+        address &&
+        transactionState.formData.collateralAmount &&
+        transactionState.formData.borrowAmount &&
+        collateralToken
+      ) {
+        queryClient.invalidateQueries({
+          queryKey: trpc.positionsRouter.getUserOnChainPositions.queryKey({
+            userAddress: address,
+          }),
+        });
+      }
+
+      // Call custom onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
     } else if (persistedTxReceipt.isError && persistedTxReceipt.error) {
       // Check if this is just an RPC issue (transaction not found)
       const errorMessage = persistedTxReceipt.error.message || "";
