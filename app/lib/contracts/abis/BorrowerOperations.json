@@ -517,7 +517,7 @@
             "type": "core::starknet::contract_address::ContractAddress"
           }
         ],
-        "state_mutability": "external"
+        "state_mutability": "view"
       },
       {
         "type": "function",
@@ -533,7 +533,7 @@
             "type": "usdu::branch::BorrowerOperations::BorrowerOperations::InterestIndividualDelegate"
           }
         ],
-        "state_mutability": "external"
+        "state_mutability": "view"
       },
       {
         "type": "function",

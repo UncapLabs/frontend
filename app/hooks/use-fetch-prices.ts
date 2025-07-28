@@ -3,7 +3,8 @@ import { useTRPC } from "~/lib/trpc";
 
 export function useFetchPrices(collateralAmount: number | undefined) {
   const trpc = useTRPC();
-  const shouldFetchPrices = collateralAmount !== undefined && collateralAmount > 0;
+  const shouldFetchPrices =
+    collateralAmount !== undefined && collateralAmount > 0;
 
   const bitcoinQuery = useQuery({
     ...trpc.priceRouter.getBitcoinPrice.queryOptions(),

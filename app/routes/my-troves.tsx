@@ -4,8 +4,8 @@ import { Separator } from "~/components/ui/separator";
 import { useNavigate } from "react-router";
 import { useAccount } from "@starknet-react/core";
 import { useUserTroves } from "~/hooks/use-user-troves";
+import { useBitcoinPrice } from "~/hooks/use-bitcoin-price";
 import { NumericFormat } from "react-number-format";
-import { Badge } from "~/components/ui/badge";
 import {
   ArrowRight,
   Plus,
@@ -19,6 +19,7 @@ function MyTroves() {
   const navigate = useNavigate();
   const { address } = useAccount();
   const { troves, isLoading, hasActiveTroves } = useUserTroves(address);
+  const { price: bitcoinPrice } = useBitcoinPrice();
 
   const handleCreateNew = () => {
     navigate("/");
@@ -27,20 +28,6 @@ function MyTroves() {
   const handleAdjustTrove = (troveId: string, collateralAsset: string) => {
     const collateralType = collateralAsset === "GBTC" ? "GBTC" : "UBTC";
     navigate(`/borrow/${troveId}?type=${collateralType}`);
-  };
-
-  const getHealthBadgeColor = (healthFactor: number) => {
-    if (healthFactor >= 2) return "bg-green-100 text-green-800";
-    if (healthFactor >= 1.5) return "bg-yellow-100 text-yellow-800";
-    if (healthFactor >= 1.2) return "bg-orange-100 text-orange-800";
-    return "bg-red-100 text-red-800";
-  };
-
-  const getHealthText = (healthFactor: number) => {
-    if (healthFactor >= 2) return "Healthy";
-    if (healthFactor >= 1.5) return "Moderate";
-    if (healthFactor >= 1.2) return "At Risk";
-    return "Critical";
   };
 
   const truncateTroveId = (fullId: string) => {
@@ -117,17 +104,9 @@ function MyTroves() {
               onClick={() => handleAdjustTrove(trove.id, trove.collateralAsset)}
             >
               <CardHeader className="pb-4">
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg">
-                    Trove #{truncateTroveId(trove.id)}
-                  </CardTitle>
-                  <Badge
-                    variant="secondary"
-                    className={getHealthBadgeColor(trove.healthFactor)}
-                  >
-                    {getHealthText(trove.healthFactor)}
-                  </Badge>
-                </div>
+                <CardTitle className="text-lg">
+                  Trove #{truncateTroveId(trove.id)}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Collateral */}
@@ -147,14 +126,20 @@ function MyTroves() {
                     {trove.collateralAsset}
                   </div>
                   <div className="text-sm text-slate-600">
-                    $
-                    <NumericFormat
-                      displayType="text"
-                      value={trove.collateralValue}
-                      thousandSeparator=","
-                      decimalScale={2}
-                      fixedDecimalScale
-                    />
+                    {bitcoinPrice ? (
+                      <>
+                        $
+                        <NumericFormat
+                          displayType="text"
+                          value={trove.collateralAmount * (bitcoinPrice || 0)}
+                          thousandSeparator=","
+                          decimalScale={2}
+                          fixedDecimalScale
+                        />
+                      </>
+                    ) : (
+                      "Loading..."
+                    )}
                   </div>
                 </div>
 

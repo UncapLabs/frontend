@@ -9,7 +9,7 @@ import {
 type PrefixedTroveId = string;
 type BranchId = string; // "0" for UBTC, "1" for GBTC
 
-export const getBitcoinprice = async () => {
+export const getBitcoinprice = async (retries = 3) => {
   const myProvider = new RpcProvider({
     nodeUrl: process.env.NODE_URL,
   });
@@ -22,9 +22,9 @@ export const getBitcoinprice = async () => {
     myProvider
   );
 
-  const price = await PriceFeedContract.fetch_price();
+  const result = await PriceFeedContract.fetch_price();
 
-  return price;
+  return result;
 };
 
 // Helper functions for prefixed trove IDs

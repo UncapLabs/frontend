@@ -1,75 +1,38 @@
 import { useQuery } from "@tanstack/react-query";
-import { useContract } from "@starknet-react/core";
-import {
-  getCollateralAddresses,
-  UBTC_TOKEN,
-  GBTC_TOKEN,
-  type CollateralType,
-  USDU_DECIMALS,
-} from "~/lib/contracts/constants";
-import { TROVE_MANAGER_ABI } from "~/lib/contracts";
+import { useTRPC } from "~/lib/trpc";
 
-interface TroveData {
-  collateral: number;
-  debt: number;
-  annualInterestRate: bigint;
-  troveId: bigint;
-  lastInterestRateAdjTime: bigint;
-}
-
-interface UseTroveDataOptions {
-  collateralType?: CollateralType;
-}
-
-export function useTroveData(troveId?: string, options: UseTroveDataOptions = {}) {
-  const { collateralType = "UBTC" } = options;
-  const addresses = getCollateralAddresses(collateralType);
-  const collateralToken = collateralType === "UBTC" ? UBTC_TOKEN : GBTC_TOKEN;
-  
-  const { contract: troveManagerContract } = useContract({
-    abi: TROVE_MANAGER_ABI,
-    address: addresses.troveManager,
-  });
+export function useTroveData(troveId?: string) {
+  const trpc = useTRPC();
 
   const {
-    data: troveData,
+    data: positionData,
     isLoading,
     error,
     refetch,
-  } = useQuery({
-    queryKey: ["troveData", troveId, collateralType, addresses.troveManager],
-    queryFn: async () => {
-      if (!troveManagerContract || !troveId) return null;
+  } = useQuery(
+    trpc.positionsRouter.getPositionById.queryOptions(
+      {
+        troveId: troveId || "",
+      },
+      { enabled: !!troveId }
+    )
+  );
 
-      try {
-        const troveIdBigInt = BigInt(troveId);
-        const latestData = await troveManagerContract.get_latest_trove_data(
-          troveIdBigInt
-        );
+  // Extract the position from the response
+  const position = positionData?.position || null;
 
-        if (!latestData || typeof latestData.entire_coll === "undefined") {
-          return null;
-        }
-
-        return {
-          collateral:
-            Number(latestData.entire_coll) / Math.pow(10, collateralToken.decimals),
-          debt: Number(latestData.entire_debt) / Math.pow(10, USDU_DECIMALS),
-          annualInterestRate: latestData.annual_interest_rate as bigint,
-          troveId: troveIdBigInt,
-          lastInterestRateAdjTime: latestData.last_interest_rate_adj_time as bigint,
-        } as TroveData;
-      } catch (e) {
-        console.error("Error fetching trove data:", e);
-        return null;
-      }
-    },
-    enabled: !!troveManagerContract && !!troveId,
-    refetchInterval: 30000,
-  });
+  // Transform position data to match the previous interface if needed
+  const troveData = position ? {
+    collateral: position.collateralAmount,
+    debt: position.borrowedAmount,
+    annualInterestRate: BigInt(Math.floor(position.interestRate * 1e16)), // Convert back to the expected format
+    troveId: BigInt(troveId?.split(':')[1] || '0'), // Extract hex part after colon
+    lastInterestRateAdjTime: BigInt(0), // This field is not available in Position
+  } : null;
 
   return {
     troveData,
+    position, // Also return the full position data
     isLoading,
     error,
     refetch,

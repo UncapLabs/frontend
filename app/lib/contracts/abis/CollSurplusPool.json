@@ -71,7 +71,7 @@
             "type": "core::starknet::contract_address::ContractAddress"
           }
         ],
-        "state_mutability": "external"
+        "state_mutability": "view"
       },
       {
         "type": "function",
@@ -82,7 +82,7 @@
             "type": "core::integer::u256"
           }
         ],
-        "state_mutability": "external"
+        "state_mutability": "view"
       },
       {
         "type": "function",
@@ -93,7 +93,7 @@
             "type": "core::starknet::contract_address::ContractAddress"
           }
         ],
-        "state_mutability": "external"
+        "state_mutability": "view"
       },
       {
         "type": "function",
@@ -104,7 +104,7 @@
             "type": "core::starknet::contract_address::ContractAddress"
           }
         ],
-        "state_mutability": "external"
+        "state_mutability": "view"
       },
       {
         "type": "function",
@@ -120,7 +120,7 @@
             "type": "core::integer::u256"
           }
         ],
-        "state_mutability": "external"
+        "state_mutability": "view"
       }
     ]
   },

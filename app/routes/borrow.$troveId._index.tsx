@@ -14,7 +14,6 @@ import {
   type CollateralType,
 } from "~/lib/contracts/constants";
 import { useQueryState } from "nuqs";
-import type { CollateralType } from "~/lib/contracts/constants";
 
 const ACTION_CARDS = [
   {
@@ -50,12 +49,10 @@ function TroveOverviewIndex() {
   });
 
   // Fetch existing trove data
-  const { troveData, isLoading: isTroveLoading } = useTroveData(troveId, {
-    collateralType: troveCollateralType as CollateralType,
-  });
+  const { troveData, position, isLoading: isTroveLoading } = useTroveData(troveId);
 
-  // Get the collateral token based on collateral type
-  const selectedCollateralToken = troveCollateralType === "GBTC" ? GBTC_TOKEN : UBTC_TOKEN;
+  // Get the collateral token based on position data or URL param
+  const selectedCollateralToken = position?.collateralAsset === "GBTC" ? GBTC_TOKEN : UBTC_TOKEN;
 
   // Conditional price fetching
   const { bitcoin, usdu } = useFetchPrices(troveData?.collateral);
@@ -185,11 +182,7 @@ function TroveOverviewIndex() {
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-slate-600">LTV</p>
-                  <p className={`text-lg font-medium ${
-                    ltvValue > 80 ? "text-red-600" : 
-                    ltvValue > 60 ? "text-yellow-600" : 
-                    "text-green-600"
-                  }`}>
+                  <p className="text-lg font-medium">
                     {ltvValue.toFixed(1)}%
                   </p>
                 </div>
@@ -226,8 +219,16 @@ function TroveOverviewIndex() {
                 >
                   <CardContent className="flex items-center justify-between p-6">
                     <div className="flex items-center gap-4">
-                      <div className={`p-3 rounded-lg bg-${action.color}-50`}>
-                        <Icon className={`h-6 w-6 text-${action.color}-600`} />
+                      <div className={`p-3 rounded-lg ${
+                        action.color === 'blue' ? 'bg-blue-50' :
+                        action.color === 'green' ? 'bg-green-50' :
+                        'bg-red-50'
+                      }`}>
+                        <Icon className={`h-6 w-6 ${
+                          action.color === 'blue' ? 'text-blue-600' :
+                          action.color === 'green' ? 'text-green-600' :
+                          'text-red-600'
+                        }`} />
                       </div>
                       <div>
                         <h3 className="font-semibold text-lg">{action.title}</h3>
@@ -254,32 +255,40 @@ function TroveOverviewIndex() {
         <div className="md:col-span-1">
           <Card className="border border-slate-200 shadow-sm sticky top-8">
             <CardHeader>
-              <CardTitle>Position Health</CardTitle>
+              <CardTitle>Position Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Health Indicator */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-slate-600">Health Status</span>
-                  <span className={`text-sm font-medium ${
-                    ltvValue > 80 ? "text-red-600" : 
-                    ltvValue > 60 ? "text-yellow-600" : 
-                    "text-green-600"
-                  }`}>
-                    {ltvValue > 80 ? "At Risk" : 
-                     ltvValue > 60 ? "Monitor" : 
-                     "Healthy"}
-                  </span>
+              {/* Key Metrics */}
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs text-slate-600 mb-1">Total Value</p>
+                  <p className="text-lg font-semibold">
+                    {bitcoin?.price && (
+                      <NumericFormat
+                        displayType="text"
+                        value={troveData.collateral * bitcoin.price}
+                        prefix="$"
+                        thousandSeparator=","
+                        decimalScale={2}
+                        fixedDecimalScale
+                      />
+                    )}
+                  </p>
                 </div>
-                <div className="w-full bg-slate-200 rounded-full h-2">
-                  <div
-                    className={`h-2 rounded-full transition-all ${
-                      ltvValue > 80 ? "bg-red-500" : 
-                      ltvValue > 60 ? "bg-yellow-500" : 
-                      "bg-green-500"
-                    }`}
-                    style={{ width: `${Math.min(ltvValue, 100)}%` }}
-                  />
+                <div>
+                  <p className="text-xs text-slate-600 mb-1">Net Value</p>
+                  <p className="text-lg font-semibold">
+                    {bitcoin?.price && usdu?.price && (
+                      <NumericFormat
+                        displayType="text"
+                        value={(troveData.collateral * bitcoin.price) - (troveData.debt * usdu.price)}
+                        prefix="$"
+                        thousandSeparator=","
+                        decimalScale={2}
+                        fixedDecimalScale
+                      />
+                    )}
+                  </p>
                 </div>
               </div>
 
@@ -311,18 +320,6 @@ function TroveOverviewIndex() {
                     Change Rate
                   </Button>
                 </div>
-              </div>
-
-              <Separator className="bg-slate-100" />
-
-              {/* Risk Info */}
-              <div className="space-y-2 text-sm">
-                <h4 className="font-medium text-slate-700">Risk Management</h4>
-                <ul className="space-y-1 text-slate-600">
-                  <li>• Keep LTV below 80%</li>
-                  <li>• Monitor liquidation price</li>
-                  <li>• Higher rates = lower redemption risk</li>
-                </ul>
               </div>
             </CardContent>
           </Card>

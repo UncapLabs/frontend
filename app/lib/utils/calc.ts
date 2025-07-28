@@ -18,21 +18,24 @@ export function computeDebtLimit(
 }
 
 /**
- * Computes the liquidation price based on the collateral amount, the debt and the usdu price
+ * Computes the liquidation price based on the collateral amount and the debt
  * @param collateralAmount - The amount of collateral in BTC
- * @param debt - The amount of debt in usdu
- * @param usduPrice - The price of usdu in USD
- * @returns The liquidation price in USD
+ * @param debt - The amount of debt in USDU
+ * @param usduPrice - The price of USDU in USD (typically 1.0)
+ * @returns The liquidation price of BTC in USD
  */
 export function computeLiquidationPrice(
   collateralAmount: number,
   debt: number,
-  usduPrice: number
+  usduPrice: number = 1.0
 ) {
-  const collateralValue = collateralAmount * usduPrice;
+  if (collateralAmount === 0) return 0;
+  
+  // Liquidation occurs when: collateral_value = debt * MINIMUM_COLLATERAL_RATIO
+  // So: collateral_amount * btc_price = debt * MINIMUM_COLLATERAL_RATIO
+  // Therefore: btc_price = (debt * MINIMUM_COLLATERAL_RATIO) / collateral_amount
   const debtValue = debt * usduPrice;
-
-  return (debtValue * MINIMUM_COLLATERAL_RATIO) / collateralValue;
+  return (debtValue * MINIMUM_COLLATERAL_RATIO) / collateralAmount;
 }
 
 /**
