@@ -1,6 +1,7 @@
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
+import { Alert, AlertDescription } from "~/components/ui/alert";
 import { useNavigate } from "react-router";
 import { useAccount } from "@starknet-react/core";
 import { useUserTroves } from "~/hooks/use-user-troves";
@@ -13,12 +14,23 @@ import {
   TrendingDown,
   DollarSign,
   Percent,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 
 function MyTroves() {
   const navigate = useNavigate();
   const { address } = useAccount();
-  const { troves, isLoading, hasActiveTroves } = useUserTroves(address);
+  const { 
+    troves, 
+    isLoading, 
+    hasActiveTroves, 
+    partialDataAvailable, 
+    failedTroves,
+    refetch,
+    error,
+    isRefetching
+  } = useUserTroves(address);
   const { price: bitcoinPrice } = useBitcoinPrice();
 
   const handleCreateNew = () => {
@@ -57,7 +69,15 @@ function MyTroves() {
   return (
     <div className="mx-auto max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
       <div className="flex justify-between items-baseline">
-        <h1 className="text-3xl font-bold mb-2 text-slate-800">My Troves</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl font-bold mb-2 text-slate-800">My Troves</h1>
+          {isRefetching && (
+            <div className="flex items-center text-sm text-slate-500">
+              <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+              Refreshing...
+            </div>
+          )}
+        </div>
         <Button
           onClick={handleCreateNew}
           className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
@@ -68,11 +88,83 @@ function MyTroves() {
       </div>
       <Separator className="mb-8 bg-slate-200" />
 
+      {/* Error Alert for partial data */}
+      {partialDataAvailable && (
+        <Alert className="mb-6 border-orange-200 bg-orange-50">
+          <AlertCircle className="h-4 w-4 text-orange-600" />
+          <AlertDescription className="text-orange-800">
+            <div className="flex items-center justify-between">
+              <div>
+                <strong>Some troves couldn't be loaded</strong>
+                <p className="text-sm mt-1">
+                  {failedTroves.length} trove{failedTroves.length > 1 ? 's' : ''} failed to load due to network issues. 
+                  The data shown below may be incomplete.
+                </p>
+              </div>
+              <Button
+                onClick={() => refetch()}
+                variant="outline"
+                size="sm"
+                className="ml-4"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Retry
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Complete failure error */}
+      {error && !hasActiveTroves && !isLoading && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <strong>Failed to load troves</strong>
+                <p className="text-sm mt-1">
+                  Unable to fetch your trove data. Please try again.
+                </p>
+              </div>
+              <Button
+                onClick={() => refetch()}
+                variant="outline"
+                size="sm"
+                className="ml-4"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Retry
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <p className="text-slate-600">Loading your troves...</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Loading skeletons */}
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="border border-slate-200">
+              <CardHeader className="pb-4">
+                <div className="h-6 w-32 bg-slate-200 rounded animate-pulse" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="h-4 w-20 bg-slate-200 rounded animate-pulse" />
+                  <div className="h-6 w-40 bg-slate-200 rounded animate-pulse" />
+                  <div className="h-4 w-24 bg-slate-200 rounded animate-pulse" />
+                </div>
+                <div className="space-y-2">
+                  <div className="h-4 w-16 bg-slate-200 rounded animate-pulse" />
+                  <div className="h-6 w-36 bg-slate-200 rounded animate-pulse" />
+                </div>
+                <div className="h-10 w-full bg-slate-200 rounded animate-pulse" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
-      ) : !hasActiveTroves ? (
+      ) : !hasActiveTroves && !error ? (
         <Card className="border border-slate-200">
           <CardContent className="flex flex-col items-center justify-center py-16">
             <div className="rounded-full bg-slate-100 p-4 mb-4">

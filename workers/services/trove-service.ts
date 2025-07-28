@@ -1,6 +1,4 @@
-import {
-  RpcProvider,
-} from "starknet";
+import { RpcProvider } from "starknet";
 import {
   TROVE_BY_ID,
   TROVES_AS_BORROWER,
@@ -29,6 +27,7 @@ import {
   parsePrefixedTroveId,
 } from "workers/services/utils";
 import { contractRead } from "~/lib/contracts/calls";
+import { DEFAULT_RETRY_OPTIONS, retryWithBackoff } from "./retry";
 
 const USDU_DECIMALS = 18;
 const MCR_VALUE = 1.1;
@@ -224,7 +223,7 @@ export async function fetchPositionById(
         `[fetchPositionById] Failed to fetch on-chain data for ${fullId}:`,
         error
       );
-      return null;
+      throw error; // Re-throw to allow retries
     }
 
     // Log if no indexed trove found, but continue with on-chain data
@@ -309,43 +308,100 @@ export async function fetchPositionById(
   }
 }
 
+interface PositionWithError {
+  position: Position | null;
+  error?: {
+    troveId: string;
+    message: string;
+    code?: string;
+  };
+}
+
 export async function fetchLoansByAccount(
   provider: RpcProvider,
   graphqlClient: GraphQLClient,
   account: string | null | undefined
-): Promise<Position[]> {
-  console.log(`[fetchLoansByAccount] Starting fetch for account: ${account}`);
+): Promise<{ positions: Position[]; errors: PositionWithError["error"][] }> {
+  console.log(
+    `[fetchLoansByAccountEnhanced] Starting fetch for account: ${account}`
+  );
 
-  if (!account) return [];
+  if (!account) return { positions: [], errors: [] };
 
   const troves = await getIndexedTrovesByAccount(graphqlClient, account);
 
   console.log(
-    `[fetchLoansByAccount] Found ${troves.length} indexed troves:`,
+    `[fetchLoansByAccountEnhanced] Found ${troves.length} indexed troves:`,
     troves.map((t) => ({ id: t.id, status: t.status }))
   );
 
-  const results = await Promise.all(
-    troves.map((trove) => {
+  // Process troves with individual error handling
+  const results = await Promise.allSettled(
+    troves.map(async (trove) => {
       if (!isPrefixedTroveId(trove.id)) {
         console.error(
-          `[fetchLoansByAccount] Invalid prefixed trove ID: ${trove.id}`
+          `[fetchLoansByAccountEnhanced] Invalid prefixed trove ID: ${trove.id}`
         );
-        throw new Error(`Invalid prefixed trove ID: ${trove.id}`);
+        return {
+          position: null,
+          error: {
+            troveId: trove.id,
+            message: `Invalid prefixed trove ID: ${trove.id}`,
+            code: "INVALID_TROVE_ID",
+          },
+        } as PositionWithError;
       }
-      return fetchPositionById(provider, graphqlClient, trove.id, trove);
+
+      // Retry individual trove fetches
+      const position = await retryWithBackoff(
+        () => fetchPositionById(provider, graphqlClient, trove.id, trove),
+        {
+          ...DEFAULT_RETRY_OPTIONS,
+          maxRetries: 2, // Less aggressive for individual troves
+        },
+        `Trove ${trove.id}`
+      );
+
+      if (!position) {
+        return {
+          position: null,
+          error: {
+            troveId: trove.id,
+            message: `Failed to fetch position after retries`,
+            code: "FETCH_FAILED",
+          },
+        } as PositionWithError;
+      }
+
+      return { position } as PositionWithError;
     })
   );
 
-  const validResults = results.filter(
-    (result): result is Position => result !== null
-  );
+  const positions: Position[] = [];
+  const errors: PositionWithError["error"][] = [];
+
+  results.forEach((result) => {
+    if (result.status === "fulfilled") {
+      if (result.value.position) {
+        positions.push(result.value.position);
+      } else if (result.value.error) {
+        errors.push(result.value.error);
+      }
+    } else {
+      // Handle promise rejection
+      errors.push({
+        troveId: "unknown",
+        message: result.reason?.message || "Unknown error",
+        code: "PROMISE_REJECTED",
+      });
+    }
+  });
 
   console.log(
-    `[fetchLoansByAccount] Returning ${validResults.length} valid positions out of ${results.length} total`
+    `[fetchLoansByAccountEnhanced] Returning ${positions.length} valid positions, ${errors.length} errors`
   );
 
-  return validResults;
+  return { positions, errors };
 }
 
 export async function getNextOwnerIndex(

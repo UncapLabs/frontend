@@ -3,10 +3,10 @@ import { publicProcedure, router } from "../trpc";
 import { RpcProvider } from "starknet";
 import { createGraphQLClient } from "~/lib/graphql/client";
 import {
-  fetchLoansByAccount,
   fetchPositionById,
   getNextOwnerIndex,
 } from "../services/trove-service";
+import { fetchLoansByAccount } from "../services/trove-service";
 
 export const positionsRouter = router({
   getUserOnChainPositions: publicProcedure
@@ -32,13 +32,21 @@ export const positionsRouter = router({
           process.env.GRAPHQL_ENDPOINT || "http://localhost:3000/graphql";
         const graphqlClient = createGraphQLClient(graphqlEndpoint);
 
-        const positions = await fetchLoansByAccount(
+        const { positions, errors } = await fetchLoansByAccount(
           provider,
           graphqlClient,
           userAddress
         );
 
-        return { positions };
+        // Log any errors but still return valid positions
+        if (errors.length > 0) {
+          console.warn(
+            `[getUserOnChainPositions] Encountered ${errors.length} errors:`,
+            errors
+          );
+        }
+
+        return { positions, errors };
       } catch (error) {
         console.error("Error fetching user positions:", error);
         throw new Error("Failed to fetch on-chain positions");
