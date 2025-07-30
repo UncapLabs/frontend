@@ -37,6 +37,23 @@ export function useTransaction(
   } = useTransactionReceipt({
     hash: data?.transaction_hash,
     watch: true,
+    retry: (failureCount, error) => {
+      // Check if it's a "transaction not found" error
+      const errorMessage = error?.message || "";
+      const isTransactionNotFound =
+        errorMessage.includes("Transaction hash not found") ||
+        errorMessage.includes("starknet_getTransactionReceipt");
+
+      // Retry up to 10 times for "not found" errors
+      if (isTransactionNotFound && failureCount < 10) {
+        return true;
+      }
+      
+      // For other errors, use default retry logic (3 times)
+      return failureCount < 3;
+    },
+    // Exponential backoff: 1s, 2s, 4s, 8s, 16s, 32s...
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   // Derive transaction state
