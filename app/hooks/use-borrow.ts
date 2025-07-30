@@ -16,6 +16,7 @@ import {
 import type { Token } from "~/components/token-input";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "~/lib/trpc";
+import { useTransactionHistory, createTransactionDetails } from "./use-transaction-history";
 
 // Borrow form data structure
 export interface BorrowFormData {
@@ -47,6 +48,7 @@ export function useBorrow({
   const { address } = useAccount();
   const queryClient = useQueryClient();
   const trpc = useTRPC();
+  const { addTransaction, updateTransaction } = useTransactionHistory();
 
   // Determine collateral type from token
   const collateralType: CollateralType =
@@ -168,6 +170,19 @@ export function useBorrow({
           selectedCollateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
         });
         transactionState.setPending(hash);
+        
+        // Add to transaction history
+        addTransaction({
+          hash,
+          type: "borrow",
+          status: "pending",
+          details: createTransactionDetails("borrow", {
+            collateralAmount,
+            borrowAmount,
+            interestRate,
+            collateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
+          }),
+        });
       }
       // If no hash returned, transaction.send already handles the error
     } catch (error) {
@@ -181,6 +196,7 @@ export function useBorrow({
     borrowAmount,
     interestRate,
     collateralToken,
+    addTransaction,
   ]);
 
   // Check if we need to update state based on transaction status
@@ -189,6 +205,11 @@ export function useBorrow({
     // Check active transaction first
     if (transaction.isSuccess) {
       transactionState.setSuccess();
+      
+      // Update transaction in history to success
+      if (transaction.transactionHash) {
+        updateTransaction(transaction.transactionHash, { status: "success" });
+      }
 
       // Just invalidate to trigger polling when transaction is successful
       if (
@@ -210,10 +231,23 @@ export function useBorrow({
       }
     } else if (transaction.isError && transaction.error) {
       transactionState.setError(transaction.error);
+      
+      // Update transaction in history to error
+      if (transaction.transactionHash) {
+        updateTransaction(transaction.transactionHash, { 
+          status: "error", 
+          error: transaction.error.message 
+        });
+      }
     }
     // Check persisted transaction (after page refresh)
     else if (persistedTxReceipt.data) {
       transactionState.setSuccess();
+      
+      // Update transaction in history to success
+      if (transactionState.transactionHash) {
+        updateTransaction(transactionState.transactionHash, { status: "success" });
+      }
 
       // Just invalidate to trigger polling when transaction is confirmed after refresh
       if (
@@ -244,6 +278,14 @@ export function useBorrow({
       // This prevents RPC sync issues from being treated as transaction failures
       if (!isTransactionNotFound) {
         transactionState.setError(persistedTxReceipt.error);
+        
+        // Update transaction in history to error
+        if (transactionState.transactionHash) {
+          updateTransaction(transactionState.transactionHash, { 
+            status: "error", 
+            error: persistedTxReceipt.error.message 
+          });
+        }
       }
       // If transaction not found, stay in pending - it might still be processing
     }

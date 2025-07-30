@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Link, useLocation } from "react-router";
 import { GetTestBtc } from "./get-test-btc";
+import { TransactionHistoryButton } from "./transaction-history-button";
 
 function Logo() {
   return (
@@ -151,8 +152,10 @@ function Header() {
             ))}
           </nav>
 
-          {/* Right side: Wallet Connector */}
+          {/* Right side: History, Test BTC, and Wallet Connector */}
           <div className="flex items-center justify-end">
+            <TransactionHistoryButton />
+            <Separator orientation="vertical" className="h-8 mx-1" />
             <GetTestBtc />
             <Separator orientation="vertical" className="h-8 mx-1" />
             <WalletConnector />
