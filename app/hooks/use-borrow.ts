@@ -183,18 +183,20 @@ export function useBorrow({
     if (transaction.isSuccess) {
       transactionState.setSuccess();
 
-      // Just invalidate to trigger polling when transaction is successful
+      // Delay invalidation to give indexer time to process the transaction
       if (
         address &&
         transactionState.formData.collateralAmount &&
         transactionState.formData.borrowAmount &&
         collateralToken
       ) {
-        queryClient.invalidateQueries({
-          queryKey: trpc.positionsRouter.getUserOnChainPositions.queryKey({
-            userAddress: address,
-          }),
-        });
+        setTimeout(() => {
+          queryClient.invalidateQueries({
+            queryKey: trpc.positionsRouter.getUserOnChainPositions.queryKey({
+              userAddress: address,
+            }),
+          });
+        }, 6000);
       }
 
       // Call custom onSuccess callback if provided
