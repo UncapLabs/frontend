@@ -3,10 +3,7 @@ import { useAccount } from "@starknet-react/core";
 import { contractCall } from "~/lib/contracts/calls";
 import { useNextOwnerIndex } from "./use-next-owner-index";
 import { useTransaction } from "./use-transaction";
-import {
-  useTransactionState,
-  TRANSACTION_STORAGE_KEYS,
-} from "./use-transaction-state";
+import { useTransactionState } from "./use-transaction-state";
 import {
   getCollateralAddresses,
   UBTC_TOKEN,
@@ -64,7 +61,6 @@ export function useBorrow({
 
   // Transaction state management
   const transactionState = useTransactionState<BorrowFormData>({
-    storageKey: TRANSACTION_STORAGE_KEYS.borrow,
     initialFormData: {
       collateralAmount: undefined,
       borrowAmount: undefined,
@@ -143,7 +139,7 @@ export function useBorrow({
           selectedCollateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
         });
         transactionState.setPending(hash);
-        
+
         // Add to transaction store
         if (address) {
           transactionStore.addTransaction(address, {

@@ -10,8 +10,6 @@ export type TransactionStateType =
 
 // Configuration for the hook
 export interface TransactionConfig<TFormData> {
-  storageKey: string; // Kept for backward compatibility but not used
-  staleTimeout?: number; // Not used anymore
   initialFormData: TFormData;
 }
 
@@ -38,7 +36,6 @@ export function useTransactionState<TFormData extends Record<string, any>>(
 ): UseTransactionStateReturn<TFormData> {
   const { initialFormData } = config;
 
-  // Use regular React state instead of localStorage
   const [state, setState] = useState<TransactionStateType>("idle");
   const [formData, setFormData] = useState<TFormData>(initialFormData);
   const [transactionHash, setTransactionHash] = useState<string | undefined>();
@@ -99,13 +96,3 @@ export function useTransactionState<TFormData extends Record<string, any>>(
     updateFormData,
   };
 }
-
-// Storage keys for different transaction types
-export const TRANSACTION_STORAGE_KEYS = {
-  borrow: "tx_borrow",
-  claimRewards: "tx_claim_rewards",
-  modifyTrove: "tx_modify_trove",
-  repay: "tx_repay",
-  addCollateral: "tx_add_collateral",
-  withdrawCollateral: "tx_withdraw_collateral",
-} as const;
