@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from "react";
-import { useAccount, useTransactionReceipt } from "@starknet-react/core";
+import { useAccount } from "@starknet-react/core";
 import { contractCall } from "~/lib/contracts/calls";
 import { useNextOwnerIndex } from "./use-next-owner-index";
 import { useTransaction } from "./use-transaction";
@@ -16,7 +16,8 @@ import {
 import type { Token } from "~/components/token-input";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "~/lib/trpc";
-import { useTransactionHistory, createTransactionDetails } from "./use-transaction-history";
+import { useTransactionStore } from "~/providers/transaction-provider";
+import { createTransactionDescription } from "~/lib/transaction-descriptions";
 
 // Borrow form data structure
 export interface BorrowFormData {
@@ -48,7 +49,7 @@ export function useBorrow({
   const { address } = useAccount();
   const queryClient = useQueryClient();
   const trpc = useTRPC();
-  const { addTransaction, updateTransaction } = useTransactionHistory();
+  const transactionStore = useTransactionStore();
 
   // Determine collateral type from token
   const collateralType: CollateralType =
@@ -127,34 +128,6 @@ export function useBorrow({
   // Use the generic transaction hook
   const transaction = useTransaction(calls);
 
-  // Watch for persisted transaction if we're in pending state
-  const persistedTxReceipt = useTransactionReceipt({
-    hash:
-      transactionState.currentState === "pending" &&
-      transactionState.transactionHash &&
-      !transaction.transactionHash
-        ? transactionState.transactionHash
-        : undefined,
-    watch: true,
-    retry: (failureCount, error) => {
-      // Check if it's a "transaction not found" error
-      const errorMessage = error?.message || "";
-      const isTransactionNotFound =
-        errorMessage.includes("Transaction hash not found") ||
-        errorMessage.includes("starknet_getTransactionReceipt");
-
-      // Retry up to 10 times for "not found" errors
-      if (isTransactionNotFound && failureCount < 10) {
-        return true;
-      }
-      
-      // For other errors, use default retry logic (3 times)
-      return failureCount < 3;
-    },
-    // Exponential backoff: 1s, 2s, 4s, 8s, 16s, 32s...
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-  });
-
   // Create a wrapped send function that manages state transitions
   const send = useCallback(async () => {
     try {
@@ -171,18 +144,25 @@ export function useBorrow({
         });
         transactionState.setPending(hash);
         
-        // Add to transaction history
-        addTransaction({
-          hash,
-          type: "borrow",
-          status: "pending",
-          details: createTransactionDetails("borrow", {
-            collateralAmount,
-            borrowAmount,
-            interestRate,
-            collateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
-          }),
-        });
+        // Add to transaction store
+        if (address) {
+          transactionStore.addTransaction(address, {
+            hash,
+            type: "borrow",
+            description: createTransactionDescription("borrow", {
+              collateralAmount,
+              borrowAmount,
+              interestRate,
+              collateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
+            }),
+            details: {
+              collateralAmount,
+              borrowAmount,
+              interestRate,
+              collateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
+            },
+          });
+        }
       }
       // If no hash returned, transaction.send already handles the error
     } catch (error) {
@@ -192,11 +172,12 @@ export function useBorrow({
   }, [
     transaction,
     transactionState,
+    transactionStore,
     collateralAmount,
     borrowAmount,
     interestRate,
     collateralToken,
-    addTransaction,
+    address,
   ]);
 
   // Check if we need to update state based on transaction status
@@ -205,11 +186,6 @@ export function useBorrow({
     // Check active transaction first
     if (transaction.isSuccess) {
       transactionState.setSuccess();
-      
-      // Update transaction in history to success
-      if (transaction.transactionHash) {
-        updateTransaction(transaction.transactionHash, { status: "success" });
-      }
 
       // Just invalidate to trigger polling when transaction is successful
       if (
@@ -231,63 +207,6 @@ export function useBorrow({
       }
     } else if (transaction.isError && transaction.error) {
       transactionState.setError(transaction.error);
-      
-      // Update transaction in history to error
-      if (transaction.transactionHash) {
-        updateTransaction(transaction.transactionHash, { 
-          status: "error", 
-          error: transaction.error.message 
-        });
-      }
-    }
-    // Check persisted transaction (after page refresh)
-    else if (persistedTxReceipt.data) {
-      transactionState.setSuccess();
-      
-      // Update transaction in history to success
-      if (transactionState.transactionHash) {
-        updateTransaction(transactionState.transactionHash, { status: "success" });
-      }
-
-      // Just invalidate to trigger polling when transaction is confirmed after refresh
-      if (
-        address &&
-        transactionState.formData.collateralAmount &&
-        transactionState.formData.borrowAmount &&
-        collateralToken
-      ) {
-        queryClient.invalidateQueries({
-          queryKey: trpc.positionsRouter.getUserOnChainPositions.queryKey({
-            userAddress: address,
-          }),
-        });
-      }
-
-      // Call custom onSuccess callback if provided
-      if (onSuccess) {
-        onSuccess();
-      }
-    } else if (persistedTxReceipt.isError && persistedTxReceipt.error) {
-      // Check if this is just an RPC issue (transaction not found)
-      const errorMessage = persistedTxReceipt.error.message || "";
-      const isTransactionNotFound =
-        errorMessage.includes("Transaction hash not found") ||
-        errorMessage.includes("starknet_getTransactionReceipt");
-
-      // Only set error if it's not a "transaction not found" error
-      // This prevents RPC sync issues from being treated as transaction failures
-      if (!isTransactionNotFound) {
-        transactionState.setError(persistedTxReceipt.error);
-        
-        // Update transaction in history to error
-        if (transactionState.transactionHash) {
-          updateTransaction(transactionState.transactionHash, { 
-            status: "error", 
-            error: persistedTxReceipt.error.message 
-          });
-        }
-      }
-      // If transaction not found, stay in pending - it might still be processing
     }
   }
 

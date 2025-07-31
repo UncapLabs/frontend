@@ -19,8 +19,8 @@ import { NuqsAdapter } from "nuqs/adapters/react-router/v7";
 
 import type { Route } from "./+types/root";
 import "./app.css";
-import { StarknetProvider } from "./starknet-provider";
-import { PHProvider } from "./posthog-provider";
+import { StarknetProvider } from "./providers/starknet-provider";
+import { PHProvider } from "./providers/posthog-provider";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -101,17 +101,17 @@ export default function App() {
   );
 
   return (
-    <StarknetProvider>
-      <QueryClientProvider client={queryClient}>
-        <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
+        <StarknetProvider>
           <NuqsAdapter>
             <Outlet />
             <Toaster />
             <ReactQueryDevtools initialIsOpen={false} />
           </NuqsAdapter>
-        </TRPCProvider>
-      </QueryClientProvider>
-    </StarknetProvider>
+        </StarknetProvider>
+      </TRPCProvider>
+    </QueryClientProvider>
   );
 }
 

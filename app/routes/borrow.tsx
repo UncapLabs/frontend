@@ -90,8 +90,6 @@ function Borrow() {
     currentState,
     formData,
     reset,
-    transactionHash: persistedTransactionHash,
-    error: persistedError,
   } = useBorrow({
     collateralAmount: collateralAmount ?? undefined,
     borrowAmount: borrowAmount ?? undefined,
@@ -176,20 +174,16 @@ function Borrow() {
         <div className="md:col-span-2">
           {["pending", "success", "error"].includes(currentState) ? (
             <TransactionStatus
-              transactionHash={transactionHash || persistedTransactionHash}
+              transactionHash={transactionHash}
               isError={currentState === "error"}
               isSuccess={currentState === "success"}
-              error={
-                (currentState === "error" && persistedError
-                  ? { ...persistedError, name: "TransactionError" }
-                  : transactionError) as Error | null
-              }
+              error={transactionError as Error | null}
               successTitle="Borrow Successful!"
               successSubtitle="Your position has been created successfully."
               details={
                 formData.collateralAmount &&
                 formData.borrowAmount &&
-                (transactionHash || persistedTransactionHash)
+                transactionHash
                   ? [
                       {
                         label: "Collateral Deposited",

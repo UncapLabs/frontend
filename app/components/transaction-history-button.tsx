@@ -8,15 +8,19 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 import { Badge } from "~/components/ui/badge";
-import { useTransactionHistory } from "~/hooks/use-transaction-history";
 import { TransactionHistoryTable } from "./transaction-history-table";
+import { useAccount } from "@starknet-react/core";
+import { useTransactionStoreData } from "~/hooks/use-transaction-store-data";
+
 
 export function TransactionHistoryButton() {
   const [isOpen, setIsOpen] = useState(false);
-  const { pendingCount } = useTransactionHistory();
+  const { address } = useAccount();
+  const { pendingCount } = useTransactionStoreData(address);
 
   return (
     <>
+      
       <Button
         variant="ghost"
         size="sm"

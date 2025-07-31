@@ -8,12 +8,11 @@ import {
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
-import {
-  useTransactionHistory,
-  type StoredTransaction,
-  type TransactionType,
-} from "~/hooks/use-transaction-history";
+import { useTransactionStore } from "~/providers/transaction-provider";
+import { useAccount } from "@starknet-react/core";
+import type { StarknetTransaction, TransactionType } from "~/types/transaction";
 import { formatDistance } from "date-fns";
+import { useTransactionStoreData } from "~/hooks/use-transaction-store-data";
 
 // Transaction type labels
 const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
@@ -26,7 +25,7 @@ const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
 };
 
 // Status icons and colors
-function StatusBadge({ status }: { status: StoredTransaction["status"] }) {
+function StatusBadge({ status }: { status: StarknetTransaction["status"] }) {
   switch (status) {
     case "pending":
       return (
@@ -54,8 +53,10 @@ function StatusBadge({ status }: { status: StoredTransaction["status"] }) {
 
 
 // Format transaction details for display
-function formatTransactionDetails(transaction: StoredTransaction): React.ReactNode {
+function formatTransactionDetails(transaction: StarknetTransaction): React.ReactNode {
   const { type, details } = transaction;
+
+  if (!details) return null;
 
   switch (type) {
     case "borrow":
@@ -97,64 +98,73 @@ function formatTransactionDetails(transaction: StoredTransaction): React.ReactNo
   }
 }
 
+
 // Transaction card component
-function TransactionCard({ transaction }: { transaction: StoredTransaction }) {
+function TransactionCard({ transaction }: { transaction: StarknetTransaction }) {
   const details = formatTransactionDetails(transaction);
   
   return (
     <Card className="p-4 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 space-y-2">
-          {/* Header: Type and Status */}
-          <div className="flex items-center gap-2">
-            <h4 className="font-medium text-sm">
-              {TRANSACTION_TYPE_LABELS[transaction.type]}
-            </h4>
-            <StatusBadge status={transaction.status} />
-          </div>
-          
-          {/* Transaction Details */}
-          {details && (
-            <div className="text-sm text-gray-600">
-              {details}
+          <div className="flex-1 space-y-2">
+            {/* Header: Type and Status */}
+            <div className="flex items-center gap-2">
+              <h4 className="font-medium text-sm">
+                {TRANSACTION_TYPE_LABELS[transaction.type]}
+              </h4>
+              <StatusBadge status={transaction.status} />
             </div>
-          )}
-          
-          {/* Time and Hash */}
-          <div className="flex items-center gap-4 text-xs text-gray-500">
-            <span>
-              {formatDistance(transaction.timestamp, new Date(), {
-                addSuffix: true,
-              })}
-            </span>
-            <span className="font-mono truncate max-w-[200px]">
-              {transaction.hash.slice(0, 10)}...{transaction.hash.slice(-8)}
-            </span>
+            
+            {/* Transaction Details */}
+            {details && (
+              <div className="text-sm text-gray-600">
+                {details}
+              </div>
+            )}
+            
+            {/* Time and Hash */}
+            <div className="flex items-center gap-4 text-xs text-gray-500">
+              <span>
+                {formatDistance(transaction.timestamp, new Date(), {
+                  addSuffix: true,
+                })}
+              </span>
+              <span className="font-mono truncate max-w-[200px]">
+                {transaction.hash.slice(0, 10)}...{transaction.hash.slice(-8)}
+              </span>
+            </div>
           </div>
-        </div>
-        
-        {/* View on Explorer */}
-        <Button
-          variant="ghost"
-          size="icon"
-          asChild
-          className="h-8 w-8 flex-shrink-0"
-        >
-          <a
-            href={`https://voyager.online/tx/${transaction.hash}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          
+          {/* View on Explorer */}
+          <Button
+            variant="ghost"
+            size="icon"
+            asChild
+            className="h-8 w-8 flex-shrink-0"
           >
-            <ExternalLink className="h-4 w-4" />
-          </a>
-        </Button>
-      </div>
-    </Card>
+            <a
+              href={`https://voyager.online/tx/${transaction.hash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ExternalLink className="h-4 w-4" />
+            </a>
+          </Button>
+        </div>
+      </Card>
   );
 }
 
 export function TransactionHistoryTable() {
-  const { transactions, clearHistory } = useTransactionHistory();
+  const { address } = useAccount();
+  const store = useTransactionStore();
+  const { transactions } = useTransactionStoreData(address);
+  
+  const clearHistory = () => {
+    if (address) {
+      store.clearTransactions(address);
+    }
+  };
 
   if (transactions.length === 0) {
     return (
