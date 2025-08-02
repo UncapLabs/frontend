@@ -55,6 +55,7 @@ export interface TransactionStore {
   addTransaction: (account: string, transaction: NewTransaction) => void;
   clearTransactions: (account: string) => void;
   getTransactions: (account: string) => StarknetTransaction[];
+  getTransaction: (account: string, hash: string) => StarknetTransaction | undefined;
   setTransactionStatus: (
     account: string,
     hash: string,
@@ -63,7 +64,7 @@ export interface TransactionStore {
   waitForPendingTransactions: (account: string) => Promise<void>;
   setProvider: (provider: ProviderInterface) => void;
   onChange: (fn: () => void) => () => void;
-  onTransactionStatus: (fn: (status: TransactionStatus) => void) => () => void;
+  onTransactionStatus: (fn: (status: TransactionStatus, hash: string) => void) => () => void;
 }
 
 export function createTransactionStore(): TransactionStore {
@@ -71,7 +72,7 @@ export function createTransactionStore(): TransactionStore {
 
   let provider: ProviderInterface | null = null;
   const listeners: Set<() => void> = new Set();
-  const transactionListeners: Set<(status: TransactionStatus) => void> =
+  const transactionListeners: Set<(status: TransactionStatus, hash: string) => void> =
     new Set();
   const transactionRequestCache: Map<string, Promise<void>> = new Map();
 
@@ -84,6 +85,8 @@ export function createTransactionStore(): TransactionStore {
   }
 
   function addTransaction(account: string, transaction: NewTransaction): void {
+    console.log("[TransactionStore] addTransaction called:", { account, transaction });
+    
     const errors = validateTransaction(transaction);
 
     if (errors.length > 0) {
@@ -97,6 +100,8 @@ export function createTransactionStore(): TransactionStore {
         timestamp: Date.now(),
         accountAddress: account,
       };
+
+      console.log("[TransactionStore] Created new transaction:", newTx);
 
       return [
         newTx,
@@ -114,6 +119,8 @@ export function createTransactionStore(): TransactionStore {
     hash: string,
     status: TransactionStatus
   ): void {
+    console.log("[TransactionStore] setTransactionStatus:", { account, hash, status });
+    
     updateTransactions(account, (transactions) => {
       return transactions.map((transaction) =>
         transaction.hash === hash ? { ...transaction, status } : transaction
@@ -121,8 +128,9 @@ export function createTransactionStore(): TransactionStore {
     });
 
     // Notify transaction status listeners
+    console.log("[TransactionStore] Notifying listeners, count:", transactionListeners.size);
     for (const listener of transactionListeners) {
-      listener(status);
+      listener(status, hash);
     }
   }
 
@@ -163,13 +171,10 @@ export function createTransactionStore(): TransactionStore {
                 hash,
                 isSuccessful ? "success" : "error"
               );
-
-              notifyTransactionListeners(isSuccessful ? "success" : "error");
             })
             .catch(() => {
               // If transaction not found or error occurs
               setTransactionStatus(account, hash, "error");
-              notifyTransactionListeners("error");
             });
 
           transactionRequestCache.set(hash, requestPromise);
@@ -216,11 +221,6 @@ export function createTransactionStore(): TransactionStore {
     }
   }
 
-  function notifyTransactionListeners(status: TransactionStatus): void {
-    for (const transactionListener of transactionListeners) {
-      transactionListener(status);
-    }
-  }
 
   function onChange(fn: () => void): () => void {
     listeners.add(fn);
@@ -231,7 +231,7 @@ export function createTransactionStore(): TransactionStore {
   }
 
   function onTransactionStatus(
-    fn: (status: TransactionStatus) => void
+    fn: (status: TransactionStatus, hash: string) => void
   ): () => void {
     transactionListeners.add(fn);
 
@@ -240,10 +240,19 @@ export function createTransactionStore(): TransactionStore {
     };
   }
 
+  function getTransaction(
+    account: string,
+    hash: string
+  ): StarknetTransaction | undefined {
+    const transactions = getTransactions(account);
+    return transactions.find((tx) => tx.hash === hash);
+  }
+
   return {
     addTransaction,
     clearTransactions,
     getTransactions,
+    getTransaction,
     setTransactionStatus,
     waitForPendingTransactions,
     setProvider,

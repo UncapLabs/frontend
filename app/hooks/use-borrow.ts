@@ -9,12 +9,14 @@ import {
   UBTC_TOKEN,
   GAS_TOKEN_ADDRESS,
   type CollateralType,
+  getBranchId,
 } from "~/lib/contracts/constants";
 import type { Token } from "~/components/token-input";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "~/lib/trpc";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
+import { getTroveId, getPrefixedTroveId } from "~/lib/utils/trove-id";
 
 // Borrow form data structure
 export interface BorrowFormData {
@@ -58,6 +60,13 @@ export function useBorrow({
       address,
       collateralType,
     });
+
+  console.log(
+    "[useBorrow] nextOwnerIndex:",
+    nextOwnerIndex,
+    "isLoading:",
+    isLoadingNextOwnerIndex
+  );
 
   // Transaction state management
   const transactionState = useTransactionState<BorrowFormData>({
@@ -119,6 +128,7 @@ export function useBorrow({
     isLoadingNextOwnerIndex,
     nextOwnerIndex,
     interestRate,
+    collateralType,
   ]);
 
   // Use the generic transaction hook
@@ -126,45 +136,73 @@ export function useBorrow({
 
   // Create a wrapped send function that manages state transitions
   const send = useCallback(async () => {
-    try {
-      const hash = await transaction.send();
+    const hash = await transaction.send();
 
-      if (hash) {
-        // Transaction was sent successfully, move to pending
-        // Now we update the form data since user accepted
-        transactionState.updateFormData({
-          collateralAmount,
-          borrowAmount,
-          interestRate,
-          selectedCollateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
-        });
-        transactionState.setPending(hash);
+    if (hash) {
+      // Transaction was sent successfully, move to pending
+      // Now we update the form data since user accepted
+      transactionState.updateFormData({
+        collateralAmount,
+        borrowAmount,
+        interestRate,
+        selectedCollateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
+      });
+      transactionState.setPending(hash);
 
-        // Add to transaction store
-        if (address) {
-          transactionStore.addTransaction(address, {
-            hash,
-            type: "borrow",
-            description: createTransactionDescription("borrow", {
-              collateralAmount,
-              borrowAmount,
-              interestRate,
-              collateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
-            }),
-            details: {
-              collateralAmount,
-              borrowAmount,
-              interestRate,
-              collateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
-            },
-          });
+      // Add to transaction store
+      if (address) {
+        // Compute the troveId if we have the necessary data
+        let troveId: string | undefined;
+        console.log(
+          "[useBorrow] Computing troveId - nextOwnerIndex:",
+          nextOwnerIndex,
+          "address:",
+          address,
+          "collateralType:",
+          collateralType
+        );
+
+        if (nextOwnerIndex !== undefined) {
+          const computedTroveId = getTroveId(address, nextOwnerIndex);
+          const branchId = getBranchId(collateralType);
+          troveId = getPrefixedTroveId(branchId, computedTroveId);
+          console.log("[useBorrow] Computed troveId:", troveId);
+        } else {
+          console.log(
+            "[useBorrow] Cannot compute troveId - nextOwnerIndex is undefined"
+          );
         }
+
+        const transactionData = {
+          hash,
+          type: "borrow" as const,
+          description: createTransactionDescription("borrow", {
+            collateralAmount,
+            borrowAmount,
+            interestRate,
+            collateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
+          }),
+          details: {
+            collateralAmount,
+            borrowAmount,
+            interestRate,
+            collateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
+            ...(troveId && {
+              troveId,
+              collateralType,
+              ownerIndex: nextOwnerIndex?.toString(), // Convert BigInt to string for JSON serialization
+            }),
+          },
+        };
+
+        console.log(
+          "[useBorrow] Adding transaction to store:",
+          transactionData
+        );
+        transactionStore.addTransaction(address, transactionData);
       }
-      // If no hash returned, transaction.send already handles the error
-    } catch (error) {
-      // User rejected or error occurred - just re-throw
-      throw error;
     }
+    // If no hash returned, transaction.send already handles the error
   }, [
     transaction,
     transactionState,
@@ -174,6 +212,8 @@ export function useBorrow({
     interestRate,
     collateralToken,
     address,
+    collateralType,
+    nextOwnerIndex,
   ]);
 
   // Check if we need to update state based on transaction status

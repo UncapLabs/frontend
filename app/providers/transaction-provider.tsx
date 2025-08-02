@@ -31,20 +31,94 @@ export function TransactionStoreProvider({
     () => storeSingleton ?? (storeSingleton = createTransactionStore())
   );
 
+  const pollForTrove = React.useCallback(
+    async ({
+      troveId,
+      maxAttempts = 15,
+      interval = 2000,
+      onComplete,
+    }: {
+      troveId: string;
+      maxAttempts?: number;
+      interval?: number;
+      onComplete: () => void;
+    }) => {
+      let attempts = 0;
+
+      const poll = async () => {
+        attempts++;
+        console.log(`[pollForTrove] Attempt ${attempts}/${maxAttempts} for troveId:`, troveId);
+
+        try {
+          // Fetch specific position by ID instead of all positions
+          const data = await queryClient.fetchQuery(
+            trpc.positionsRouter.getPositionById.queryOptions({
+              troveId,
+            })
+          );
+
+          console.log("[pollForTrove] Position found:", !!data.position);
+
+          if (data.position || attempts >= maxAttempts) {
+            console.log("[pollForTrove] Completing - found:", !!data.position, "max attempts reached:", attempts >= maxAttempts);
+            onComplete();
+          } else {
+            setTimeout(poll, interval);
+          }
+        } catch (error) {
+          console.error("[pollForTrove] Error:", error);
+          // On error, try again until max attempts
+          if (attempts < maxAttempts) {
+            setTimeout(poll, interval);
+          } else {
+            onComplete();
+          }
+        }
+      };
+
+      // Start polling after initial delay
+      setTimeout(poll, 2000);
+    },
+    [queryClient, trpc]
+  );
+
   const onTransactionStatus = React.useCallback(
-    (status: TransactionStatus) => {
+    async (status: TransactionStatus, hash: string) => {
+      console.log("[TransactionProvider] onTransactionStatus:", status, hash);
+      
       if (status === "success" && address) {
-        // Add a 5 second delay before invalidating to give the indexer time to process
-        setTimeout(() => {
-          queryClient.invalidateQueries({
-            queryKey: trpc.positionsRouter.getUserOnChainPositions.queryKey({
-              userAddress: address,
-            }),
+        // Get transaction details from store
+        const transaction = store.getTransaction(address, hash);
+        console.log("[TransactionProvider] Transaction details:", transaction);
+
+        if (transaction?.type === "borrow" && transaction.details?.troveId) {
+          console.log("[TransactionProvider] Starting poll for troveId:", transaction.details.troveId);
+          // Poll for the specific troveId
+          await pollForTrove({
+            troveId: transaction.details.troveId,
+            onComplete: () => {
+              console.log("[TransactionProvider] Polling complete, invalidating queries");
+              queryClient.invalidateQueries({
+                queryKey: trpc.positionsRouter.getUserOnChainPositions.queryKey({
+                  userAddress: address,
+                }),
+              });
+            },
           });
-        }, 6000);
+        } else {
+          // Fallback for other transaction types
+          console.log("[TransactionProvider] Using fallback invalidation for non-borrow transaction");
+          setTimeout(() => {
+            queryClient.invalidateQueries({
+              queryKey: trpc.positionsRouter.getUserOnChainPositions.queryKey({
+                userAddress: address,
+              }),
+            });
+          }, 6000);
+        }
       }
     },
-    [address, queryClient, trpc]
+    [address, queryClient, trpc, store, pollForTrove]
   );
 
   // Keep store provider up to date

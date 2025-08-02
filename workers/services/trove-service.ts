@@ -91,9 +91,9 @@ export async function getIndexedTrovesByAccount(
   graphqlClient: GraphQLClient,
   account: string
 ): Promise<IndexedTrove[]> {
-  console.log(
-    `[getIndexedTrovesByAccount] Fetching troves for account: ${account}`
-  );
+  // console.log(
+  //   `[getIndexedTrovesByAccount] Fetching troves for account: ${account}`
+  // );
 
   // Execute both queries in parallel to get all troves associated with the account
   const [borrowerResult, previousOwnerResult] = await Promise.all([
@@ -108,18 +108,18 @@ export async function getIndexedTrovesByAccount(
     ),
   ]);
 
-  console.log(borrowerResult);
+  // console.log(borrowerResult);
 
-  console.log(
-    `[getIndexedTrovesByAccount] Borrower troves: ${
-      borrowerResult.troves?.length || 0
-    }`
-  );
-  console.log(
-    `[getIndexedTrovesByAccount] Previous owner troves: ${
-      previousOwnerResult.troves?.length || 0
-    }`
-  );
+  // console.log(
+  //   `[getIndexedTrovesByAccount] Borrower troves: ${
+  //     borrowerResult.troves?.length || 0
+  //   }`
+  // );
+  // console.log(
+  //   `[getIndexedTrovesByAccount] Previous owner troves: ${
+  //     previousOwnerResult.troves?.length || 0
+  //   }`
+  // );
 
   // Combine results from both queries
   const allTroves = [
@@ -156,7 +156,7 @@ export async function fetchPositionById(
   fullId: PrefixedTroveId | null,
   maybeIndexedTrove?: IndexedTrove
 ): Promise<Position | null> {
-  console.log(`[fetchPositionById] Starting fetch for: ${fullId}`);
+  // console.log(`[fetchPositionById] Starting fetch for: ${fullId}`);
 
   if (!isPrefixedTroveId(fullId)) {
     console.error(`[fetchPositionById] Invalid prefixed trove ID: ${fullId}`);
@@ -166,12 +166,12 @@ export async function fetchPositionById(
   const { branchId, troveId } = parsePrefixedTroveId(fullId);
   const troveIdBigInt = BigInt(troveId);
 
-  console.log(
-    `[fetchPositionById] Parsed - branchId: ${branchId}, troveId: ${troveId}`
-  );
-  console.log(
-    `[fetchPositionById] Indexed trove provided: ${!!maybeIndexedTrove}`
-  );
+  // console.log(
+  //   `[fetchPositionById] Parsed - branchId: ${branchId}, troveId: ${troveId}`
+  // );
+  // console.log(
+  //   `[fetchPositionById] Indexed trove provided: ${!!maybeIndexedTrove}`
+  // );
 
   // Get the appropriate contracts based on branchId
   const collateralType = getCollateralType(Number(branchId) as BranchId);
@@ -179,7 +179,7 @@ export async function fetchPositionById(
 
   try {
     // Fetch indexed trove data and on-chain data in parallel
-    console.log(`[fetchPositionById] Fetching on-chain data...`);
+    // console.log(`[fetchPositionById] Fetching on-chain data...`);
 
     let indexedTrove, batchManagerAddress, troveData, troveStatus;
 
@@ -233,11 +233,11 @@ export async function fetchPositionById(
       );
     }
 
-    console.log(`[fetchPositionById] Trove data received:`, {
-      entire_debt: troveData?.entire_debt?.toString(),
-      entire_coll: troveData?.entire_coll?.toString(),
-      annual_interest_rate: troveData?.annual_interest_rate?.toString(),
-    });
+    // console.log(`[fetchPositionById] Trove data received:`, {
+    //   entire_debt: troveData?.entire_debt?.toString(),
+    //   entire_coll: troveData?.entire_coll?.toString(),
+    //   annual_interest_rate: troveData?.annual_interest_rate?.toString(),
+    // });
 
     if (
       !troveData ||
@@ -322,18 +322,18 @@ export async function fetchLoansByAccount(
   graphqlClient: GraphQLClient,
   account: string | null | undefined
 ): Promise<{ positions: Position[]; errors: PositionWithError["error"][] }> {
-  console.log(
-    `[fetchLoansByAccountEnhanced] Starting fetch for account: ${account}`
-  );
+  // console.log(
+  //   `[fetchLoansByAccountEnhanced] Starting fetch for account: ${account}`
+  // );
 
   if (!account) return { positions: [], errors: [] };
 
   const troves = await getIndexedTrovesByAccount(graphqlClient, account);
 
-  console.log(
-    `[fetchLoansByAccountEnhanced] Found ${troves.length} indexed troves:`,
-    troves.map((t) => ({ id: t.id, status: t.status }))
-  );
+  // console.log(
+  //   `[fetchLoansByAccountEnhanced] Found ${troves.length} indexed troves:`,
+  //   troves.map((t) => ({ id: t.id, status: t.status }))
+  // );
 
   // Process troves with individual error handling
   const results = await Promise.allSettled(
