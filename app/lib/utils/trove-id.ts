@@ -35,15 +35,6 @@ export function getTroveId(
   // Use toHexAddress for proper formatting with leading zeros
   const paddedTroveId = toHexAddress(troveId);
 
-  console.log("[getTroveId] Computed troveId:", {
-    msgSender,
-    owner,
-    ownerIndexLow: ownerIndexU256.low,
-    ownerIndexHigh: ownerIndexU256.high,
-    result: troveId,
-    padded: paddedTroveId,
-  });
-
   return paddedTroveId;
 }
 

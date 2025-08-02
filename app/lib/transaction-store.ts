@@ -85,8 +85,6 @@ export function createTransactionStore(): TransactionStore {
   }
 
   function addTransaction(account: string, transaction: NewTransaction): void {
-    console.log("[TransactionStore] addTransaction called:", { account, transaction });
-    
     const errors = validateTransaction(transaction);
 
     if (errors.length > 0) {
@@ -100,8 +98,6 @@ export function createTransactionStore(): TransactionStore {
         timestamp: Date.now(),
         accountAddress: account,
       };
-
-      console.log("[TransactionStore] Created new transaction:", newTx);
 
       return [
         newTx,
@@ -119,8 +115,6 @@ export function createTransactionStore(): TransactionStore {
     hash: string,
     status: TransactionStatus
   ): void {
-    console.log("[TransactionStore] setTransactionStatus:", { account, hash, status });
-    
     updateTransactions(account, (transactions) => {
       return transactions.map((transaction) =>
         transaction.hash === hash ? { ...transaction, status } : transaction
@@ -128,7 +122,6 @@ export function createTransactionStore(): TransactionStore {
     });
 
     // Notify transaction status listeners
-    console.log("[TransactionStore] Notifying listeners, count:", transactionListeners.size);
     for (const listener of transactionListeners) {
       listener(status, hash);
     }

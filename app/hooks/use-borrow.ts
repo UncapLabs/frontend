@@ -12,8 +12,6 @@ import {
   getBranchId,
 } from "~/lib/contracts/constants";
 import type { Token } from "~/components/token-input";
-import { useQueryClient } from "@tanstack/react-query";
-import { useTRPC } from "~/lib/trpc";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
 import { getTroveId, getPrefixedTroveId } from "~/lib/utils/trove-id";
@@ -46,8 +44,6 @@ export function useBorrow({
   onSuccess,
 }: UseBorrowParams) {
   const { address } = useAccount();
-  const queryClient = useQueryClient();
-  const trpc = useTRPC();
   const transactionStore = useTransactionStore();
 
   // Determine collateral type from token
@@ -61,12 +57,6 @@ export function useBorrow({
       collateralType,
     });
 
-  console.log(
-    "[useBorrow] nextOwnerIndex:",
-    nextOwnerIndex,
-    "isLoading:",
-    isLoadingNextOwnerIndex
-  );
 
   // Transaction state management
   const transactionState = useTransactionState<BorrowFormData>({
@@ -153,24 +143,11 @@ export function useBorrow({
       if (address) {
         // Compute the troveId if we have the necessary data
         let troveId: string | undefined;
-        console.log(
-          "[useBorrow] Computing troveId - nextOwnerIndex:",
-          nextOwnerIndex,
-          "address:",
-          address,
-          "collateralType:",
-          collateralType
-        );
 
         if (nextOwnerIndex !== undefined) {
           const computedTroveId = getTroveId(address, nextOwnerIndex);
           const branchId = getBranchId(collateralType);
           troveId = getPrefixedTroveId(branchId, computedTroveId);
-          console.log("[useBorrow] Computed troveId:", troveId);
-        } else {
-          console.log(
-            "[useBorrow] Cannot compute troveId - nextOwnerIndex is undefined"
-          );
         }
 
         const transactionData = {
@@ -195,10 +172,6 @@ export function useBorrow({
           },
         };
 
-        console.log(
-          "[useBorrow] Adding transaction to store:",
-          transactionData
-        );
         transactionStore.addTransaction(address, transactionData);
       }
     }
@@ -222,22 +195,6 @@ export function useBorrow({
     // Check active transaction first
     if (transaction.isSuccess) {
       transactionState.setSuccess();
-
-      // Delay invalidation to give indexer time to process the transaction
-      if (
-        address &&
-        transactionState.formData.collateralAmount &&
-        transactionState.formData.borrowAmount &&
-        collateralToken
-      ) {
-        setTimeout(() => {
-          queryClient.invalidateQueries({
-            queryKey: trpc.positionsRouter.getUserOnChainPositions.queryKey({
-              userAddress: address,
-            }),
-          });
-        }, 6000);
-      }
 
       // Call custom onSuccess callback if provided
       if (onSuccess) {
