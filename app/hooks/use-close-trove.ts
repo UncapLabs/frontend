@@ -6,6 +6,7 @@ import { contractCall } from "~/lib/contracts/calls";
 import { type CollateralType } from "~/lib/contracts/constants";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
+import { extractTroveId } from "~/lib/utils/position-helpers";
 
 // Close trove form data structure
 export interface CloseTroveFormData {
@@ -43,33 +44,21 @@ export function useCloseTrove({
     },
   });
 
-  // Extract just the numeric part of the troveId for the contract call
-  const extractTroveId = (fullId: string): bigint | undefined => {
-    if (!fullId) return undefined;
-    // Handle format like "0:0x03b7...c3a7" - extract the hex part after the colon
-    const parts = fullId.split(":");
-    const hexPart = parts[1] || parts[0];
-    try {
-      return BigInt(hexPart);
-    } catch {
-      return undefined;
-    }
-  };
-
   // Prepare the call
   const calls = useMemo(() => {
     if (!troveId) {
       return undefined;
     }
 
-    const numericTroveId = extractTroveId(troveId);
-    if (!numericTroveId) {
+    try {
+      const numericTroveId = extractTroveId(troveId);
+      return [
+        contractCall.borrowerOperations.closeTrove(numericTroveId, collateralType),
+      ];
+    } catch {
+      // If we can't parse the trove ID, return undefined
       return undefined;
     }
-
-    return [
-      contractCall.borrowerOperations.closeTrove(numericTroveId, collateralType),
-    ];
   }, [troveId, collateralType]);
 
   // Use the generic transaction hook

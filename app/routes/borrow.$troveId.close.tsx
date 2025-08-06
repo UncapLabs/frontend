@@ -47,7 +47,6 @@ function ClosePosition() {
     refetchInterval: 30000,
   });
 
-  // Use the improved close trove hook
   const {
     send,
     isPending,
@@ -138,11 +137,15 @@ function ClosePosition() {
               transactionHash={transactionHash}
               isError={currentState === "error"}
               isSuccess={currentState === "success"}
-              error={transactionError ? new Error(transactionError.message) : null}
+              error={
+                transactionError ? new Error(transactionError.message) : null
+              }
               successTitle="Position Closed!"
               successSubtitle="Your position has been closed and collateral returned."
               details={
-                currentState === "success" && formData.debt && formData.collateral
+                currentState === "success" &&
+                formData.debt &&
+                formData.collateral
                   ? [
                       {
                         label: "Debt Repaid",
@@ -178,7 +181,9 @@ function ClosePosition() {
                   : undefined
               }
               onComplete={handleComplete}
-              completeButtonText={currentState === "error" ? "Try Again" : "Back to Dashboard"}
+              completeButtonText={
+                currentState === "error" ? "Try Again" : "Back to Dashboard"
+              }
             />
           ) : (
             <div className="space-y-6">

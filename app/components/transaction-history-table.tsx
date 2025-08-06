@@ -4,6 +4,8 @@ import {
   Loader2,
   ExternalLink,
   ArrowRight,
+  TrendingUp,
+  TrendingDown,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
@@ -13,6 +15,7 @@ import { useAccount } from "@starknet-react/core";
 import type { StarknetTransaction, TransactionType } from "~/types/transaction";
 import { formatDistance } from "date-fns";
 import { useTransactionStoreData } from "~/hooks/use-transaction-store-data";
+import { truncateTroveId } from "~/lib/utils/trove-id";
 
 // Transaction type labels
 const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
@@ -61,38 +64,145 @@ function formatTransactionDetails(transaction: StarknetTransaction): React.React
   switch (type) {
     case "borrow":
       return (
-        <div className="flex items-center gap-1">
-          <span className="font-medium">{details.collateralAmount} {details.collateralToken}</span>
-          <ArrowRight className="h-3 w-3" />
-          <span className="font-medium">{details.borrowAmount} USDU</span>
-          <span className="text-xs text-gray-500">@ {details.interestRate}%</span>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-green-600">
+              +{details.collateralAmount} {details.collateralToken}
+            </span>
+            <ArrowRight className="h-3 w-3 text-gray-400" />
+            <span className="font-medium text-blue-600">
+              +{details.borrowAmount} USDU
+            </span>
+          </div>
+          <div className="text-xs text-gray-500">
+            Interest Rate: {details.interestRate}% APR
+            {details.troveId && (
+              <span className="ml-2">• Trove: {truncateTroveId(details.troveId)}</span>
+            )}
+          </div>
         </div>
       );
+    
     case "adjust":
-      const collChange = details.isCollateralIncrease ? "+" : "-";
-      const debtChange = details.isDebtIncrease ? "+" : "-";
+      // Calculate changes from previous and new values if the explicit flags aren't present
+      const collateralChange = details.newCollateral !== undefined && details.previousCollateral !== undefined
+        ? details.newCollateral - details.previousCollateral
+        : details.collateralChange;
+      
+      const debtChange = details.newDebt !== undefined && details.previousDebt !== undefined
+        ? details.newDebt - details.previousDebt
+        : details.debtChange;
+      
+      const hasCollateralChange = details.hasCollateralChange || 
+        (collateralChange !== undefined && Math.abs(collateralChange) > 0.0000001);
+      
+      const hasDebtChange = details.hasDebtChange || 
+        (debtChange !== undefined && Math.abs(debtChange) > 0.01);
+      
+      const isCollateralIncrease = details.isCollateralIncrease !== undefined 
+        ? details.isCollateralIncrease 
+        : (collateralChange > 0);
+      
+      const isDebtIncrease = details.isDebtIncrease !== undefined
+        ? details.isDebtIncrease
+        : (debtChange > 0);
+
       return (
         <div className="space-y-1">
-          <div className="text-xs">
-            Collateral: <span className="font-medium">{collChange}{Math.abs(details.collateralChange)}</span>
-          </div>
-          <div className="text-xs">
-            Debt: <span className="font-medium">{debtChange}{Math.abs(details.debtChange)}</span>
-          </div>
+          {/* Show collateral changes if any */}
+          {hasCollateralChange && collateralChange !== undefined && (
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-gray-600">Collateral:</span>
+              <span className={`font-medium flex items-center gap-1 ${
+                isCollateralIncrease ? 'text-green-600' : 'text-orange-600'
+              }`}>
+                {isCollateralIncrease ? (
+                  <TrendingUp className="h-3 w-3" />
+                ) : (
+                  <TrendingDown className="h-3 w-3" />
+                )}
+                {isCollateralIncrease ? '+' : '-'}
+                {Math.abs(collateralChange).toFixed(7)} {details.collateralToken || 'BTC'}
+              </span>
+            </div>
+          )}
+          
+          {/* Show debt changes if any */}
+          {hasDebtChange && debtChange !== undefined && (
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-gray-600">Debt:</span>
+              <span className={`font-medium flex items-center gap-1 ${
+                isDebtIncrease ? 'text-blue-600' : 'text-green-600'
+              }`}>
+                {isDebtIncrease ? (
+                  <TrendingUp className="h-3 w-3" />
+                ) : (
+                  <TrendingDown className="h-3 w-3" />
+                )}
+                {isDebtIncrease ? '+' : '-'}
+                {Math.abs(debtChange).toFixed(2)} USDU
+              </span>
+            </div>
+          )}
+          
+          {/* Show interest rate changes if any */}
+          {(details.hasInterestRateChange || details.newInterestRate !== undefined) && (
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-gray-600">Interest Rate:</span>
+              <span className="font-medium text-purple-600 flex items-center gap-1">
+                <ArrowRight className="h-3 w-3" />
+                {details.newInterestRate || details.interestRate}% APR
+              </span>
+            </div>
+          )}
+          
+          {/* Show trove ID if present */}
+          {details.troveId && (
+            <div className="text-xs text-gray-500">
+              Trove: {truncateTroveId(details.troveId)}
+            </div>
+          )}
         </div>
       );
+    
     case "close":
-      return `Closed trove #${details.troveId}`;
+      return (
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-orange-600">
+              -{details.debt} USDU
+            </span>
+            <ArrowRight className="h-3 w-3 text-gray-400" />
+            <span className="font-medium text-green-600">
+              +{details.collateral} {details.collateralType || 'BTC'}
+            </span>
+          </div>
+          {details.troveId && (
+            <div className="text-xs text-gray-500">
+              Closed Trove: {truncateTroveId(details.troveId)}
+            </div>
+          )}
+        </div>
+      );
+    
     case "claim":
-      return `Claimed ${details.amount} ${details.token}`;
+      return (
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-green-600">
+            +{details.amount} {details.token}
+          </span>
+        </div>
+      );
+    
     case "adjust_rate":
       return (
-        <div className="flex items-center gap-1">
-          <span>{details.oldRate}%</span>
-          <ArrowRight className="h-3 w-3" />
-          <span className="font-medium">{details.newRate}%</span>
+        <div className="flex items-center gap-2">
+          <span className="text-gray-600">{details.oldRate}%</span>
+          <ArrowRight className="h-3 w-3 text-gray-400" />
+          <span className="font-medium text-purple-600">{details.newRate}% APR</span>
         </div>
       );
+    
     default:
       return null;
   }
