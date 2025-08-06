@@ -47,3 +47,11 @@ export function getTroveId(
 export function getPrefixedTroveId(branchId: number, troveId: string): string {
   return `${branchId}:${troveId}`;
 }
+
+export function truncateTroveId(fullId: string): string {
+  const id = fullId.split(":")[1] || fullId;
+  if (id.length > 10) {
+    return `${id.slice(0, 6)}...${id.slice(-4)}`;
+  }
+  return id;
+}

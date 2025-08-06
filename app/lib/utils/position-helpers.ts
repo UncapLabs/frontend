@@ -1,5 +1,4 @@
-import { INTEREST_RATE_SCALE_DOWN_FACTOR } from "~/lib/contracts/constants";
-import type { Position } from "~/workers/services/trove-service";
+import type { Position } from "workers/services/trove-service";
 
 /**
  * Convert position interest rate to BigInt format for contracts
@@ -20,7 +19,7 @@ export function getInterestRatePercentage(position: Position): number {
  * Position IDs are in format "branchId:hexId"
  */
 export function extractTroveId(positionId: string): bigint {
-  const hexPart = positionId.split(':')[1] || '0';
+  const hexPart = positionId.split(":")[1] || "0";
   return BigInt(hexPart);
 }
 

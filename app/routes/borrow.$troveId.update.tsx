@@ -1,7 +1,6 @@
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import { ArrowDown, ArrowLeft } from "lucide-react";
-import { Separator } from "~/components/ui/separator";
+import { ArrowDown } from "lucide-react";
 import { InterestRateSelector } from "~/components/borrow";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { TokenInput } from "~/components/token-input";
@@ -153,7 +152,7 @@ function UpdatePosition() {
     interestRate: interestRate ?? 5,
     collateralToken: selectedCollateralToken,
     onSuccess: () => {
-      navigate(`/borrow/${troveId}`);
+      navigate("/dashboard");
     },
   });
 
@@ -171,41 +170,111 @@ function UpdatePosition() {
 
 
   const handleComplete = useCallback(() => {
-    navigate(`/borrow/${troveId}`);
-  }, [navigate, troveId]);
+    navigate("/dashboard");
+  }, [navigate]);
 
   if (isPositionLoading || !position) {
     return (
-      <div className="mx-auto max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
-        <div className="flex justify-between items-baseline">
-          <h1 className="text-3xl font-bold mb-2 text-slate-800">
-            Update Position
-          </h1>
+      <>
+        <h2 className="text-2xl font-semibold text-slate-800 mb-6">
+          Update Position
+        </h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Left Panel Skeleton */}
+          <div className="md:col-span-2">
+            <Card className="border border-slate-200">
+              <CardContent className="pt-6 space-y-6">
+                {/* Current Position Info Skeleton */}
+                <div className="bg-slate-50 rounded-lg p-4">
+                  <div className="h-4 w-32 bg-slate-200 rounded animate-pulse mb-3" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <div className="h-4 w-24 bg-slate-200 rounded animate-pulse" />
+                      <div className="h-4 w-32 bg-slate-200 rounded animate-pulse" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="h-4 w-20 bg-slate-200 rounded animate-pulse" />
+                      <div className="h-4 w-28 bg-slate-200 rounded animate-pulse" />
+                    </div>
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-slate-200">
+                    <div className="flex justify-between">
+                      <div className="h-4 w-24 bg-slate-200 rounded animate-pulse" />
+                      <div className="h-4 w-16 bg-slate-200 rounded animate-pulse" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Collateral Input Skeleton */}
+                <div className="space-y-2">
+                  <div className="h-4 w-40 bg-slate-200 rounded animate-pulse" />
+                  <div className="h-12 w-full bg-slate-100 rounded-lg animate-pulse" />
+                </div>
+
+                {/* Divider */}
+                <div className="h-10 flex items-center justify-center">
+                  <div className="h-8 w-8 bg-slate-200 rounded-full animate-pulse" />
+                </div>
+
+                {/* Debt Input Skeleton */}
+                <div className="space-y-2">
+                  <div className="h-4 w-32 bg-slate-200 rounded animate-pulse" />
+                  <div className="h-12 w-full bg-slate-100 rounded-lg animate-pulse" />
+                </div>
+
+                {/* Interest Rate Section Skeleton */}
+                <div className="space-y-4">
+                  <div className="h-4 w-24 bg-slate-200 rounded animate-pulse" />
+                  <div className="h-20 w-full bg-slate-100 rounded-lg animate-pulse" />
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <div className="h-4 w-full bg-blue-100 rounded animate-pulse" />
+                    <div className="h-3 w-3/4 bg-blue-100 rounded animate-pulse mt-2" />
+                  </div>
+                </div>
+
+                {/* Button Skeleton */}
+                <div className="h-10 w-full bg-slate-200 rounded-xl animate-pulse" />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Panel Skeleton */}
+          <div className="md:col-span-1">
+            <Card className="border border-slate-200">
+              <CardContent className="pt-6 space-y-4">
+                <div className="h-5 w-32 bg-slate-200 rounded animate-pulse" />
+                
+                <div className="space-y-3">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="flex justify-between">
+                      <div className="h-4 w-24 bg-slate-200 rounded animate-pulse" />
+                      <div className="h-4 w-20 bg-slate-200 rounded animate-pulse" />
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="pt-3 border-t border-slate-100 space-y-3">
+                  {[1, 2].map((i) => (
+                    <div key={i} className="flex justify-between">
+                      <div className="h-4 w-28 bg-slate-200 rounded animate-pulse" />
+                      <div className="h-4 w-16 bg-slate-200 rounded animate-pulse" />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-        <Separator className="mb-8 bg-slate-200" />
-        <div className="flex justify-center items-center h-64">
-          <p className="text-slate-600">Loading position data...</p>
-        </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="mx-auto max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
-      <div className="flex items-center gap-4 mb-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate(`/borrow/${troveId}`)}
-          className="rounded-full"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <h1 className="text-3xl font-bold text-slate-800">
-          Update Position
-        </h1>
-      </div>
-      <Separator className="mb-8 bg-slate-200" />
+    <>
+      <h2 className="text-2xl font-semibold text-slate-800 mb-6">
+        Update Position
+      </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Left Panel */}
@@ -605,7 +674,7 @@ function UpdatePosition() {
           />
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

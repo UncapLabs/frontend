@@ -10,7 +10,6 @@ export default [
     index("routes/dashboard.tsx"),
     route("borrow", "routes/borrow.tsx"),
     route("borrow/:troveId", "routes/borrow.$troveId.tsx", [
-      index("routes/borrow.$troveId._index.tsx"),
       route("update", "routes/borrow.$troveId.update.tsx"),
       route("close", "routes/borrow.$troveId.close.tsx"),
     ]),

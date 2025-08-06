@@ -1,7 +1,7 @@
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import { ArrowLeft, AlertTriangle, Info } from "lucide-react";
 import { Separator } from "~/components/ui/separator";
+import { AlertTriangle, Info } from "lucide-react";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import type { Route } from "./+types/borrow.$troveId.close";
 import { useParams, useNavigate } from "react-router";
@@ -79,7 +79,7 @@ function ClosePosition() {
   });
 
   const handleComplete = () => {
-    navigate("/positions");
+    navigate("/dashboard");
   };
 
   // Handle wallet connection
@@ -101,17 +101,14 @@ function ClosePosition() {
 
   if (isTroveLoading || !position) {
     return (
-      <div className="mx-auto max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
-        <div className="flex justify-between items-baseline">
-          <h1 className="text-3xl font-bold mb-2 text-slate-800">
-            Close Position
-          </h1>
-        </div>
-        <Separator className="mb-8 bg-slate-200" />
+      <>
+        <h2 className="text-2xl font-semibold text-slate-800 mb-6">
+          Close Position
+        </h2>
         <div className="flex justify-center items-center h-64">
           <p className="text-slate-600">Loading trove data...</p>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -144,23 +141,10 @@ function ClosePosition() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
-      <div className="flex justify-between items-baseline">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(`/borrow/${troveId}`)}
-            className="rounded-full"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-3xl font-bold mb-2 text-slate-800">
-            Close Position #{troveId}
-          </h1>
-        </div>
-      </div>
-      <Separator className="mb-8 bg-slate-200" />
+    <div>
+      <h2 className="text-2xl font-semibold text-slate-800 mb-6">
+        Close Position
+      </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Left Panel */}
