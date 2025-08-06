@@ -5,16 +5,7 @@ import { AlertTriangle, Info } from "lucide-react";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import type { Route } from "./+types/borrow.$troveId.close";
 import { useParams, useNavigate } from "react-router";
-import {
-  useAccount,
-  useBalance,
-  useConnect,
-  type Connector,
-} from "@starknet-react/core";
-import {
-  type StarknetkitConnector,
-  useStarknetkitConnectModal,
-} from "starknetkit";
+import { useAccount, useBalance } from "@starknet-react/core";
 import {
   UBTC_TOKEN,
   GBTC_TOKEN,
@@ -23,19 +14,17 @@ import {
 } from "~/lib/contracts/constants";
 import { NumericFormat } from "react-number-format";
 import { useTroveData } from "~/hooks/use-trove-data";
-import { extractTroveId } from "~/lib/utils/position-helpers";
 import { useCloseTrove } from "~/hooks/use-close-trove";
 import { useQueryState } from "nuqs";
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { useWalletConnect } from "~/hooks/use-wallet-connect";
+import { toast } from "sonner";
 
 function ClosePosition() {
   const { address } = useAccount();
   const { troveId } = useParams();
   const navigate = useNavigate();
-  const { connect, connectors } = useConnect();
-  const { starknetkitConnectModal } = useStarknetkitConnectModal({
-    connectors: connectors as StarknetkitConnector[],
-  });
+  const { connectWallet } = useWalletConnect();
 
   // State for confirmation
   const [isConfirmed, setIsConfirmed] = useState(false);
@@ -48,13 +37,9 @@ function ClosePosition() {
   // Fetch existing trove data
   const { position, isLoading: isTroveLoading } = useTroveData(troveId);
 
-  // Check if we have a transaction hash in URL
-  const [urlTransactionHash, setUrlTransactionHash] = useQueryState("tx", {
-    defaultValue: "",
-  });
-
   // Get the collateral token based on collateral type
-  const selectedCollateralToken = troveCollateralType === "GBTC" ? GBTC_TOKEN : UBTC_TOKEN;
+  const selectedCollateralToken =
+    troveCollateralType === "GBTC" ? GBTC_TOKEN : UBTC_TOKEN;
 
   const { data: usduBalance } = useBalance({
     token: USDU_TOKEN.address,
@@ -62,61 +47,30 @@ function ClosePosition() {
     refetchInterval: 30000,
   });
 
-  // Use the close trove hook
+  // Use the improved close trove hook
   const {
     send,
     isPending,
     isSending,
-    isError: isTransactionError,
     error: transactionError,
     transactionHash,
-    isReady,
-    isSuccess: isTransactionSuccess,
+    currentState,
+    formData,
+    reset,
   } = useCloseTrove({
-    troveId: position ? extractTroveId(position.id) : undefined,
+    troveId: position?.id,
     debt: position?.borrowedAmount,
+    collateral: position?.collateralAmount,
     collateralType: troveCollateralType as CollateralType,
   });
-
-  const handleComplete = () => {
-    navigate("/dashboard");
-  };
-
-  // Handle wallet connection
-  const connectWallet = async () => {
-    const { connector } = await starknetkitConnectModal();
-    if (!connector) {
-      return;
-    }
-    connect({ connector: connector as Connector });
-  };
-
-  // Update URL when we get a transaction hash
-  if (transactionHash && transactionHash !== urlTransactionHash) {
-    setUrlTransactionHash(transactionHash);
-  }
-
-  // Show transaction UI if we have a hash in URL (single source of truth)
-  const shouldShowTransactionUI = !!urlTransactionHash;
-
-  if (isTroveLoading || !position) {
-    return (
-      <>
-        <h2 className="text-2xl font-semibold text-slate-800 mb-6">
-          Close Position
-        </h2>
-        <div className="flex justify-center items-center h-64">
-          <p className="text-slate-600">Loading trove data...</p>
-        </div>
-      </>
-    );
-  }
 
   // Check if user has enough USDU to repay
   const usduBal = usduBalance
     ? Number(usduBalance.value) / 10 ** USDU_TOKEN.decimals
     : 0;
-  const hasEnoughBalance = position ? usduBal >= position.borrowedAmount : false;
+  const hasEnoughBalance = position
+    ? usduBal >= position.borrowedAmount
+    : false;
 
   // Check if trove is zombie or redeemed
   // TODO: Implement status check from trove data
@@ -130,6 +84,12 @@ function ClosePosition() {
     }
 
     if (!isConfirmed) {
+      toast.error("Please confirm that you want to close this position");
+      return;
+    }
+
+    if (!hasEnoughBalance) {
+      toast.error("Insufficient USDU balance to repay debt");
       return;
     }
 
@@ -140,8 +100,32 @@ function ClosePosition() {
     }
   };
 
+  const handleComplete = useCallback(() => {
+    if (currentState === "error") {
+      // Reset for retry
+      reset();
+      setIsConfirmed(false);
+    } else {
+      // Navigate on success
+      navigate("/");
+    }
+  }, [navigate, currentState, reset]);
+
+  if (isTroveLoading || !position) {
+    return (
+      <>
+        <h2 className="text-2xl font-semibold text-slate-800 mb-6">
+          Close Position
+        </h2>
+        <div className="flex justify-center items-center h-64">
+          <p className="text-slate-600">Loading position data...</p>
+        </div>
+      </>
+    );
+  }
+
   return (
-    <div>
+    <>
       <h2 className="text-2xl font-semibold text-slate-800 mb-6">
         Close Position
       </h2>
@@ -149,48 +133,52 @@ function ClosePosition() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Left Panel */}
         <div className="md:col-span-2">
-          {shouldShowTransactionUI ? (
+          {["pending", "success", "error"].includes(currentState) ? (
             <TransactionStatus
               transactionHash={transactionHash}
-              isError={isTransactionError}
-              isSuccess={isTransactionSuccess}
-              error={transactionError}
+              isError={currentState === "error"}
+              isSuccess={currentState === "success"}
+              error={transactionError ? new Error(transactionError.message) : null}
               successTitle="Position Closed!"
               successSubtitle="Your position has been closed and collateral returned."
-              details={[
-                {
-                  label: "Debt Repaid",
-                  value: (
-                    <>
-                      <NumericFormat
-                        displayType="text"
-                        value={position.borrowedAmount}
-                        thousandSeparator=","
-                        decimalScale={2}
-                        fixedDecimalScale
-                      />{" "}
-                      USDU
-                    </>
-                  ),
-                },
-                {
-                  label: "Collateral Returned",
-                  value: (
-                    <>
-                      <NumericFormat
-                        displayType="text"
-                        value={position.collateralAmount}
-                        thousandSeparator=","
-                        decimalScale={7}
-                        fixedDecimalScale={false}
-                      />{" "}
-                      {selectedCollateralToken.symbol}
-                    </>
-                  ),
-                },
-              ]}
+              details={
+                currentState === "success" && formData.debt && formData.collateral
+                  ? [
+                      {
+                        label: "Debt Repaid",
+                        value: (
+                          <>
+                            <NumericFormat
+                              displayType="text"
+                              value={formData.debt}
+                              thousandSeparator=","
+                              decimalScale={2}
+                              fixedDecimalScale
+                            />{" "}
+                            USDU
+                          </>
+                        ),
+                      },
+                      {
+                        label: "Collateral Returned",
+                        value: (
+                          <>
+                            <NumericFormat
+                              displayType="text"
+                              value={formData.collateral}
+                              thousandSeparator=","
+                              decimalScale={7}
+                              fixedDecimalScale={false}
+                            />{" "}
+                            {selectedCollateralToken.symbol}
+                          </>
+                        ),
+                      },
+                    ]
+                  : undefined
+              }
               onComplete={handleComplete}
-              completeButtonText="View Positions"
+              completeButtonText={currentState === "error" ? "Try Again" : "Back to Dashboard"}
             />
           ) : (
             <div className="space-y-6">
@@ -204,8 +192,8 @@ function ClosePosition() {
                         Are you sure you want to close this position?
                       </h3>
                       <p className="text-sm text-red-700">
-                        This action will repay your entire debt and return your collateral.
-                        This cannot be undone.
+                        This action will repay your entire debt and return your
+                        collateral. This cannot be undone.
                       </p>
                     </div>
                   </div>
@@ -239,7 +227,7 @@ function ClosePosition() {
                   <h3 className="font-semibold text-lg text-slate-800 mb-4">
                     Position Details
                   </h3>
-                  
+
                   <div className="space-y-4">
                     <div className="bg-slate-50 rounded-lg p-4 space-y-3">
                       <div className="flex justify-between items-baseline">
@@ -257,12 +245,16 @@ function ClosePosition() {
                           USDU
                         </span>
                       </div>
-                      
+
                       <div className="flex justify-between items-baseline">
                         <span className="text-sm text-slate-600">
                           Your USDU Balance
                         </span>
-                        <span className={`font-medium ${hasEnoughBalance ? "text-green-600" : "text-red-600"}`}>
+                        <span
+                          className={`font-medium ${
+                            hasEnoughBalance ? "text-green-600" : "text-red-600"
+                          }`}
+                        >
                           <NumericFormat
                             displayType="text"
                             value={usduBal}
@@ -354,7 +346,7 @@ function ClosePosition() {
                         : isSending
                         ? "Confirm in wallet..."
                         : isPending
-                        ? "Closing..."
+                        ? "Transaction pending..."
                         : !hasEnoughBalance
                         ? "Insufficient USDU Balance"
                         : !isConfirmed
@@ -421,7 +413,7 @@ function ClosePosition() {
           </Card>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

@@ -151,9 +151,6 @@ function UpdatePosition() {
     borrowAmount: borrowAmount ?? undefined,
     interestRate: interestRate ?? 5,
     collateralToken: selectedCollateralToken,
-    onSuccess: () => {
-      navigate("/dashboard");
-    },
   });
 
   // Revalidate fields when wallet connection changes
@@ -170,7 +167,7 @@ function UpdatePosition() {
 
 
   const handleComplete = useCallback(() => {
-    navigate("/dashboard");
+    navigate("/");
   }, [navigate]);
 
   if (isPositionLoading || !position) {
@@ -332,7 +329,7 @@ function UpdatePosition() {
                   : undefined
               }
               onComplete={handleComplete}
-              completeButtonText="View Position"
+              completeButtonText="Back to Dashboard"
             />
           ) : (
             <form
