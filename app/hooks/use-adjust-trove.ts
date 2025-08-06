@@ -1,12 +1,9 @@
 import { useMemo } from "react";
 import { useAccount } from "@starknet-react/core";
-import { Contract } from "starknet";
 import { contractCall } from "~/lib/contracts/calls";
-import { getContractDefinitions } from "~/lib/contracts/definitions";
 import { useTransaction } from "./use-transaction";
 import { toBigInt } from "~/lib/utils";
 import { getCollateralAddresses, type CollateralType, GAS_TOKEN_ADDRESS } from "~/lib/contracts/constants";
-import { BORROWER_OPERATIONS_ABI } from "~/lib/contracts";
 
 interface UseAdjustTroveParams {
   troveId?: bigint;
@@ -190,10 +187,6 @@ export function useAdjustTrove({
     
     // If only interest rate is changing, use adjust_trove_interest_rate
     if (!changes.hasCollateralChange && !changes.hasDebtChange && changes.hasInterestRateChange) {
-      const contract = new Contract(
-        BORROWER_OPERATIONS_ABI,
-        addresses.borrowerOperations
-      );
       return [
         // Approve STRK for gas payment
         contractCall.token.approve(
@@ -201,17 +194,18 @@ export function useAdjustTrove({
           addresses.borrowerOperations,
           BigInt(10e18) // Approve a reasonable amount for gas fees
         ),
-        contract.populate("adjust_trove_interest_rate", [
+        contractCall.borrowerOperations.adjustTroveInterestRate({
           troveId,
-          changes.newInterestRate,
-          0n, // upperHint
-          0n, // lowerHint
+          annualInterestRate: changes.newInterestRate,
+          upperHint: 0n,
+          lowerHint: 0n,
           maxUpfrontFee,
-        ]),
+          collateralType,
+        }),
       ];
     }
 
-    return getAdjustmentCalls({
+    const baseCalls = getAdjustmentCalls({
       troveId,
       collateralChange: changes.hasCollateralChange
         ? changes.collateralChange
@@ -223,6 +217,22 @@ export function useAdjustTrove({
       collateralTokenAddress: collateralToken.address,
       collateralType,
     });
+
+    // If interest rate is also changing, add the interest rate adjustment call
+    if (changes.hasInterestRateChange) {
+      baseCalls.push(
+        contractCall.borrowerOperations.adjustTroveInterestRate({
+          troveId,
+          annualInterestRate: changes.newInterestRate,
+          upperHint: 0n,
+          lowerHint: 0n,
+          maxUpfrontFee,
+          collateralType,
+        })
+      );
+    }
+
+    return baseCalls;
   }, [address, troveId, changes, maxUpfrontFee, collateralToken]);
 
   // Use the generic transaction hook

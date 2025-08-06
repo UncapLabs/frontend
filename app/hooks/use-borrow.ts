@@ -57,7 +57,6 @@ export function useBorrow({
       collateralType,
     });
 
-
   // Transaction state management
   const transactionState = useTransactionState<BorrowFormData>({
     initialFormData: {
@@ -68,7 +67,7 @@ export function useBorrow({
     },
   });
 
-  // Prepare the calls using our new abstraction
+  // Prepare the calls
   const calls = useMemo(() => {
     if (
       !address ||
@@ -96,7 +95,7 @@ export function useBorrow({
       contractCall.token.approve(
         GAS_TOKEN_ADDRESS,
         addresses.borrowerOperations,
-        BigInt(50e18) // Approve 50 STRK for gas fees
+        BigInt(1e18) // Approve 1 STRK for gas fees
       ),
 
       // 3. Open trove

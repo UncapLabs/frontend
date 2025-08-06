@@ -1,88 +1,59 @@
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import { ArrowLeft, ArrowDown } from "lucide-react";
+import { ArrowDown, ArrowLeft } from "lucide-react";
 import { Separator } from "~/components/ui/separator";
-import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import {
-  TransactionStatus,
-  PositionSummaryCard,
-  CurrentPositionInfo,
-} from "~/components/borrow";
+import { InterestRateSelector } from "~/components/borrow";
+import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { TokenInput } from "~/components/token-input";
-import { useMemo, useEffect, useState } from "react";
-import { useForm, useStore } from "@tanstack/react-form";
-import { type BorrowFormData } from "~/types/borrow";
+import { useEffect, useCallback } from "react";
+import { useForm } from "@tanstack/react-form";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
-import { useFormCalculations } from "~/hooks/use-form-calculations";
-import { MAX_LIMIT, getAnnualInterestRate } from "~/lib/utils/calc";
+import { MAX_LIMIT, computeDebtLimit } from "~/lib/utils/calc";
 import { validators } from "~/lib/validators";
 import type { Route } from "./+types/borrow.$troveId.update";
 import { useParams, useNavigate } from "react-router";
+import { useAccount, useBalance } from "@starknet-react/core";
 import {
-  useAccount,
-  useBalance,
-  useConnect,
-  type Connector,
-} from "@starknet-react/core";
-import {
-  type StarknetkitConnector,
-  useStarknetkitConnectModal,
-} from "starknetkit";
-import {
-  INTEREST_RATE_SCALE_DOWN_FACTOR,
+  USDU_TOKEN,
   UBTC_TOKEN,
   GBTC_TOKEN,
-  USDU_TOKEN,
 } from "~/lib/contracts/constants";
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
-import { useAdjustTrove } from "~/hooks/use-adjust-trove";
 import { useTroveData } from "~/hooks/use-trove-data";
-import { useQueryState } from "nuqs";
+import { useUpdatePosition } from "~/hooks/use-update-position";
+import { useQueryState, parseAsFloat, parseAsInteger } from "nuqs";
+import { useWalletConnect } from "~/hooks/use-wallet-connect";
+import { getInterestRatePercentage } from "~/lib/utils/position-helpers";
+import { PositionSummaryCard } from "~/components/borrow/position-summary-card";
 
 function UpdatePosition() {
   const { address } = useAccount();
   const { troveId } = useParams();
   const navigate = useNavigate();
-  const { connect, connectors } = useConnect();
-  const { starknetkitConnectModal } = useStarknetkitConnectModal({
-    connectors: connectors as StarknetkitConnector[],
-  });
-
-  // Get collateral type from URL or default to UBTC
-  const [troveCollateralType] = useQueryState("type", {
-    defaultValue: "UBTC",
-  });
+  const { connectWallet } = useWalletConnect();
   
-  // Fetch existing trove data
-  const { troveData, isLoading: isTroveLoading } = useTroveData(troveId, {
-    collateralType: troveCollateralType as CollateralType,
-  });
+  // Fetch existing position data
+  const { position, isLoading: isPositionLoading } = useTroveData(troveId);
+  
+  // Get collateral token based on position
+  const selectedCollateralToken = position?.collateralAsset === "GBTC" ? GBTC_TOKEN : UBTC_TOKEN;
 
-  // Check if we have a transaction hash in URL
-  const [urlTransactionHash, setUrlTransactionHash] = useQueryState("tx", {
-    defaultValue: "",
-  });
-
-  // Available collateral tokens
-  const collateralTokens = [UBTC_TOKEN, GBTC_TOKEN];
-
-  // Store selected collateral token in URL
-  const [selectedTokenSymbol] = useQueryState("collateral", {
-    defaultValue: UBTC_TOKEN.symbol,
-  });
-
-  // Sub-tabs state for collateral and debt
-  const [collateralMode, setCollateralMode] = useState<"deposit" | "withdraw">(
-    "deposit"
+  // URL state for form inputs
+  const [collateralAmount, setCollateralAmount] = useQueryState(
+    "amount",
+    parseAsFloat.withDefault(position?.collateralAmount || 0)
   );
-  const [debtMode, setDebtMode] = useState<"borrow" | "repay">("borrow");
+  const [borrowAmount, setBorrowAmount] = useQueryState(
+    "borrow",
+    parseAsFloat.withDefault(position?.borrowedAmount || 0)
+  );
+  const [interestRate, setInterestRate] = useQueryState(
+    "rate",
+    parseAsInteger.withDefault(position ? getInterestRatePercentage(position) : 5)
+  );
 
-  // Get the full token object from the symbol
-  const selectedCollateralToken =
-    collateralTokens.find((token) => token.symbol === selectedTokenSymbol) ||
-    UBTC_TOKEN;
-
+  // Balance for selected token
   const { data: bitcoinBalance } = useBalance({
     token: selectedCollateralToken.address,
     address: address,
@@ -95,22 +66,44 @@ function UpdatePosition() {
     refetchInterval: 30000,
   });
 
-  // Create properly typed default values from existing trove
-  const defaultBorrowFormValues: BorrowFormData = useMemo(
-    () => ({
-      collateralAmount: troveData?.collateral,
-      borrowAmount: troveData?.debt,
-      interestRate: troveData
-        ? Number(troveData.annualInterestRate) /
-          Number(INTEREST_RATE_SCALE_DOWN_FACTOR)
-        : 5,
-    }),
-    [troveData]
-  );
+  const { bitcoin, usdu } = useFetchPrices(collateralAmount ?? undefined);
 
-  // Form setup with TanStack Form
+  // Calculate redemption risk based on interest rate
+  const getRedemptionRisk = (rate: number) => {
+    if (rate < 5) return { level: "High", color: "text-red-600", bgColor: "bg-red-50", borderColor: "border-red-200" };
+    if (rate < 10) return { level: "Medium", color: "text-yellow-600", bgColor: "bg-yellow-50", borderColor: "border-yellow-200" };
+    return { level: "Low", color: "text-green-600", bgColor: "bg-green-50", borderColor: "border-green-200" };
+  };
+
+  const redemptionRisk = getRedemptionRisk(interestRate || 5);
+  const annualInterestCost = borrowAmount && interestRate ? (borrowAmount * interestRate) / 100 : 0;
+
+  // Calculate metrics for the new position
+  const metrics = {
+    totalValue: collateralAmount && bitcoin?.price 
+      ? collateralAmount * bitcoin.price 
+      : 0,
+    netValue: collateralAmount && borrowAmount && bitcoin?.price && usdu?.price
+      ? (collateralAmount * bitcoin.price) - (borrowAmount * usdu.price)
+      : 0,
+    liquidationPrice: collateralAmount && borrowAmount && collateralAmount > 0
+      ? (borrowAmount * 1.1) / collateralAmount // 110% collateralization
+      : 0,
+    ltvValue: collateralAmount && borrowAmount && bitcoin?.price && usdu?.price && collateralAmount > 0
+      ? (borrowAmount * (usdu?.price || 1)) / (collateralAmount * bitcoin.price) * 100
+      : 0,
+    collateralRatio: collateralAmount && borrowAmount && bitcoin?.price && usdu?.price && borrowAmount > 0
+      ? ((collateralAmount * bitcoin.price) / (borrowAmount * (usdu?.price || 1))) * 100
+      : 0,
+  };
+
+  // Initialize form with position values
   const form = useForm({
-    defaultValues: defaultBorrowFormValues,
+    defaultValues: {
+      collateralAmount: collateralAmount ?? position?.collateralAmount,
+      borrowAmount: borrowAmount ?? position?.borrowedAmount,
+      interestRate: interestRate ?? (position ? getInterestRatePercentage(position) : 5),
+    },
     onSubmit: async ({ value }) => {
       if (!isReady) {
         if (!address) {
@@ -123,6 +116,12 @@ function UpdatePosition() {
         return;
       }
 
+      // Check if there are actual changes
+      if (!changes || (!changes.hasCollateralChange && !changes.hasDebtChange && !changes.hasInterestRateChange)) {
+        toast.error("No changes to update");
+        return;
+      }
+
       try {
         await send();
       } catch (error) {
@@ -131,141 +130,59 @@ function UpdatePosition() {
     },
   });
 
-  // Reset form when trove data loads
+  // Update form when position loads
   useEffect(() => {
-    if (troveData) {
+    if (position && !collateralAmount && !borrowAmount) {
       form.reset({
-        collateralAmount: troveData.collateral,
-        borrowAmount: troveData.debt,
-        interestRate:
-          Number(troveData.annualInterestRate) /
-          Number(INTEREST_RATE_SCALE_DOWN_FACTOR),
+        collateralAmount: position.collateralAmount,
+        borrowAmount: position.borrowedAmount,
+        interestRate: getInterestRatePercentage(position),
       });
+      setCollateralAmount(position.collateralAmount);
+      setBorrowAmount(position.borrowedAmount);
+      setInterestRate(getInterestRatePercentage(position));
     }
-  }, [troveData]);
+  }, [position]);
 
-  // Get form values reactively
-  const collateralAmount = useStore(
-    form.store,
-    (state) => state.values.collateralAmount
-  );
-  const borrowAmount = useStore(
-    form.store,
-    (state) => state.values.borrowAmount
-  );
-  const interestRate = useStore(
-    form.store,
-    (state) => state.values.interestRate
-  );
-
-  // Conditional price fetching
-  const { bitcoin, usdu } = useFetchPrices(collateralAmount);
-
-  // Use form calculations hook
-  const { debtLimit } = useFormCalculations(
-    collateralAmount,
-    borrowAmount,
-    bitcoin?.price,
-    usdu?.price
-  );
-
-  // Use the adjust trove hook
   const {
     send,
     isPending,
     isSending,
-    isError: isTransactionError,
     error: transactionError,
     transactionHash,
     isReady,
-    isSuccess: isTransactionSuccess,
+    currentState,
+    formData,
     changes,
-  } = useAdjustTrove({
-    troveId: troveData?.troveId,
-    currentCollateral: troveData?.collateral,
-    currentDebt: troveData?.debt,
-    currentInterestRate: troveData?.annualInterestRate,
-    newCollateral: collateralAmount,
-    newDebt: borrowAmount,
-    newInterestRate: interestRate
-      ? getAnnualInterestRate(interestRate)
-      : undefined,
+  } = useUpdatePosition({
+    position,
+    collateralAmount: collateralAmount ?? undefined,
+    borrowAmount: borrowAmount ?? undefined,
+    interestRate: interestRate ?? 5,
     collateralToken: selectedCollateralToken,
+    onSuccess: () => {
+      navigate(`/borrow/${troveId}`);
+    },
   });
 
-  // Get form validation state
-  const canSubmit = useStore(form.store, (state) => state.canSubmit);
-
-  // Get field-specific errors reactively using the store
-  const collateralErrors = useStore(form.store, (state) => {
-    const field = state.fieldMeta.collateralAmount;
-    return field?.errors || [];
-  });
-
-  const borrowErrors = useStore(form.store, (state) => {
-    const field = state.fieldMeta.borrowAmount;
-    return field?.errors || [];
-  });
-
-  // Create button text based on form state and validation
-  const buttonText = useMemo(() => {
-    if (!address) {
-      return "Connect Wallet";
+  // Revalidate fields when wallet connection changes
+  useEffect(() => {
+    if (address) {
+      if (collateralAmount && collateralAmount > 0) {
+        form.validateField("collateralAmount", "change");
+      }
+      if (borrowAmount && borrowAmount > 0) {
+        form.validateField("borrowAmount", "change");
+      }
     }
+  }, [address]);
 
-    if (!changes || (!changes.hasCollateralChange && !changes.hasDebtChange)) {
-      return "No changes made";
-    }
 
-    // Show specific error messages in button
-    if (collateralErrors.length > 0) {
-      return collateralErrors[0];
-    }
+  const handleComplete = useCallback(() => {
+    navigate(`/borrow/${troveId}`);
+  }, [navigate, troveId]);
 
-    if (borrowErrors.length > 0) {
-      return borrowErrors[0];
-    }
-
-    if (!collateralAmount) {
-      return "Enter collateral amount";
-    }
-
-    if (!borrowAmount) {
-      return "Enter borrow amount";
-    }
-
-    return "Update Position";
-  }, [
-    address,
-    collateralAmount,
-    borrowAmount,
-    collateralErrors,
-    borrowErrors,
-    changes,
-  ]);
-
-  const handleComplete = () => {
-    navigate("/positions");
-  };
-
-  // Handle wallet connection
-  const connectWallet = async () => {
-    const { connector } = await starknetkitConnectModal();
-    if (!connector) {
-      return;
-    }
-    connect({ connector: connector as Connector });
-  };
-
-  // Update URL when we get a transaction hash
-  if (transactionHash && transactionHash !== urlTransactionHash) {
-    setUrlTransactionHash(transactionHash);
-  }
-
-  // Show transaction UI if we have a hash in URL (single source of truth)
-  const shouldShowTransactionUI = !!urlTransactionHash;
-
-  if (isTroveLoading || !troveData) {
+  if (isPositionLoading || !position) {
     return (
       <div className="mx-auto max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
         <div className="flex justify-between items-baseline">
@@ -275,50 +192,42 @@ function UpdatePosition() {
         </div>
         <Separator className="mb-8 bg-slate-200" />
         <div className="flex justify-center items-center h-64">
-          <p className="text-slate-600">Loading trove data...</p>
+          <p className="text-slate-600">Loading position data...</p>
         </div>
       </div>
     );
   }
 
-  // Calculate liquidation price
-  const liquidationPrice =
-    borrowAmount && collateralAmount && collateralAmount > 0
-      ? (borrowAmount * 1.1) / collateralAmount
-      : 0;
-
   return (
     <div className="mx-auto max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
-      <div className="flex justify-between items-baseline">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(`/borrow/${troveId}`)}
-            className="rounded-full"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-3xl font-bold mb-2 text-slate-800">
-            Update Position #{troveId}
-          </h1>
-        </div>
+      <div className="flex items-center gap-4 mb-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate(`/borrow/${troveId}`)}
+          className="rounded-full"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <h1 className="text-3xl font-bold text-slate-800">
+          Update Position
+        </h1>
       </div>
       <Separator className="mb-8 bg-slate-200" />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Left Panel */}
         <div className="md:col-span-2">
-          {shouldShowTransactionUI ? (
+          {["pending", "success", "error"].includes(currentState) ? (
             <TransactionStatus
               transactionHash={transactionHash}
-              isError={isTransactionError}
-              isSuccess={isTransactionSuccess}
-              error={transactionError}
+              isError={currentState === "error"}
+              isSuccess={currentState === "success"}
+              error={transactionError as Error | null}
               successTitle="Position Updated!"
               successSubtitle="Your position has been updated successfully."
               details={
-                changes && urlTransactionHash
+                changes && formData.collateralAmount && formData.borrowAmount && transactionHash
                   ? ([
                       changes.hasCollateralChange && {
                         label: changes.isCollIncrease
@@ -354,70 +263,40 @@ function UpdatePosition() {
                           </>
                         ),
                       },
+                      {
+                        label: "Interest Rate (APR)",
+                        value: `${interestRate}%`,
+                      },
                     ].filter(Boolean) as any)
                   : undefined
               }
               onComplete={handleComplete}
-              completeButtonText="View Positions"
+              completeButtonText="View Position"
             />
           ) : (
-            <Card className="border border-slate-200 shadow-sm">
-              <CardContent className="pt-6">
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    form.handleSubmit();
-                  }}
-                >
-                  <div className="space-y-6">
-                    {/* Current Position Info */}
-                    <CurrentPositionInfo
-                      troveData={troveData}
-                      selectedCollateralToken={selectedCollateralToken}
-                    />
-
-                    {/* Collateral Adjustment Section */}
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-slate-700">
-                          Adjust Collateral
-                        </span>
-                        <Tabs
-                          value={collateralMode}
-                          onValueChange={(v) => {
-                            setCollateralMode(v as "deposit" | "withdraw");
-                            // Reset to current value when switching modes
-                            form.setFieldValue(
-                              "collateralAmount",
-                              troveData?.collateral
-                            );
-                          }}
-                        >
-                          <TabsList className="h-7">
-                            <TabsTrigger
-                              value="deposit"
-                              className="text-xs px-2 py-1"
-                            >
-                              Deposit
-                            </TabsTrigger>
-                            <TabsTrigger
-                              value="withdraw"
-                              className="text-xs px-2 py-1"
-                            >
-                              Withdraw
-                            </TabsTrigger>
-                          </TabsList>
-                        </Tabs>
-                      </div>
-
-                      {/* Show current amount */}
-                      <div className="text-sm text-slate-600 mb-2">
-                        Current:{" "}
-                        <span className="font-medium text-slate-800">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                form.handleSubmit();
+              }}
+            >
+              <Card
+                className={`border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden ${
+                  isSending || isPending ? "opacity-75" : ""
+                }`}
+              >
+                <CardContent className="pt-6 space-y-6">
+                  {/* Current Position Info */}
+                  <div className="bg-slate-50 rounded-lg p-4">
+                    <h3 className="text-sm font-medium text-slate-700 mb-3">Current Position</h3>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-slate-600">Collateral:</span>{" "}
+                        <span className="font-medium">
                           <NumericFormat
                             displayType="text"
-                            value={troveData?.collateral || 0}
+                            value={position.collateralAmount}
                             thousandSeparator=","
                             decimalScale={7}
                             fixedDecimalScale={false}
@@ -425,208 +304,12 @@ function UpdatePosition() {
                           {selectedCollateralToken.symbol}
                         </span>
                       </div>
-                      <form.Field
-                        name="collateralAmount"
-                        validators={{
-                          onChange: ({ value }) => {
-                            if (!address || !value) return undefined;
-
-                            const balance = bitcoinBalance
-                              ? Number(bitcoinBalance.value) /
-                                10 ** selectedCollateralToken.decimals
-                              : 0;
-                            const currentCollateral =
-                              troveData?.collateral || 0;
-                            const currentDebt = troveData?.debt || 0;
-
-                            // Check if withdrawing
-                            if (value < currentCollateral) {
-                              const withdrawAmount = currentCollateral - value;
-                              if (withdrawAmount > currentCollateral) {
-                                return "Cannot withdraw more than current collateral";
-                              }
-
-                              // Check minimum collateral ratio after withdrawal
-                              if (
-                                bitcoin?.price &&
-                                usdu?.price &&
-                                currentDebt > 0
-                              ) {
-                                const newCollateralValue =
-                                  value * bitcoin.price;
-                                const debtValue = currentDebt * usdu.price;
-                                const ratioError =
-                                  validators.minimumCollateralRatio(
-                                    newCollateralValue,
-                                    debtValue,
-                                    1.1 // 110% minimum
-                                  );
-                                if (ratioError) return ratioError;
-                              }
-                            }
-
-                            // Check if adding more than balance
-                            if (
-                              value > currentCollateral &&
-                              value - currentCollateral > balance
-                            ) {
-                              return `Insufficient balance. You have ${balance.toFixed(
-                                7
-                              )} ${selectedCollateralToken.symbol}`;
-                            }
-
-                            return validators.compose(
-                              validators.maximumAmount(value, MAX_LIMIT)
-                            );
-                          },
-                        }}
-                        listeners={{
-                          onChange: ({ fieldApi }) => {
-                            if (
-                              borrowAmount !== undefined &&
-                              borrowAmount > 0
-                            ) {
-                              fieldApi.form.validateField(
-                                "borrowAmount",
-                                "change"
-                              );
-                            }
-                          },
-                        }}
-                      >
-                        {(field) => {
-                          // Derive the change amount from the current form value
-                          const changeAmount =
-                            field.state.value !== undefined && troveData
-                              ? Math.abs(
-                                  field.state.value - troveData.collateral
-                                )
-                              : 0;
-
-                          return (
-                            <div className="space-y-3">
-                              <TokenInput
-                                token={selectedCollateralToken}
-                                balance={bitcoinBalance}
-                                price={bitcoin}
-                                value={changeAmount}
-                                onChange={(value) => {
-                                  // Convert change amount to total
-                                  const newTotal =
-                                    value !== undefined
-                                      ? collateralMode === "deposit"
-                                        ? troveData.collateral + value
-                                        : Math.max(
-                                            0,
-                                            troveData.collateral - value
-                                          )
-                                      : troveData.collateral;
-                                  field.handleChange(newTotal);
-                                }}
-                                onBlur={field.handleBlur}
-                                label={
-                                  collateralMode === "withdraw"
-                                    ? "Amount to Withdraw"
-                                    : "Amount to Add"
-                                }
-                                percentageButtons
-                                onPercentageClick={(percentage: number) => {
-                                  const currentCollateral =
-                                    troveData?.collateral || 0;
-                                  const balance = bitcoinBalance?.value
-                                    ? Number(bitcoinBalance.value) /
-                                      10 ** selectedCollateralToken.decimals
-                                    : 0;
-                                  const maxAvailable =
-                                    collateralMode === "deposit"
-                                      ? balance
-                                      : currentCollateral;
-                                  const changeAmount =
-                                    maxAvailable * percentage;
-                                  const newTotal =
-                                    collateralMode === "deposit"
-                                      ? currentCollateral + changeAmount
-                                      : currentCollateral - changeAmount;
-                                  field.handleChange(newTotal);
-                                }}
-                                error={field.state.meta.errors?.[0]}
-                                disabled={isSending || isPending}
-                                showBalance={true}
-                                placeholder="0"
-                              />
-
-                              {/* Show new total if there's a change */}
-                              {changeAmount > 0 && (
-                                <div className="text-sm text-slate-600">
-                                  New total:{" "}
-                                  <span className="font-medium text-slate-800">
-                                    <NumericFormat
-                                      displayType="text"
-                                      value={field.state.value}
-                                      thousandSeparator=","
-                                      decimalScale={7}
-                                      fixedDecimalScale={false}
-                                    />{" "}
-                                    {selectedCollateralToken.symbol}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        }}
-                      </form.Field>
-                    </div>
-
-                    <div className="relative flex justify-center items-center py-3">
-                      <div className="w-full h-px bg-slate-200"></div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="absolute bg-white rounded-full border border-slate-200 shadow-sm hover:shadow transition-shadow z-10"
-                      >
-                        <ArrowDown className="h-4 w-4 text-slate-600" />
-                      </Button>
-                    </div>
-
-                    {/* Debt Adjustment Section */}
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-slate-700">
-                          Adjust Debt
-                        </span>
-                        <Tabs
-                          value={debtMode}
-                          onValueChange={(v) => {
-                            setDebtMode(v as "borrow" | "repay");
-                            // Reset to current value when switching modes
-                            form.setFieldValue("borrowAmount", troveData?.debt);
-                          }}
-                        >
-                          <TabsList className="h-7">
-                            <TabsTrigger
-                              value="borrow"
-                              className="text-xs px-2 py-1"
-                            >
-                              Borrow
-                            </TabsTrigger>
-                            <TabsTrigger
-                              value="repay"
-                              className="text-xs px-2 py-1"
-                            >
-                              Repay
-                            </TabsTrigger>
-                          </TabsList>
-                        </Tabs>
-                      </div>
-
-                      {/* Show current amount */}
-                      <div className="text-sm text-slate-600 mb-2">
-                        Current:{" "}
-                        <span className="font-medium text-slate-800">
+                      <div>
+                        <span className="text-slate-600">Debt:</span>{" "}
+                        <span className="font-medium">
                           <NumericFormat
                             displayType="text"
-                            value={troveData?.debt || 0}
+                            value={position.borrowedAmount}
                             thousandSeparator=","
                             decimalScale={2}
                             fixedDecimalScale
@@ -634,212 +317,274 @@ function UpdatePosition() {
                           USDU
                         </span>
                       </div>
-                      <form.Field
-                        name="borrowAmount"
-                        validators={{
-                          onChange: ({ value }) => {
-                            if (!value) return undefined;
-
-                            const currentDebt = troveData?.debt || 0;
-                            const usduBal = usduBalance
-                              ? Number(usduBalance.value) /
-                                10 ** USDU_TOKEN.decimals
-                              : 0;
-
-                            // Check if repaying more than available balance
-                            if (value < currentDebt) {
-                              const repayAmount = currentDebt - value;
-                              if (repayAmount > usduBal) {
-                                return `Insufficient USDU balance. You have ${usduBal.toFixed(
-                                  2
-                                )} USDU to repay ${repayAmount.toFixed(
-                                  2
-                                )} USDU`;
-                              }
-                            }
-
-                            // Skip debt limit check if we're keeping the same or reducing debt
-                            const isIncreasingDebt = value > currentDebt;
-
-                            return validators.compose(
-                              validators.minimumUsdValue(
-                                value,
-                                usdu?.price || 1,
-                                2000
-                              ),
-                              validators.minimumDebt(
-                                value * (usdu?.price || 1)
-                              ),
-                              // Only check debt limit when increasing debt
-                              isIncreasingDebt
-                                ? validators.debtLimit(value, debtLimit)
-                                : undefined
-                            );
-                          },
-                        }}
-                      >
-                        {(field) => {
-                          // Derive the change amount from the current form value
-                          const changeAmount =
-                            field.state.value !== undefined && troveData
-                              ? Math.abs(field.state.value - troveData.debt)
-                              : 0;
-
-                          return (
-                            <div className="space-y-3">
-                              <TokenInput
-                                token={USDU_TOKEN}
-                                balance={usduBalance}
-                                price={usdu}
-                                value={changeAmount}
-                                onChange={(value) => {
-                                  // Convert change amount to total
-                                  const newTotal =
-                                    value !== undefined
-                                      ? debtMode === "borrow"
-                                        ? troveData.debt + value
-                                        : Math.max(0, troveData.debt - value)
-                                      : troveData.debt;
-                                  field.handleChange(newTotal);
-                                }}
-                                onBlur={field.handleBlur}
-                                label={
-                                  debtMode === "repay"
-                                    ? "Amount to Repay"
-                                    : "Amount to Borrow"
-                                }
-                                percentageButtons
-                                percentageButtonsOnHover
-                                onPercentageClick={(percentage: number) => {
-                                  const currentDebt = troveData?.debt || 0;
-                                  const usduBal = usduBalance
-                                    ? Number(usduBalance.value) /
-                                      10 ** USDU_TOKEN.decimals
-                                    : 0;
-                                  const maxAvailable =
-                                    debtMode === "borrow"
-                                      ? Math.max(
-                                          0,
-                                          (debtLimit || 0) - currentDebt
-                                        )
-                                      : Math.min(currentDebt, usduBal);
-                                  const changeAmount =
-                                    maxAvailable * percentage;
-                                  const newTotal =
-                                    debtMode === "borrow"
-                                      ? currentDebt + changeAmount
-                                      : currentDebt - changeAmount;
-                                  field.handleChange(newTotal);
-                                }}
-                                percentageButtonsDisabled={
-                                  !debtLimit ||
-                                  debtLimit <= 0 ||
-                                  isSending ||
-                                  isPending
-                                }
-                                error={field.state.meta.errors?.[0]}
-                                disabled={isSending || isPending}
-                                showBalance={true}
-                                placeholder="0"
-                              />
-
-                              {/* Show new total if there's a change */}
-                              {changeAmount > 0 && (
-                                <div className="text-sm text-slate-600">
-                                  New total:{" "}
-                                  <span className="font-medium text-slate-800">
-                                    <NumericFormat
-                                      displayType="text"
-                                      value={field.state.value}
-                                      thousandSeparator=","
-                                      decimalScale={2}
-                                      fixedDecimalScale
-                                    />{" "}
-                                    USDU
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        }}
-                      </form.Field>
                     </div>
-
-                    {/* Fee Preview Section */}
-                    {changes &&
-                      (changes.hasCollateralChange ||
-                        changes.hasDebtChange) && (
-                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-2">
-                          <h4 className="font-medium text-amber-800">
-                            Transaction Preview
-                          </h4>
-                          <div className="space-y-1 text-sm text-amber-700">
-                            {/* TODO: Add actual fee calculations */}
-                            <div className="flex justify-between">
-                              <span>Estimated Fee:</span>
-                              <span className="font-medium">~0.5%</span>
-                            </div>
-                            {liquidationPrice > 0 && (
-                              <div className="flex justify-between">
-                                <span>New Liquidation Price:</span>
-                                <span className="font-medium">
-                                  <NumericFormat
-                                    displayType="text"
-                                    value={liquidationPrice}
-                                    prefix="$"
-                                    thousandSeparator=","
-                                    decimalScale={2}
-                                    fixedDecimalScale
-                                  />
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                    {/* Update Button */}
-                    <div className="flex flex-col items-start space-y-4 mt-6">
-                      <Button
-                        type={address ? "submit" : "button"}
-                        onClick={!address ? connectWallet : undefined}
-                        disabled={
-                          address &&
-                          (!collateralAmount ||
-                            !borrowAmount ||
-                            borrowAmount <= 0 ||
-                            isSending ||
-                            isPending ||
-                            !canSubmit ||
-                            !changes ||
-                            (!changes.hasCollateralChange &&
-                              !changes.hasDebtChange))
-                        }
-                        className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2 px-6 rounded-xl shadow-sm hover:shadow transition-all whitespace-nowrap"
-                      >
-                        {isSending
-                          ? "Confirm in wallet..."
-                          : isPending
-                          ? "Confirming..."
-                          : buttonText}
-                      </Button>
+                    <div className="mt-3 pt-3 border-t border-slate-200">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-slate-600">Interest Rate:</span>
+                        <span className="font-medium">{position ? getInterestRatePercentage(position) : 0}% APR</span>
+                      </div>
                     </div>
                   </div>
-                </form>
-              </CardContent>
-            </Card>
+
+                  {/* Update Collateral */}
+                  <form.Field
+                    name="collateralAmount"
+                    asyncDebounceMs={300}
+                    validators={{
+                      onChangeAsync: async ({ value }) => {
+                        if (!address || !value) return undefined;
+
+                        if (!bitcoinBalance) return undefined;
+
+                        const balance = Number(bitcoinBalance.value) / 10 ** selectedCollateralToken.decimals;
+                        const currentCollateral = position.collateralAmount;
+                        const currentDebt = position.borrowedAmount;
+
+                        // Check if adding more than balance
+                        if (value > currentCollateral && value - currentCollateral > balance) {
+                          return `Insufficient balance. You have ${balance.toFixed(7)} ${selectedCollateralToken.symbol}`;
+                        }
+
+                        // Check minimum collateral ratio after withdrawal
+                        if (value < currentCollateral && bitcoin?.price && usdu?.price && currentDebt > 0) {
+                          const newCollateralValue = value * bitcoin.price;
+                          const debtValue = currentDebt * usdu.price;
+                          const ratioError = validators.minimumCollateralRatio(
+                            newCollateralValue,
+                            debtValue,
+                            1.1 // 110% minimum
+                          );
+                          if (ratioError) return ratioError;
+                        }
+
+                        return validators.compose(
+                          validators.maximumAmount(value, MAX_LIMIT)
+                        );
+                      },
+                    }}
+                    listeners={{
+                      onChangeDebounceMs: 500,
+                      onChange: ({ fieldApi }) => {
+                        const currentBorrowAmount = fieldApi.form.getFieldValue("borrowAmount");
+                        if (currentBorrowAmount !== undefined && currentBorrowAmount > 0) {
+                          fieldApi.form.validateField("borrowAmount", "change");
+                        }
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <TokenInput
+                        token={selectedCollateralToken}
+                        balance={bitcoinBalance}
+                        price={bitcoin}
+                        value={field.state.value}
+                        onChange={(value) => {
+                          if (value !== undefined) {
+                            field.handleChange(value);
+                            setCollateralAmount(value);
+                          } else {
+                            field.handleChange(position?.collateralAmount || 0);
+                            setCollateralAmount(position?.collateralAmount || 0);
+                          }
+                        }}
+                        onBlur={field.handleBlur}
+                        label="New collateral amount"
+                        disabled={isSending || isPending}
+                      />
+                    )}
+                  </form.Field>
+
+                  <div className="relative flex justify-center items-center py-3">
+                    <div className="w-full h-px bg-slate-200"></div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="absolute bg-white rounded-full border border-slate-200 shadow-sm hover:shadow transition-shadow z-10"
+                    >
+                      <ArrowDown className="h-4 w-4 text-slate-600" />
+                    </Button>
+                  </div>
+
+                  {/* Update Debt */}
+                  <form.Field
+                    name="borrowAmount"
+                    asyncDebounceMs={300}
+                    validators={{
+                      onChangeAsync: async ({ value, fieldApi }) => {
+                        if (!value) return undefined;
+
+                        const collateral = fieldApi.form.getFieldValue("collateralAmount");
+                        const currentDebt = position.borrowedAmount;
+                        const usduBal = usduBalance ? Number(usduBalance.value) / 10 ** USDU_TOKEN.decimals : 0;
+
+                        // Check if repaying more than available balance
+                        if (value < currentDebt) {
+                          const repayAmount = currentDebt - value;
+                          if (repayAmount > usduBal) {
+                            return `Insufficient USDU balance. You have ${usduBal.toFixed(2)} USDU`;
+                          }
+                        }
+
+                        // Don't validate until prices are loaded
+                        if (!bitcoin?.price || !usdu?.price) return undefined;
+
+                        // Calculate debt limit
+                        const debtLimit = collateral ? computeDebtLimit(collateral, bitcoin.price) : 0;
+
+                        return validators.compose(
+                          validators.minimumUsdValue(value, usdu.price, 2000),
+                          validators.minimumDebt(value * usdu.price),
+                          value > currentDebt ? validators.debtLimit(value, debtLimit) : undefined
+                        );
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <TokenInput
+                        token={USDU_TOKEN}
+                        balance={usduBalance}
+                        price={usdu}
+                        value={field.state.value}
+                        onChange={(value) => {
+                          if (value !== undefined) {
+                            field.handleChange(value);
+                            setBorrowAmount(value);
+                          } else {
+                            field.handleChange(position?.borrowedAmount || 0);
+                            setBorrowAmount(position?.borrowedAmount || 0);
+                          }
+                        }}
+                        onBlur={field.handleBlur}
+                        label="New debt amount"
+                        disabled={isSending || isPending}
+                      />
+                    )}
+                  </form.Field>
+
+                  {/* Interest Rate Section */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-medium text-slate-700">Interest Rate</h3>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-600">Redemption Risk:</span>
+                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${redemptionRisk.bgColor} ${redemptionRisk.color} ${redemptionRisk.borderColor} border`}>
+                          {redemptionRisk.level}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <InterestRateSelector
+                      interestRate={interestRate}
+                      onInterestRateChange={(rate) => {
+                        if (!isSending && !isPending) {
+                          form.setFieldValue("interestRate", rate);
+                          setInterestRate(rate);
+                        }
+                      }}
+                      disabled={isSending || isPending}
+                    />
+                    
+                    {/* Interest Cost Preview */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-blue-700">Annual Interest Cost:</span>
+                        <span className="font-medium text-blue-800">
+                          <NumericFormat
+                            displayType="text"
+                            value={annualInterestCost}
+                            thousandSeparator=","
+                            decimalScale={2}
+                            fixedDecimalScale
+                          />{" "}
+                          USDU/year
+                        </span>
+                      </div>
+                      <p className="text-xs text-blue-600">
+                        Higher rates reduce redemption risk. Positions with lower rates are redeemed first.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Update Button */}
+                  <div className="flex flex-col items-start space-y-4 mt-6">
+                    <form.Subscribe
+                      selector={(state) => ({
+                        canSubmit: state.canSubmit,
+                        collateralErrors: state.fieldMeta.collateralAmount?.errors || [],
+                        borrowErrors: state.fieldMeta.borrowAmount?.errors || [],
+                        collateralAmount: state.values.collateralAmount,
+                        borrowAmount: state.values.borrowAmount,
+                      })}
+                    >
+                      {({
+                        canSubmit,
+                        collateralErrors,
+                        borrowErrors,
+                        collateralAmount,
+                        borrowAmount,
+                      }) => {
+                        let buttonText = "Update Position";
+
+                        if (!address) {
+                          buttonText = "Connect Wallet";
+                        } else if (!changes || (!changes.hasCollateralChange && !changes.hasDebtChange && !changes.hasInterestRateChange)) {
+                          buttonText = "No changes made";
+                        } else if (collateralErrors.length > 0) {
+                          buttonText = collateralErrors[0];
+                        } else if (borrowErrors.length > 0) {
+                          buttonText = borrowErrors[0];
+                        } else if (!collateralAmount) {
+                          buttonText = "Enter collateral amount";
+                        } else if (!borrowAmount) {
+                          buttonText = "Enter borrow amount";
+                        }
+
+                        return (
+                          <Button
+                            type={address ? "submit" : "button"}
+                            onClick={!address ? connectWallet : undefined}
+                            disabled={
+                              address &&
+                              (!collateralAmount ||
+                                !borrowAmount ||
+                                borrowAmount <= 0 ||
+                                isSending ||
+                                isPending ||
+                                !canSubmit ||
+                                !changes ||
+                                (!changes.hasCollateralChange && !changes.hasDebtChange && !changes.hasInterestRateChange))
+                            }
+                            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2 px-6 rounded-xl shadow-sm hover:shadow transition-all whitespace-nowrap"
+                          >
+                            {isSending
+                              ? "Confirm in wallet..."
+                              : isPending
+                              ? "Transaction pending..."
+                              : buttonText}
+                          </Button>
+                        );
+                      }}
+                    </form.Subscribe>
+                  </div>
+                </CardContent>
+              </Card>
+            </form>
           )}
         </div>
 
         {/* Right Panel - Position Summary */}
         <div className="md:col-span-1">
           <PositionSummaryCard
-            collateralAmount={collateralAmount}
-            borrowAmount={borrowAmount}
-            interestRate={interestRate}
-            liquidationPrice={liquidationPrice}
-            troveData={troveData}
-            selectedCollateralToken={selectedCollateralToken}
+            totalValue={metrics.totalValue}
+            netValue={metrics.netValue}
+            onUpdatePosition={() => {}}
+            onChangeRate={() => {}}
+            isZombie={false}
+            liquidationPrice={metrics.liquidationPrice}
+            ltvValue={metrics.ltvValue}
+            collateralRatio={metrics.collateralRatio}
+            interestRate={interestRate || 5}
           />
         </div>
       </div>

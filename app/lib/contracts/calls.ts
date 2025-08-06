@@ -194,6 +194,31 @@ export const contractCall = {
       );
       return contract.populate("get_interest_batch_manager_of", [troveId]);
     },
+
+    /**
+     * Adjust the interest rate of a trove
+     */
+    adjustTroveInterestRate: (params: {
+      troveId: bigint;
+      annualInterestRate: bigint;
+      upperHint?: bigint;
+      lowerHint?: bigint;
+      maxUpfrontFee?: bigint;
+      collateralType: CollateralType;
+    }) => {
+      const addresses = getCollateralAddresses(params.collateralType);
+      const contract = new Contract(
+        BORROWER_OPERATIONS_ABI,
+        addresses.borrowerOperations
+      );
+      return contract.populate("adjust_trove_interest_rate", [
+        params.troveId,
+        params.annualInterestRate,
+        params.upperHint ?? 0n,
+        params.lowerHint ?? 0n,
+        params.maxUpfrontFee ?? 2n ** 256n - 1n,
+      ]);
+    },
   },
 
   usdu: {

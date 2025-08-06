@@ -261,8 +261,6 @@ export async function fetchPositionById(
       USDU_DECIMALS
     );
 
-    // No longer calculating USD value - just use BTC amount
-
     // Calculate derived values
     const healthFactor =
       borrowedAmount > 0

@@ -14,11 +14,14 @@ export function createTransactionDescription(
     case 'adjust':
       if (details?.troveId) {
         const parts: string[] = [];
-        if (details.collateralChange) {
-          parts.push(`${details.isCollateralIncrease ? 'Add' : 'Remove'} ${Math.abs(details.collateralChange)} collateral`);
+        if (details.hasCollateralChange && details.collateralChange) {
+          parts.push(`${details.isCollIncrease ? 'Add' : 'Remove'} ${Math.abs(details.collateralChange).toFixed(7)} ${details.collateralToken || 'collateral'}`);
         }
-        if (details.debtChange) {
-          parts.push(`${details.isDebtIncrease ? 'Borrow' : 'Repay'} ${Math.abs(details.debtChange)} USDU`);
+        if (details.hasDebtChange && details.debtChange) {
+          parts.push(`${details.isDebtIncrease ? 'Borrow' : 'Repay'} ${Math.abs(details.debtChange).toFixed(2)} USDU`);
+        }
+        if (details.hasInterestRateChange && details.newInterestRate !== undefined) {
+          parts.push(`Change rate to ${details.newInterestRate}%`);
         }
         return parts.length > 0 ? parts.join(' and ') : `Adjust trove #${details.troveId}`;
       }

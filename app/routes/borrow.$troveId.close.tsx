@@ -23,6 +23,7 @@ import {
 } from "~/lib/contracts/constants";
 import { NumericFormat } from "react-number-format";
 import { useTroveData } from "~/hooks/use-trove-data";
+import { extractTroveId } from "~/lib/utils/position-helpers";
 import { useCloseTrove } from "~/hooks/use-close-trove";
 import { useQueryState } from "nuqs";
 import { useState } from "react";
@@ -45,9 +46,7 @@ function ClosePosition() {
   });
 
   // Fetch existing trove data
-  const { troveData, isLoading: isTroveLoading } = useTroveData(troveId, {
-    collateralType: troveCollateralType as CollateralType,
-  });
+  const { position, isLoading: isTroveLoading } = useTroveData(troveId);
 
   // Check if we have a transaction hash in URL
   const [urlTransactionHash, setUrlTransactionHash] = useQueryState("tx", {
@@ -74,8 +73,8 @@ function ClosePosition() {
     isReady,
     isSuccess: isTransactionSuccess,
   } = useCloseTrove({
-    troveId: troveData?.troveId,
-    debt: troveData?.debt,
+    troveId: position ? extractTroveId(position.id) : undefined,
+    debt: position?.borrowedAmount,
     collateralType: troveCollateralType as CollateralType,
   });
 
@@ -100,7 +99,7 @@ function ClosePosition() {
   // Show transaction UI if we have a hash in URL (single source of truth)
   const shouldShowTransactionUI = !!urlTransactionHash;
 
-  if (isTroveLoading || !troveData) {
+  if (isTroveLoading || !position) {
     return (
       <div className="mx-auto max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
         <div className="flex justify-between items-baseline">
@@ -120,7 +119,7 @@ function ClosePosition() {
   const usduBal = usduBalance
     ? Number(usduBalance.value) / 10 ** USDU_TOKEN.decimals
     : 0;
-  const hasEnoughBalance = usduBal >= troveData.debt;
+  const hasEnoughBalance = position ? usduBal >= position.borrowedAmount : false;
 
   // Check if trove is zombie or redeemed
   // TODO: Implement status check from trove data
@@ -181,7 +180,7 @@ function ClosePosition() {
                     <>
                       <NumericFormat
                         displayType="text"
-                        value={troveData.debt}
+                        value={position.borrowedAmount}
                         thousandSeparator=","
                         decimalScale={2}
                         fixedDecimalScale
@@ -196,7 +195,7 @@ function ClosePosition() {
                     <>
                       <NumericFormat
                         displayType="text"
-                        value={troveData.collateral}
+                        value={position.collateralAmount}
                         thousandSeparator=","
                         decimalScale={7}
                         fixedDecimalScale={false}
@@ -266,7 +265,7 @@ function ClosePosition() {
                         <span className="font-semibold text-lg">
                           <NumericFormat
                             displayType="text"
-                            value={troveData.debt}
+                            value={position.borrowedAmount}
                             thousandSeparator=","
                             decimalScale={2}
                             fixedDecimalScale
@@ -296,7 +295,7 @@ function ClosePosition() {
                           ⚠️ Insufficient USDU balance. You need{" "}
                           <NumericFormat
                             displayType="text"
-                            value={troveData.debt - usduBal}
+                            value={position.borrowedAmount - usduBal}
                             thousandSeparator=","
                             decimalScale={2}
                             fixedDecimalScale
@@ -316,7 +315,7 @@ function ClosePosition() {
                         <span className="font-semibold text-lg">
                           <NumericFormat
                             displayType="text"
-                            value={troveData.collateral}
+                            value={position.collateralAmount}
                             thousandSeparator=","
                             decimalScale={7}
                             fixedDecimalScale={false}
@@ -344,7 +343,7 @@ function ClosePosition() {
                         <span className="font-medium">
                           <NumericFormat
                             displayType="text"
-                            value={troveData.debt}
+                            value={position.borrowedAmount}
                             thousandSeparator=","
                             decimalScale={2}
                             fixedDecimalScale

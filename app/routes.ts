@@ -11,7 +11,6 @@ export default [
     route("borrow/:troveId", "routes/borrow.$troveId.tsx", [
       index("routes/borrow.$troveId._index.tsx"),
       route("update", "routes/borrow.$troveId.update.tsx"),
-      route("rate", "routes/borrow.$troveId.rate.tsx"),
       route("close", "routes/borrow.$troveId.close.tsx"),
     ]),
     route("my-troves", "routes/my-troves.tsx"),

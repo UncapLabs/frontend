@@ -89,9 +89,11 @@ export function TransactionStoreProvider({
             troveId: transaction.details.troveId,
             onComplete: () => {
               queryClient.invalidateQueries({
-                queryKey: trpc.positionsRouter.getUserOnChainPositions.queryKey({
-                  userAddress: address,
-                }),
+                queryKey: trpc.positionsRouter.getUserOnChainPositions.queryKey(
+                  {
+                    userAddress: address,
+                  }
+                ),
               });
             },
           });

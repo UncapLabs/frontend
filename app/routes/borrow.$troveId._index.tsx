@@ -1,34 +1,23 @@
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { ArrowLeft, Edit3, Percent, XCircle, AlertTriangle } from "lucide-react";
-import { Separator } from "~/components/ui/separator";
+import { Card, CardContent } from "~/components/ui/card";
+import { Edit3, XCircle, AlertTriangle } from "lucide-react";
 import type { Route } from "./+types/borrow.$troveId._index";
 import { useParams, useNavigate } from "react-router";
-import { NumericFormat } from "react-number-format";
-import { useTroveData } from "~/hooks/use-trove-data";
-import { useFetchPrices } from "~/hooks/use-fetch-prices";
-import {
-  INTEREST_RATE_SCALE_DOWN_FACTOR,
-  UBTC_TOKEN,
-  GBTC_TOKEN,
-  type CollateralType,
-} from "~/lib/contracts/constants";
+import { UBTC_TOKEN, GBTC_TOKEN } from "~/lib/contracts/constants";
 import { useQueryState } from "nuqs";
+import { useTroveOverview } from "~/hooks/use-trove-overview";
+import { TroveLoadingState } from "~/components/borrow/loading-state";
+import { ErrorState } from "~/components/borrow/error-state";
+import { PositionMetricsCard } from "~/components/borrow/position-metrics-card";
+import { ActionCard } from "~/components/borrow/action-card";
+import { PositionSummaryCard } from "~/components/borrow/position-summary-card";
 
 const ACTION_CARDS = [
   {
     title: "Update Position",
-    description: "Adjust your collateral and debt amounts",
+    description: "Adjust your collateral, debt, and interest rate",
     icon: Edit3,
     route: "update",
     color: "blue",
-  },
-  {
-    title: "Adjust Interest Rate",
-    description: "Change your position's interest rate",
-    icon: Percent,
-    route: "rate",
-    color: "green",
   },
   {
     title: "Close Position",
@@ -37,7 +26,7 @@ const ACTION_CARDS = [
     route: "close",
     color: "red",
   },
-];
+] as const;
 
 function TroveOverviewIndex() {
   const { troveId } = useParams();
@@ -48,42 +37,35 @@ function TroveOverviewIndex() {
     defaultValue: "UBTC",
   });
 
-  // Fetch existing trove data
-  const { troveData, position, isLoading: isTroveLoading } = useTroveData(troveId);
+  // Use the new hook for all trove data and metrics
+  const { position, isLoading, bitcoin, usdu, metrics } = useTroveOverview(troveId);
 
   // Get the collateral token based on position data or URL param
   const selectedCollateralToken = position?.collateralAsset === "GBTC" ? GBTC_TOKEN : UBTC_TOKEN;
-
-  // Conditional price fetching
-  const { bitcoin, usdu } = useFetchPrices(troveData?.collateral);
 
   const handleActionClick = (route: string) => {
     navigate(`/borrow/${troveId}/${route}?type=${troveCollateralType}`);
   };
 
-  // Calculate key metrics
-  const currentInterestRate = troveData
-    ? Number(troveData.annualInterestRate) /
-      Number(INTEREST_RATE_SCALE_DOWN_FACTOR)
-    : 0;
-  
-  const liquidationPrice = troveData && troveData.collateral > 0
-    ? (troveData.debt * 1.1) / troveData.collateral
-    : 0;
-
-  // Calculate LTV
-  const ltvValue = troveData && bitcoin?.price && usdu?.price && troveData.collateral > 0
-    ? (troveData.debt * usdu.price) / (troveData.collateral * bitcoin.price) * 100
-    : 0;
-
   // Check for special states
   const isZombie = false; // TODO: Get from trove status
   const isRedeemed = false; // TODO: Get from trove status
 
-  if (isTroveLoading || !troveData) {
+  if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <p className="text-slate-600">Loading position data...</p>
+      <div className="mx-auto max-w-7xl py-8 px-4 sm:px-6 lg:px-8">
+        <TroveLoadingState />
+      </div>
+    );
+  }
+
+  if (!position || !metrics) {
+    return (
+      <div className="mx-auto max-w-7xl py-8 px-4 sm:px-6 lg:px-8">
+        <ErrorState 
+          title="Position not found"
+          description="We couldn't find the position you're looking for. It may have been closed or doesn't exist."
+        />
       </div>
     );
   }
@@ -117,212 +99,45 @@ function TroveOverviewIndex() {
         {/* Left Panel - Position Details */}
         <div className="md:col-span-2 space-y-6">
           {/* Position Summary Card */}
-          <Card className="border border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle>Position Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <p className="text-sm text-slate-600">Collateral</p>
-                  <p className="text-xl font-semibold">
-                    <NumericFormat
-                      displayType="text"
-                      value={troveData.collateral}
-                      thousandSeparator=","
-                      decimalScale={7}
-                      fixedDecimalScale={false}
-                    />{" "}
-                    {selectedCollateralToken.symbol}
-                  </p>
-                  {bitcoin?.price && (
-                    <p className="text-sm text-slate-500">
-                      ≈ $<NumericFormat
-                        displayType="text"
-                        value={troveData.collateral * bitcoin.price}
-                        thousandSeparator=","
-                        decimalScale={2}
-                        fixedDecimalScale
-                      />
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-slate-600">Debt</p>
-                  <p className="text-xl font-semibold">
-                    <NumericFormat
-                      displayType="text"
-                      value={troveData.debt}
-                      thousandSeparator=","
-                      decimalScale={2}
-                      fixedDecimalScale
-                    />{" "}
-                    USDU
-                  </p>
-                  {usdu?.price && (
-                    <p className="text-sm text-slate-500">
-                      ≈ $<NumericFormat
-                        displayType="text"
-                        value={troveData.debt * usdu.price}
-                        thousandSeparator=","
-                        decimalScale={2}
-                        fixedDecimalScale
-                      />
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <Separator className="bg-slate-100" />
-
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-1">
-                  <p className="text-sm text-slate-600">Interest Rate</p>
-                  <p className="text-lg font-medium">{currentInterestRate}% APR</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-slate-600">LTV</p>
-                  <p className="text-lg font-medium">
-                    {ltvValue.toFixed(1)}%
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-slate-600">Liquidation Price</p>
-                  <p className="text-lg font-medium">
-                    <NumericFormat
-                      displayType="text"
-                      value={liquidationPrice}
-                      prefix="$"
-                      thousandSeparator=","
-                      decimalScale={2}
-                      fixedDecimalScale
-                    />
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <PositionMetricsCard
+            collateral={position.collateralAmount}
+            debt={position.borrowedAmount}
+            collateralToken={selectedCollateralToken}
+            bitcoinPrice={bitcoin?.price}
+            usduPrice={usdu?.price}
+            interestRate={metrics.currentInterestRate}
+            ltvValue={metrics.ltvValue}
+            liquidationPrice={metrics.liquidationPrice}
+          />
 
           {/* Action Cards */}
           <div className="grid grid-cols-1 gap-4">
-            {ACTION_CARDS.map((action) => {
-              const Icon = action.icon;
-              const isDisabled = isZombie && action.route === "rate";
-              
-              return (
-                <Card
-                  key={action.route}
-                  className={`border border-slate-200 shadow-sm transition-all cursor-pointer hover:shadow-md ${
-                    isDisabled ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                  onClick={() => !isDisabled && handleActionClick(action.route)}
-                >
-                  <CardContent className="flex items-center justify-between p-6">
-                    <div className="flex items-center gap-4">
-                      <div className={`p-3 rounded-lg ${
-                        action.color === 'blue' ? 'bg-blue-50' :
-                        action.color === 'green' ? 'bg-green-50' :
-                        'bg-red-50'
-                      }`}>
-                        <Icon className={`h-6 w-6 ${
-                          action.color === 'blue' ? 'text-blue-600' :
-                          action.color === 'green' ? 'text-green-600' :
-                          'text-red-600'
-                        }`} />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-lg">{action.title}</h3>
-                        <p className="text-sm text-slate-600">
-                          {action.description}
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      disabled={isDisabled}
-                    >
-                      <ArrowLeft className="h-5 w-5 rotate-180" />
-                    </Button>
-                  </CardContent>
-                </Card>
-              );
-            })}
+            {ACTION_CARDS.map((action) => (
+              <ActionCard
+                key={action.route}
+                title={action.title}
+                description={action.description}
+                icon={action.icon}
+                color={action.color}
+                onClick={() => handleActionClick(action.route)}
+              />
+            ))}
           </div>
         </div>
 
         {/* Right Panel - Quick Info */}
         <div className="md:col-span-1">
-          <Card className="border border-slate-200 shadow-sm sticky top-8">
-            <CardHeader>
-              <CardTitle>Position Summary</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Key Metrics */}
-              <div className="space-y-3">
-                <div>
-                  <p className="text-xs text-slate-600 mb-1">Total Value</p>
-                  <p className="text-lg font-semibold">
-                    {bitcoin?.price && (
-                      <NumericFormat
-                        displayType="text"
-                        value={troveData.collateral * bitcoin.price}
-                        prefix="$"
-                        thousandSeparator=","
-                        decimalScale={2}
-                        fixedDecimalScale
-                      />
-                    )}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-600 mb-1">Net Value</p>
-                  <p className="text-lg font-semibold">
-                    {bitcoin?.price && usdu?.price && (
-                      <NumericFormat
-                        displayType="text"
-                        value={(troveData.collateral * bitcoin.price) - (troveData.debt * usdu.price)}
-                        prefix="$"
-                        thousandSeparator=","
-                        decimalScale={2}
-                        fixedDecimalScale
-                      />
-                    )}
-                  </p>
-                </div>
-              </div>
-
-              <Separator className="bg-slate-100" />
-
-              {/* Quick Actions */}
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium text-slate-700">
-                  Quick Actions
-                </h4>
-                <div className="space-y-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full justify-start"
-                    onClick={() => handleActionClick("update")}
-                  >
-                    <Edit3 className="h-4 w-4 mr-2" />
-                    Update Position
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full justify-start"
-                    onClick={() => handleActionClick("rate")}
-                    disabled={isZombie}
-                  >
-                    <Percent className="h-4 w-4 mr-2" />
-                    Change Rate
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <PositionSummaryCard
+            totalValue={metrics.totalValue}
+            netValue={metrics.netValue}
+            onUpdatePosition={() => handleActionClick("update")}
+            onChangeRate={() => handleActionClick("update")}
+            isZombie={isZombie}
+            liquidationPrice={metrics.liquidationPrice}
+            ltvValue={metrics.ltvValue}
+            collateralRatio={metrics.collateralizationRatio}
+            interestRate={metrics.currentInterestRate}
+          />
         </div>
       </div>
     </>
