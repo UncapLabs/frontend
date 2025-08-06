@@ -4,6 +4,7 @@ import { ArrowDown } from "lucide-react";
 import { Separator } from "~/components/ui/separator";
 import { InterestRateSelector } from "~/components/borrow";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
+import { TransactionSummary } from "~/components/transaction-summary";
 import { TokenInput } from "~/components/token-input";
 import { useEffect, useCallback } from "react";
 import { useForm } from "@tanstack/react-form";
@@ -52,6 +53,16 @@ function Borrow() {
   });
 
   const { bitcoin, usdu } = useFetchPrices(collateralAmount ?? undefined);
+
+  // Calculate metrics for the position
+  const metrics = {
+    ltvValue: collateralAmount && borrowAmount && bitcoin?.price && usdu?.price && collateralAmount > 0
+      ? (borrowAmount * (usdu?.price || 1)) / (collateralAmount * bitcoin.price) * 100
+      : 0,
+    liquidationPrice: collateralAmount && borrowAmount && collateralAmount > 0
+      ? (borrowAmount * 1.1) / collateralAmount // 110% collateralization
+      : 0,
+  };
 
   // Initialize form with URL values
   const form = useForm({
@@ -373,6 +384,7 @@ function Borrow() {
                     )}
                   </form.Field>
 
+
                   {/* Interest Rate Options */}
                   <InterestRateSelector
                     interestRate={interestRate}
@@ -450,6 +462,49 @@ function Borrow() {
               </Card>
             </form>
           )}
+        </div>
+
+        {/* Right Panel - Transaction Summary */}
+        <div className="lg:col-span-1">
+          <TransactionSummary
+            type="open"
+            changes={{
+              collateral: {
+                to: collateralAmount || 0,
+                token: selectedCollateralToken.symbol,
+              },
+              collateralValueUSD: {
+                to: (collateralAmount || 0) * (bitcoin?.price || 0),
+              },
+              debt: {
+                to: borrowAmount || 0,
+              },
+              interestRate: {
+                to: interestRate || 5,
+              },
+            }}
+            liquidationPrice={metrics.liquidationPrice}
+            liquidationRisk={
+              metrics.liquidationPrice > 0 && bitcoin?.price
+                ? bitcoin.price / metrics.liquidationPrice > 2
+                  ? "Low"
+                  : bitcoin.price / metrics.liquidationPrice > 1.5
+                  ? "Medium"
+                  : "High"
+                : undefined
+            }
+            redemptionRisk={
+              interestRate !== undefined
+                ? interestRate < 5
+                  ? "High"
+                  : interestRate < 10
+                  ? "Medium"
+                  : "Low"
+                : undefined
+            }
+            warnings={borrowAmount && borrowAmount < 2000 ? ["Minimum debt requirement is $2,000 USDU"] : []}
+            className="sticky top-8"
+          />
         </div>
       </div>
     </div>

@@ -25,7 +25,7 @@ import { useUpdatePosition } from "~/hooks/use-update-position";
 import { useQueryState, parseAsFloat, parseAsInteger } from "nuqs";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { getInterestRatePercentage } from "~/lib/utils/position-helpers";
-import { PositionSummaryCard } from "~/components/borrow/position-summary-card";
+import { TransactionSummary } from "~/components/transaction-summary";
 
 function UpdatePosition() {
   const { address } = useAccount();
@@ -68,14 +68,6 @@ function UpdatePosition() {
 
   const { bitcoin, usdu } = useFetchPrices(collateralAmount ?? undefined);
 
-  // Calculate redemption risk based on interest rate
-  const getRedemptionRisk = (rate: number) => {
-    if (rate < 5) return { level: "High", color: "text-red-600", bgColor: "bg-red-50", borderColor: "border-red-200" };
-    if (rate < 10) return { level: "Medium", color: "text-yellow-600", bgColor: "bg-yellow-50", borderColor: "border-yellow-200" };
-    return { level: "Low", color: "text-green-600", bgColor: "bg-green-50", borderColor: "border-green-200" };
-  };
-
-  const redemptionRisk = getRedemptionRisk(interestRate || 5);
   const annualInterestCost = borrowAmount && interestRate ? (borrowAmount * interestRate) / 100 : 0;
 
   // Calculate metrics for the new position
@@ -462,17 +454,10 @@ function UpdatePosition() {
                     )}
                   </form.Field>
 
+
                   {/* Interest Rate Section */}
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-medium text-slate-700">Interest Rate</h3>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-slate-600">Redemption Risk:</span>
-                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${redemptionRisk.bgColor} ${redemptionRisk.color} ${redemptionRisk.borderColor} border`}>
-                          {redemptionRisk.level}
-                        </span>
-                      </div>
-                    </div>
+                    <h3 className="text-sm font-medium text-slate-700">Interest Rate</h3>
                     
                     <InterestRateSelector
                       interestRate={interestRate}
@@ -573,18 +558,50 @@ function UpdatePosition() {
           )}
         </div>
 
-        {/* Right Panel - Position Summary */}
+        {/* Right Panel - Transaction Summary */}
         <div className="md:col-span-1">
-          <PositionSummaryCard
-            totalValue={metrics.totalValue}
-            netValue={metrics.netValue}
-            onUpdatePosition={() => {}}
-            onChangeRate={() => {}}
-            isZombie={false}
+          <TransactionSummary
+            type="update"
+            changes={{
+              collateral: {
+                from: position.collateralAmount,
+                to: collateralAmount || position.collateralAmount,
+                token: selectedCollateralToken.symbol,
+              },
+              collateralValueUSD: bitcoin?.price ? {
+                from: position.collateralAmount * bitcoin.price,
+                to: (collateralAmount || position.collateralAmount) * bitcoin.price,
+              } : undefined,
+              debt: {
+                from: position.borrowedAmount,
+                to: borrowAmount || position.borrowedAmount,
+              },
+              interestRate: {
+                from: getInterestRatePercentage(position),
+                to: interestRate || getInterestRatePercentage(position),
+              },
+            }}
             liquidationPrice={metrics.liquidationPrice}
-            ltvValue={metrics.ltvValue}
-            collateralRatio={metrics.collateralRatio}
-            interestRate={interestRate || 5}
+            liquidationRisk={
+              metrics.liquidationPrice > 0 && bitcoin?.price
+                ? bitcoin.price / metrics.liquidationPrice > 2
+                  ? "Low"
+                  : bitcoin.price / metrics.liquidationPrice > 1.5
+                  ? "Medium"
+                  : "High"
+                : undefined
+            }
+            redemptionRisk={
+              interestRate !== undefined
+                ? interestRate < 5
+                  ? "High"
+                  : interestRate < 10
+                  ? "Medium"
+                  : "Low"
+                : undefined
+            }
+            warnings={borrowAmount && borrowAmount < 2000 ? ["Minimum debt requirement is $2,000 USDU"] : []}
+            className="sticky top-8"
           />
         </div>
       </div>

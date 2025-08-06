@@ -70,18 +70,16 @@ function NavLink({
 
 function Header() {
   const navItems = [
-    // { name: "Dashboard", href: "/", icon: <HomeIcon size={16} /> },
-    { name: "Borrow", href: "/", icon: <DollarIcon size={16} /> },
-    { name: "My Troves", href: "/my-troves", icon: <DollarIcon size={16} /> },
+    { name: "Dashboard", href: "/", icon: <DollarIcon size={16} /> },
+    { name: "Borrow", href: "/borrow", icon: <DollarIcon size={16} /> },
     { name: "Stake", href: "/stake", icon: <LayersIcon size={16} /> },
-    { name: "Positions", href: "/positions", icon: <LayersIcon size={16} /> },
     // { name: "Analytics", href: "/analytics", icon: <ChartIcon size={16} /> },
   ];
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
 
   return (
-    <header className="bg-white dark:bg-gray-900 sticky top-0 z-50 border-b border-gray-200 dark:border-gray-800 shadow-sm backdrop-blur-sm bg-white/90 dark:bg-gray-900/90">
+    <header className="bg-white dark:bg-gray-900/90 sticky top-0 z-50 border-b border-gray-200 dark:border-gray-800 shadow-sm backdrop-blur-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Left Group: Hamburger (mobile) + Logo */}

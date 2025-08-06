@@ -9,7 +9,6 @@ import { TroveLoadingState } from "~/components/borrow/loading-state";
 import { ErrorState } from "~/components/borrow/error-state";
 import { PositionMetricsCard } from "~/components/borrow/position-metrics-card";
 import { ActionCard } from "~/components/borrow/action-card";
-import { PositionSummaryCard } from "~/components/borrow/position-summary-card";
 
 const ACTION_CARDS = [
   {
@@ -95,49 +94,31 @@ function TroveOverviewIndex() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Left Panel - Position Details */}
-        <div className="md:col-span-2 space-y-6">
-          {/* Position Summary Card */}
-          <PositionMetricsCard
-            collateral={position.collateralAmount}
-            debt={position.borrowedAmount}
-            collateralToken={selectedCollateralToken}
-            bitcoinPrice={bitcoin?.price}
-            usduPrice={usdu?.price}
-            interestRate={metrics.currentInterestRate}
-            ltvValue={metrics.ltvValue}
-            liquidationPrice={metrics.liquidationPrice}
-          />
+      <div className="space-y-6">
+        {/* Position Metrics */}
+        <PositionMetricsCard
+          collateral={position.collateralAmount}
+          debt={position.borrowedAmount}
+          collateralToken={selectedCollateralToken}
+          bitcoinPrice={bitcoin?.price}
+          usduPrice={usdu?.price}
+          interestRate={metrics.currentInterestRate}
+          ltvValue={metrics.ltvValue}
+          liquidationPrice={metrics.liquidationPrice}
+        />
 
-          {/* Action Cards */}
-          <div className="grid grid-cols-1 gap-4">
-            {ACTION_CARDS.map((action) => (
-              <ActionCard
-                key={action.route}
-                title={action.title}
-                description={action.description}
-                icon={action.icon}
-                color={action.color}
-                onClick={() => handleActionClick(action.route)}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Right Panel - Quick Info */}
-        <div className="md:col-span-1">
-          <PositionSummaryCard
-            totalValue={metrics.totalValue}
-            netValue={metrics.netValue}
-            onUpdatePosition={() => handleActionClick("update")}
-            onChangeRate={() => handleActionClick("update")}
-            isZombie={isZombie}
-            liquidationPrice={metrics.liquidationPrice}
-            ltvValue={metrics.ltvValue}
-            collateralRatio={metrics.collateralizationRatio}
-            interestRate={metrics.currentInterestRate}
-          />
+        {/* Action Cards */}
+        <div className="grid grid-cols-1 gap-4">
+          {ACTION_CARDS.map((action) => (
+            <ActionCard
+              key={action.route}
+              title={action.title}
+              description={action.description}
+              icon={action.icon}
+              color={action.color}
+              onClick={() => handleActionClick(action.route)}
+            />
+          ))}
         </div>
       </div>
     </>
