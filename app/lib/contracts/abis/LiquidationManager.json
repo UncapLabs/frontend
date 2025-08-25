@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "ILiquidationManagerImpl",
-    "interface_name": "usdu::branch::trove::LiquidationManager::ILiquidationManager"
+    "interface_name": "usdu::branch::trove::interfaces::ILiquidationManager::ILiquidationManager"
   },
   {
     "type": "struct",
@@ -29,8 +29,22 @@
     ]
   },
   {
+    "type": "enum",
+    "name": "core::bool",
+    "variants": [
+      {
+        "name": "False",
+        "type": "()"
+      },
+      {
+        "name": "True",
+        "type": "()"
+      }
+    ]
+  },
+  {
     "type": "struct",
-    "name": "usdu::branch::trove::TroveManager::TroveChange",
+    "name": "usdu::branch::trove::interfaces::ITroveManager::TroveChange",
     "members": [
       {
         "name": "applied_redist_usdu_debt_gain",
@@ -79,12 +93,16 @@
       {
         "name": "old_weighted_recorded_batch_management_fee",
         "type": "core::integer::u256"
+      },
+      {
+        "name": "sponsored",
+        "type": "core::bool"
       }
     ]
   },
   {
     "type": "struct",
-    "name": "usdu::branch::trove::LiquidationManager::LiquidationValues",
+    "name": "usdu::branch::trove::interfaces::ILiquidationManager::LiquidationValues",
     "members": [
       {
         "name": "coll_gas_compensation",
@@ -126,28 +144,12 @@
   },
   {
     "type": "interface",
-    "name": "usdu::branch::trove::LiquidationManager::ILiquidationManager",
+    "name": "usdu::branch::trove::interfaces::ILiquidationManager::ILiquidationManager",
     "items": [
-      {
-        "type": "function",
-        "name": "initializer",
-        "inputs": [
-          {
-            "name": "trove_manager",
-            "type": "core::starknet::contract_address::ContractAddress"
-          }
-        ],
-        "outputs": [],
-        "state_mutability": "external"
-      },
       {
         "type": "function",
         "name": "batch_liquidate_troves",
         "inputs": [
-          {
-            "name": "addresses_registry",
-            "type": "core::starknet::contract_address::ContractAddress"
-          },
           {
             "name": "trove_array",
             "type": "core::array::Span::<core::integer::u256>"
@@ -155,16 +157,73 @@
         ],
         "outputs": [
           {
-            "type": "(usdu::branch::trove::TroveManager::TroveChange, usdu::branch::trove::LiquidationManager::LiquidationValues, core::integer::u256)"
+            "type": "(usdu::branch::trove::interfaces::ITroveManager::TroveChange, usdu::branch::trove::interfaces::ILiquidationManager::LiquidationValues, core::integer::u256)"
           }
         ],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "initializer",
+        "inputs": [
+          {
+            "name": "addresses_registry",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [],
         "state_mutability": "external"
       }
     ]
   },
   {
+    "type": "impl",
+    "name": "UpgradeableBaseImpl",
+    "interface_name": "usdu::components::interfaces::IUpgradeableBase::IUpgradeableBase"
+  },
+  {
+    "type": "interface",
+    "name": "usdu::components::interfaces::IUpgradeableBase::IUpgradeableBase",
+    "items": [
+      {
+        "type": "function",
+        "name": "upgrade",
+        "inputs": [
+          {
+            "name": "new_class_hash",
+            "type": "core::starknet::class_hash::ClassHash"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "initialized",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::bool"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "owner",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  },
+  {
     "type": "event",
-    "name": "usdu::branch::trove::TroveManagerEventsEmitter::TroveUpdated",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::TroveUpdated",
     "kind": "struct",
     "members": [
       {
@@ -206,7 +265,7 @@
   },
   {
     "type": "enum",
-    "name": "usdu::branch::trove::TroveManager::Operation",
+    "name": "usdu::branch::trove::interfaces::ITroveManager::Operation",
     "variants": [
       {
         "name": "OpenTrove",
@@ -251,20 +310,6 @@
     ]
   },
   {
-    "type": "enum",
-    "name": "core::bool",
-    "variants": [
-      {
-        "name": "False",
-        "type": "()"
-      },
-      {
-        "name": "True",
-        "type": "()"
-      }
-    ]
-  },
-  {
     "type": "struct",
     "name": "usdu::utils::i257::i257",
     "members": [
@@ -280,7 +325,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::branch::trove::TroveManagerEventsEmitter::TroveOperation",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::TroveOperation",
     "kind": "struct",
     "members": [
       {
@@ -290,7 +335,7 @@
       },
       {
         "name": "operation",
-        "type": "usdu::branch::trove::TroveManager::Operation",
+        "type": "usdu::branch::trove::interfaces::ITroveManager::Operation",
         "kind": "data"
       },
       {
@@ -327,7 +372,7 @@
   },
   {
     "type": "enum",
-    "name": "usdu::branch::trove::TroveManagerEventsEmitter::BatchOperation",
+    "name": "usdu::branch::trove::interfaces::ITroveManagerEventsEmitter::BatchOperation",
     "variants": [
       {
         "name": "RegisterBatchManager",
@@ -361,7 +406,7 @@
   },
   {
     "type": "event",
-    "name": "usdu::branch::trove::TroveManagerEventsEmitter::BatchUpdated",
+    "name": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::BatchUpdated",
     "kind": "struct",
     "members": [
       {
@@ -371,7 +416,7 @@
       },
       {
         "name": "operation",
-        "type": "usdu::branch::trove::TroveManagerEventsEmitter::BatchOperation",
+        "type": "usdu::branch::trove::interfaces::ITroveManagerEventsEmitter::BatchOperation",
         "kind": "data"
       },
       {
@@ -408,23 +453,69 @@
   },
   {
     "type": "event",
+    "name": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::CollateralRegistryAddressChanged",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "new_collateral_registry",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Upgraded",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "class_hash",
+        "type": "core::starknet::class_hash::ClassHash",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Event",
+    "kind": "enum",
+    "variants": [
+      {
+        "name": "CollateralRegistryAddressChanged",
+        "type": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::CollateralRegistryAddressChanged",
+        "kind": "nested"
+      },
+      {
+        "name": "Upgraded",
+        "type": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Upgraded",
+        "kind": "nested"
+      }
+    ]
+  },
+  {
+    "type": "event",
     "name": "usdu::branch::trove::LiquidationManager::LiquidationManager::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "TroveUpdated",
-        "type": "usdu::branch::trove::TroveManagerEventsEmitter::TroveUpdated",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::TroveUpdated",
         "kind": "nested"
       },
       {
         "name": "TroveOperation",
-        "type": "usdu::branch::trove::TroveManagerEventsEmitter::TroveOperation",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::TroveOperation",
         "kind": "nested"
       },
       {
         "name": "BatchUpdated",
-        "type": "usdu::branch::trove::TroveManagerEventsEmitter::BatchUpdated",
+        "type": "usdu::branch::trove::TroveManagerEventsEmitter::TroveManagerEventsEmitter::BatchUpdated",
         "kind": "nested"
+      },
+      {
+        "name": "UpgradeableBaseEvent",
+        "type": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Event",
+        "kind": "flat"
       }
     ]
   }

@@ -1,13 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "~/lib/trpc";
+import type { CollateralType } from "~/lib/contracts/constants";
 
-export function useFetchPrices(collateralAmount: number | undefined) {
+export function useFetchPrices(
+  collateralAmount: number | undefined,
+  collateralType: CollateralType = "UBTC"
+) {
   const trpc = useTRPC();
   const shouldFetchPrices =
     collateralAmount !== undefined && collateralAmount > 0;
 
   const bitcoinQuery = useQuery({
-    ...trpc.priceRouter.getBitcoinPrice.queryOptions(),
+    ...trpc.priceRouter.getBitcoinPrice.queryOptions({ collateralType }),
     enabled: shouldFetchPrices,
     refetchInterval: shouldFetchPrices ? 30000 : false,
   });

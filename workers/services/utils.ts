@@ -3,19 +3,20 @@ import { PRICE_FEED_ABI } from "~/lib/contracts";
 import {
   getCollateralAddresses,
   INTEREST_RATE_SCALE_DOWN_FACTOR,
+  type CollateralType,
 } from "~/lib/contracts/constants";
 
 // Prefixed trove ID format: "branchId:troveId"
 type PrefixedTroveId = string;
 type BranchId = string; // "0" for UBTC, "1" for GBTC
 
-export const getBitcoinprice = async (retries = 3) => {
+export const getBitcoinprice = async (collateralType: CollateralType = "UBTC", retries = 3) => {
   const myProvider = new RpcProvider({
     nodeUrl: process.env.NODE_URL,
   });
 
-  // Use UBTC price feed as default (both UBTC and GBTC track Bitcoin price)
-  const addresses = getCollateralAddresses("UBTC");
+  // Get the price feed for the specified collateral type
+  const addresses = getCollateralAddresses(collateralType);
   const PriceFeedContract = new Contract(
     PRICE_FEED_ABI,
     addresses.priceFeed,

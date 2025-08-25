@@ -18,7 +18,35 @@ import {
   RefreshCw,
   Edit3,
   XCircle,
+  Zap,
+  AlertTriangle,
 } from "lucide-react";
+import { useLiquidate } from "~/hooks/use-liquidate";
+import type { CollateralType } from "~/lib/contracts/constants";
+
+// Liquidate button component
+function LiquidateButton({ 
+  troveId, 
+  collateralType 
+}: { 
+  troveId: string; 
+  collateralType: CollateralType 
+}) {
+  const { liquidate, isPending } = useLiquidate({ troveId, collateralType });
+
+  return (
+    <Button
+      variant="outline"
+      className="flex-1 hover:bg-yellow-50 hover:border-yellow-300"
+      onClick={liquidate}
+      disabled={isPending}
+      size="sm"
+    >
+      <Zap className="h-3 w-3 mr-1" />
+      {isPending ? "..." : "Liquidate"}
+    </Button>
+  );
+}
 
 function MyTroves() {
   const navigate = useNavigate();
@@ -33,7 +61,8 @@ function MyTroves() {
     error,
     isRefetching,
   } = useUserTroves(address);
-  const { price: bitcoinPrice } = useBitcoinPrice();
+  const { price: ubtcPrice } = useBitcoinPrice("UBTC");
+  const { price: gbtcPrice } = useBitcoinPrice("GBTC");
 
   const handleCreateNew = () => {
     navigate("/");
@@ -213,17 +242,32 @@ function MyTroves() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {troves.map((trove) => (
-            <Card
-              key={trove.id}
-              className="border border-slate-200 hover:shadow-lg transition-all duration-300"
-            >
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg">
-                  Position #{truncateTroveId(trove.id)}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+          {troves.map((trove) => {
+            const isLiquidated = trove.status === "liquidated";
+            
+            return (
+              <Card
+                key={trove.id}
+                className={`border transition-all duration-300 ${
+                  isLiquidated 
+                    ? "border-orange-300 bg-orange-50/50" 
+                    : "border-slate-200 hover:shadow-lg"
+                }`}
+              >
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">
+                      Position #{truncateTroveId(trove.id)}
+                    </CardTitle>
+                    {isLiquidated && (
+                      <div className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 rounded-md text-xs font-medium">
+                        <AlertTriangle className="h-3 w-3" />
+                        Liquidated
+                      </div>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
                 {/* Collateral */}
                 <div className="space-y-1">
                   <div className="flex items-center text-sm text-slate-600">
@@ -241,20 +285,23 @@ function MyTroves() {
                     {trove.collateralAsset}
                   </div>
                   <div className="text-sm text-slate-600">
-                    {bitcoinPrice ? (
-                      <>
-                        $
-                        <NumericFormat
-                          displayType="text"
-                          value={trove.collateralAmount * (bitcoinPrice || 0)}
-                          thousandSeparator=","
-                          decimalScale={2}
-                          fixedDecimalScale
-                        />
-                      </>
-                    ) : (
-                      "Loading..."
-                    )}
+                    {(() => {
+                      const price = trove.collateralAsset === "GBTC" ? gbtcPrice : ubtcPrice;
+                      return price ? (
+                        <>
+                          $
+                          <NumericFormat
+                            displayType="text"
+                            value={trove.collateralAmount * (price || 0)}
+                            thousandSeparator=","
+                            decimalScale={2}
+                            fixedDecimalScale
+                          />
+                        </>
+                      ) : (
+                        "Loading..."
+                      );
+                    })()}
                   </div>
                 </div>
 
@@ -305,31 +352,64 @@ function MyTroves() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-3 pt-2">
-                  <Button
-                    variant="outline"
-                    className="flex-1 hover:bg-blue-50 hover:border-blue-300"
-                    onClick={() =>
-                      handleUpdatePosition(trove.id, trove.collateralAsset)
-                    }
-                  >
-                    <Edit3 className="h-4 w-4 mr-2" />
-                    Update
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1 hover:bg-red-50 hover:border-red-300"
-                    onClick={() =>
-                      handleClosePosition(trove.id, trove.collateralAsset)
-                    }
-                  >
-                    <XCircle className="h-4 w-4 mr-2" />
-                    Close
-                  </Button>
-                </div>
+                {isLiquidated ? (
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      disabled
+                      size="sm"
+                    >
+                      <Edit3 className="h-3 w-3 mr-1 opacity-50" />
+                      Update
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1 hover:bg-orange-50 hover:border-orange-300"
+                      onClick={() =>
+                        handleClosePosition(trove.id, trove.collateralAsset)
+                      }
+                      size="sm"
+                      title="Check for collateral surplus"
+                    >
+                      <DollarSign className="h-3 w-3 mr-1" />
+                      Claim Surplus
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      className="flex-1 hover:bg-blue-50 hover:border-blue-300"
+                      onClick={() =>
+                        handleUpdatePosition(trove.id, trove.collateralAsset)
+                      }
+                      size="sm"
+                    >
+                      <Edit3 className="h-3 w-3 mr-1" />
+                      Update
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1 hover:bg-red-50 hover:border-red-300"
+                      onClick={() =>
+                        handleClosePosition(trove.id, trove.collateralAsset)
+                      }
+                      size="sm"
+                    >
+                      <XCircle className="h-3 w-3 mr-1" />
+                      Close
+                    </Button>
+                    <LiquidateButton
+                      troveId={trove.id}
+                      collateralType={trove.collateralAsset as CollateralType}
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

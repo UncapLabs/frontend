@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "StabilityPoolImpl",
-    "interface_name": "usdu::branch::StabilityPool::IStabilityPool"
+    "interface_name": "usdu::branch::interfaces::IStabilityPool::IStabilityPool"
   },
   {
     "type": "struct",
@@ -34,8 +34,15 @@
   },
   {
     "type": "interface",
-    "name": "usdu::branch::StabilityPool::IStabilityPool",
+    "name": "usdu::branch::interfaces::IStabilityPool::IStabilityPool",
     "items": [
+      {
+        "type": "function",
+        "name": "claim_all_coll_gains",
+        "inputs": [],
+        "outputs": [],
+        "state_mutability": "external"
+      },
       {
         "type": "function",
         "name": "initializer",
@@ -43,6 +50,66 @@
           {
             "name": "addresses_registry",
             "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "offset",
+        "inputs": [
+          {
+            "name": "debt_to_offset",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "coll_to_add",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "provide_to_sp",
+        "inputs": [
+          {
+            "name": "top_up",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "do_claim",
+            "type": "core::bool"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "trigger_usdu_rewards",
+        "inputs": [
+          {
+            "name": "usdu_yield",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "withdraw_from_sp",
+        "inputs": [
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "do_claim",
+            "type": "core::bool"
           }
         ],
         "outputs": [],
@@ -77,7 +144,23 @@
       },
       {
         "type": "function",
-        "name": "get_total_usdu_deposits",
+        "name": "get_compounded_usdu_deposit",
+        "inputs": [
+          {
+            "name": "depositor",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_current_scale",
         "inputs": [],
         "outputs": [
           {
@@ -88,8 +171,13 @@
       },
       {
         "type": "function",
-        "name": "get_yield_gains_owed",
-        "inputs": [],
+        "name": "get_depositor_coll_gain",
+        "inputs": [
+          {
+            "name": "depositor",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
         "outputs": [
           {
             "type": "core::integer::u256"
@@ -99,7 +187,39 @@
       },
       {
         "type": "function",
-        "name": "get_yield_gains_pending",
+        "name": "get_depositor_yield_gain",
+        "inputs": [
+          {
+            "name": "depositor",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_depositor_yield_gain_with_pending",
+        "inputs": [
+          {
+            "name": "depositor",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_max_scale_factor_exponent",
         "inputs": [],
         "outputs": [
           {
@@ -143,17 +263,6 @@
       },
       {
         "type": "function",
-        "name": "get_max_scale_factor_exponent",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::integer::u256"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
         "name": "get_scale_span",
         "inputs": [],
         "outputs": [
@@ -165,18 +274,7 @@
       },
       {
         "type": "function",
-        "name": "get_current_scale",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::integer::u256"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "get_scale_to_s",
+        "name": "get_scale_to_b",
         "inputs": [
           {
             "name": "scale",
@@ -192,7 +290,7 @@
       },
       {
         "type": "function",
-        "name": "get_scale_to_b",
+        "name": "get_scale_to_s",
         "inputs": [
           {
             "name": "scale",
@@ -224,80 +322,8 @@
       },
       {
         "type": "function",
-        "name": "provide_to_sp",
-        "inputs": [
-          {
-            "name": "top_up",
-            "type": "core::integer::u256"
-          },
-          {
-            "name": "do_claim",
-            "type": "core::bool"
-          }
-        ],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "withdraw_from_sp",
-        "inputs": [
-          {
-            "name": "amount",
-            "type": "core::integer::u256"
-          },
-          {
-            "name": "do_claim",
-            "type": "core::bool"
-          }
-        ],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "claim_all_coll_gains",
+        "name": "get_total_usdu_deposits",
         "inputs": [],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "trigger_usdu_rewards",
-        "inputs": [
-          {
-            "name": "usdu_yield",
-            "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "offset",
-        "inputs": [
-          {
-            "name": "debt_to_offset",
-            "type": "core::integer::u256"
-          },
-          {
-            "name": "coll_to_add",
-            "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "get_depositor_coll_gain",
-        "inputs": [
-          {
-            "name": "depositor",
-            "type": "core::starknet::contract_address::ContractAddress"
-          }
-        ],
         "outputs": [
           {
             "type": "core::integer::u256"
@@ -307,13 +333,8 @@
       },
       {
         "type": "function",
-        "name": "get_depositor_yield_gain",
-        "inputs": [
-          {
-            "name": "depositor",
-            "type": "core::starknet::contract_address::ContractAddress"
-          }
-        ],
+        "name": "get_yield_gains_owed",
+        "inputs": [],
         "outputs": [
           {
             "type": "core::integer::u256"
@@ -323,29 +344,8 @@
       },
       {
         "type": "function",
-        "name": "get_compounded_usdu_deposit",
-        "inputs": [
-          {
-            "name": "depositor",
-            "type": "core::starknet::contract_address::ContractAddress"
-          }
-        ],
-        "outputs": [
-          {
-            "type": "core::integer::u256"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "get_depositor_yield_gain_with_pending",
-        "inputs": [
-          {
-            "name": "depositor",
-            "type": "core::starknet::contract_address::ContractAddress"
-          }
-        ],
+        "name": "get_yield_gains_pending",
+        "inputs": [],
         "outputs": [
           {
             "type": "core::integer::u256"
@@ -358,11 +358,11 @@
   {
     "type": "impl",
     "name": "UncapBaseImpl",
-    "interface_name": "usdu::components::UncapBase::IUncapBase"
+    "interface_name": "usdu::components::interfaces::IUncapBase::IUncapBase"
   },
   {
     "type": "interface",
-    "name": "usdu::components::UncapBase::IUncapBase",
+    "name": "usdu::components::interfaces::IUncapBase::IUncapBase",
     "items": [
       {
         "type": "function",
@@ -382,6 +382,51 @@
         "outputs": [
           {
             "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "impl",
+    "name": "UpgradeableBaseImpl",
+    "interface_name": "usdu::components::interfaces::IUpgradeableBase::IUpgradeableBase"
+  },
+  {
+    "type": "interface",
+    "name": "usdu::components::interfaces::IUpgradeableBase::IUpgradeableBase",
+    "items": [
+      {
+        "type": "function",
+        "name": "upgrade",
+        "inputs": [
+          {
+            "name": "new_class_hash",
+            "type": "core::starknet::class_hash::ClassHash"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "initialized",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::bool"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "owner",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
           }
         ],
         "state_mutability": "view"
@@ -617,58 +662,47 @@
   },
   {
     "type": "event",
-    "name": "usdu::components::UncapBase::UncapBaseComponent::ActivePoolAddressChanged",
-    "kind": "struct",
-    "members": [
-      {
-        "name": "new_active_pool_address",
-        "type": "core::starknet::contract_address::ContractAddress",
-        "kind": "data"
-      }
-    ]
-  },
-  {
-    "type": "event",
-    "name": "usdu::components::UncapBase::UncapBaseComponent::DefaultPoolAddressChanged",
-    "kind": "struct",
-    "members": [
-      {
-        "name": "new_default_pool_address",
-        "type": "core::starknet::contract_address::ContractAddress",
-        "kind": "data"
-      }
-    ]
-  },
-  {
-    "type": "event",
-    "name": "usdu::components::UncapBase::UncapBaseComponent::PriceFeedAddressChanged",
-    "kind": "struct",
-    "members": [
-      {
-        "name": "new_price_feed_address",
-        "type": "core::starknet::contract_address::ContractAddress",
-        "kind": "data"
-      }
-    ]
-  },
-  {
-    "type": "event",
     "name": "usdu::components::UncapBase::UncapBaseComponent::Event",
+    "kind": "enum",
+    "variants": []
+  },
+  {
+    "type": "event",
+    "name": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::CollateralRegistryAddressChanged",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "new_collateral_registry",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Upgraded",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "class_hash",
+        "type": "core::starknet::class_hash::ClassHash",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Event",
     "kind": "enum",
     "variants": [
       {
-        "name": "ActivePoolAddressChanged",
-        "type": "usdu::components::UncapBase::UncapBaseComponent::ActivePoolAddressChanged",
+        "name": "CollateralRegistryAddressChanged",
+        "type": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::CollateralRegistryAddressChanged",
         "kind": "nested"
       },
       {
-        "name": "DefaultPoolAddressChanged",
-        "type": "usdu::components::UncapBase::UncapBaseComponent::DefaultPoolAddressChanged",
-        "kind": "nested"
-      },
-      {
-        "name": "PriceFeedAddressChanged",
-        "type": "usdu::components::UncapBase::UncapBaseComponent::PriceFeedAddressChanged",
+        "name": "Upgraded",
+        "type": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Upgraded",
         "kind": "nested"
       }
     ]
@@ -731,6 +765,11 @@
       {
         "name": "UncapBaseEvent",
         "type": "usdu::components::UncapBase::UncapBaseComponent::Event",
+        "kind": "flat"
+      },
+      {
+        "name": "UpgradeableBaseEvent",
+        "type": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Event",
         "kind": "flat"
       }
     ]

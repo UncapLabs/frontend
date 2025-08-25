@@ -254,23 +254,35 @@
   {
     "type": "impl",
     "name": "IUSDUImpl",
-    "interface_name": "usdu::USDU::IUSDU"
+    "interface_name": "usdu::interfaces::IUSDU::IUSDU"
   },
   {
     "type": "interface",
-    "name": "usdu::USDU::IUSDU",
+    "name": "usdu::interfaces::IUSDU::IUSDU",
     "items": [
       {
         "type": "function",
-        "name": "mint",
+        "name": "add_branch_addresses",
         "inputs": [
           {
-            "name": "recipient",
+            "name": "trove_manager",
             "type": "core::starknet::contract_address::ContractAddress"
           },
           {
-            "name": "amount",
-            "type": "core::integer::u256"
+            "name": "stability_pool",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "borrower_operations",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "active_pool",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "redemption_manager",
+            "type": "core::starknet::contract_address::ContractAddress"
           }
         ],
         "outputs": [],
@@ -294,31 +306,7 @@
       },
       {
         "type": "function",
-        "name": "set_branch_addresses",
-        "inputs": [
-          {
-            "name": "trove_manager",
-            "type": "core::starknet::contract_address::ContractAddress"
-          },
-          {
-            "name": "stability_pool",
-            "type": "core::starknet::contract_address::ContractAddress"
-          },
-          {
-            "name": "borrower_operations",
-            "type": "core::starknet::contract_address::ContractAddress"
-          },
-          {
-            "name": "active_pool",
-            "type": "core::starknet::contract_address::ContractAddress"
-          }
-        ],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "set_collateral_registry",
+        "name": "initializer",
         "inputs": [
           {
             "name": "collateral_registry",
@@ -330,14 +318,10 @@
       },
       {
         "type": "function",
-        "name": "send_to_pool",
+        "name": "mint",
         "inputs": [
           {
-            "name": "sender",
-            "type": "core::starknet::contract_address::ContractAddress"
-          },
-          {
-            "name": "pool",
+            "name": "recipient",
             "type": "core::starknet::contract_address::ContractAddress"
           },
           {
@@ -345,67 +329,6 @@
             "type": "core::integer::u256"
           }
         ],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "return_from_pool",
-        "inputs": [
-          {
-            "name": "pool",
-            "type": "core::starknet::contract_address::ContractAddress"
-          },
-          {
-            "name": "receiver",
-            "type": "core::starknet::contract_address::ContractAddress"
-          },
-          {
-            "name": "amount",
-            "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [],
-        "state_mutability": "external"
-      }
-    ]
-  },
-  {
-    "type": "impl",
-    "name": "OwnableImpl",
-    "interface_name": "openzeppelin_access::ownable::interface::IOwnable"
-  },
-  {
-    "type": "interface",
-    "name": "openzeppelin_access::ownable::interface::IOwnable",
-    "items": [
-      {
-        "type": "function",
-        "name": "owner",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::starknet::contract_address::ContractAddress"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "transfer_ownership",
-        "inputs": [
-          {
-            "name": "new_owner",
-            "type": "core::starknet::contract_address::ContractAddress"
-          }
-        ],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "renounce_ownership",
-        "inputs": [],
         "outputs": [],
         "state_mutability": "external"
       }
@@ -488,13 +411,54 @@
     ]
   },
   {
+    "type": "impl",
+    "name": "UpgradeableBaseImpl",
+    "interface_name": "usdu::components::interfaces::IUpgradeableBase::IUpgradeableBase"
+  },
+  {
+    "type": "interface",
+    "name": "usdu::components::interfaces::IUpgradeableBase::IUpgradeableBase",
+    "items": [
+      {
+        "type": "function",
+        "name": "upgrade",
+        "inputs": [
+          {
+            "name": "new_class_hash",
+            "type": "core::starknet::class_hash::ClassHash"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "initialized",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::bool"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "owner",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  },
+  {
     "type": "constructor",
     "name": "constructor",
     "inputs": [
-      {
-        "name": "owner",
-        "type": "core::starknet::contract_address::ContractAddress"
-      },
       {
         "name": "name",
         "type": "core::byte_array::ByteArray"
@@ -502,18 +466,6 @@
       {
         "name": "symbol",
         "type": "core::byte_array::ByteArray"
-      }
-    ]
-  },
-  {
-    "type": "event",
-    "name": "usdu::USDU::USDU::CollateralRegistryAddressChanged",
-    "kind": "struct",
-    "members": [
-      {
-        "name": "new_collateral_registry",
-        "type": "core::starknet::contract_address::ContractAddress",
-        "kind": "data"
       }
     ]
   },
@@ -567,52 +519,61 @@
   },
   {
     "type": "event",
-    "name": "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
+    "name": "usdu::USDU::USDU::TroveManagerAddressRemoved",
     "kind": "struct",
     "members": [
       {
-        "name": "previous_owner",
+        "name": "removed_trove_manager",
         "type": "core::starknet::contract_address::ContractAddress",
-        "kind": "key"
-      },
-      {
-        "name": "new_owner",
-        "type": "core::starknet::contract_address::ContractAddress",
-        "kind": "key"
+        "kind": "data"
       }
     ]
   },
   {
     "type": "event",
-    "name": "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
+    "name": "usdu::USDU::USDU::StabilityPoolAddressRemoved",
     "kind": "struct",
     "members": [
       {
-        "name": "previous_owner",
+        "name": "removed_stability_pool",
         "type": "core::starknet::contract_address::ContractAddress",
-        "kind": "key"
-      },
-      {
-        "name": "new_owner",
-        "type": "core::starknet::contract_address::ContractAddress",
-        "kind": "key"
+        "kind": "data"
       }
     ]
   },
   {
     "type": "event",
-    "name": "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
-    "kind": "enum",
-    "variants": [
+    "name": "usdu::USDU::USDU::BorrowerOperationsAddressRemoved",
+    "kind": "struct",
+    "members": [
       {
-        "name": "OwnershipTransferred",
-        "type": "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
-        "kind": "nested"
-      },
+        "name": "removed_borrower_operations",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::USDU::USDU::ActivePoolAddressRemoved",
+    "kind": "struct",
+    "members": [
       {
-        "name": "OwnershipTransferStarted",
-        "type": "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
-        "kind": "nested"
+        "name": "removed_active_pool",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::USDU::USDU::RedemptionManagerAddressAdded",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "new_redemption_manager",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
       }
     ]
   },
@@ -685,14 +646,50 @@
   },
   {
     "type": "event",
-    "name": "usdu::USDU::USDU::Event",
+    "name": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::CollateralRegistryAddressChanged",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "new_collateral_registry",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Upgraded",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "class_hash",
+        "type": "core::starknet::class_hash::ClassHash",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Event",
     "kind": "enum",
     "variants": [
       {
         "name": "CollateralRegistryAddressChanged",
-        "type": "usdu::USDU::USDU::CollateralRegistryAddressChanged",
+        "type": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::CollateralRegistryAddressChanged",
         "kind": "nested"
       },
+      {
+        "name": "Upgraded",
+        "type": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Upgraded",
+        "kind": "nested"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::USDU::USDU::Event",
+    "kind": "enum",
+    "variants": [
       {
         "name": "TroveManagerAddressAdded",
         "type": "usdu::USDU::USDU::TroveManagerAddressAdded",
@@ -714,9 +711,29 @@
         "kind": "nested"
       },
       {
-        "name": "OwnableEvent",
-        "type": "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
-        "kind": "flat"
+        "name": "TroveManagerAddressRemoved",
+        "type": "usdu::USDU::USDU::TroveManagerAddressRemoved",
+        "kind": "nested"
+      },
+      {
+        "name": "StabilityPoolAddressRemoved",
+        "type": "usdu::USDU::USDU::StabilityPoolAddressRemoved",
+        "kind": "nested"
+      },
+      {
+        "name": "BorrowerOperationsAddressRemoved",
+        "type": "usdu::USDU::USDU::BorrowerOperationsAddressRemoved",
+        "kind": "nested"
+      },
+      {
+        "name": "ActivePoolAddressRemoved",
+        "type": "usdu::USDU::USDU::ActivePoolAddressRemoved",
+        "kind": "nested"
+      },
+      {
+        "name": "RedemptionManagerAddressAdded",
+        "type": "usdu::USDU::USDU::RedemptionManagerAddressAdded",
+        "kind": "nested"
       },
       {
         "name": "ERC20Event",
@@ -726,6 +743,11 @@
       {
         "name": "NoncesEvent",
         "type": "openzeppelin_utils::cryptography::nonces::NoncesComponent::Event",
+        "kind": "flat"
+      },
+      {
+        "name": "UpgradeableBaseEvent",
+        "type": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Event",
         "kind": "flat"
       }
     ]

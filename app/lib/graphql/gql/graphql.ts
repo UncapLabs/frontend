@@ -588,6 +588,8 @@ export type Query = {
   trove?: Maybe<Trove>;
   trovemanagereventsemitter?: Maybe<TroveManagerEventsEmitter>;
   trovemanagereventsemitters: Array<TroveManagerEventsEmitter>;
+  trovenft?: Maybe<TroveNft>;
+  trovenfts: Array<TroveNft>;
   troves: Array<Trove>;
 };
 
@@ -736,6 +738,24 @@ export type QueryTrovemanagereventsemittersArgs = {
 };
 
 
+export type QueryTrovenftArgs = {
+  block?: InputMaybe<Scalars['Int']['input']>;
+  id: Scalars['ID']['input'];
+  indexer?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryTrovenftsArgs = {
+  block?: InputMaybe<Scalars['Int']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  indexer?: InputMaybe<Scalars['String']['input']>;
+  orderBy?: InputMaybe<TroveNft_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  where?: InputMaybe<TroveNft_Filter>;
+};
+
+
 export type QueryTrovesArgs = {
   block?: InputMaybe<Scalars['Int']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -801,6 +821,42 @@ export type TroveManagerEventsEmitter_Filter = {
 };
 
 export enum TroveManagerEventsEmitter_OrderBy {
+  Indexer = '_indexer',
+  CollId = 'collId',
+  Id = 'id'
+}
+
+export type TroveNft = {
+  __typename?: 'TroveNFT';
+  _indexer: Scalars['String']['output'];
+  collId: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+};
+
+export type TroveNft_Filter = {
+  _indexer?: InputMaybe<Scalars['String']['input']>;
+  _indexer_contains?: InputMaybe<Scalars['String']['input']>;
+  _indexer_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  _indexer_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  _indexer_not?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_contains?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  collId?: InputMaybe<Scalars['String']['input']>;
+  collId_contains?: InputMaybe<Scalars['String']['input']>;
+  collId_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  collId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  collId_not?: InputMaybe<Scalars['String']['input']>;
+  collId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  collId_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  collId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id?: InputMaybe<Scalars['ID']['input']>;
+  id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  id_not?: InputMaybe<Scalars['ID']['input']>;
+  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+};
+
+export enum TroveNft_OrderBy {
   Indexer = '_indexer',
   CollId = 'collId',
   Id = 'id'
@@ -1208,7 +1264,7 @@ export type NextOwnerIndexesByBorrowerQueryVariables = Exact<{
 export type NextOwnerIndexesByBorrowerQuery = { __typename?: 'Query', borrowerinfo?: { __typename?: 'BorrowerInfo', nextOwnerIndexes: Array<number> } | null };
 
 
-export const TrovesAsBorrowerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"TrovesAsBorrower"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"account"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"troves"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"borrower"},"value":{"kind":"Variable","name":{"kind":"Name","value":"account"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"status_in"},"value":{"kind":"ListValue","values":[{"kind":"StringValue","value":"active","block":false},{"kind":"StringValue","value":"redeemed","block":false}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"updatedAt"}},{"kind":"Argument","name":{"kind":"Name","value":"orderDirection"},"value":{"kind":"EnumValue","value":"desc"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"troveId"}},{"kind":"Field","name":{"kind":"Name","value":"borrower"}},{"kind":"Field","name":{"kind":"Name","value":"debt"}},{"kind":"Field","name":{"kind":"Name","value":"deposit"}},{"kind":"Field","name":{"kind":"Name","value":"interestRate"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"collateral"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"closedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"mightBeLeveraged"}},{"kind":"Field","name":{"kind":"Name","value":"previousOwner"}}]}}]}}]} as unknown as DocumentNode<TrovesAsBorrowerQuery, TrovesAsBorrowerQueryVariables>;
+export const TrovesAsBorrowerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"TrovesAsBorrower"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"account"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"troves"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"borrower"},"value":{"kind":"Variable","name":{"kind":"Name","value":"account"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"status_in"},"value":{"kind":"ListValue","values":[{"kind":"StringValue","value":"active","block":false},{"kind":"StringValue","value":"redeemed","block":false},{"kind":"StringValue","value":"closed","block":false}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"updatedAt"}},{"kind":"Argument","name":{"kind":"Name","value":"orderDirection"},"value":{"kind":"EnumValue","value":"desc"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"troveId"}},{"kind":"Field","name":{"kind":"Name","value":"borrower"}},{"kind":"Field","name":{"kind":"Name","value":"debt"}},{"kind":"Field","name":{"kind":"Name","value":"deposit"}},{"kind":"Field","name":{"kind":"Name","value":"interestRate"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"collateral"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"closedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"mightBeLeveraged"}},{"kind":"Field","name":{"kind":"Name","value":"previousOwner"}}]}}]}}]} as unknown as DocumentNode<TrovesAsBorrowerQuery, TrovesAsBorrowerQueryVariables>;
 export const TrovesAsPreviousOwnerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"TrovesAsPreviousOwner"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"account"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"troves"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"previousOwner"},"value":{"kind":"Variable","name":{"kind":"Name","value":"account"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"status"},"value":{"kind":"StringValue","value":"liquidated","block":false}}]}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"updatedAt"}},{"kind":"Argument","name":{"kind":"Name","value":"orderDirection"},"value":{"kind":"EnumValue","value":"desc"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"troveId"}},{"kind":"Field","name":{"kind":"Name","value":"borrower"}},{"kind":"Field","name":{"kind":"Name","value":"debt"}},{"kind":"Field","name":{"kind":"Name","value":"deposit"}},{"kind":"Field","name":{"kind":"Name","value":"interestRate"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"collateral"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"closedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"mightBeLeveraged"}},{"kind":"Field","name":{"kind":"Name","value":"previousOwner"}}]}}]}}]} as unknown as DocumentNode<TrovesAsPreviousOwnerQuery, TrovesAsPreviousOwnerQueryVariables>;
 export const GetTroveByIdDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetTroveById"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"troveId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"trove"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"troveId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"troveId"}},{"kind":"Field","name":{"kind":"Name","value":"borrower"}},{"kind":"Field","name":{"kind":"Name","value":"debt"}},{"kind":"Field","name":{"kind":"Name","value":"deposit"}},{"kind":"Field","name":{"kind":"Name","value":"interestRate"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"interestBatch"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"batchManager"}},{"kind":"Field","name":{"kind":"Name","value":"debt"}},{"kind":"Field","name":{"kind":"Name","value":"coll"}}]}},{"kind":"Field","name":{"kind":"Name","value":"collateral"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]} as unknown as DocumentNode<GetTroveByIdQuery, GetTroveByIdQueryVariables>;
 export const TroveByIdDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"TroveById"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"trove"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"borrower"}},{"kind":"Field","name":{"kind":"Name","value":"closedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"mightBeLeveraged"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"previousOwner"}}]}}]}}]} as unknown as DocumentNode<TroveByIdQuery, TroveByIdQueryVariables>;

@@ -2,7 +2,21 @@
   {
     "type": "impl",
     "name": "ITroveNFTImpl",
-    "interface_name": "usdu::branch::TroveNFT::ITroveNFT"
+    "interface_name": "usdu::branch::interfaces::ITroveNFT::ITroveNFT"
+  },
+  {
+    "type": "struct",
+    "name": "core::integer::u256",
+    "members": [
+      {
+        "name": "low",
+        "type": "core::integer::u128"
+      },
+      {
+        "name": "high",
+        "type": "core::integer::u128"
+      }
+    ]
   },
   {
     "type": "struct",
@@ -23,23 +37,21 @@
     ]
   },
   {
-    "type": "struct",
-    "name": "core::integer::u256",
-    "members": [
-      {
-        "name": "low",
-        "type": "core::integer::u128"
-      },
-      {
-        "name": "high",
-        "type": "core::integer::u128"
-      }
-    ]
-  },
-  {
     "type": "interface",
-    "name": "usdu::branch::TroveNFT::ITroveNFT",
+    "name": "usdu::branch::interfaces::ITroveNFT::ITroveNFT",
     "items": [
+      {
+        "type": "function",
+        "name": "burn",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
       {
         "type": "function",
         "name": "initializer",
@@ -82,15 +94,14 @@
       },
       {
         "type": "function",
-        "name": "burn",
-        "inputs": [
+        "name": "get_metadata_nft",
+        "inputs": [],
+        "outputs": [
           {
-            "name": "trove_id",
-            "type": "core::integer::u256"
+            "type": "core::starknet::contract_address::ContractAddress"
           }
         ],
-        "outputs": [],
-        "state_mutability": "external"
+        "state_mutability": "view"
       },
       {
         "type": "function",
@@ -112,17 +123,6 @@
             "type": "core::integer::u256"
           }
         ],
-        "outputs": [
-          {
-            "type": "core::starknet::contract_address::ContractAddress"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "get_metadata_nft",
-        "inputs": [],
         "outputs": [
           {
             "type": "core::starknet::contract_address::ContractAddress"
@@ -361,6 +361,51 @@
     ]
   },
   {
+    "type": "impl",
+    "name": "UpgradeableBaseImpl",
+    "interface_name": "usdu::components::interfaces::IUpgradeableBase::IUpgradeableBase"
+  },
+  {
+    "type": "interface",
+    "name": "usdu::components::interfaces::IUpgradeableBase::IUpgradeableBase",
+    "items": [
+      {
+        "type": "function",
+        "name": "upgrade",
+        "inputs": [
+          {
+            "name": "new_class_hash",
+            "type": "core::starknet::class_hash::ClassHash"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "initialized",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::bool"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "owner",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  },
+  {
     "type": "event",
     "name": "openzeppelin_token::erc721::erc721::ERC721Component::Transfer",
     "kind": "struct",
@@ -456,6 +501,47 @@
   },
   {
     "type": "event",
+    "name": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::CollateralRegistryAddressChanged",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "new_collateral_registry",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Upgraded",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "class_hash",
+        "type": "core::starknet::class_hash::ClassHash",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Event",
+    "kind": "enum",
+    "variants": [
+      {
+        "name": "CollateralRegistryAddressChanged",
+        "type": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::CollateralRegistryAddressChanged",
+        "kind": "nested"
+      },
+      {
+        "name": "Upgraded",
+        "type": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Upgraded",
+        "kind": "nested"
+      }
+    ]
+  },
+  {
+    "type": "event",
     "name": "usdu::branch::TroveNFT::TroveNFT::Event",
     "kind": "enum",
     "variants": [
@@ -467,6 +553,11 @@
       {
         "name": "SRC5Event",
         "type": "openzeppelin_introspection::src5::SRC5Component::Event",
+        "kind": "flat"
+      },
+      {
+        "name": "UpgradeableBaseEvent",
+        "type": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Event",
         "kind": "flat"
       }
     ]

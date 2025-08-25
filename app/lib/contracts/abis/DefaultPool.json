@@ -1,8 +1,8 @@
 [
   {
     "type": "impl",
-    "name": "IDefaultPoolImpl",
-    "interface_name": "usdu::branch::DefaultPool::IDefaultPool"
+    "name": "DefaultPoolImpl",
+    "interface_name": "usdu::branch::interfaces::IDefaultPool::IDefaultPool"
   },
   {
     "type": "struct",
@@ -20,8 +20,32 @@
   },
   {
     "type": "interface",
-    "name": "usdu::branch::DefaultPool::IDefaultPool",
+    "name": "usdu::branch::interfaces::IDefaultPool::IDefaultPool",
     "items": [
+      {
+        "type": "function",
+        "name": "decrease_usdu_debt",
+        "inputs": [
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "increase_usdu_debt",
+        "inputs": [
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
       {
         "type": "function",
         "name": "initializer",
@@ -29,6 +53,30 @@
           {
             "name": "addresses_registry",
             "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "receive_coll",
+        "inputs": [
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "send_coll_to_active_pool",
+        "inputs": [
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
           }
         ],
         "outputs": [],
@@ -55,66 +103,65 @@
           }
         ],
         "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "send_coll_to_active_pool",
-        "inputs": [
-          {
-            "name": "amount",
-            "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "receive_coll",
-        "inputs": [
-          {
-            "name": "amount",
-            "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "increase_usdu_debt",
-        "inputs": [
-          {
-            "name": "amount",
-            "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "decrease_usdu_debt",
-        "inputs": [
-          {
-            "name": "amount",
-            "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [],
-        "state_mutability": "external"
       }
     ]
   },
   {
-    "type": "event",
-    "name": "usdu::branch::DefaultPool::DefaultPool::DefaultPoolUSDUDebtUpdated",
-    "kind": "struct",
-    "members": [
+    "type": "impl",
+    "name": "UpgradeableBaseImpl",
+    "interface_name": "usdu::components::interfaces::IUpgradeableBase::IUpgradeableBase"
+  },
+  {
+    "type": "enum",
+    "name": "core::bool",
+    "variants": [
       {
-        "name": "usdu_debt",
-        "type": "core::integer::u256",
-        "kind": "data"
+        "name": "False",
+        "type": "()"
+      },
+      {
+        "name": "True",
+        "type": "()"
+      }
+    ]
+  },
+  {
+    "type": "interface",
+    "name": "usdu::components::interfaces::IUpgradeableBase::IUpgradeableBase",
+    "items": [
+      {
+        "type": "function",
+        "name": "upgrade",
+        "inputs": [
+          {
+            "name": "new_class_hash",
+            "type": "core::starknet::class_hash::ClassHash"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "initialized",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::bool"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "owner",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
       }
     ]
   },
@@ -132,18 +179,76 @@
   },
   {
     "type": "event",
+    "name": "usdu::branch::DefaultPool::DefaultPool::DefaultPoolUSDUDebtUpdated",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "usdu_debt",
+        "type": "core::integer::u256",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::CollateralRegistryAddressChanged",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "new_collateral_registry",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Upgraded",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "class_hash",
+        "type": "core::starknet::class_hash::ClassHash",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Event",
+    "kind": "enum",
+    "variants": [
+      {
+        "name": "CollateralRegistryAddressChanged",
+        "type": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::CollateralRegistryAddressChanged",
+        "kind": "nested"
+      },
+      {
+        "name": "Upgraded",
+        "type": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Upgraded",
+        "kind": "nested"
+      }
+    ]
+  },
+  {
+    "type": "event",
     "name": "usdu::branch::DefaultPool::DefaultPool::Event",
     "kind": "enum",
     "variants": [
+      {
+        "name": "DefaultPoolCollBalanceUpdated",
+        "type": "usdu::branch::DefaultPool::DefaultPool::DefaultPoolCollBalanceUpdated",
+        "kind": "nested"
+      },
       {
         "name": "DefaultPoolUSDUDebtUpdated",
         "type": "usdu::branch::DefaultPool::DefaultPool::DefaultPoolUSDUDebtUpdated",
         "kind": "nested"
       },
       {
-        "name": "DefaultPoolCollBalanceUpdated",
-        "type": "usdu::branch::DefaultPool::DefaultPool::DefaultPoolCollBalanceUpdated",
-        "kind": "nested"
+        "name": "UpgradeableBaseEvent",
+        "type": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Event",
+        "kind": "flat"
       }
     ]
   }

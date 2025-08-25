@@ -59,9 +59,12 @@ function Borrow() {
     refetchInterval: 30000,
   });
 
-  const { bitcoin, usdu } = useFetchPrices(collateralAmount ?? undefined);
-
   const collateralType = selectedCollateralToken.symbol as CollateralType;
+  
+  const { bitcoin, usdu } = useFetchPrices(
+    collateralAmount ?? undefined,
+    collateralType
+  );
   const minCollateralizationRatio =
     getMinCollateralizationRatio(collateralType);
 

@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "HintHelpersImpl",
-    "interface_name": "usdu::branch::HintHelpers::IHintHelpers"
+    "interface_name": "usdu::interfaces::IHintHelpers::IHintHelpers"
   },
   {
     "type": "struct",
@@ -20,27 +20,28 @@
   },
   {
     "type": "interface",
-    "name": "usdu::branch::HintHelpers::IHintHelpers",
+    "name": "usdu::interfaces::IHintHelpers::IHintHelpers",
     "items": [
       {
         "type": "function",
-        "name": "initializer",
+        "name": "force_predict_adjust_interest_rate_upfront_fee",
         "inputs": [
           {
-            "name": "collateral_registry",
-            "type": "core::starknet::contract_address::ContractAddress"
+            "name": "coll_index",
+            "type": "core::integer::u8"
+          },
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_interest_rate",
+            "type": "core::integer::u256"
           }
         ],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "get_collateral_registry",
-        "inputs": [],
         "outputs": [
           {
-            "type": "core::starknet::contract_address::ContractAddress"
+            "type": "core::integer::u256"
           }
         ],
         "state_mutability": "view"
@@ -51,7 +52,7 @@
         "inputs": [
           {
             "name": "coll_index",
-            "type": "core::integer::u256"
+            "type": "core::integer::u8"
           },
           {
             "name": "interest_rate",
@@ -75,18 +76,29 @@
       },
       {
         "type": "function",
-        "name": "predict_open_trove_upfront_fee",
+        "name": "get_collateral_registry",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "predict_adjust_batch_interest_rate_upfront_fee",
         "inputs": [
           {
             "name": "coll_index",
-            "type": "core::integer::u256"
+            "type": "core::integer::u8"
           },
           {
-            "name": "borrowed_amount",
-            "type": "core::integer::u256"
+            "name": "batch_address",
+            "type": "core::starknet::contract_address::ContractAddress"
           },
           {
-            "name": "interest_rate",
+            "name": "new_interest_rate",
             "type": "core::integer::u256"
           }
         ],
@@ -103,31 +115,7 @@
         "inputs": [
           {
             "name": "coll_index",
-            "type": "core::integer::u256"
-          },
-          {
-            "name": "trove_id",
-            "type": "core::integer::u256"
-          },
-          {
-            "name": "new_interest_rate",
-            "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [
-          {
-            "type": "core::integer::u256"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "force_predict_adjust_interest_rate_upfront_fee",
-        "inputs": [
-          {
-            "name": "coll_index",
-            "type": "core::integer::u256"
+            "type": "core::integer::u8"
           },
           {
             "name": "trove_id",
@@ -151,7 +139,7 @@
         "inputs": [
           {
             "name": "coll_index",
-            "type": "core::integer::u256"
+            "type": "core::integer::u8"
           },
           {
             "name": "trove_id",
@@ -171,59 +159,11 @@
       },
       {
         "type": "function",
-        "name": "predict_adjust_batch_interest_rate_upfront_fee",
-        "inputs": [
-          {
-            "name": "coll_index",
-            "type": "core::integer::u256"
-          },
-          {
-            "name": "batch_address",
-            "type": "core::starknet::contract_address::ContractAddress"
-          },
-          {
-            "name": "new_interest_rate",
-            "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [
-          {
-            "type": "core::integer::u256"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "predict_open_trove_and_join_batch_upfront_fee",
-        "inputs": [
-          {
-            "name": "coll_index",
-            "type": "core::integer::u256"
-          },
-          {
-            "name": "borrowed_amount",
-            "type": "core::integer::u256"
-          },
-          {
-            "name": "batch_address",
-            "type": "core::starknet::contract_address::ContractAddress"
-          }
-        ],
-        "outputs": [
-          {
-            "type": "core::integer::u256"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
         "name": "predict_join_batch_interest_rate_upfront_fee",
         "inputs": [
           {
             "name": "coll_index",
-            "type": "core::integer::u256"
+            "type": "core::integer::u8"
           },
           {
             "name": "trove_id",
@@ -243,11 +183,59 @@
       },
       {
         "type": "function",
+        "name": "predict_open_trove_and_join_batch_upfront_fee",
+        "inputs": [
+          {
+            "name": "coll_index",
+            "type": "core::integer::u8"
+          },
+          {
+            "name": "borrowed_amount",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "batch_address",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "predict_open_trove_upfront_fee",
+        "inputs": [
+          {
+            "name": "coll_index",
+            "type": "core::integer::u8"
+          },
+          {
+            "name": "borrowed_amount",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "interest_rate",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
         "name": "predict_remove_from_batch_upfront_fee",
         "inputs": [
           {
             "name": "coll_index",
-            "type": "core::integer::u256"
+            "type": "core::integer::u8"
           },
           {
             "name": "trove_id",
@@ -268,9 +256,125 @@
     ]
   },
   {
+    "type": "impl",
+    "name": "UpgradeableBaseImpl",
+    "interface_name": "usdu::components::interfaces::IUpgradeableBase::IUpgradeableBase"
+  },
+  {
+    "type": "enum",
+    "name": "core::bool",
+    "variants": [
+      {
+        "name": "False",
+        "type": "()"
+      },
+      {
+        "name": "True",
+        "type": "()"
+      }
+    ]
+  },
+  {
+    "type": "interface",
+    "name": "usdu::components::interfaces::IUpgradeableBase::IUpgradeableBase",
+    "items": [
+      {
+        "type": "function",
+        "name": "upgrade",
+        "inputs": [
+          {
+            "name": "new_class_hash",
+            "type": "core::starknet::class_hash::ClassHash"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "initialized",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::bool"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "owner",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "constructor",
+    "name": "constructor",
+    "inputs": [
+      {
+        "name": "collateral_registry",
+        "type": "core::starknet::contract_address::ContractAddress"
+      }
+    ]
+  },
+  {
     "type": "event",
-    "name": "usdu::branch::HintHelpers::HintHelpers::Event",
+    "name": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::CollateralRegistryAddressChanged",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "new_collateral_registry",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Upgraded",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "class_hash",
+        "type": "core::starknet::class_hash::ClassHash",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Event",
     "kind": "enum",
-    "variants": []
+    "variants": [
+      {
+        "name": "CollateralRegistryAddressChanged",
+        "type": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::CollateralRegistryAddressChanged",
+        "kind": "nested"
+      },
+      {
+        "name": "Upgraded",
+        "type": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Upgraded",
+        "kind": "nested"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::HintHelpers::HintHelpers::Event",
+    "kind": "enum",
+    "variants": [
+      {
+        "name": "UpgradeableBaseEvent",
+        "type": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Event",
+        "kind": "flat"
+      }
+    ]
   }
 ]

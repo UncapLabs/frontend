@@ -4,7 +4,7 @@ import { graphql } from "./gql";
 export const TROVES_AS_BORROWER = graphql(/* GraphQL */ `
   query TrovesAsBorrower($account: String!) {
     troves(
-      where: { borrower: $account, status_in: ["active", "redeemed"] }
+      where: { borrower: $account, status_in: ["active", "redeemed", "closed"] }
       orderBy: updatedAt
       orderDirection: desc
     ) {

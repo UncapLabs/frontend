@@ -7,17 +7,17 @@ import {
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { UBTC_ABI } from "~/lib/contracts";
-import { UBTC_TOKEN } from "~/lib/contracts/constants";
+import { GBTC_TOKEN } from "~/lib/contracts/constants";
 
 export function GetTestBtc() {
   const { address } = useAccount();
   const { data: balance } = useBalance({
     address,
-    token: UBTC_TOKEN.address,
+    token: GBTC_TOKEN.address,
   });
   const { contract } = useContract({
     abi: UBTC_ABI,
-    address: UBTC_TOKEN.address,
+    address: GBTC_TOKEN.address,
   });
 
   const { send, isPending } = useSendTransaction({

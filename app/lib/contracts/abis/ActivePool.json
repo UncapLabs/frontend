@@ -2,7 +2,7 @@
   {
     "type": "impl",
     "name": "IActivePoolImpl",
-    "interface_name": "usdu::branch::ActivePool::IActivePool"
+    "interface_name": "usdu::branch::interfaces::IActivePool::IActivePool"
   },
   {
     "type": "struct",
@@ -19,8 +19,22 @@
     ]
   },
   {
+    "type": "enum",
+    "name": "core::bool",
+    "variants": [
+      {
+        "name": "False",
+        "type": "()"
+      },
+      {
+        "name": "True",
+        "type": "()"
+      }
+    ]
+  },
+  {
     "type": "struct",
-    "name": "usdu::branch::trove::TroveManager::TroveChange",
+    "name": "usdu::branch::trove::interfaces::ITroveManager::TroveChange",
     "members": [
       {
         "name": "applied_redist_usdu_debt_gain",
@@ -69,27 +83,29 @@
       {
         "name": "old_weighted_recorded_batch_management_fee",
         "type": "core::integer::u256"
-      }
-    ]
-  },
-  {
-    "type": "enum",
-    "name": "core::bool",
-    "variants": [
-      {
-        "name": "False",
-        "type": "()"
       },
       {
-        "name": "True",
-        "type": "()"
+        "name": "sponsored",
+        "type": "core::bool"
       }
     ]
   },
   {
     "type": "interface",
-    "name": "usdu::branch::ActivePool::IActivePool",
+    "name": "usdu::branch::interfaces::IActivePool::IActivePool",
     "items": [
+      {
+        "type": "function",
+        "name": "account_for_received_coll",
+        "inputs": [
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
       {
         "type": "function",
         "name": "initializer",
@@ -104,7 +120,93 @@
       },
       {
         "type": "function",
-        "name": "get_coll_balance",
+        "name": "mint_agg_interest",
+        "inputs": [],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "mint_agg_interest_and_account_for_trove_change",
+        "inputs": [
+          {
+            "name": "trove_change",
+            "type": "usdu::branch::trove::interfaces::ITroveManager::TroveChange"
+          },
+          {
+            "name": "batch_address",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "mint_batch_management_fee_and_account_for_change",
+        "inputs": [
+          {
+            "name": "trove_change",
+            "type": "usdu::branch::trove::interfaces::ITroveManager::TroveChange"
+          },
+          {
+            "name": "batch_address",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "receive_coll",
+        "inputs": [
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "send_coll",
+        "inputs": [
+          {
+            "name": "account",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "send_coll_to_default_pool",
+        "inputs": [
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "set_shutdown_flag",
+        "inputs": [],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "calc_pending_agg_batch_management_fee",
         "inputs": [],
         "outputs": [
           {
@@ -137,34 +239,7 @@
       },
       {
         "type": "function",
-        "name": "calc_pending_agg_batch_management_fees",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::integer::u256"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "get_new_approx_avg_interest_rate_from_trove_change",
-        "inputs": [
-          {
-            "name": "trove_change",
-            "type": "usdu::branch::trove::TroveManager::TroveChange"
-          }
-        ],
-        "outputs": [
-          {
-            "type": "core::integer::u256"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "get_usdu_debt",
+        "name": "get_agg_batch_management_fees",
         "inputs": [],
         "outputs": [
           {
@@ -186,6 +261,17 @@
       },
       {
         "type": "function",
+        "name": "get_agg_weighted_batch_management_fee_sum",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
         "name": "get_agg_weighted_debt_sum",
         "inputs": [],
         "outputs": [
@@ -197,29 +283,7 @@
       },
       {
         "type": "function",
-        "name": "get_last_agg_update_time",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::integer::u64"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "get_agg_batch_management_fees",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::integer::u256"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "get_agg_weighted_batch_management_fee_sum",
+        "name": "get_coll_balance",
         "inputs": [],
         "outputs": [
           {
@@ -241,6 +305,33 @@
       },
       {
         "type": "function",
+        "name": "get_last_agg_update_time",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u64"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_new_approx_avg_interest_rate_from_trove_change",
+        "inputs": [
+          {
+            "name": "trove_change",
+            "type": "usdu::branch::trove::interfaces::ITroveManager::TroveChange"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
         "name": "get_shutdown_time",
         "inputs": [],
         "outputs": [
@@ -252,101 +343,14 @@
       },
       {
         "type": "function",
-        "name": "send_coll",
-        "inputs": [
-          {
-            "name": "account",
-            "type": "core::starknet::contract_address::ContractAddress"
-          },
-          {
-            "name": "amount",
-            "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "send_coll_to_default_pool",
-        "inputs": [
-          {
-            "name": "amount",
-            "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "receive_coll",
-        "inputs": [
-          {
-            "name": "amount",
-            "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "account_for_received_coll",
-        "inputs": [
-          {
-            "name": "amount",
-            "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "mint_agg_interest_and_account_for_trove_change",
-        "inputs": [
-          {
-            "name": "trove_change",
-            "type": "usdu::branch::trove::TroveManager::TroveChange"
-          },
-          {
-            "name": "batch_address",
-            "type": "core::starknet::contract_address::ContractAddress"
-          }
-        ],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "mint_agg_interest",
+        "name": "get_usdu_debt",
         "inputs": [],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "mint_batch_management_fee_and_account_for_change",
-        "inputs": [
+        "outputs": [
           {
-            "name": "trove_change",
-            "type": "usdu::branch::trove::TroveManager::TroveChange"
-          },
-          {
-            "name": "batch_address",
-            "type": "core::starknet::contract_address::ContractAddress"
+            "type": "core::integer::u256"
           }
         ],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "set_shutdown_flag",
-        "inputs": [],
-        "outputs": [],
-        "state_mutability": "external"
+        "state_mutability": "view"
       },
       {
         "type": "function",
@@ -362,61 +366,58 @@
     ]
   },
   {
-    "type": "event",
-    "name": "usdu::branch::ActivePool::ActivePool::CollTokenAddressChanged",
-    "kind": "struct",
-    "members": [
+    "type": "impl",
+    "name": "UpgradeableBaseImpl",
+    "interface_name": "usdu::components::interfaces::IUpgradeableBase::IUpgradeableBase"
+  },
+  {
+    "type": "interface",
+    "name": "usdu::components::interfaces::IUpgradeableBase::IUpgradeableBase",
+    "items": [
       {
-        "name": "new_coll_token_address",
-        "type": "core::starknet::contract_address::ContractAddress",
-        "kind": "data"
+        "type": "function",
+        "name": "upgrade",
+        "inputs": [
+          {
+            "name": "new_class_hash",
+            "type": "core::starknet::class_hash::ClassHash"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "initialized",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::bool"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "owner",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
       }
     ]
   },
   {
     "type": "event",
-    "name": "usdu::branch::ActivePool::ActivePool::BorrowerOperationsAddressChanged",
+    "name": "usdu::branch::ActivePool::ActivePool::ActivePoolCollBalanceUpdated",
     "kind": "struct",
     "members": [
       {
-        "name": "new_borrower_operations_address",
-        "type": "core::starknet::contract_address::ContractAddress",
-        "kind": "data"
-      }
-    ]
-  },
-  {
-    "type": "event",
-    "name": "usdu::branch::ActivePool::ActivePool::TroveManagerAddressChanged",
-    "kind": "struct",
-    "members": [
-      {
-        "name": "new_trove_manager_address",
-        "type": "core::starknet::contract_address::ContractAddress",
-        "kind": "data"
-      }
-    ]
-  },
-  {
-    "type": "event",
-    "name": "usdu::branch::ActivePool::ActivePool::DefaultPoolAddressChanged",
-    "kind": "struct",
-    "members": [
-      {
-        "name": "new_default_pool_address",
-        "type": "core::starknet::contract_address::ContractAddress",
-        "kind": "data"
-      }
-    ]
-  },
-  {
-    "type": "event",
-    "name": "usdu::branch::ActivePool::ActivePool::StabilityPoolAddressChanged",
-    "kind": "struct",
-    "members": [
-      {
-        "name": "new_stability_pool_address",
-        "type": "core::starknet::contract_address::ContractAddress",
+        "name": "coll_balance",
+        "type": "core::integer::u256",
         "kind": "data"
       }
     ]
@@ -435,13 +436,42 @@
   },
   {
     "type": "event",
-    "name": "usdu::branch::ActivePool::ActivePool::ActivePoolCollBalanceUpdated",
+    "name": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::CollateralRegistryAddressChanged",
     "kind": "struct",
     "members": [
       {
-        "name": "coll_balance",
-        "type": "core::integer::u256",
+        "name": "new_collateral_registry",
+        "type": "core::starknet::contract_address::ContractAddress",
         "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Upgraded",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "class_hash",
+        "type": "core::starknet::class_hash::ClassHash",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Event",
+    "kind": "enum",
+    "variants": [
+      {
+        "name": "CollateralRegistryAddressChanged",
+        "type": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::CollateralRegistryAddressChanged",
+        "kind": "nested"
+      },
+      {
+        "name": "Upgraded",
+        "type": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Upgraded",
+        "kind": "nested"
       }
     ]
   },
@@ -451,28 +481,8 @@
     "kind": "enum",
     "variants": [
       {
-        "name": "CollTokenAddressChanged",
-        "type": "usdu::branch::ActivePool::ActivePool::CollTokenAddressChanged",
-        "kind": "nested"
-      },
-      {
-        "name": "BorrowerOperationsAddressChanged",
-        "type": "usdu::branch::ActivePool::ActivePool::BorrowerOperationsAddressChanged",
-        "kind": "nested"
-      },
-      {
-        "name": "TroveManagerAddressChanged",
-        "type": "usdu::branch::ActivePool::ActivePool::TroveManagerAddressChanged",
-        "kind": "nested"
-      },
-      {
-        "name": "DefaultPoolAddressChanged",
-        "type": "usdu::branch::ActivePool::ActivePool::DefaultPoolAddressChanged",
-        "kind": "nested"
-      },
-      {
-        "name": "StabilityPoolAddressChanged",
-        "type": "usdu::branch::ActivePool::ActivePool::StabilityPoolAddressChanged",
+        "name": "ActivePoolCollBalanceUpdated",
+        "type": "usdu::branch::ActivePool::ActivePool::ActivePoolCollBalanceUpdated",
         "kind": "nested"
       },
       {
@@ -481,9 +491,9 @@
         "kind": "nested"
       },
       {
-        "name": "ActivePoolCollBalanceUpdated",
-        "type": "usdu::branch::ActivePool::ActivePool::ActivePoolCollBalanceUpdated",
-        "kind": "nested"
+        "name": "UpgradeableBaseEvent",
+        "type": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::Event",
+        "kind": "flat"
       }
     ]
   }

@@ -1,6 +1,68 @@
 [
   {
     "type": "impl",
+    "name": "ERC20CustomMetadataImpl",
+    "interface_name": "openzeppelin_token::erc20::interface::IERC20Metadata"
+  },
+  {
+    "type": "struct",
+    "name": "core::byte_array::ByteArray",
+    "members": [
+      {
+        "name": "data",
+        "type": "core::array::Array::<core::bytes_31::bytes31>"
+      },
+      {
+        "name": "pending_word",
+        "type": "core::felt252"
+      },
+      {
+        "name": "pending_word_len",
+        "type": "core::integer::u32"
+      }
+    ]
+  },
+  {
+    "type": "interface",
+    "name": "openzeppelin_token::erc20::interface::IERC20Metadata",
+    "items": [
+      {
+        "type": "function",
+        "name": "name",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::byte_array::ByteArray"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "symbol",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::byte_array::ByteArray"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "decimals",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u8"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "impl",
     "name": "IMockSTRKImpl",
     "interface_name": "usdu::mocks::MSTRK::IMockSTRK"
   },
@@ -54,8 +116,8 @@
   },
   {
     "type": "impl",
-    "name": "ERC20MixinImpl",
-    "interface_name": "openzeppelin_token::erc20::interface::IERC20Mixin"
+    "name": "ERC20Impl",
+    "interface_name": "openzeppelin_token::erc20::interface::IERC20"
   },
   {
     "type": "enum",
@@ -72,26 +134,8 @@
     ]
   },
   {
-    "type": "struct",
-    "name": "core::byte_array::ByteArray",
-    "members": [
-      {
-        "name": "data",
-        "type": "core::array::Array::<core::bytes_31::bytes31>"
-      },
-      {
-        "name": "pending_word",
-        "type": "core::felt252"
-      },
-      {
-        "name": "pending_word_len",
-        "type": "core::integer::u32"
-      }
-    ]
-  },
-  {
     "type": "interface",
-    "name": "openzeppelin_token::erc20::interface::IERC20Mixin",
+    "name": "openzeppelin_token::erc20::interface::IERC20",
     "items": [
       {
         "type": "function",
@@ -203,40 +247,18 @@
           }
         ],
         "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "name",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::byte_array::ByteArray"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "symbol",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::byte_array::ByteArray"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "decimals",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::integer::u8"
-          }
-        ],
-        "state_mutability": "view"
-      },
+      }
+    ]
+  },
+  {
+    "type": "impl",
+    "name": "ERC20CamelOnlyImpl",
+    "interface_name": "openzeppelin_token::erc20::interface::IERC20CamelOnly"
+  },
+  {
+    "type": "interface",
+    "name": "openzeppelin_token::erc20::interface::IERC20CamelOnly",
+    "items": [
       {
         "type": "function",
         "name": "totalSupply",
@@ -293,7 +315,20 @@
   {
     "type": "constructor",
     "name": "constructor",
-    "inputs": []
+    "inputs": [
+      {
+        "name": "name",
+        "type": "core::byte_array::ByteArray"
+      },
+      {
+        "name": "symbol",
+        "type": "core::byte_array::ByteArray"
+      },
+      {
+        "name": "decimals",
+        "type": "core::integer::u8"
+      }
+    ]
   },
   {
     "type": "event",

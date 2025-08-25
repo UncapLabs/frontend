@@ -57,7 +57,7 @@ export interface Position {
   liquidationPrice: number;
   debtLimit: number;
   interestRate: number;
-  status: "active" | "zombie" | "closed" | "non-existent";
+  status: "active" | "zombie" | "closed" | "non-existent" | "liquidated";
   batchManager: string | null;
 }
 
@@ -108,7 +108,7 @@ export async function getIndexedTrovesByAccount(
     ),
   ]);
 
-  // console.log(borrowerResult);
+  console.log(borrowerResult);
 
   // console.log(
   //   `[getIndexedTrovesByAccount] Borrower troves: ${

@@ -219,6 +219,20 @@ export const contractCall = {
         params.maxUpfrontFee ?? 2n ** 256n - 1n,
       ]);
     },
+
+    /**
+     * Claim collateral surplus after liquidation
+     * This is called by borrowers to claim any excess collateral
+     * from liquidated positions
+     */
+    claimCollateral: (borrower: string, collateralType: CollateralType) => {
+      const addresses = getCollateralAddresses(collateralType);
+      const contract = new Contract(
+        BORROWER_OPERATIONS_ABI,
+        addresses.borrowerOperations
+      );
+      return contract.populate("claim_collateral", [borrower]);
+    },
   },
 
   usdu: {
@@ -267,15 +281,6 @@ export const contractCall = {
       const contract = new Contract(TROVE_MANAGER_ABI, addresses.troveManager);
       return contract.populate("get_latest_trove_data", [troveId]);
     },
-
-    /**
-     * Get trove status
-     */
-    getTroveStatus: (troveId: bigint, collateralType: CollateralType) => {
-      const addresses = getCollateralAddresses(collateralType);
-      const contract = new Contract(TROVE_MANAGER_ABI, addresses.troveManager);
-      return contract.populate("get_trove_status", [troveId]);
-    },
   },
 };
 
@@ -299,7 +304,9 @@ export const contractRead = {
         addresses.borrowerOperations,
         provider
       );
-      const result = await contract.call("get_interest_batch_manager_of", [troveId]);
+      const result = await contract.call("get_interest_batch_manager_of", [
+        troveId,
+      ]);
       return result as string;
     },
   },
@@ -319,8 +326,10 @@ export const contractRead = {
         addresses.troveManager,
         provider
       );
-      const result = await contract.call("get_latest_trove_data", [troveId]) as any;
-      
+      const result = (await contract.call("get_latest_trove_data", [
+        troveId,
+      ])) as any;
+
       // The contract returns a struct with all fields properly parsed by Starknet.js
       return {
         entire_debt: result.entire_debt,
@@ -386,4 +395,3 @@ export const createContracts = (
     ),
   };
 };
-

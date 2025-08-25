@@ -1,7 +1,7 @@
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
-import { AlertTriangle, Info } from "lucide-react";
+import { AlertTriangle, Info, DollarSign } from "lucide-react";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import type { Route } from "./+types/borrow.$troveId.close";
 import { useParams, useNavigate } from "react-router";
@@ -15,10 +15,12 @@ import {
 import { NumericFormat } from "react-number-format";
 import { useTroveData } from "~/hooks/use-trove-data";
 import { useCloseTrove } from "~/hooks/use-close-trove";
+import { useClaimSurplus } from "~/hooks/use-claim-surplus";
 import { useQueryState } from "nuqs";
 import { useState, useCallback } from "react";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { toast } from "sonner";
+import { Alert, AlertDescription } from "~/components/ui/alert";
 
 function ClosePosition() {
   const { address } = useAccount();
@@ -71,10 +73,23 @@ function ClosePosition() {
     ? usduBal >= position.borrowedAmount
     : false;
 
-  // Check if trove is zombie or redeemed
-  // TODO: Implement status check from trove data
-  const isZombie = false;
-  const isRedeemed = false;
+  // Check trove status
+  const isLiquidated = position?.status === "liquidated";
+  const isZombie = position?.status === "zombie";
+  const isRedeemed = position?.status === "redeemed";
+  
+  // Hook for claiming surplus (for liquidated positions)
+  const {
+    claimSurplus,
+    isPending: isClaimPending,
+    transactionHash: claimTxHash,
+  } = useClaimSurplus({
+    collateralType: troveCollateralType as CollateralType,
+  });
+  
+  // TODO: Query actual collateral surplus from contract
+  // For now, assume there might be surplus if liquidated
+  const hasCollateralSurplus = isLiquidated && position?.collateralAmount > 0;
 
   const handleClosePosition = async () => {
     if (!address) {
@@ -126,7 +141,7 @@ function ClosePosition() {
   return (
     <>
       <h2 className="text-2xl font-semibold text-slate-800 mb-6">
-        Close Position
+        {isLiquidated ? "Liquidated Position" : "Close Position"}
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -185,7 +200,87 @@ function ClosePosition() {
                 currentState === "error" ? "Try Again" : "Back to Dashboard"
               }
             />
+          ) : isLiquidated ? (
+            // Liquidated Position UI
+            <div className="space-y-6">
+              <Alert className="border-orange-200 bg-orange-50">
+                <AlertTriangle className="h-4 w-4 text-orange-600" />
+                <AlertDescription className="text-orange-800">
+                  <div className="space-y-2">
+                    <p className="font-semibold">This position has been liquidated</p>
+                    <p>
+                      The collateral has been deducted from this position to cover the debt.
+                      {hasCollateralSurplus && (
+                        <> You may have excess collateral to claim.</>
+                      )}
+                    </p>
+                  </div>
+                </AlertDescription>
+              </Alert>
+
+              {hasCollateralSurplus ? (
+                <Card className="border border-slate-200 shadow-sm">
+                  <CardContent className="pt-6">
+                    <h3 className="font-semibold text-lg text-slate-800 mb-4">
+                      Collateral Surplus
+                    </h3>
+                    
+                    <div className="bg-green-50 rounded-lg p-4 mb-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-slate-600">
+                          Remaining collateral to claim
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="h-4 w-4 text-green-600" />
+                          <span className="font-semibold text-lg text-green-700">
+                            <NumericFormat
+                              displayType="text"
+                              value={position.collateralAmount}
+                              thousandSeparator=","
+                              decimalScale={7}
+                              fixedDecimalScale={false}
+                            />{" "}
+                            {selectedCollateralToken.symbol}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-xs text-slate-500">
+                        This is the excess collateral after liquidation
+                      </p>
+                    </div>
+
+                    <Button
+                      onClick={() => claimSurplus()}
+                      disabled={isClaimPending || !address}
+                      className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white"
+                    >
+                      {!address
+                        ? "Connect Wallet"
+                        : isClaimPending
+                        ? "Claiming..."
+                        : "Claim Collateral Surplus"}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="border border-slate-200 shadow-sm">
+                  <CardContent className="pt-6">
+                    <div className="text-center space-y-3">
+                      <Info className="h-12 w-12 text-slate-400 mx-auto" />
+                      <h3 className="font-semibold text-lg text-slate-800">
+                        No Collateral Surplus
+                      </h3>
+                      <p className="text-sm text-slate-600">
+                        This liquidated position has no remaining collateral to claim.
+                        The entire collateral was used to cover the debt.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           ) : (
+            // Normal close position UI
             <div className="space-y-6">
               {/* Warning Card */}
               <Card className="border border-red-200 bg-red-50">
@@ -370,33 +465,64 @@ function ClosePosition() {
           <Card className="border border-slate-200 shadow-sm sticky top-8">
             <CardContent className="pt-6 space-y-4">
               <h3 className="font-semibold text-lg text-slate-800">
-                Closing Summary
+                {isLiquidated ? "Liquidation Summary" : "Closing Summary"}
               </h3>
 
               <div className="space-y-3 text-sm">
-                <div>
-                  <h4 className="font-medium text-slate-700 mb-1">
-                    What happens when you close?
-                  </h4>
-                  <ul className="space-y-1 text-slate-600">
-                    <li>• Your entire debt is repaid</li>
-                    <li>• All collateral is returned to you</li>
-                    <li>• The position is permanently closed</li>
-                    <li>• No further fees or interest accrue</li>
-                  </ul>
-                </div>
+                {isLiquidated ? (
+                  <>
+                    <div>
+                      <h4 className="font-medium text-slate-700 mb-1">
+                        What is liquidation?
+                      </h4>
+                      <ul className="space-y-1 text-slate-600">
+                        <li>• Your collateral was sold to cover debt</li>
+                        <li>• The position is now closed</li>
+                        <li>• Excess collateral can be claimed</li>
+                        <li>• No debt remains to repay</li>
+                      </ul>
+                    </div>
 
-                <Separator className="bg-slate-100" />
+                    <Separator className="bg-slate-100" />
 
-                <div>
-                  <h4 className="font-medium text-slate-700 mb-1">
-                    Requirements
-                  </h4>
-                  <ul className="space-y-1 text-slate-600">
-                    <li>• Sufficient USDU to repay debt</li>
-                    <li>• Gas fees for transaction</li>
-                  </ul>
-                </div>
+                    <div>
+                      <h4 className="font-medium text-slate-700 mb-1">
+                        Next Steps
+                      </h4>
+                      <ul className="space-y-1 text-slate-600">
+                        <li>• Check for collateral surplus</li>
+                        <li>• Claim any available surplus</li>
+                        <li>• Open a new position if desired</li>
+                      </ul>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <h4 className="font-medium text-slate-700 mb-1">
+                        What happens when you close?
+                      </h4>
+                      <ul className="space-y-1 text-slate-600">
+                        <li>• Your entire debt is repaid</li>
+                        <li>• All collateral is returned to you</li>
+                        <li>• The position is permanently closed</li>
+                        <li>• No further fees or interest accrue</li>
+                      </ul>
+                    </div>
+
+                    <Separator className="bg-slate-100" />
+
+                    <div>
+                      <h4 className="font-medium text-slate-700 mb-1">
+                        Requirements
+                      </h4>
+                      <ul className="space-y-1 text-slate-600">
+                        <li>• Sufficient USDU to repay debt</li>
+                        <li>• Gas fees for transaction</li>
+                      </ul>
+                    </div>
+                  </>
+                )}
 
                 {(isZombie || isRedeemed) && (
                   <>
