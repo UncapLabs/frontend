@@ -25,6 +25,9 @@ import { useQueryState, parseAsFloat, parseAsInteger } from "nuqs";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { getInterestRatePercentage } from "~/lib/utils/position-helpers";
 import { TransactionSummary } from "~/components/transaction-summary";
+import { usePositionMetrics, getRedemptionRisk } from "~/hooks/use-position-metrics";
+import { getMinCollateralizationRatio } from "~/lib/utils/collateral-config";
+import type { CollateralType } from "~/lib/contracts/constants";
 
 function UpdatePosition() {
   const { address } = useAccount();
@@ -69,24 +72,17 @@ function UpdatePosition() {
 
   const annualInterestCost = borrowAmount && interestRate ? (borrowAmount * interestRate) / 100 : 0;
 
-  // Calculate metrics for the new position
-  const metrics = {
-    totalValue: collateralAmount && bitcoin?.price 
-      ? collateralAmount * bitcoin.price 
-      : 0,
-    netValue: collateralAmount && borrowAmount && bitcoin?.price && usdu?.price
-      ? (collateralAmount * bitcoin.price) - (borrowAmount * usdu.price)
-      : 0,
-    liquidationPrice: collateralAmount && borrowAmount && collateralAmount > 0
-      ? (borrowAmount * 1.1) / collateralAmount // 110% collateralization
-      : 0,
-    ltvValue: collateralAmount && borrowAmount && bitcoin?.price && usdu?.price && collateralAmount > 0
-      ? (borrowAmount * (usdu?.price || 1)) / (collateralAmount * bitcoin.price) * 100
-      : 0,
-    collateralRatio: collateralAmount && borrowAmount && bitcoin?.price && usdu?.price && borrowAmount > 0
-      ? ((collateralAmount * bitcoin.price) / (borrowAmount * (usdu?.price || 1))) * 100
-      : 0,
-  };
+  // Calculate metrics for the new position using the shared hook
+  const collateralType = selectedCollateralToken.symbol as CollateralType;
+  const minCollateralizationRatio = getMinCollateralizationRatio(collateralType);
+  
+  const metrics = usePositionMetrics({
+    collateralAmount,
+    borrowAmount,
+    bitcoinPrice: bitcoin?.price,
+    usduPrice: usdu?.price,
+    minCollateralizationRatio,
+  });
 
   // Initialize form with position values
   const form = useForm({
@@ -410,7 +406,7 @@ function UpdatePosition() {
                           const ratioError = validators.minimumCollateralRatio(
                             newCollateralValue,
                             debtValue,
-                            1.1 // 110% minimum
+                            minCollateralizationRatio
                           );
                           if (ratioError) return ratioError;
                         }
@@ -487,8 +483,8 @@ function UpdatePosition() {
                         // Don't validate until prices are loaded
                         if (!bitcoin?.price || !usdu?.price) return undefined;
 
-                        // Calculate debt limit
-                        const debtLimit = collateral ? computeDebtLimit(collateral, bitcoin.price) : 0;
+                        // Calculate debt limit with proper collateralization ratio
+                        const debtLimit = collateral ? computeDebtLimit(collateral, bitcoin.price, minCollateralizationRatio) : 0;
 
                         return validators.compose(
                           validators.minimumUsdValue(value, usdu.price, 2000),
@@ -648,24 +644,8 @@ function UpdatePosition() {
               },
             }}
             liquidationPrice={metrics.liquidationPrice}
-            liquidationRisk={
-              metrics.liquidationPrice > 0 && bitcoin?.price
-                ? bitcoin.price / metrics.liquidationPrice > 2
-                  ? "Low"
-                  : bitcoin.price / metrics.liquidationPrice > 1.5
-                  ? "Medium"
-                  : "High"
-                : undefined
-            }
-            redemptionRisk={
-              interestRate !== undefined
-                ? interestRate < 5
-                  ? "High"
-                  : interestRate < 10
-                  ? "Medium"
-                  : "Low"
-                : undefined
-            }
+            liquidationRisk={metrics.liquidationRisk}
+            redemptionRisk={getRedemptionRisk(interestRate)}
             warnings={borrowAmount && borrowAmount < 2000 ? ["Minimum debt requirement is $2,000 USDU"] : []}
             className="sticky top-8"
           />

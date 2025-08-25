@@ -9,7 +9,7 @@ import { TokenInput } from "~/components/token-input";
 import { useEffect, useCallback } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
-import { MAX_LIMIT, MAX_LTV, computeDebtLimit } from "~/lib/utils/calc";
+import { MAX_LIMIT, computeDebtLimit } from "~/lib/utils/calc";
 import { validators } from "~/lib/validators";
 import type { Route } from "./+types/dashboard";
 import { useAccount, useBalance } from "@starknet-react/core";
@@ -24,6 +24,9 @@ import { useBorrow } from "~/hooks/use-borrow";
 import { useQueryState, parseAsFloat, parseAsInteger } from "nuqs";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { useCollateralToken } from "~/hooks/use-collateral-token";
+import { usePositionMetrics, getRedemptionRisk } from "~/hooks/use-position-metrics";
+import { getMinCollateralizationRatio } from "~/lib/utils/collateral-config";
+import type { CollateralType } from "~/lib/contracts/constants";
 
 function Borrow() {
   const { address } = useAccount();
@@ -54,15 +57,17 @@ function Borrow() {
 
   const { bitcoin, usdu } = useFetchPrices(collateralAmount ?? undefined);
 
-  // Calculate metrics for the position
-  const metrics = {
-    ltvValue: collateralAmount && borrowAmount && bitcoin?.price && usdu?.price && collateralAmount > 0
-      ? (borrowAmount * (usdu?.price || 1)) / (collateralAmount * bitcoin.price) * 100
-      : 0,
-    liquidationPrice: collateralAmount && borrowAmount && collateralAmount > 0
-      ? (borrowAmount * 1.1) / collateralAmount // 110% collateralization
-      : 0,
-  };
+  // Calculate metrics for the position using the shared hook
+  const collateralType = selectedCollateralToken.symbol as CollateralType;
+  const minCollateralizationRatio = getMinCollateralizationRatio(collateralType);
+  
+  const metrics = usePositionMetrics({
+    collateralAmount,
+    borrowAmount,
+    bitcoinPrice: bitcoin?.price,
+    usduPrice: usdu?.price,
+    minCollateralizationRatio,
+  });
 
   // Initialize form with URL values
   const form = useForm({
@@ -136,10 +141,10 @@ function Borrow() {
         // Manually trigger validation after setting value
         form.validateField("collateralAmount", "change");
       } else {
-        // Calculate debt limit inline
+        // Calculate debt limit inline with proper collateralization ratio
         const collateral = form.getFieldValue("collateralAmount") || 0;
         const btcPrice = bitcoin?.price || 0;
-        const maxBorrowable = computeDebtLimit(collateral, btcPrice);
+        const maxBorrowable = computeDebtLimit(collateral, btcPrice, minCollateralizationRatio);
         const newValue = maxBorrowable * percentage;
         form.setFieldValue("borrowAmount", newValue);
         // Manually trigger validation after setting value
@@ -151,6 +156,7 @@ function Borrow() {
       selectedCollateralToken.decimals,
       bitcoin?.price,
       form,
+      minCollateralizationRatio,
     ]
   );
 
@@ -339,9 +345,9 @@ function Borrow() {
                         // Don't validate until prices are loaded
                         if (!bitcoin?.price || !usdu?.price) return undefined;
 
-                        // Calculate debt limit inline
+                        // Calculate debt limit inline with proper collateralization ratio
                         const debtLimit = collateral
-                          ? computeDebtLimit(collateral, bitcoin.price)
+                          ? computeDebtLimit(collateral, bitcoin.price, minCollateralizationRatio)
                           : 0;
 
                         return validators.compose(
@@ -353,10 +359,11 @@ function Borrow() {
                             if (!collateral) return undefined;
                             const collateralValue = collateral * bitcoin.price;
                             const borrowValue = value * usdu.price;
+                            const maxLtvPercent = (1 / minCollateralizationRatio) * 100;
                             return validators.ltvRatio(
                               borrowValue,
                               collateralValue,
-                              MAX_LTV * 100
+                              maxLtvPercent
                             );
                           })()
                         );
@@ -484,24 +491,8 @@ function Borrow() {
               },
             }}
             liquidationPrice={metrics.liquidationPrice}
-            liquidationRisk={
-              metrics.liquidationPrice > 0 && bitcoin?.price
-                ? bitcoin.price / metrics.liquidationPrice > 2
-                  ? "Low"
-                  : bitcoin.price / metrics.liquidationPrice > 1.5
-                  ? "Medium"
-                  : "High"
-                : undefined
-            }
-            redemptionRisk={
-              interestRate !== undefined
-                ? interestRate < 5
-                  ? "High"
-                  : interestRate < 10
-                  ? "Medium"
-                  : "Low"
-                : undefined
-            }
+            liquidationRisk={metrics.liquidationRisk}
+            redemptionRisk={getRedemptionRisk(interestRate)}
             warnings={borrowAmount && borrowAmount < 2000 ? ["Minimum debt requirement is $2,000 USDU"] : []}
             className="sticky top-8"
           />

@@ -1,4 +1,4 @@
-export const MINIMUM_COLLATERAL_RATIO = 1.1;
+export const MINIMUM_COLLATERAL_RATIO = 1.1; // Default, kept for backward compatibility
 export const MAX_LTV = 1 / MINIMUM_COLLATERAL_RATIO;
 
 export const MAX_LIMIT = 100000000;
@@ -7,14 +7,16 @@ export const MAX_LIMIT = 100000000;
  * Computes the debt limit based on the collateral amount, the collateral price and the minimum collateral ratio
  * @param collateralAmount - The amount of collateral in BTC
  * @param bitcoinPrice - The price of Bitcoin in USD
+ * @param minCollateralRatio - The minimum collateralization ratio (default 1.1 = 110%)
  * @returns The debt limit in USD
  */
 export function computeDebtLimit(
   collateralAmount: number,
-  bitcoinPrice: number
+  bitcoinPrice: number,
+  minCollateralRatio: number = MINIMUM_COLLATERAL_RATIO
 ) {
   const collateralValue = collateralAmount * bitcoinPrice;
-  return collateralValue / MINIMUM_COLLATERAL_RATIO;
+  return collateralValue / minCollateralRatio;
 }
 
 /**
@@ -22,20 +24,22 @@ export function computeDebtLimit(
  * @param collateralAmount - The amount of collateral in BTC
  * @param debt - The amount of debt in USDU
  * @param usduPrice - The price of USDU in USD (typically 1.0)
+ * @param minCollateralRatio - The minimum collateralization ratio (default 1.1 = 110%)
  * @returns The liquidation price of BTC in USD
  */
 export function computeLiquidationPrice(
   collateralAmount: number,
   debt: number,
-  usduPrice: number = 1.0
+  usduPrice: number = 1.0,
+  minCollateralRatio: number = MINIMUM_COLLATERAL_RATIO
 ) {
   if (collateralAmount === 0) return 0;
   
-  // Liquidation occurs when: collateral_value = debt * MINIMUM_COLLATERAL_RATIO
-  // So: collateral_amount * btc_price = debt * MINIMUM_COLLATERAL_RATIO
-  // Therefore: btc_price = (debt * MINIMUM_COLLATERAL_RATIO) / collateral_amount
+  // Liquidation occurs when: collateral_value = debt * minCollateralRatio
+  // So: collateral_amount * btc_price = debt * minCollateralRatio
+  // Therefore: btc_price = (debt * minCollateralRatio) / collateral_amount
   const debtValue = debt * usduPrice;
-  return (debtValue * MINIMUM_COLLATERAL_RATIO) / collateralAmount;
+  return (debtValue * minCollateralRatio) / collateralAmount;
 }
 
 /**
@@ -43,15 +47,17 @@ export function computeLiquidationPrice(
  * @param collateralAmount - The amount of collateral in BTC
  * @param debtAmount - The amount of debt in usdu
  * @param bitcoinPrice - The price of Bitcoin in USD
+ * @param minCollateralRatio - The minimum collateralization ratio (default 1.1 = 110%)
  * @returns The health factor
  */
 export function computeHealthFactor(
   collateralAmount: number,
   debtAmount: number,
-  bitcoinPrice: number
+  bitcoinPrice: number,
+  minCollateralRatio: number = MINIMUM_COLLATERAL_RATIO
 ) {
   const collateralValue = collateralAmount * bitcoinPrice;
-  return collateralValue / (debtAmount * MINIMUM_COLLATERAL_RATIO);
+  return collateralValue / (debtAmount * minCollateralRatio);
 }
 
 /**
