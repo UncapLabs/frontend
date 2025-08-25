@@ -112,7 +112,7 @@ export const TokenInput = memo(function TokenInput({
             placeholder={placeholder}
             inputMode="decimal"
             allowNegative={false}
-            decimalScale={7}
+            decimalScale={6}
             value={value}
             onValueChange={disabled ? undefined : handleValueChange}
             onBlur={onBlur}
@@ -122,20 +122,18 @@ export const TokenInput = memo(function TokenInput({
               if (floatValue === undefined) return true;
               return floatValue < maxValue;
             }}
-            className="text-3xl md:text-4xl font-semibold h-auto p-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none outline-none shadow-none tracking-tight text-slate-800"
+            className="text-2xl sm:text-3xl md:text-4xl font-semibold h-auto p-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none outline-none shadow-none tracking-tight text-slate-800"
           />
 
-          {usdValue > 0 && (
-            <NumericFormat
-              className="text-sm text-slate-500 mt-1"
-              displayType="text"
-              value={usdValue}
-              prefix="≈ $"
-              thousandSeparator=","
-              decimalScale={2}
-              fixedDecimalScale
-            />
-          )}
+          <NumericFormat
+            className="text-sm text-slate-500 mt-1"
+            displayType="text"
+            value={usdValue}
+            prefix="≈ $"
+            thousandSeparator=","
+            decimalScale={2}
+            fixedDecimalScale
+          />
 
           {error && (
             <div className="flex items-start gap-1 mt-2">
@@ -193,7 +191,7 @@ export const TokenInput = memo(function TokenInput({
               </SelectContent>
             </Select>
           ) : (
-            <div className="w-auto rounded-full h-10 px-4 border border-slate-200 bg-white shadow-sm flex items-center justify-start">
+            <div className="w-auto min-w-[120px] rounded-full h-10 pl-2 pr-3 border border-slate-200 bg-white shadow-sm flex items-center justify-start">
               {token.icon && (
                 <div className="bg-blue-100 p-1 rounded-full mr-2">
                   <img

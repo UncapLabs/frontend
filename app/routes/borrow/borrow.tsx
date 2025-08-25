@@ -3,6 +3,7 @@ import { Card, CardContent } from "~/components/ui/card";
 import { ArrowDown } from "lucide-react";
 import { Separator } from "~/components/ui/separator";
 import { InterestRateSelector } from "~/components/borrow";
+import { RedemptionInfo } from "~/components/borrow/redemption-info";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { TransactionSummary } from "~/components/transaction-summary";
 import { TokenInput } from "~/components/token-input";
@@ -11,7 +12,7 @@ import { useForm } from "@tanstack/react-form";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
 import { MAX_LIMIT, computeDebtLimit } from "~/lib/utils/calc";
 import { validators } from "~/lib/validators";
-import type { Route } from "./+types/dashboard";
+import type { Route } from "./+types/borrow";
 import { useAccount, useBalance } from "@starknet-react/core";
 import {
   USDU_TOKEN,
@@ -24,7 +25,10 @@ import { useBorrow } from "~/hooks/use-borrow";
 import { useQueryState, parseAsFloat, parseAsInteger } from "nuqs";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { useCollateralToken } from "~/hooks/use-collateral-token";
-import { usePositionMetrics, getRedemptionRisk } from "~/hooks/use-position-metrics";
+import {
+  usePositionMetrics,
+  getRedemptionRisk,
+} from "~/hooks/use-position-metrics";
 import { getMinCollateralizationRatio } from "~/lib/utils/collateral-config";
 import type { CollateralType } from "~/lib/contracts/constants";
 
@@ -57,10 +61,10 @@ function Borrow() {
 
   const { bitcoin, usdu } = useFetchPrices(collateralAmount ?? undefined);
 
-  // Calculate metrics for the position using the shared hook
   const collateralType = selectedCollateralToken.symbol as CollateralType;
-  const minCollateralizationRatio = getMinCollateralizationRatio(collateralType);
-  
+  const minCollateralizationRatio =
+    getMinCollateralizationRatio(collateralType);
+
   const metrics = usePositionMetrics({
     collateralAmount,
     borrowAmount,
@@ -144,7 +148,11 @@ function Borrow() {
         // Calculate debt limit inline with proper collateralization ratio
         const collateral = form.getFieldValue("collateralAmount") || 0;
         const btcPrice = bitcoin?.price || 0;
-        const maxBorrowable = computeDebtLimit(collateral, btcPrice, minCollateralizationRatio);
+        const maxBorrowable = computeDebtLimit(
+          collateral,
+          btcPrice,
+          minCollateralizationRatio
+        );
         const newValue = maxBorrowable * percentage;
         form.setFieldValue("borrowAmount", newValue);
         // Manually trigger validation after setting value
@@ -347,7 +355,11 @@ function Borrow() {
 
                         // Calculate debt limit inline with proper collateralization ratio
                         const debtLimit = collateral
-                          ? computeDebtLimit(collateral, bitcoin.price, minCollateralizationRatio)
+                          ? computeDebtLimit(
+                              collateral,
+                              bitcoin.price,
+                              minCollateralizationRatio
+                            )
                           : 0;
 
                         return validators.compose(
@@ -359,7 +371,8 @@ function Borrow() {
                             if (!collateral) return undefined;
                             const collateralValue = collateral * bitcoin.price;
                             const borrowValue = value * usdu.price;
-                            const maxLtvPercent = (1 / minCollateralizationRatio) * 100;
+                            const maxLtvPercent =
+                              (1 / minCollateralizationRatio) * 100;
                             return validators.ltvRatio(
                               borrowValue,
                               collateralValue,
@@ -390,7 +403,6 @@ function Borrow() {
                       />
                     )}
                   </form.Field>
-
 
                   {/* Interest Rate Options */}
                   <InterestRateSelector
@@ -472,7 +484,7 @@ function Borrow() {
         </div>
 
         {/* Right Panel - Transaction Summary */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-4">
           <TransactionSummary
             type="open"
             changes={{
@@ -493,8 +505,16 @@ function Borrow() {
             liquidationPrice={metrics.liquidationPrice}
             liquidationRisk={metrics.liquidationRisk}
             redemptionRisk={getRedemptionRisk(interestRate)}
-            warnings={borrowAmount && borrowAmount < 2000 ? ["Minimum debt requirement is $2,000 USDU"] : []}
+            warnings={
+              borrowAmount && borrowAmount < 2000
+                ? ["Minimum debt requirement is $2,000 USDU"]
+                : []
+            }
             className="sticky top-8"
+          />
+          <RedemptionInfo
+            variant="inline"
+            className="sticky top-[calc(8rem+350px)]"
           />
         </div>
       </div>

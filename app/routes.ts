@@ -7,11 +7,11 @@ import {
 
 export default [
   layout("routes/app.tsx", [
-    index("routes/dashboard.tsx"),
-    route("borrow", "routes/borrow.tsx"),
-    route("borrow/:troveId", "routes/borrow.$troveId.tsx", [
-      route("update", "routes/borrow.$troveId.update.tsx"),
-      route("close", "routes/borrow.$troveId.close.tsx"),
+    index("routes/dashboard/dashboard.tsx"),
+    route("borrow", "routes/borrow/borrow.tsx"),
+    route("borrow/:troveId", "routes/borrow/borrow.$troveId.tsx", [
+      route("update", "routes/borrow/borrow.$troveId.update.tsx"),
+      route("close", "routes/borrow/borrow.$troveId.close.tsx"),
     ]),
     // route("test", "routes/test.tsx"),
   ]),

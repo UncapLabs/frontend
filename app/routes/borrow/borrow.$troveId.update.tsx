@@ -12,11 +12,7 @@ import { validators } from "~/lib/validators";
 import type { Route } from "./+types/borrow.$troveId.update";
 import { useParams, useNavigate } from "react-router";
 import { useAccount, useBalance } from "@starknet-react/core";
-import {
-  USDU_TOKEN,
-  UBTC_TOKEN,
-  GBTC_TOKEN,
-} from "~/lib/contracts/constants";
+import { USDU_TOKEN, UBTC_TOKEN, GBTC_TOKEN } from "~/lib/contracts/constants";
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
 import { useTroveData } from "~/hooks/use-trove-data";
@@ -25,7 +21,10 @@ import { useQueryState, parseAsFloat, parseAsInteger } from "nuqs";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { getInterestRatePercentage } from "~/lib/utils/position-helpers";
 import { TransactionSummary } from "~/components/transaction-summary";
-import { usePositionMetrics, getRedemptionRisk } from "~/hooks/use-position-metrics";
+import {
+  usePositionMetrics,
+  getRedemptionRisk,
+} from "~/hooks/use-position-metrics";
 import { getMinCollateralizationRatio } from "~/lib/utils/collateral-config";
 import type { CollateralType } from "~/lib/contracts/constants";
 
@@ -34,12 +33,13 @@ function UpdatePosition() {
   const { troveId } = useParams();
   const navigate = useNavigate();
   const { connectWallet } = useWalletConnect();
-  
+
   // Fetch existing position data
   const { position, isLoading: isPositionLoading } = useTroveData(troveId);
-  
+
   // Get collateral token based on position
-  const selectedCollateralToken = position?.collateralAsset === "GBTC" ? GBTC_TOKEN : UBTC_TOKEN;
+  const selectedCollateralToken =
+    position?.collateralAsset === "GBTC" ? GBTC_TOKEN : UBTC_TOKEN;
 
   // URL state for form inputs
   const [collateralAmount, setCollateralAmount] = useQueryState(
@@ -52,7 +52,9 @@ function UpdatePosition() {
   );
   const [interestRate, setInterestRate] = useQueryState(
     "rate",
-    parseAsInteger.withDefault(position ? getInterestRatePercentage(position) : 5)
+    parseAsInteger.withDefault(
+      position ? getInterestRatePercentage(position) : 5
+    )
   );
 
   // Balance for selected token
@@ -70,12 +72,13 @@ function UpdatePosition() {
 
   const { bitcoin, usdu } = useFetchPrices(collateralAmount ?? undefined);
 
-  const annualInterestCost = borrowAmount && interestRate ? (borrowAmount * interestRate) / 100 : 0;
+  const annualInterestCost =
+    borrowAmount && interestRate ? (borrowAmount * interestRate) / 100 : 0;
 
-  // Calculate metrics for the new position using the shared hook
   const collateralType = selectedCollateralToken.symbol as CollateralType;
-  const minCollateralizationRatio = getMinCollateralizationRatio(collateralType);
-  
+  const minCollateralizationRatio =
+    getMinCollateralizationRatio(collateralType);
+
   const metrics = usePositionMetrics({
     collateralAmount,
     borrowAmount,
@@ -89,7 +92,8 @@ function UpdatePosition() {
     defaultValues: {
       collateralAmount: collateralAmount ?? position?.collateralAmount,
       borrowAmount: borrowAmount ?? position?.borrowedAmount,
-      interestRate: interestRate ?? (position ? getInterestRatePercentage(position) : 5),
+      interestRate:
+        interestRate ?? (position ? getInterestRatePercentage(position) : 5),
     },
     onSubmit: async ({ value }) => {
       if (!isReady) {
@@ -104,7 +108,12 @@ function UpdatePosition() {
       }
 
       // Check if there are actual changes
-      if (!changes || (!changes.hasCollateralChange && !changes.hasDebtChange && !changes.hasInterestRateChange)) {
+      if (
+        !changes ||
+        (!changes.hasCollateralChange &&
+          !changes.hasDebtChange &&
+          !changes.hasInterestRateChange)
+      ) {
         toast.error("No changes to update");
         return;
       }
@@ -161,7 +170,6 @@ function UpdatePosition() {
     }
   }, [address]);
 
-
   const handleComplete = useCallback(() => {
     navigate("/");
   }, [navigate]);
@@ -172,7 +180,7 @@ function UpdatePosition() {
         <h2 className="text-2xl font-semibold text-slate-800 mb-6">
           Update Position
         </h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Left Panel Skeleton */}
           <div className="md:col-span-2">
@@ -237,7 +245,7 @@ function UpdatePosition() {
             <Card className="border border-slate-200">
               <CardContent className="pt-6 space-y-4">
                 <div className="h-5 w-32 bg-slate-200 rounded animate-pulse" />
-                
+
                 <div className="space-y-3">
                   {[1, 2, 3, 4].map((i) => (
                     <div key={i} className="flex justify-between">
@@ -246,7 +254,7 @@ function UpdatePosition() {
                     </div>
                   ))}
                 </div>
-                
+
                 <div className="pt-3 border-t border-slate-100 space-y-3">
                   {[1, 2].map((i) => (
                     <div key={i} className="flex justify-between">
@@ -281,7 +289,10 @@ function UpdatePosition() {
               successTitle="Position Updated!"
               successSubtitle="Your position has been updated successfully."
               details={
-                changes && formData.collateralAmount && formData.borrowAmount && transactionHash
+                changes &&
+                formData.collateralAmount &&
+                formData.borrowAmount &&
+                transactionHash
                   ? ([
                       changes.hasCollateralChange && {
                         label: changes.isCollIncrease
@@ -343,7 +354,9 @@ function UpdatePosition() {
                 <CardContent className="pt-6 space-y-6">
                   {/* Current Position Info */}
                   <div className="bg-slate-50 rounded-lg p-4">
-                    <h3 className="text-sm font-medium text-slate-700 mb-3">Current Position</h3>
+                    <h3 className="text-sm font-medium text-slate-700 mb-3">
+                      Current Position
+                    </h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="text-slate-600">Collateral:</span>{" "}
@@ -375,7 +388,10 @@ function UpdatePosition() {
                     <div className="mt-3 pt-3 border-t border-slate-200">
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-slate-600">Interest Rate:</span>
-                        <span className="font-medium">{position ? getInterestRatePercentage(position) : 0}% APR</span>
+                        <span className="font-medium">
+                          {position ? getInterestRatePercentage(position) : 0}%
+                          APR
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -390,17 +406,29 @@ function UpdatePosition() {
 
                         if (!bitcoinBalance) return undefined;
 
-                        const balance = Number(bitcoinBalance.value) / 10 ** selectedCollateralToken.decimals;
+                        const balance =
+                          Number(bitcoinBalance.value) /
+                          10 ** selectedCollateralToken.decimals;
                         const currentCollateral = position.collateralAmount;
                         const currentDebt = position.borrowedAmount;
 
                         // Check if adding more than balance
-                        if (value > currentCollateral && value - currentCollateral > balance) {
-                          return `Insufficient balance. You have ${balance.toFixed(7)} ${selectedCollateralToken.symbol}`;
+                        if (
+                          value > currentCollateral &&
+                          value - currentCollateral > balance
+                        ) {
+                          return `Insufficient balance. You have ${balance.toFixed(
+                            7
+                          )} ${selectedCollateralToken.symbol}`;
                         }
 
                         // Check minimum collateral ratio after withdrawal
-                        if (value < currentCollateral && bitcoin?.price && usdu?.price && currentDebt > 0) {
+                        if (
+                          value < currentCollateral &&
+                          bitcoin?.price &&
+                          usdu?.price &&
+                          currentDebt > 0
+                        ) {
                           const newCollateralValue = value * bitcoin.price;
                           const debtValue = currentDebt * usdu.price;
                           const ratioError = validators.minimumCollateralRatio(
@@ -419,8 +447,12 @@ function UpdatePosition() {
                     listeners={{
                       onChangeDebounceMs: 500,
                       onChange: ({ fieldApi }) => {
-                        const currentBorrowAmount = fieldApi.form.getFieldValue("borrowAmount");
-                        if (currentBorrowAmount !== undefined && currentBorrowAmount > 0) {
+                        const currentBorrowAmount =
+                          fieldApi.form.getFieldValue("borrowAmount");
+                        if (
+                          currentBorrowAmount !== undefined &&
+                          currentBorrowAmount > 0
+                        ) {
                           fieldApi.form.validateField("borrowAmount", "change");
                         }
                       },
@@ -438,7 +470,9 @@ function UpdatePosition() {
                             setCollateralAmount(value);
                           } else {
                             field.handleChange(position?.collateralAmount || 0);
-                            setCollateralAmount(position?.collateralAmount || 0);
+                            setCollateralAmount(
+                              position?.collateralAmount || 0
+                            );
                           }
                         }}
                         onBlur={field.handleBlur}
@@ -468,15 +502,21 @@ function UpdatePosition() {
                       onChangeAsync: async ({ value, fieldApi }) => {
                         if (!value) return undefined;
 
-                        const collateral = fieldApi.form.getFieldValue("collateralAmount");
+                        const collateral =
+                          fieldApi.form.getFieldValue("collateralAmount");
                         const currentDebt = position.borrowedAmount;
-                        const usduBal = usduBalance ? Number(usduBalance.value) / 10 ** USDU_TOKEN.decimals : 0;
+                        const usduBal = usduBalance
+                          ? Number(usduBalance.value) /
+                            10 ** USDU_TOKEN.decimals
+                          : 0;
 
                         // Check if repaying more than available balance
                         if (value < currentDebt) {
                           const repayAmount = currentDebt - value;
                           if (repayAmount > usduBal) {
-                            return `Insufficient USDU balance. You have ${usduBal.toFixed(2)} USDU`;
+                            return `Insufficient USDU balance. You have ${usduBal.toFixed(
+                              2
+                            )} USDU`;
                           }
                         }
 
@@ -484,12 +524,20 @@ function UpdatePosition() {
                         if (!bitcoin?.price || !usdu?.price) return undefined;
 
                         // Calculate debt limit with proper collateralization ratio
-                        const debtLimit = collateral ? computeDebtLimit(collateral, bitcoin.price, minCollateralizationRatio) : 0;
+                        const debtLimit = collateral
+                          ? computeDebtLimit(
+                              collateral,
+                              bitcoin.price,
+                              minCollateralizationRatio
+                            )
+                          : 0;
 
                         return validators.compose(
                           validators.minimumUsdValue(value, usdu.price, 2000),
                           validators.minimumDebt(value * usdu.price),
-                          value > currentDebt ? validators.debtLimit(value, debtLimit) : undefined
+                          value > currentDebt
+                            ? validators.debtLimit(value, debtLimit)
+                            : undefined
                         );
                       },
                     }}
@@ -516,11 +564,12 @@ function UpdatePosition() {
                     )}
                   </form.Field>
 
-
                   {/* Interest Rate Section */}
                   <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-slate-700">Interest Rate</h3>
-                    
+                    <h3 className="text-sm font-medium text-slate-700">
+                      Interest Rate
+                    </h3>
+
                     <InterestRateSelector
                       interestRate={interestRate}
                       onInterestRateChange={(rate) => {
@@ -531,11 +580,13 @@ function UpdatePosition() {
                       }}
                       disabled={isSending || isPending}
                     />
-                    
+
                     {/* Interest Cost Preview */}
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2">
                       <div className="flex justify-between items-center text-sm">
-                        <span className="text-blue-700">Annual Interest Cost:</span>
+                        <span className="text-blue-700">
+                          Annual Interest Cost:
+                        </span>
                         <span className="font-medium text-blue-800">
                           <NumericFormat
                             displayType="text"
@@ -548,7 +599,8 @@ function UpdatePosition() {
                         </span>
                       </div>
                       <p className="text-xs text-blue-600">
-                        Higher rates reduce redemption risk. Positions with lower rates are redeemed first.
+                        Higher rates reduce redemption risk. Positions with
+                        lower rates are redeemed first.
                       </p>
                     </div>
                   </div>
@@ -558,8 +610,10 @@ function UpdatePosition() {
                     <form.Subscribe
                       selector={(state) => ({
                         canSubmit: state.canSubmit,
-                        collateralErrors: state.fieldMeta.collateralAmount?.errors || [],
-                        borrowErrors: state.fieldMeta.borrowAmount?.errors || [],
+                        collateralErrors:
+                          state.fieldMeta.collateralAmount?.errors || [],
+                        borrowErrors:
+                          state.fieldMeta.borrowAmount?.errors || [],
                         collateralAmount: state.values.collateralAmount,
                         borrowAmount: state.values.borrowAmount,
                       })}
@@ -575,7 +629,12 @@ function UpdatePosition() {
 
                         if (!address) {
                           buttonText = "Connect Wallet";
-                        } else if (!changes || (!changes.hasCollateralChange && !changes.hasDebtChange && !changes.hasInterestRateChange)) {
+                        } else if (
+                          !changes ||
+                          (!changes.hasCollateralChange &&
+                            !changes.hasDebtChange &&
+                            !changes.hasInterestRateChange)
+                        ) {
                           buttonText = "No changes made";
                         } else if (collateralErrors.length > 0) {
                           buttonText = collateralErrors[0];
@@ -600,7 +659,9 @@ function UpdatePosition() {
                                 isPending ||
                                 !canSubmit ||
                                 !changes ||
-                                (!changes.hasCollateralChange && !changes.hasDebtChange && !changes.hasInterestRateChange))
+                                (!changes.hasCollateralChange &&
+                                  !changes.hasDebtChange &&
+                                  !changes.hasInterestRateChange))
                             }
                             className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2 px-6 rounded-xl shadow-sm hover:shadow transition-all whitespace-nowrap"
                           >
@@ -630,10 +691,14 @@ function UpdatePosition() {
                 to: collateralAmount || position.collateralAmount,
                 token: selectedCollateralToken.symbol,
               },
-              collateralValueUSD: bitcoin?.price ? {
-                from: position.collateralAmount * bitcoin.price,
-                to: (collateralAmount || position.collateralAmount) * bitcoin.price,
-              } : undefined,
+              collateralValueUSD: bitcoin?.price
+                ? {
+                    from: position.collateralAmount * bitcoin.price,
+                    to:
+                      (collateralAmount || position.collateralAmount) *
+                      bitcoin.price,
+                  }
+                : undefined,
               debt: {
                 from: position.borrowedAmount,
                 to: borrowAmount || position.borrowedAmount,
@@ -646,7 +711,11 @@ function UpdatePosition() {
             liquidationPrice={metrics.liquidationPrice}
             liquidationRisk={metrics.liquidationRisk}
             redemptionRisk={getRedemptionRisk(interestRate)}
-            warnings={borrowAmount && borrowAmount < 2000 ? ["Minimum debt requirement is $2,000 USDU"] : []}
+            warnings={
+              borrowAmount && borrowAmount < 2000
+                ? ["Minimum debt requirement is $2,000 USDU"]
+                : []
+            }
             className="sticky top-8"
           />
         </div>

@@ -1,4 +1,4 @@
-export const MINIMUM_COLLATERAL_RATIO = 1.1; // Default, kept for backward compatibility
+export const MINIMUM_COLLATERAL_RATIO = 1.1;
 export const MAX_LTV = 1 / MINIMUM_COLLATERAL_RATIO;
 
 export const MAX_LIMIT = 100000000;
@@ -34,7 +34,7 @@ export function computeLiquidationPrice(
   minCollateralRatio: number = MINIMUM_COLLATERAL_RATIO
 ) {
   if (collateralAmount === 0) return 0;
-  
+
   // Liquidation occurs when: collateral_value = debt * minCollateralRatio
   // So: collateral_amount * btc_price = debt * minCollateralRatio
   // Therefore: btc_price = (debt * minCollateralRatio) / collateral_amount

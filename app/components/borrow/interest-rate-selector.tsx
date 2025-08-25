@@ -1,4 +1,5 @@
 import { Slider } from "~/components/ui/slider";
+import { RedemptionInfo } from "./redemption-info";
 
 interface InterestRateSelectorProps {
   interestRate: number;
@@ -14,7 +15,10 @@ export function InterestRateSelector({
   return (
     <div className="space-y-3 mt-6">
       <div className="flex justify-between items-center">
-        <h3 className="text-sm font-medium text-slate-700">Interest Rate</h3>
+        <div className="flex items-center gap-1">
+          <h3 className="text-sm font-medium text-slate-700">Interest Rate</h3>
+          <RedemptionInfo variant="modal" />
+        </div>
         <span className="text-sm font-semibold text-blue-600">
           {interestRate}% APR
         </span>
