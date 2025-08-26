@@ -1,7 +1,7 @@
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
-import { AlertTriangle, Info, DollarSign } from "lucide-react";
+import { AlertTriangle, Info } from "lucide-react";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import type { Route } from "./+types/borrow.$troveId.close";
 import { useParams, useNavigate } from "react-router";
@@ -15,7 +15,6 @@ import {
 import { NumericFormat } from "react-number-format";
 import { useTroveData } from "~/hooks/use-trove-data";
 import { useCloseTrove } from "~/hooks/use-close-trove";
-import { useClaimSurplus } from "~/hooks/use-claim-surplus";
 import { useQueryState } from "nuqs";
 import { useState, useCallback } from "react";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
@@ -77,19 +76,6 @@ function ClosePosition() {
   const isLiquidated = position?.status === "liquidated";
   const isZombie = position?.status === "zombie";
   const isRedeemed = position?.status === "redeemed";
-  
-  // Hook for claiming surplus (for liquidated positions)
-  const {
-    claimSurplus,
-    isPending: isClaimPending,
-    transactionHash: claimTxHash,
-  } = useClaimSurplus({
-    collateralType: troveCollateralType as CollateralType,
-  });
-  
-  // TODO: Query actual collateral surplus from contract
-  // For now, assume there might be surplus if liquidated
-  const hasCollateralSurplus = isLiquidated && position?.collateralAmount > 0;
 
   const handleClosePosition = async () => {
     if (!address) {
@@ -207,77 +193,46 @@ function ClosePosition() {
                 <AlertTriangle className="h-4 w-4 text-orange-600" />
                 <AlertDescription className="text-orange-800">
                   <div className="space-y-2">
-                    <p className="font-semibold">This position has been liquidated</p>
+                    <p className="font-semibold">
+                      This position has been liquidated
+                    </p>
                     <p>
-                      The collateral has been deducted from this position to cover the debt.
-                      {hasCollateralSurplus && (
-                        <> You may have excess collateral to claim.</>
-                      )}
+                      The collateral has been sold to cover the debt. Any excess 
+                      collateral from this and other liquidated positions can be 
+                      claimed from the surplus claim page.
                     </p>
                   </div>
                 </AlertDescription>
               </Alert>
 
-              {hasCollateralSurplus ? (
-                <Card className="border border-slate-200 shadow-sm">
-                  <CardContent className="pt-6">
-                    <h3 className="font-semibold text-lg text-slate-800 mb-4">
-                      Collateral Surplus
+              <Card className="border border-slate-200 shadow-sm">
+                <CardContent className="pt-6">
+                  <div className="text-center space-y-4">
+                    <Info className="h-12 w-12 text-slate-400 mx-auto" />
+                    <h3 className="font-semibold text-lg text-slate-800">
+                      Check for Collateral Surplus
                     </h3>
-                    
-                    <div className="bg-green-50 rounded-lg p-4 mb-6">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-slate-600">
-                          Remaining collateral to claim
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <DollarSign className="h-4 w-4 text-green-600" />
-                          <span className="font-semibold text-lg text-green-700">
-                            <NumericFormat
-                              displayType="text"
-                              value={position.collateralAmount}
-                              thousandSeparator=","
-                              decimalScale={7}
-                              fixedDecimalScale={false}
-                            />{" "}
-                            {selectedCollateralToken.symbol}
-                          </span>
-                        </div>
-                      </div>
-                      <p className="text-xs text-slate-500">
-                        This is the excess collateral after liquidation
-                      </p>
+                    <p className="text-sm text-slate-600 max-w-md mx-auto">
+                      If there was excess collateral after liquidation, you can 
+                      claim it along with surplus from any other liquidated positions.
+                    </p>
+                    <div className="flex gap-3 justify-center pt-2">
+                      <Button
+                        onClick={() => navigate("/claim")}
+                        className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white"
+                      >
+                        Go to Claim Page
+                      </Button>
+                      <Button
+                        onClick={() => navigate("/")}
+                        variant="outline"
+                      >
+                        Back to Dashboard
+                      </Button>
                     </div>
-
-                    <Button
-                      onClick={() => claimSurplus()}
-                      disabled={isClaimPending || !address}
-                      className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white"
-                    >
-                      {!address
-                        ? "Connect Wallet"
-                        : isClaimPending
-                        ? "Claiming..."
-                        : "Claim Collateral Surplus"}
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card className="border border-slate-200 shadow-sm">
-                  <CardContent className="pt-6">
-                    <div className="text-center space-y-3">
-                      <Info className="h-12 w-12 text-slate-400 mx-auto" />
-                      <h3 className="font-semibold text-lg text-slate-800">
-                        No Collateral Surplus
-                      </h3>
-                      <p className="text-sm text-slate-600">
-                        This liquidated position has no remaining collateral to claim.
-                        The entire collateral was used to cover the debt.
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           ) : (
             // Normal close position UI
@@ -490,8 +445,8 @@ function ClosePosition() {
                         Next Steps
                       </h4>
                       <ul className="space-y-1 text-slate-600">
-                        <li>• Check for collateral surplus</li>
-                        <li>• Claim any available surplus</li>
+                        <li>• Visit the claim page to check for surplus</li>
+                        <li>• Claim surplus from all liquidated positions</li>
                         <li>• Open a new position if desired</li>
                       </ul>
                     </div>

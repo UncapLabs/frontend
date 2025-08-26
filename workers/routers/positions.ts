@@ -5,6 +5,7 @@ import { createGraphQLClient } from "~/lib/graphql/client";
 import {
   fetchPositionById,
   getNextOwnerIndex,
+  getCollateralSurplus,
 } from "../services/trove-service";
 import { fetchLoansByAccount } from "../services/trove-service";
 
@@ -113,6 +114,32 @@ export const positionsRouter = router({
       } catch (error) {
         console.error("Error fetching position by ID:", error);
         throw new Error("Failed to fetch position");
+      }
+    }),
+
+  getCollateralSurplus: publicProcedure
+    .input(
+      z.object({
+        borrower: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { borrower } = input;
+
+      if (!process.env.NODE_URL) {
+        throw new Error("RPC node URL not configured");
+      }
+
+      const provider = new RpcProvider({
+        nodeUrl: process.env.NODE_URL,
+      });
+
+      try {
+        const surplus = await getCollateralSurplus(provider, borrower);
+        return surplus;
+      } catch (error) {
+        console.error("Error fetching collateral surplus:", error);
+        throw new Error("Failed to fetch collateral surplus");
       }
     }),
 });

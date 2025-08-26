@@ -57,7 +57,13 @@ export interface Position {
   liquidationPrice: number;
   debtLimit: number;
   interestRate: number;
-  status: "active" | "zombie" | "closed" | "non-existent" | "liquidated";
+  status:
+    | "active"
+    | "zombie"
+    | "closed"
+    | "non-existent"
+    | "liquidated"
+    | "redeemed";
   batchManager: string | null;
 }
 
@@ -109,6 +115,7 @@ export async function getIndexedTrovesByAccount(
   ]);
 
   console.log(borrowerResult);
+  console.log(previousOwnerResult);
 
   // console.log(
   //   `[getIndexedTrovesByAccount] Borrower troves: ${
@@ -423,5 +430,39 @@ export async function getNextOwnerIndex(
       `No borrowerinfo found for ${borrower}, returning nextOwnerIndex: 0`
     );
     return 0;
+  }
+}
+
+export async function getCollateralSurplus(
+  provider: RpcProvider,
+  borrower: string
+): Promise<{
+  UBTC: { raw: string; formatted: number };
+  GBTC: { raw: string; formatted: number };
+}> {
+  try {
+    // Fetch surplus for both collateral types in parallel
+    const [ubtcSurplus, gbtcSurplus] = await Promise.all([
+      contractRead.collSurplusPool.getCollateral(provider, borrower, "UBTC"),
+      contractRead.collSurplusPool.getCollateral(provider, borrower, "GBTC"),
+    ]);
+
+    return {
+      UBTC: {
+        raw: ubtcSurplus.toString(), // Convert BigInt to string for serialization
+        formatted: Number(ubtcSurplus) / 10 ** UBTC_TOKEN.decimals,
+      },
+      GBTC: {
+        raw: gbtcSurplus.toString(), // Convert BigInt to string for serialization
+        formatted: Number(gbtcSurplus) / 10 ** GBTC_TOKEN.decimals,
+      },
+    };
+  } catch (error) {
+    console.error(`Error fetching collateral surplus for ${borrower}:`, error);
+    // Return zeros if there's an error
+    return {
+      UBTC: { raw: "0", formatted: 0 },
+      GBTC: { raw: "0", formatted: 0 },
+    };
   }
 }

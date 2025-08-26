@@ -1,61 +1,110 @@
-import { useSendTransaction, useAccount } from "@starknet-react/core";
-import { useState, useCallback, useMemo } from "react";
-import { toast } from "sonner";
-import type { CollateralType } from "~/lib/contracts/constants";
+import { useMemo, useCallback } from "react";
+import { useAccount } from "@starknet-react/core";
 import { contractCall } from "~/lib/contracts/calls";
+import { useTransaction } from "./use-transaction";
+import { useTransactionState } from "./use-transaction-state";
+import { type CollateralType } from "~/lib/contracts/constants";
+import { useTransactionStore } from "~/providers/transaction-provider";
+import { createTransactionDescription } from "~/lib/transaction-descriptions";
 
-interface UseClaimSurplusProps {
+// Claim surplus form data structure
+export interface ClaimSurplusFormData {
   collateralType: CollateralType;
+  amount?: number;
 }
 
-export function useClaimSurplus({ collateralType }: UseClaimSurplusProps) {
-  const { address } = useAccount();
-  const [isPending, setIsPending] = useState(false);
+interface UseClaimSurplusParams {
+  collateralType: CollateralType;
+  onSuccess?: () => void;
+}
 
-  // Prepare the contract call
+export function useClaimSurplus({ 
+  collateralType,
+  onSuccess,
+}: UseClaimSurplusParams) {
+  const { address } = useAccount();
+  const transactionStore = useTransactionStore();
+
+  // Transaction state management
+  const transactionState = useTransactionState<ClaimSurplusFormData>({
+    initialFormData: {
+      collateralType,
+      amount: undefined,
+    },
+  });
+
+  // Prepare the calls
   const calls = useMemo(() => {
-    if (!address) return undefined;
-    
+    if (!address) {
+      return undefined;
+    }
+
     return [
-      contractCall.borrowerOperations.claimCollateral(address, collateralType)
+      contractCall.collSurplusPool.claimColl(address, collateralType),
     ];
   }, [address, collateralType]);
 
-  const { send, data: transactionHash } = useSendTransaction({
-    calls,
-  });
+  // Use the generic transaction hook
+  const transaction = useTransaction(calls);
 
-  const claimSurplus = useCallback(async () => {
-    if (!address) {
-      toast.error("Please connect your wallet");
-      return;
+  // Create a wrapped send function that manages state transitions
+  const send = useCallback(async () => {
+    const hash = await transaction.send();
+
+    if (hash) {
+      // Transaction was sent successfully, move to pending
+      transactionState.updateFormData({
+        collateralType,
+      });
+      transactionState.setPending(hash);
+
+      // Add to transaction store
+      if (address) {
+        const transactionData = {
+          hash,
+          type: "claimSurplus" as const,
+          description: createTransactionDescription("claimSurplus", {
+            collateralType,
+          }),
+          details: {
+            collateralType,
+          },
+        };
+
+        transactionStore.addTransaction(address, transactionData);
+      }
     }
+    // If no hash returned, transaction.send already handles the error
+  }, [
+    transaction,
+    transactionState,
+    transactionStore,
+    collateralType,
+    address,
+  ]);
 
-    if (!calls) {
-      toast.error("Unable to prepare transaction");
-      return;
+  // Check if we need to update state based on transaction status
+  // This is purely derived state - no side effects
+  if (transactionState.currentState === "pending") {
+    // Check active transaction first
+    if (transaction.isSuccess) {
+      transactionState.setSuccess();
+
+      // Call custom onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
+    } else if (transaction.isError && transaction.error) {
+      transactionState.setError(transaction.error);
     }
-
-    try {
-      setIsPending(true);
-      
-      console.log("Claiming collateral surplus for:", address);
-      console.log("Collateral type:", collateralType);
-
-      await send();
-      
-      toast.success("Claim surplus transaction sent!");
-    } catch (error) {
-      console.error("Claim surplus error:", error);
-      toast.error("Failed to claim collateral surplus");
-    } finally {
-      setIsPending(false);
-    }
-  }, [address, calls, send, collateralType]);
+  }
 
   return {
-    claimSurplus,
-    isPending,
-    transactionHash,
+    ...transaction,
+    ...transactionState,
+    send, // Override send with our wrapped version
+    isReady: !!calls,
+    // Pass through isSending for UI state
+    isSending: transaction.isSending,
   };
 }

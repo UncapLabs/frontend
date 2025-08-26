@@ -36,6 +36,12 @@ export function createTransactionDescription(
       }
       return 'Claim rewards';
 
+    case 'claimSurplus':
+      if (details?.collateralType) {
+        return `Claim ${details.collateralType} collateral surplus`;
+      }
+      return 'Claim collateral surplus';
+
     case 'adjust_rate':
       if (details?.newRate) {
         return `Change interest rate to ${details.newRate}%`;

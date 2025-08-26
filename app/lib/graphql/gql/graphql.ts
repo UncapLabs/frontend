@@ -779,6 +779,7 @@ export type Trove = {
   interestBatch?: Maybe<InterestBatch>;
   interestRate: Scalars['BigDecimalU256']['output'];
   lastUserActionAt: Scalars['Int']['output'];
+  liquidationTx?: Maybe<Scalars['String']['output']>;
   mightBeLeveraged: Scalars['Boolean']['output'];
   previousOwner: Scalars['String']['output'];
   redeemedColl: Scalars['BigDecimalU256']['output'];
@@ -1035,6 +1036,14 @@ export type Trove_Filter = {
   lastUserActionAt_lte?: InputMaybe<Scalars['Int']['input']>;
   lastUserActionAt_not?: InputMaybe<Scalars['Int']['input']>;
   lastUserActionAt_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  liquidationTx?: InputMaybe<Scalars['String']['input']>;
+  liquidationTx_contains?: InputMaybe<Scalars['String']['input']>;
+  liquidationTx_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  liquidationTx_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  liquidationTx_not?: InputMaybe<Scalars['String']['input']>;
+  liquidationTx_not_contains?: InputMaybe<Scalars['String']['input']>;
+  liquidationTx_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  liquidationTx_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   mightBeLeveraged?: InputMaybe<Scalars['Boolean']['input']>;
   mightBeLeveraged_in?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   mightBeLeveraged_not?: InputMaybe<Scalars['Boolean']['input']>;
@@ -1117,6 +1126,7 @@ export enum Trove_OrderBy {
   InterestBatch = 'interestBatch',
   InterestRate = 'interestRate',
   LastUserActionAt = 'lastUserActionAt',
+  LiquidationTx = 'liquidationTx',
   MightBeLeveraged = 'mightBeLeveraged',
   PreviousOwner = 'previousOwner',
   RedeemedColl = 'redeemedColl',

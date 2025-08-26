@@ -56,6 +56,7 @@ function UpdatePosition() {
       position ? getInterestRatePercentage(position) : 5
     )
   );
+  const collateralType = selectedCollateralToken.symbol as CollateralType;
 
   // Balance for selected token
   const { data: bitcoinBalance } = useBalance({
@@ -70,12 +71,14 @@ function UpdatePosition() {
     refetchInterval: 30000,
   });
 
-  const { bitcoin, usdu } = useFetchPrices(collateralAmount ?? undefined);
+  const { bitcoin, usdu } = useFetchPrices(
+    collateralAmount ?? undefined,
+    collateralType
+  );
 
   const annualInterestCost =
     borrowAmount && interestRate ? (borrowAmount * interestRate) / 100 : 0;
 
-  const collateralType = selectedCollateralToken.symbol as CollateralType;
   const minCollateralizationRatio =
     getMinCollateralizationRatio(collateralType);
 
@@ -401,7 +404,7 @@ function UpdatePosition() {
                     name="collateralAmount"
                     asyncDebounceMs={300}
                     validators={{
-                      onChangeAsync: async ({ value }) => {
+                      onChangeAsync: async ({ value, fieldApi }) => {
                         if (!address || !value) return undefined;
 
                         if (!bitcoinBalance) return undefined;
@@ -429,8 +432,14 @@ function UpdatePosition() {
                           usdu?.price &&
                           currentDebt > 0
                         ) {
+                          // Get the current debt value from the form (user's input) or fall back to existing debt
+                          const formDebt = fieldApi.form.getFieldValue("borrowAmount");
+                          const debtToUse = formDebt !== undefined && formDebt > 0 ? formDebt : currentDebt;
+                          
                           const newCollateralValue = value * bitcoin.price;
-                          const debtValue = currentDebt * usdu.price;
+                          console.log("coll value: ", newCollateralValue);
+                          const debtValue = debtToUse * usdu.price;
+                          console.log("debt value: ", debtValue);
                           const ratioError = validators.minimumCollateralRatio(
                             newCollateralValue,
                             debtValue,

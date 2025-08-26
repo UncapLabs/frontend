@@ -5,6 +5,7 @@ export type TransactionType =
   | 'adjust'
   | 'close'
   | 'claim'
+  | 'claimSurplus'
   | 'adjust_rate'
   | 'unknown';
 

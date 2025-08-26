@@ -6,6 +6,7 @@ import {
   UBTC_ABI,
   PRICE_FEED_ABI,
   TROVE_MANAGER_ABI,
+  COLL_SURPLUS_POOL_ABI,
 } from ".";
 
 /**
@@ -282,6 +283,34 @@ export const contractCall = {
       return contract.populate("get_latest_trove_data", [troveId]);
     },
   },
+
+  collSurplusPool: {
+    /**
+     * Get the collateral surplus for a borrower
+     * This returns the amount of collateral available to claim
+     */
+    getCollateral: (borrower: string, collateralType: CollateralType) => {
+      const addresses = getCollateralAddresses(collateralType);
+      const contract = new Contract(
+        COLL_SURPLUS_POOL_ABI,
+        addresses.collSurplusPool
+      );
+      return contract.populate("get_collateral", [borrower]);
+    },
+
+    /**
+     * Claim collateral surplus
+     * Called by borrowers to claim their surplus from liquidations
+     */
+    claimColl: (borrower: string, collateralType: CollateralType) => {
+      const addresses = getCollateralAddresses(collateralType);
+      const contract = new Contract(
+        COLL_SURPLUS_POOL_ABI,
+        addresses.collSurplusPool
+      );
+      return contract.populate("claim_coll", [borrower]);
+    },
+  },
 };
 
 /**
@@ -360,6 +389,26 @@ export const contractRead = {
         provider
       );
       const result = await contract.call("get_trove_status", [troveId]);
+      return result as bigint;
+    },
+  },
+
+  collSurplusPool: {
+    /**
+     * Get the collateral surplus for a borrower
+     */
+    getCollateral: async (
+      provider: RpcProvider,
+      borrower: string,
+      collateralType: CollateralType
+    ): Promise<bigint> => {
+      const addresses = getCollateralAddresses(collateralType);
+      const contract = new Contract(
+        COLL_SURPLUS_POOL_ABI,
+        addresses.collSurplusPool,
+        provider
+      );
+      const result = await contract.call("get_collateral", [borrower]);
       return result as bigint;
     },
   },

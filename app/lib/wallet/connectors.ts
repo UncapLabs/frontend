@@ -79,20 +79,7 @@ export const availableConnectors = (): any[] => {
       new InjectedConnector({ options: { id: "keplr" } }),
       new InjectedConnector({ options: { id: "okxwallet" } }),
       new InjectedConnector({ options: { id: "metamask" } }),
-      ArgentMobileConnector.init({
-        options: {
-          url: typeof window !== "undefined" ? window.location.href : "",
-          dappName: "Uncap",
-          chainId: CHAIN_ID,
-        },
-      }),
-      new WebWalletConnector({
-        url:
-          CHAIN_ID === constants.NetworkName.SN_MAIN
-            ? "https://web.argent.xyz"
-            : "https://sepolia-web.argent.xyz",
-        theme: "light",
-      }),
+      new InjectedConnector({ options: { id: "fordefi", name: "Fordefi" } }),
     ].filter(Boolean);
   }
 };

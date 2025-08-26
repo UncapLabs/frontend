@@ -44,7 +44,7 @@ export function GetTestBtc() {
   }
 
   // Don't show button if user has 1 UBTC or more
-  const hasEnoughBalance = balance && balance.value >= 1000000000000000000n;
+  const hasEnoughBalance = balance && balance.value >= 10000000000000000000n;
   if (hasEnoughBalance) {
     return null;
   }
