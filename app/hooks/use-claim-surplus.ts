@@ -7,18 +7,12 @@ import { type CollateralType } from "~/lib/contracts/constants";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
 
-// Claim surplus form data structure
-export interface ClaimSurplusFormData {
-  collateralTypes: CollateralType[];
-  totalCount: number;
-}
-
 interface UseClaimAllSurplusParams {
   collateralTypes: CollateralType[];
   onSuccess?: () => void;
 }
 
-export function useClaimAllSurplus({ 
+export function useClaimAllSurplus({
   collateralTypes,
   onSuccess,
 }: UseClaimAllSurplusParams) {
@@ -26,11 +20,8 @@ export function useClaimAllSurplus({
   const transactionStore = useTransactionStore();
 
   // Transaction state management
-  const transactionState = useTransactionState<ClaimSurplusFormData>({
-    initialFormData: {
-      collateralTypes,
-      totalCount: collateralTypes.length,
-    },
+  const transactionState = useTransactionState({
+    initialFormData: {},
   });
 
   // Prepare the calls - one for each collateral type with surplus
@@ -41,7 +32,7 @@ export function useClaimAllSurplus({
 
     // Create a call for each collateral type that has surplus
     // Must use borrowerOperations.claimCollateral, not collSurplusPool directly
-    return collateralTypes.map(collateralType => 
+    return collateralTypes.map((collateralType) =>
       contractCall.borrowerOperations.claimCollateral(address, collateralType)
     );
   }, [address, collateralTypes]);
@@ -55,10 +46,6 @@ export function useClaimAllSurplus({
 
     if (hash) {
       // Transaction was sent successfully, move to pending
-      transactionState.updateFormData({
-        collateralTypes,
-        totalCount: collateralTypes.length,
-      });
       transactionState.setPending(hash);
 
       // Add to transaction store
@@ -67,9 +54,10 @@ export function useClaimAllSurplus({
           hash,
           type: "claimSurplus" as const,
           description: createTransactionDescription("claimSurplus", {
-            collateralType: collateralTypes.length === 1 
-              ? collateralTypes[0] 
-              : `${collateralTypes.length} types`,
+            collateralType:
+              collateralTypes.length === 1
+                ? collateralTypes[0]
+                : `${collateralTypes.length} types`,
           }),
           details: {
             collateralTypes,

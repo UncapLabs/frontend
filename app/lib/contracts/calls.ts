@@ -378,6 +378,34 @@ export const contractRead = {
       const result = await contract.call("get_trove_status", [troveId]);
       return result as bigint;
     },
+
+    /**
+     * Get branch TCR data (Total Collateralization Ratio)
+     * Returns total collateral and debt for the entire branch
+     */
+    getBranchTCR: async (
+      provider: RpcProvider,
+      collateralType: CollateralType
+    ) => {
+      const addresses = getCollateralAddresses(collateralType);
+      const contract = new Contract(
+        TROVE_MANAGER_ABI,
+        addresses.troveManager,
+        provider
+      );
+
+      // Fetch branch totals
+      const [entireColl, entireDebt] = await Promise.all([
+        contract.call("get_entire_branch_coll", []),
+        contract.call("get_entire_branch_debt", []),
+      ]);
+
+      return {
+        totalCollateral: entireColl as bigint,
+        totalDebt: entireDebt as bigint,
+        ccr: 1100000000000000000n, // 110% in 18 decimals
+      };
+    },
   },
 
   collSurplusPool: {

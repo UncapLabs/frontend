@@ -4,6 +4,7 @@ import { ArrowDown } from "lucide-react";
 import { Separator } from "~/components/ui/separator";
 import { InterestRateSelector } from "~/components/borrow";
 import { RedemptionInfo } from "~/components/borrow/redemption-info";
+import { BorrowingRestrictionsAlert } from "~/components/borrow";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { TransactionSummary } from "~/components/transaction-summary";
 import { TokenInput } from "~/components/token-input";
@@ -261,6 +262,9 @@ function Borrow() {
                 form.handleSubmit();
               }}
             >
+              {/* Show borrowing restrictions alert if TCR is below CCR */}
+              <BorrowingRestrictionsAlert collateralType={collateralType} />
+              
               <Card
                 className={`border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden ${
                   isSending || isPending ? "opacity-75" : ""

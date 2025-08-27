@@ -3,6 +3,7 @@ import { Card, CardContent } from "~/components/ui/card";
 import { ArrowDown } from "lucide-react";
 import { InterestRateSelector } from "~/components/borrow";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
+import { BorrowingRestrictionsAlert } from "~/components/borrow";
 import { TokenInput } from "~/components/token-input";
 import { useEffect, useCallback } from "react";
 import { useForm } from "@tanstack/react-form";
@@ -349,6 +350,9 @@ function UpdatePosition() {
                 form.handleSubmit();
               }}
             >
+              {/* Show borrowing restrictions alert if TCR is below CCR */}
+              <BorrowingRestrictionsAlert collateralType={collateralType} />
+              
               <Card
                 className={`border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden ${
                   isSending || isPending ? "opacity-75" : ""

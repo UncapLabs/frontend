@@ -34,8 +34,6 @@ export async function retryWithBackoff<T>(
   options: RetryOptions = DEFAULT_RETRY_OPTIONS,
   context?: string
 ): Promise<T | null> {
-  let lastError: any;
-
   for (let attempt = 0; attempt <= options.maxRetries; attempt++) {
     try {
       if (attempt > 0) {
@@ -47,8 +45,6 @@ export async function retryWithBackoff<T>(
       }
       return await fn();
     } catch (error) {
-      lastError = error;
-
       const shouldRetry = options.shouldRetry?.(error) ?? true;
       const isLastAttempt = attempt === options.maxRetries;
 

@@ -20,6 +20,7 @@ import { useState, useCallback } from "react";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "~/components/ui/alert";
+import { BorrowingRestrictionsAlert } from "~/components/borrow";
 
 function ClosePosition() {
   const { address } = useAccount();
@@ -41,6 +42,8 @@ function ClosePosition() {
   // Get the collateral token based on collateral type
   const selectedCollateralToken =
     troveCollateralType === "GBTC" ? GBTC_TOKEN : UBTC_TOKEN;
+  
+  const collateralType = selectedCollateralToken.symbol as CollateralType;
 
   const { data: usduBalance } = useBalance({
     token: USDU_TOKEN.address,
@@ -237,6 +240,9 @@ function ClosePosition() {
           ) : (
             // Normal close position UI
             <div className="space-y-6">
+              {/* Borrowing Restrictions Alert */}
+              <BorrowingRestrictionsAlert collateralType={collateralType} />
+
               {/* Warning Card */}
               <Card className="border border-red-200 bg-red-50">
                 <CardContent className="pt-6">

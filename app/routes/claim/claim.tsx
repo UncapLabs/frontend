@@ -6,7 +6,6 @@ import { TransactionStatus } from "~/components/borrow/transaction-status";
 import type { Route } from "./+types/claim";
 import { useNavigate } from "react-router";
 import { useAccount } from "@starknet-react/core";
-import { type CollateralType } from "~/lib/contracts/constants";
 import { NumericFormat } from "react-number-format";
 import { useClaimAllSurplus } from "~/hooks/use-claim-surplus";
 import { useCollateralSurplus } from "~/hooks/use-collateral-surplus";
@@ -20,7 +19,6 @@ function ClaimPage() {
   const { connectWallet } = useWalletConnect();
 
   const {
-    surpluses,
     availableSurpluses,
     totalSurplusesCount,
     isLoading,
@@ -36,7 +34,6 @@ function ClaimPage() {
     transactionHash,
     error: claimError,
     currentState,
-    formData,
     reset,
   } = useClaimAllSurplus({
     collateralTypes: availableSurpluses.map(s => s.collateralType),

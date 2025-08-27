@@ -10,7 +10,9 @@ import {
 type PrefixedTroveId = string;
 type BranchId = string; // "0" for UBTC, "1" for GBTC
 
-export const getBitcoinprice = async (collateralType: CollateralType = "UBTC", retries = 3) => {
+export const getBitcoinprice = async (
+  collateralType: CollateralType = "UBTC"
+) => {
   const myProvider = new RpcProvider({
     nodeUrl: process.env.NODE_URL,
   });

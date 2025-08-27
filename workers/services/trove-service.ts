@@ -427,7 +427,7 @@ export async function getNextOwnerIndex(
   } catch (error) {
     // If borrowerinfo doesn't exist (user has never opened a vault), return 0
     console.log(
-      `No borrowerinfo found for ${borrower}, returning nextOwnerIndex: 0`
+      `No borrowerinfo found for ${borrower}, returning nextOwnerIndex: 0. Error: ${error}`
     );
     return 0;
   }
