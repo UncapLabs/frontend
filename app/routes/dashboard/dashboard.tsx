@@ -25,12 +25,12 @@ import { useLiquidate } from "~/hooks/use-liquidate";
 import type { CollateralType } from "~/lib/contracts/constants";
 
 // Liquidate button component
-function LiquidateButton({ 
-  troveId, 
-  collateralType 
-}: { 
-  troveId: string; 
-  collateralType: CollateralType 
+function LiquidateButton({
+  troveId,
+  collateralType,
+}: {
+  troveId: string;
+  collateralType: CollateralType;
 }) {
   const { liquidate, isPending } = useLiquidate({ troveId, collateralType });
 
@@ -76,6 +76,10 @@ function MyTroves() {
   const handleClosePosition = (troveId: string, collateralAsset: string) => {
     const collateralType = collateralAsset === "GBTC" ? "GBTC" : "UBTC";
     navigate(`/borrow/${troveId}/close?type=${collateralType}`);
+  };
+
+  const handleLiquidatedPosition = (troveId: string) => {
+    navigate(`/borrow/${troveId}/liquidated`);
   };
 
   return (
@@ -244,15 +248,16 @@ function MyTroves() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {troves.map((trove) => {
             const isLiquidated = trove.status === "liquidated";
-            
+
             return (
               <Card
                 key={trove.id}
                 className={`border transition-all duration-300 ${
-                  isLiquidated 
-                    ? "border-orange-300 bg-orange-50/50" 
+                  isLiquidated
+                    ? "border-orange-300 bg-orange-50/50 cursor-pointer hover:bg-orange-100/50"
                     : "border-slate-200 hover:shadow-lg"
                 }`}
+                onClick={isLiquidated ? () => handleLiquidatedPosition(trove.id) : undefined}
               >
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
@@ -268,146 +273,153 @@ function MyTroves() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                {/* Collateral */}
-                <div className="space-y-1">
-                  <div className="flex items-center text-sm text-slate-600">
-                    <TrendingUp className="h-3 w-3 mr-1" />
-                    Collateral
-                  </div>
-                  <div className="font-semibold">
-                    <NumericFormat
-                      displayType="text"
-                      value={trove.collateralAmount}
-                      thousandSeparator=","
-                      decimalScale={7}
-                      fixedDecimalScale={false}
-                    />{" "}
-                    {trove.collateralAsset}
-                  </div>
-                  <div className="text-sm text-slate-600">
-                    {(() => {
-                      const price = trove.collateralAsset === "GBTC" ? gbtcPrice : ubtcPrice;
-                      return price ? (
-                        <>
-                          $
+                  {/* Show different content based on liquidation status */}
+                  {isLiquidated ? (
+                    <>
+                      {/* Simplified info for liquidated positions */}
+                      <div className="py-8 text-center space-y-4">
+                        <div className="inline-flex p-3 bg-orange-100 rounded-full">
+                          <AlertTriangle className="h-8 w-8 text-orange-600" />
+                        </div>
+                        <div className="space-y-2">
+                          <p className="font-semibold text-orange-800">
+                            Position Liquidated
+                          </p>
+                          <p className="text-xs text-orange-700">
+                            Was holding {trove.collateralAsset}
+                          </p>
+                        </div>
+                        <div className="bg-orange-100 rounded-lg p-3 text-sm text-orange-800">
+                          <p className="font-medium mb-1">
+                            Click to check for collateral surplus
+                          </p>
+                          <p className="text-xs opacity-75">
+                            You may have funds to claim
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {/* Collateral */}
+                      <div className="space-y-1">
+                        <div className="flex items-center text-sm text-slate-600">
+                          <TrendingUp className="h-3 w-3 mr-1" />
+                          Collateral
+                        </div>
+                        <div className="font-semibold">
                           <NumericFormat
                             displayType="text"
-                            value={trove.collateralAmount * (price || 0)}
+                            value={trove.collateralAmount}
+                            thousandSeparator=","
+                            decimalScale={7}
+                            fixedDecimalScale={false}
+                          />{" "}
+                          {trove.collateralAsset}
+                        </div>
+                        <div className="text-sm text-slate-600">
+                          {(() => {
+                            const price =
+                              trove.collateralAsset === "GBTC"
+                                ? gbtcPrice
+                                : ubtcPrice;
+                            return price ? (
+                              <>
+                                $
+                                <NumericFormat
+                                  displayType="text"
+                                  value={trove.collateralAmount * (price || 0)}
+                                  thousandSeparator=","
+                                  decimalScale={2}
+                                  fixedDecimalScale
+                                />
+                              </>
+                            ) : (
+                              "Loading..."
+                            );
+                          })()}
+                        </div>
+                      </div>
+
+                      {/* Debt */}
+                      <div className="space-y-1">
+                        <div className="flex items-center text-sm text-slate-600">
+                          <TrendingDown className="h-3 w-3 mr-1" />
+                          Debt
+                        </div>
+                        <div className="font-semibold">
+                          <NumericFormat
+                            displayType="text"
+                            value={trove.borrowedAmount}
                             thousandSeparator=","
                             decimalScale={2}
                             fixedDecimalScale
-                          />
-                        </>
-                      ) : (
-                        "Loading..."
-                      );
-                    })()}
-                  </div>
-                </div>
+                          />{" "}
+                          {trove.borrowedAsset}
+                        </div>
+                      </div>
 
-                {/* Debt */}
-                <div className="space-y-1">
-                  <div className="flex items-center text-sm text-slate-600">
-                    <TrendingDown className="h-3 w-3 mr-1" />
-                    Debt
-                  </div>
-                  <div className="font-semibold">
-                    <NumericFormat
-                      displayType="text"
-                      value={trove.borrowedAmount}
-                      thousandSeparator=","
-                      decimalScale={2}
-                      fixedDecimalScale
-                    />{" "}
-                    {trove.borrowedAsset}
-                  </div>
-                </div>
+                      {/* Stats Row */}
+                      <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+                        <div className="space-y-1">
+                          <div className="flex items-center text-xs text-slate-600">
+                            <Percent className="h-3 w-3 mr-1" />
+                            Interest Rate
+                          </div>
+                          <div className="text-sm font-medium">
+                            {trove.interestRate}%
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="text-xs text-slate-600">
+                            Liquidation Price
+                          </div>
+                          <div className="text-sm font-medium">
+                            $
+                            <NumericFormat
+                              displayType="text"
+                              value={trove.liquidationPrice}
+                              thousandSeparator=","
+                              decimalScale={2}
+                              fixedDecimalScale
+                            />
+                          </div>
+                        </div>
+                      </div>
 
-                {/* Stats Row */}
-                <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-100">
-                  <div className="space-y-1">
-                    <div className="flex items-center text-xs text-slate-600">
-                      <Percent className="h-3 w-3 mr-1" />
-                      Interest Rate
-                    </div>
-                    <div className="text-sm font-medium">
-                      {trove.interestRate}%
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-xs text-slate-600">
-                      Liquidation Price
-                    </div>
-                    <div className="text-sm font-medium">
-                      $
-                      <NumericFormat
-                        displayType="text"
-                        value={trove.liquidationPrice}
-                        thousandSeparator=","
-                        decimalScale={2}
-                        fixedDecimalScale
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                {isLiquidated ? (
-                  <div className="flex gap-2 pt-2">
-                    <Button
-                      variant="outline"
-                      className="flex-1"
-                      disabled
-                      size="sm"
-                    >
-                      <Edit3 className="h-3 w-3 mr-1 opacity-50" />
-                      Update
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="flex-1 hover:bg-orange-50 hover:border-orange-300"
-                      onClick={() =>
-                        handleClosePosition(trove.id, trove.collateralAsset)
-                      }
-                      size="sm"
-                      title="Check for collateral surplus"
-                    >
-                      <DollarSign className="h-3 w-3 mr-1" />
-                      Claim Surplus
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex gap-2 pt-2">
-                    <Button
-                      variant="outline"
-                      className="flex-1 hover:bg-blue-50 hover:border-blue-300"
-                      onClick={() =>
-                        handleUpdatePosition(trove.id, trove.collateralAsset)
-                      }
-                      size="sm"
-                    >
-                      <Edit3 className="h-3 w-3 mr-1" />
-                      Update
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="flex-1 hover:bg-red-50 hover:border-red-300"
-                      onClick={() =>
-                        handleClosePosition(trove.id, trove.collateralAsset)
-                      }
-                      size="sm"
-                    >
-                      <XCircle className="h-3 w-3 mr-1" />
-                      Close
-                    </Button>
-                    <LiquidateButton
-                      troveId={trove.id}
-                      collateralType={trove.collateralAsset as CollateralType}
-                    />
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                      {/* Action buttons for active positions */}
+                      <div className="flex gap-2 pt-2">
+                        <Button
+                          variant="outline"
+                          className="flex-1 hover:bg-blue-50 hover:border-blue-300"
+                          onClick={() =>
+                            handleUpdatePosition(trove.id, trove.collateralAsset)
+                          }
+                          size="sm"
+                        >
+                          <Edit3 className="h-3 w-3 mr-1" />
+                          Update
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="flex-1 hover:bg-red-50 hover:border-red-300"
+                          onClick={() =>
+                            handleClosePosition(trove.id, trove.collateralAsset)
+                          }
+                          size="sm"
+                        >
+                          <XCircle className="h-3 w-3 mr-1" />
+                          Close
+                        </Button>
+                        <LiquidateButton
+                          troveId={trove.id}
+                          collateralType={trove.collateralAsset as CollateralType}
+                        />
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
             );
           })}
         </div>

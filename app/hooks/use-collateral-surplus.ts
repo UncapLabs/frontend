@@ -20,20 +20,18 @@ export function useCollateralSurplus(borrower: string | undefined) {
     ),
   });
 
-  // Convert to readable format with decimals
+  // Convert to readable format
   const formattedSurpluses = {
     UBTC: {
-      raw: BigInt(query.data?.UBTC?.raw ?? "0"), // Convert string back to BigInt
-      formatted: query.data?.UBTC?.formatted ?? 0,
+      formatted: query.data?.UBTC ?? 0,
       symbol: UBTC_TOKEN.symbol,
-      hasAmount: (query.data?.UBTC?.formatted ?? 0) > 0,
+      hasAmount: (query.data?.UBTC ?? 0) > 0,
       collateralType: "UBTC" as CollateralType,
     },
     GBTC: {
-      raw: BigInt(query.data?.GBTC?.raw ?? "0"), // Convert string back to BigInt
-      formatted: query.data?.GBTC?.formatted ?? 0,
+      formatted: query.data?.GBTC ?? 0,
       symbol: GBTC_TOKEN.symbol,
-      hasAmount: (query.data?.GBTC?.formatted ?? 0) > 0,
+      hasAmount: (query.data?.GBTC ?? 0) > 0,
       collateralType: "GBTC" as CollateralType,
     },
   };

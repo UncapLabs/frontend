@@ -437,32 +437,26 @@ export async function getCollateralSurplus(
   provider: RpcProvider,
   borrower: string
 ): Promise<{
-  UBTC: { raw: string; formatted: number };
-  GBTC: { raw: string; formatted: number };
+  UBTC: number;
+  GBTC: number;
 }> {
   try {
     // Fetch surplus for both collateral types in parallel
-    const [ubtcSurplus, gbtcSurplus] = await Promise.all([
+    const [ubtcSurplusRaw, gbtcSurplusRaw] = await Promise.all([
       contractRead.collSurplusPool.getCollateral(provider, borrower, "UBTC"),
       contractRead.collSurplusPool.getCollateral(provider, borrower, "GBTC"),
     ]);
 
+    // Convert from blockchain integers to human-readable decimals
     return {
-      UBTC: {
-        raw: ubtcSurplus.toString(), // Convert BigInt to string for serialization
-        formatted: Number(ubtcSurplus) / 10 ** UBTC_TOKEN.decimals,
-      },
-      GBTC: {
-        raw: gbtcSurplus.toString(), // Convert BigInt to string for serialization
-        formatted: Number(gbtcSurplus) / 10 ** GBTC_TOKEN.decimals,
-      },
+      UBTC: formatBigIntToNumber(ubtcSurplusRaw, UBTC_TOKEN.decimals),
+      GBTC: formatBigIntToNumber(gbtcSurplusRaw, GBTC_TOKEN.decimals),
     };
   } catch (error) {
     console.error(`Error fetching collateral surplus for ${borrower}:`, error);
-    // Return zeros if there's an error
     return {
-      UBTC: { raw: "0", formatted: 0 },
-      GBTC: { raw: "0", formatted: 0 },
+      UBTC: 0,
+      GBTC: 0,
     };
   }
 }

@@ -9,40 +9,42 @@ import { createTransactionDescription } from "~/lib/transaction-descriptions";
 
 // Claim surplus form data structure
 export interface ClaimSurplusFormData {
-  collateralType: CollateralType;
-  amount?: number;
+  collateralTypes: CollateralType[];
+  totalCount: number;
 }
 
-interface UseClaimSurplusParams {
-  collateralType: CollateralType;
+interface UseClaimAllSurplusParams {
+  collateralTypes: CollateralType[];
   onSuccess?: () => void;
 }
 
-export function useClaimSurplus({ 
-  collateralType,
+export function useClaimAllSurplus({ 
+  collateralTypes,
   onSuccess,
-}: UseClaimSurplusParams) {
+}: UseClaimAllSurplusParams) {
   const { address } = useAccount();
   const transactionStore = useTransactionStore();
 
   // Transaction state management
   const transactionState = useTransactionState<ClaimSurplusFormData>({
     initialFormData: {
-      collateralType,
-      amount: undefined,
+      collateralTypes,
+      totalCount: collateralTypes.length,
     },
   });
 
-  // Prepare the calls
+  // Prepare the calls - one for each collateral type with surplus
   const calls = useMemo(() => {
-    if (!address) {
+    if (!address || collateralTypes.length === 0) {
       return undefined;
     }
 
-    return [
-      contractCall.collSurplusPool.claimColl(address, collateralType),
-    ];
-  }, [address, collateralType]);
+    // Create a call for each collateral type that has surplus
+    // Must use borrowerOperations.claimCollateral, not collSurplusPool directly
+    return collateralTypes.map(collateralType => 
+      contractCall.borrowerOperations.claimCollateral(address, collateralType)
+    );
+  }, [address, collateralTypes]);
 
   // Use the generic transaction hook
   const transaction = useTransaction(calls);
@@ -54,7 +56,8 @@ export function useClaimSurplus({
     if (hash) {
       // Transaction was sent successfully, move to pending
       transactionState.updateFormData({
-        collateralType,
+        collateralTypes,
+        totalCount: collateralTypes.length,
       });
       transactionState.setPending(hash);
 
@@ -64,10 +67,13 @@ export function useClaimSurplus({
           hash,
           type: "claimSurplus" as const,
           description: createTransactionDescription("claimSurplus", {
-            collateralType,
+            collateralType: collateralTypes.length === 1 
+              ? collateralTypes[0] 
+              : `${collateralTypes.length} types`,
           }),
           details: {
-            collateralType,
+            collateralTypes,
+            count: collateralTypes.length,
           },
         };
 
@@ -79,7 +85,7 @@ export function useClaimSurplus({
     transaction,
     transactionState,
     transactionStore,
-    collateralType,
+    collateralTypes,
     address,
   ]);
 

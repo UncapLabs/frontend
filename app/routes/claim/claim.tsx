@@ -8,7 +8,7 @@ import { useNavigate } from "react-router";
 import { useAccount } from "@starknet-react/core";
 import { type CollateralType } from "~/lib/contracts/constants";
 import { NumericFormat } from "react-number-format";
-import { useClaimSurplus } from "~/hooks/use-claim-surplus";
+import { useClaimAllSurplus } from "~/hooks/use-claim-surplus";
 import { useCollateralSurplus } from "~/hooks/use-collateral-surplus";
 import { useCallback } from "react";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
@@ -19,7 +19,6 @@ function ClaimPage() {
   const navigate = useNavigate();
   const { connectWallet } = useWalletConnect();
 
-  // Fetch surplus data using TanStack Query
   const {
     surpluses,
     availableSurpluses,
@@ -29,104 +28,51 @@ function ClaimPage() {
     refetch,
   } = useCollateralSurplus(address);
 
-  // Hooks for claiming surplus for each collateral type
+  // Hook for claiming all surpluses at once
   const {
-    send: claimUBTC,
-    isPending: isUBTCPending,
-    isSending: isUBTCSending,
-    transactionHash: ubtcTxHash,
-    error: ubtcError,
-    currentState: ubtcState,
-    formData: ubtcFormData,
-    reset: resetUBTC,
-  } = useClaimSurplus({
-    collateralType: "UBTC",
+    send: claimAll,
+    isPending,
+    isSending,
+    transactionHash,
+    error: claimError,
+    currentState,
+    formData,
+    reset,
+  } = useClaimAllSurplus({
+    collateralTypes: availableSurpluses.map(s => s.collateralType),
     onSuccess: () => {
       // Refetch surplus data after successful claim
       refetch();
     },
   });
 
-  const {
-    send: claimGBTC,
-    isPending: isGBTCPending,
-    isSending: isGBTCSending,
-    transactionHash: gbtcTxHash,
-    error: gbtcError,
-    currentState: gbtcState,
-    formData: gbtcFormData,
-    reset: resetGBTC,
-  } = useClaimSurplus({
-    collateralType: "GBTC",
-    onSuccess: () => {
-      // Refetch surplus data after successful claim
-      refetch();
-    },
-  });
-
-  // Determine which claim is active
-  const activeClaimType: CollateralType | null =
-    ubtcState !== "idle" ? "UBTC" : gbtcState !== "idle" ? "GBTC" : null;
-
-  const activeState = activeClaimType === "UBTC" ? ubtcState : gbtcState;
-  const activeHash = activeClaimType === "UBTC" ? ubtcTxHash : gbtcTxHash;
-  const activeError = activeClaimType === "UBTC" ? ubtcError : gbtcError;
-  const activeFormData =
-    activeClaimType === "UBTC" ? ubtcFormData : gbtcFormData;
-
-  const handleClaimSurplus = async (collateralType: CollateralType) => {
+  const handleClaimAll = async () => {
     if (!address) {
       await connectWallet();
       return;
     }
-
-    if (collateralType === "UBTC") {
-      await claimUBTC();
-    } else if (collateralType === "GBTC") {
-      await claimGBTC();
-    }
+    await claimAll();
   };
 
   const handleComplete = useCallback(() => {
-    if (activeState === "error") {
+    if (currentState === "error") {
       // Reset for retry
-      if (activeClaimType === "UBTC") {
-        resetUBTC();
-      } else {
-        resetGBTC();
-      }
+      reset();
     } else {
       // Refetch data after successful claim
       refetch();
-      // Navigate on success if no more surplus
-      if (totalSurplusesCount <= 1) {
-        navigate("/");
-      } else {
-        // Reset the successful claim state
-        if (activeClaimType === "UBTC") {
-          resetUBTC();
-        } else {
-          resetGBTC();
-        }
-      }
+      // Navigate on success
+      navigate("/");
     }
   }, [
-    activeState,
-    activeClaimType,
-    resetUBTC,
-    resetGBTC,
+    currentState,
+    reset,
     refetch,
-    totalSurplusesCount,
     navigate,
   ]);
 
   // Show transaction status if in progress
-  if (
-    ["pending", "success", "error"].includes(activeState) &&
-    activeClaimType
-  ) {
-    const claimedSurplus =
-      activeClaimType === "UBTC" ? surpluses.UBTC : surpluses.GBTC;
+  if (["pending", "success", "error"].includes(currentState)) {
 
     return (
       <>
@@ -135,39 +81,35 @@ function ClaimPage() {
         </h2>
 
         <TransactionStatus
-          transactionHash={activeHash}
-          isError={activeState === "error"}
-          isSuccess={activeState === "success"}
-          error={activeError as Error | null}
-          successTitle="Surplus Claimed!"
-          successSubtitle="Your collateral surplus has been successfully claimed."
+          transactionHash={transactionHash}
+          isError={currentState === "error"}
+          isSuccess={currentState === "success"}
+          error={claimError as Error | null}
+          successTitle="All Surplus Claimed!"
+          successSubtitle="Your collateral surpluses have been successfully claimed."
           details={
-            activeState === "success" && claimedSurplus
-              ? [
-                  {
-                    label: "Amount Claimed",
-                    value: (
-                      <>
-                        <NumericFormat
-                          displayType="text"
-                          value={claimedSurplus.formatted}
-                          thousandSeparator=","
-                          decimalScale={7}
-                          fixedDecimalScale={false}
-                        />{" "}
-                        {claimedSurplus.symbol}
-                      </>
-                    ),
-                  },
-                ]
+            currentState === "success" && availableSurpluses.length > 0
+              ? availableSurpluses.map(surplus => ({
+                  label: `${surplus.symbol} Claimed`,
+                  value: (
+                    <>
+                      <NumericFormat
+                        displayType="text"
+                        value={surplus.formatted}
+                        thousandSeparator=","
+                        decimalScale={7}
+                        fixedDecimalScale={false}
+                      />{" "}
+                      {surplus.symbol}
+                    </>
+                  ),
+                }))
               : undefined
           }
           onComplete={handleComplete}
           completeButtonText={
-            activeState === "error"
+            currentState === "error"
               ? "Try Again"
-              : totalSurplusesCount > 1
-              ? "Continue"
               : "Back to Dashboard"
           }
         />
@@ -284,71 +226,66 @@ function ClaimPage() {
                 </AlertDescription>
               </Alert>
 
-              {/* Surplus Cards */}
-              <div className="space-y-4">
-                {availableSurpluses.map((surplus) => {
-                  const isPending =
-                    surplus.collateralType === "UBTC"
-                      ? isUBTCPending
-                      : isGBTCPending;
-                  const isSending =
-                    surplus.collateralType === "UBTC"
-                      ? isUBTCSending
-                      : isGBTCSending;
-
-                  return (
-                    <Card
-                      key={surplus.collateralType}
-                      className="border border-slate-200 shadow-sm"
-                    >
-                      <CardContent className="pt-6">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="font-semibold text-lg text-slate-800">
-                            {surplus.symbol} Surplus
-                          </h3>
-                          <div className="flex items-center gap-2">
-                            <DollarSign className="h-5 w-5 text-green-600" />
-                            <span className="font-bold text-xl text-green-700">
-                              <NumericFormat
-                                displayType="text"
-                                value={surplus.formatted}
-                                thousandSeparator=","
-                                decimalScale={7}
-                                fixedDecimalScale={false}
-                              />{" "}
-                              {surplus.symbol}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="bg-green-50 rounded-lg p-4 mb-4">
-                          <p className="text-sm text-slate-600">
-                            This surplus is from your liquidated{" "}
-                            {surplus.symbol} positions. Claim it to receive the
-                            funds back in your wallet.
-                          </p>
-                        </div>
-
-                        <Button
-                          onClick={() =>
-                            handleClaimSurplus(surplus.collateralType)
-                          }
-                          disabled={!address || isPending || isSending}
-                          className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white"
+              {/* Summary Card */}
+              <Card className="border border-green-200 shadow-sm bg-green-50">
+                <CardContent className="pt-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-lg text-slate-800">
+                        Total Claimable Surplus
+                      </h3>
+                      <DollarSign className="h-6 w-6 text-green-600" />
+                    </div>
+                    
+                    {/* List each surplus amount */}
+                    <div className="space-y-2 bg-white rounded-lg p-4">
+                      {availableSurpluses.map((surplus) => (
+                        <div
+                          key={surplus.collateralType}
+                          className="flex items-center justify-between py-2"
                         >
-                          {!address
-                            ? "Connect Wallet"
-                            : isSending
-                            ? "Confirm in wallet..."
-                            : isPending
-                            ? "Transaction pending..."
-                            : `Claim ${surplus.symbol} Surplus`}
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
+                          <span className="text-sm font-medium text-slate-700">
+                            {surplus.symbol}
+                          </span>
+                          <span className="font-bold text-green-700">
+                            <NumericFormat
+                              displayType="text"
+                              value={surplus.formatted}
+                              thousandSeparator=","
+                              decimalScale={7}
+                              fixedDecimalScale={false}
+                            />{" "}
+                            {surplus.symbol}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="bg-blue-50 rounded-lg p-3">
+                      <p className="text-sm text-blue-800">
+                        💡 You can claim all surpluses in a single transaction
+                      </p>
+                    </div>
+
+                    <Button
+                      onClick={handleClaimAll}
+                      disabled={!address || isPending || isSending}
+                      className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white"
+                      size="lg"
+                    >
+                      {!address
+                        ? "Connect Wallet to Claim"
+                        : isSending
+                        ? "Confirm in wallet..."
+                        : isPending
+                        ? "Transaction pending..."
+                        : totalSurplusesCount === 1
+                        ? `Claim ${availableSurpluses[0].symbol} Surplus`
+                        : `Claim All Surpluses (${totalSurplusesCount})`}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
         </div>

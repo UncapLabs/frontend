@@ -14,6 +14,7 @@ export default [
     route("borrow/:troveId", "routes/borrow/borrow.$troveId.tsx", [
       route("update", "routes/borrow/borrow.$troveId.update.tsx"),
       route("close", "routes/borrow/borrow.$troveId.close.tsx"),
+      route("liquidated", "routes/borrow/borrow.$troveId.liquidated.tsx"),
     ]),
     // route("test", "routes/test.tsx"),
   ]),

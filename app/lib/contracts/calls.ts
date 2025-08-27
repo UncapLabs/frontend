@@ -297,19 +297,6 @@ export const contractCall = {
       );
       return contract.populate("get_collateral", [borrower]);
     },
-
-    /**
-     * Claim collateral surplus
-     * Called by borrowers to claim their surplus from liquidations
-     */
-    claimColl: (borrower: string, collateralType: CollateralType) => {
-      const addresses = getCollateralAddresses(collateralType);
-      const contract = new Contract(
-        COLL_SURPLUS_POOL_ABI,
-        addresses.collSurplusPool
-      );
-      return contract.populate("claim_coll", [borrower]);
-    },
   },
 };
 
