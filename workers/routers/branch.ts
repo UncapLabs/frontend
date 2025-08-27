@@ -19,46 +19,41 @@ export const branchRouter = router({
 
       try {
         // Get current price
-        const priceResult = await getBitcoinprice(input.branchId as CollateralType);
+        const priceResult = await getBitcoinprice(
+          input.branchId as CollateralType
+        );
         const price = priceResult[0] as bigint;
 
         // Get branch data
-        const { totalCollateral, totalDebt, ccr } = 
+        const { totalCollateral, totalDebt, ccr } =
           await contractRead.troveManager.getBranchTCR(
             provider,
             input.branchId as CollateralType
           );
 
-        // Log for debugging
-        console.log("TCR Calculation Debug:", {
-          branchId: input.branchId,
-          totalCollateral: totalCollateral.toString(),
-          totalDebt: totalDebt.toString(),
-          price: price.toString(),
-          ccr: ccr.toString()
-        });
-
         // Calculate TCR
         // TCR = (totalCollateral * price) / totalDebt
         let tcr: number | null = null;
         let isBelowCcr = false;
-        
+
         if (totalDebt > 0n) {
           // Calculate collateral value in USD (both coll and price are in 18 decimals)
-          const collateralValueInUSD = (totalCollateral * price) / (10n ** 18n);
+          const collateralValueInUSD = (totalCollateral * price) / 10n ** 18n;
           // TCR = collateral value / debt (both in 18 decimals)
-          const tcrBigInt = (collateralValueInUSD * (10n ** 18n)) / totalDebt;
+          const tcrBigInt = (collateralValueInUSD * 10n ** 18n) / totalDebt;
           tcr = Number(tcrBigInt) / 1e18; // Convert to decimal ratio
-          
+
           // Check if TCR is below CCR (both as bigints for accuracy)
           isBelowCcr = tcrBigInt < ccr;
-          
+
           console.log("TCR Calculation:", {
-            collateralValueInUSD: (Number(collateralValueInUSD) / 1e18).toString(),
+            collateralValueInUSD: (
+              Number(collateralValueInUSD) / 1e18
+            ).toString(),
             tcrBigInt: tcrBigInt.toString(),
             tcrDecimal: tcr,
             ccrBigInt: ccr.toString(),
-            isBelowCcr
+            isBelowCcr,
           });
         }
 
