@@ -102,6 +102,29 @@ export const validators = {
   },
 
   /**
+   * Validates zombie trove debt adjustments
+   * Zombie troves cannot have debt between 0 and MIN_DEBT (exclusive)
+   */
+  zombieTroveDebt: (
+    newDebt: number, 
+    currentDebt: number, 
+    minDebt: number,
+    isZombie: boolean
+  ) => {
+    if (!isZombie) return undefined;
+    
+    // Cannot reduce debt to a value between 0 and MIN_DEBT
+    if (newDebt > 0 && newDebt < minDebt) {
+      if (newDebt < currentDebt) {
+        return `Cannot reduce debt below ${minDebt} USDU while in zombie state. Either maintain at least ${minDebt} USDU or close the position entirely`;
+      }
+      return `Zombie positions must have at least ${minDebt} USDU debt or be closed entirely`;
+    }
+    
+    return undefined;
+  },
+
+  /**
    * Compose multiple validators
    * Returns the first error found or undefined if all pass
    */

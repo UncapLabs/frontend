@@ -15,6 +15,7 @@ interface UseAdjustTroveParams {
   newInterestRate?: bigint;
   maxUpfrontFee?: bigint;
   collateralToken?: { address: string; collateralType?: CollateralType };
+  isZombie?: boolean; // Add flag to identify zombie troves
 }
 
 // Determine which contract function to call based on changes
@@ -27,6 +28,7 @@ function getAdjustmentCalls(params: {
   maxUpfrontFee: bigint;
   collateralTokenAddress?: string;
   collateralType: CollateralType;
+  isZombie?: boolean;
 }) {
   const {
     troveId,
@@ -37,6 +39,7 @@ function getAdjustmentCalls(params: {
     maxUpfrontFee,
     collateralTokenAddress,
     collateralType,
+    isZombie = false,
   } = params;
   const calls = [];
   
@@ -51,6 +54,38 @@ function getAdjustmentCalls(params: {
       BigInt(10e18) // Approve a reasonable amount for gas fees
     )
   );
+
+  // Special handling for zombie troves - must use adjust_zombie_trove
+  if (isZombie) {
+    // Need approvals for additions
+    if (isCollIncrease && collateralTokenAddress) {
+      calls.push(
+        contractCall.token.approve(collateralTokenAddress, addresses.borrowerOperations, collateralChange)
+      );
+    }
+    if (!isDebtIncrease && debtChange !== 0n) {
+      // Repaying debt - need to approve USDU spending
+      calls.push(
+        contractCall.usdu.approve(addresses.borrowerOperations, debtChange)
+      );
+    }
+
+    // Use adjust_zombie_trove for any changes to a zombie trove
+    calls.push(
+      contractCall.borrowerOperations.adjustZombieTrove({
+        troveId,
+        collChange: collateralChange,
+        isCollIncrease,
+        debtChange,
+        isDebtIncrease,
+        upperHint: 0n,
+        lowerHint: 0n,
+        maxUpfrontFee,
+        collateralType,
+      })
+    );
+    return calls;
+  }
 
   // If both collateral and debt are changing, use adjust_trove for efficiency
   if (collateralChange !== 0n && debtChange !== 0n) {
@@ -136,6 +171,7 @@ export function useAdjustTrove({
   newInterestRate,
   maxUpfrontFee = 2n ** 256n - 1n,
   collateralToken,
+  isZombie = false,
 }: UseAdjustTroveParams) {
   const { address } = useAccount();
 
@@ -216,6 +252,7 @@ export function useAdjustTrove({
       maxUpfrontFee,
       collateralTokenAddress: collateralToken.address,
       collateralType,
+      isZombie,
     });
 
     // If interest rate is also changing, add the interest rate adjustment call

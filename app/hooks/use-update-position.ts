@@ -5,7 +5,7 @@ import { useTransactionState } from "./use-transaction-state";
 import type { Token } from "~/components/token-input";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
-import { UBTC_TOKEN } from "~/lib/contracts/constants";
+import { UBTC_TOKEN, MIN_DEBT } from "~/lib/contracts/constants";
 import { 
   getAnnualInterestRateAsBigInt, 
   extractTroveId,
@@ -72,6 +72,8 @@ export function useUpdatePosition({
     newDebt: borrowAmount,
     newInterestRate: interestRate ? getAnnualInterestRate(interestRate) : undefined,
     collateralToken: collateralToken || UBTC_TOKEN,
+    isZombie: position && position.status === "redeemed" && 
+      position.borrowedAmount > 0 && position.borrowedAmount < MIN_DEBT,
   });
 
   // Create a wrapped send function that manages state transitions

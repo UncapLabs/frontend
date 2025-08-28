@@ -1,4 +1,4 @@
-import { RpcProvider } from "starknet";
+import { RpcProvider, CairoCustomEnum } from "starknet";
 import {
   TROVE_BY_ID,
   TROVES_AS_BORROWER,
@@ -35,6 +35,50 @@ const CCR_VALUE = 1.5;
 
 // Prefixed trove ID format: "branchId:troveId"
 type PrefixedTroveId = string;
+
+// Map contract status to our frontend status
+function mapTroveStatus(status: any): Position["status"] {
+  // Status comes as a CairoCustomEnum, we need to find which variant is active
+  // The active variant is the one that doesn't have undefined value
+  
+  let activeVariant: string | null = null;
+  
+  // Check if status has the expected structure
+  if (status && status.variant) {
+    // Find the variant that has a non-undefined value
+    for (const [key, value] of Object.entries(status.variant)) {
+      if (value !== undefined) {
+        activeVariant = key;
+        break;
+      }
+    }
+  } else if (status instanceof CairoCustomEnum) {
+    // Try using the activeVariant method if it's already a CairoCustomEnum
+    try {
+      activeVariant = status.activeVariant();
+    } catch (e) {
+      console.warn("Failed to get active variant from CairoCustomEnum:", e);
+    }
+  }
+  
+  switch (activeVariant) {
+    case "NonExistent":
+      return "non-existent";
+    case "Active":
+      return "active";
+    case "ClosedByOwner":
+      return "closed";
+    case "ClosedByLiquidation":
+      return "liquidated";
+    case "Zombie":
+      // Zombie status in contract maps to "redeemed" in frontend
+      // Frontend determines zombie state by checking debt < MIN_DEBT
+      return "redeemed";
+    default:
+      console.warn(`Unknown trove status: ${activeVariant}, raw status:`, status);
+      return "non-existent";
+  }
+}
 
 export interface IndexedTrove {
   id: string;
@@ -99,10 +143,6 @@ export async function getIndexedTrovesByAccount(
   graphqlClient: GraphQLClient,
   account: string
 ): Promise<IndexedTrove[]> {
-  // console.log(
-  //   `[getIndexedTrovesByAccount] Fetching troves for account: ${account}`
-  // );
-
   // Execute both queries in parallel to get all troves associated with the account
   const [borrowerResult, previousOwnerResult] = await Promise.all([
     graphqlClient.request<TrovesAsBorrowerQuery>(TROVES_AS_BORROWER, {
@@ -115,20 +155,6 @@ export async function getIndexedTrovesByAccount(
       }
     ),
   ]);
-
-  console.log(borrowerResult);
-  console.log(previousOwnerResult);
-
-  // console.log(
-  //   `[getIndexedTrovesByAccount] Borrower troves: ${
-  //     borrowerResult.troves?.length || 0
-  //   }`
-  // );
-  // console.log(
-  //   `[getIndexedTrovesByAccount] Previous owner troves: ${
-  //     previousOwnerResult.troves?.length || 0
-  //   }`
-  // );
 
   // Combine results from both queries
   const allTroves = [
@@ -178,21 +204,12 @@ export async function fetchPositionById(
   const { branchId, troveId } = parsePrefixedTroveId(fullId);
   const troveIdBigInt = BigInt(troveId);
 
-  // console.log(
-  //   `[fetchPositionById] Parsed - branchId: ${branchId}, troveId: ${troveId}`
-  // );
-  // console.log(
-  //   `[fetchPositionById] Indexed trove provided: ${!!maybeIndexedTrove}`
-  // );
-
   // Get the appropriate contracts based on branchId
   const collateralType = getCollateralType(Number(branchId) as BranchId);
   const collateralToken = collateralType === "UBTC" ? UBTC_TOKEN : GBTC_TOKEN;
 
   try {
     // Fetch indexed trove data and on-chain data in parallel
-    // console.log(`[fetchPositionById] Fetching on-chain data...`);
-
     let indexedTrove, batchManagerAddress, troveData, troveStatus;
 
     try {
@@ -244,12 +261,6 @@ export async function fetchPositionById(
         `[fetchPositionById] No indexed trove found for troveId: ${troveId}, using on-chain data only`
       );
     }
-
-    // console.log(`[fetchPositionById] Trove data received:`, {
-    //   entire_debt: troveData?.entire_debt?.toString(),
-    //   entire_coll: troveData?.entire_coll?.toString(),
-    //   annual_interest_rate: troveData?.annual_interest_rate?.toString(),
-    // });
 
     if (
       !troveData ||
@@ -314,7 +325,7 @@ export async function fetchPositionById(
       liquidationPrice,
       debtLimit,
       interestRate,
-      status: indexedTrove?.status as Position["status"],
+      status: mapTroveStatus(troveStatus),
       batchManager: isZeroAddress ? null : batchManagerAddress,
     };
   } catch (error) {

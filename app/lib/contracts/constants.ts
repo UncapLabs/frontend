@@ -81,6 +81,7 @@ export const COLLATERAL_REGISTRY_ADDRESS = deploymentData.collateralRegistry as 
 
 export const USDU_DECIMALS = 18;
 export const USDU_SYMBOL = "USDU";
+export const MIN_DEBT = 2000; // Minimum debt threshold in USDU
 
 // Token definitions
 export const UBTC_TOKEN = {

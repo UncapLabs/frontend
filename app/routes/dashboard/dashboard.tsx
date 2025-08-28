@@ -22,7 +22,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useLiquidate } from "~/hooks/use-liquidate";
-import type { CollateralType } from "~/lib/contracts/constants";
+import { MIN_DEBT, type CollateralType } from "~/lib/contracts/constants";
 
 // Liquidate button component
 function LiquidateButton({
@@ -247,7 +247,6 @@ function MyTroves() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {troves.map((trove) => {
-            const MIN_DEBT = 2000;
             const isLiquidated = trove.status === "liquidated";
             // Zombie = redeemed trove with debt < MIN_DEBT
             const isZombie = trove.status === "redeemed" && trove.borrowedAmount < MIN_DEBT;

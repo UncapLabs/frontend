@@ -1,6 +1,6 @@
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import { ArrowDown } from "lucide-react";
+import { ArrowDown, AlertTriangle, Info } from "lucide-react";
 import { InterestRateSelector } from "~/components/borrow";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { BorrowingRestrictionsAlert } from "~/components/borrow";
@@ -13,7 +13,7 @@ import { validators } from "~/lib/validators";
 import type { Route } from "./+types/borrow.$troveId.update";
 import { useParams, useNavigate } from "react-router";
 import { useAccount, useBalance } from "@starknet-react/core";
-import { USDU_TOKEN, UBTC_TOKEN, GBTC_TOKEN } from "~/lib/contracts/constants";
+import { USDU_TOKEN, UBTC_TOKEN, GBTC_TOKEN, MIN_DEBT } from "~/lib/contracts/constants";
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
 import { useTroveData } from "~/hooks/use-trove-data";
@@ -38,6 +38,13 @@ function UpdatePosition() {
 
   // Fetch existing position data
   const { position, isLoading: isPositionLoading } = useTroveData(troveId);
+  
+  // Zombie trove detection
+  const isZombie = !!(position && position.status === "redeemed" && 
+    position.borrowedAmount > 0 && position.borrowedAmount < MIN_DEBT);
+  const isFullyRedeemed = !!(position && position.status === "redeemed" && 
+    position.borrowedAmount === 0);
+  const hasBeenRedeemed = !!(position && position.status === "redeemed");
 
   // Get collateral token based on position
   const selectedCollateralToken =
@@ -354,6 +361,96 @@ function UpdatePosition() {
               {/* Show borrowing restrictions alert if TCR is below CCR */}
               <BorrowingRestrictionsAlert collateralType={collateralType} />
               
+              {/* Redemption History Alert - Show for all redeemed troves */}
+              {hasBeenRedeemed && position && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-start gap-3">
+                    <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-blue-900 mb-2">
+                        Position Has Been Partially Redeemed
+                      </h3>
+                      <div className="space-y-2 text-sm text-blue-800">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <span className="text-blue-700">Redemptions: </span>
+                            <span className="font-medium">{position.redemptionCount || 0} time{position.redemptionCount !== 1 ? 's' : ''}</span>
+                          </div>
+                          <div>
+                            <span className="text-blue-700">Total Redeemed Debt: </span>
+                            <span className="font-medium">
+                              <NumericFormat
+                                displayType="text"
+                                value={position.redeemedDebt || 0}
+                                thousandSeparator=","
+                                decimalScale={2}
+                                fixedDecimalScale
+                              /> USDU
+                            </span>
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-blue-700">Total Redeemed Collateral: </span>
+                          <span className="font-medium">
+                            <NumericFormat
+                              displayType="text"
+                              value={position.redeemedColl || 0}
+                              thousandSeparator=","
+                              decimalScale={7}
+                              fixedDecimalScale={false}
+                            /> {selectedCollateralToken.symbol}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Zombie Trove Warning - Only for zombie troves */}
+              {isZombie && position && (
+                <div className="bg-amber-50 border border-amber-300 rounded-lg p-4 mb-4">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-amber-900 mb-2">
+                        🧟 Zombie Position - Update Restrictions
+                      </h3>
+                      <p className="text-sm text-amber-800 mb-3">
+                        Your position is below the minimum debt threshold due to redemptions. You have limited options:
+                      </p>
+                      <ul className="text-sm text-amber-800 space-y-1 ml-4 list-disc">
+                        <li>Borrow at least <span className="font-semibold">{(MIN_DEBT - position.borrowedAmount).toFixed(2)} USDU</span> to restore normal status</li>
+                        <li>Add or remove collateral (maintaining valid collateralization)</li>
+                        <li>Close the position entirely</li>
+                      </ul>
+                      <div className="mt-3 pt-3 border-t border-amber-200">
+                        <p className="text-xs text-amber-700">
+                          <strong>Note:</strong> You cannot reduce debt below {MIN_DEBT} USDU. Interest rate changes are allowed when increasing debt to {MIN_DEBT}+ USDU.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Fully Redeemed Notice */}
+              {isFullyRedeemed && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-start gap-3">
+                    <Info className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-yellow-800 mb-2">
+                        Position Fully Redeemed
+                      </h3>
+                      <p className="text-sm text-yellow-700">
+                        Your position has no remaining debt and can be closed to withdraw your collateral.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               <Card
                 className={`border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden ${
                   isSending || isPending ? "opacity-75" : ""
@@ -524,6 +621,15 @@ function UpdatePosition() {
                             10 ** USDU_TOKEN.decimals
                           : 0;
 
+                        // Check zombie trove restrictions first
+                        const zombieError = validators.zombieTroveDebt(
+                          value,
+                          currentDebt,
+                          MIN_DEBT,
+                          isZombie
+                        );
+                        if (zombieError) return zombieError;
+
                         // Check if repaying more than available balance
                         if (value < currentDebt) {
                           const repayAmount = currentDebt - value;
@@ -592,8 +698,26 @@ function UpdatePosition() {
                           setInterestRate(rate);
                         }
                       }}
-                      disabled={isSending || isPending}
+                      disabled={isSending || isPending || (isZombie && borrowAmount < MIN_DEBT)}
                     />
+
+                    {/* Interest Rate Lock Notice for Zombie Troves */}
+                    {isZombie && borrowAmount < MIN_DEBT && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                        <p className="text-xs text-amber-700">
+                          <strong>Interest rate is locked</strong> - To change the interest rate, increase your debt to at least {MIN_DEBT} USDU in the field above.
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Interest Rate Unlock Notice for Zombie Troves restoring debt */}
+                    {isZombie && borrowAmount >= MIN_DEBT && (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                        <p className="text-xs text-green-700">
+                          <strong>Interest rate unlocked!</strong> - You can now change your interest rate since you're restoring debt above {MIN_DEBT} USDU.
+                        </p>
+                      </div>
+                    )}
 
                     {/* Interest Cost Preview */}
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2">

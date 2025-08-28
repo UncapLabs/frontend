@@ -11,6 +11,7 @@ import {
   GBTC_TOKEN,
   USDU_TOKEN,
   type CollateralType,
+  MIN_DEBT,
 } from "~/lib/contracts/constants";
 import { NumericFormat } from "react-number-format";
 import { useTroveData } from "~/hooks/use-trove-data";
@@ -42,7 +43,7 @@ function ClosePosition() {
   // Get the collateral token based on collateral type
   const selectedCollateralToken =
     troveCollateralType === "GBTC" ? GBTC_TOKEN : UBTC_TOKEN;
-  
+
   const collateralType = selectedCollateralToken.symbol as CollateralType;
 
   const { data: usduBalance } = useBalance({
@@ -77,7 +78,8 @@ function ClosePosition() {
 
   // Check trove status
   const isLiquidated = position?.status === "liquidated";
-  const isZombie = position?.status === "zombie";
+  const isZombie =
+    position?.status === "redeemed" && position?.borrowedAmount < MIN_DEBT;
   const isRedeemed = position?.status === "redeemed";
 
   const handleClosePosition = async () => {
@@ -200,8 +202,8 @@ function ClosePosition() {
                       This position has been liquidated
                     </p>
                     <p>
-                      The collateral has been sold to cover the debt. Any excess 
-                      collateral from this and other liquidated positions can be 
+                      The collateral has been sold to cover the debt. Any excess
+                      collateral from this and other liquidated positions can be
                       claimed from the surplus claim page.
                     </p>
                   </div>
@@ -216,8 +218,9 @@ function ClosePosition() {
                       Check for Collateral Surplus
                     </h3>
                     <p className="text-sm text-slate-600 max-w-md mx-auto">
-                      If there was excess collateral after liquidation, you can 
-                      claim it along with surplus from any other liquidated positions.
+                      If there was excess collateral after liquidation, you can
+                      claim it along with surplus from any other liquidated
+                      positions.
                     </p>
                     <div className="flex gap-3 justify-center pt-2">
                       <Button
@@ -226,10 +229,7 @@ function ClosePosition() {
                       >
                         Go to Claim Page
                       </Button>
-                      <Button
-                        onClick={() => navigate("/")}
-                        variant="outline"
-                      >
+                      <Button onClick={() => navigate("/")} variant="outline">
                         Back to Dashboard
                       </Button>
                     </div>
@@ -274,7 +274,7 @@ function ClosePosition() {
                         <p className="text-sm text-amber-700">
                           {isZombie
                             ? "This position has fallen below the minimum debt threshold. Closing it will return any remaining collateral."
-                            : "This position has been partially redeemed. You may have surplus collateral to claim."}
+                            : "This position has been partially redeemed."}
                         </p>
                       </div>
                     </div>

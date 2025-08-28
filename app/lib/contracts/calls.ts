@@ -223,6 +223,38 @@ export const contractCall = {
     },
 
     /**
+     * Adjust a zombie trove (trove with debt < MIN_DEBT)
+     * This is the only way to modify a zombie trove
+     */
+    adjustZombieTrove: (params: {
+      troveId: bigint;
+      collChange: bigint;
+      isCollIncrease: boolean;
+      debtChange: bigint;
+      isDebtIncrease: boolean;
+      upperHint?: bigint;
+      lowerHint?: bigint;
+      maxUpfrontFee?: bigint;
+      collateralType: CollateralType;
+    }) => {
+      const addresses = getCollateralAddresses(params.collateralType);
+      const contract = new Contract(
+        BORROWER_OPERATIONS_ABI,
+        addresses.borrowerOperations
+      );
+      return contract.populate("adjust_zombie_trove", [
+        params.troveId,
+        params.collChange,
+        params.isCollIncrease,
+        params.debtChange,
+        params.isDebtIncrease,
+        params.upperHint ?? 0n,
+        params.lowerHint ?? 0n,
+        params.maxUpfrontFee ?? 2n ** 256n - 1n,
+      ]);
+    },
+
+    /**
      * Claim collateral surplus after liquidation
      * This is called by borrowers to claim any excess collateral
      * from liquidated positions
