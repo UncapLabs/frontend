@@ -15,6 +15,7 @@ import type { Token } from "~/components/token-input";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
 import { getTroveId, getPrefixedTroveId } from "~/lib/utils/trove-id";
+import { decimalToBigint } from "~/lib/decimal";
 
 // Borrow form data structure
 export interface BorrowFormData {
@@ -88,7 +89,7 @@ export function useBorrow({
       contractCall.token.approve(
         collateralToken.address,
         addresses.borrowerOperations,
-        BigInt(Math.floor(collateralAmount * 1e18))
+        decimalToBigint(collateralAmount, 18)
       ),
 
       // 2. Approve STRK for gas payment
@@ -102,9 +103,9 @@ export function useBorrow({
       contractCall.borrowerOperations.openTrove({
         owner: address,
         ownerIndex: nextOwnerIndex,
-        collAmount: BigInt(Math.floor(collateralAmount * 1e18)),
-        usduAmount: BigInt(Math.floor(borrowAmount * 1e18)),
-        annualInterestRate: BigInt(Math.floor((interestRate * 1e18) / 100)),
+        collAmount: decimalToBigint(collateralAmount, 18),
+        usduAmount: decimalToBigint(borrowAmount, 18),
+        annualInterestRate: decimalToBigint(interestRate / 100, 18),
         collateralType: collateralType,
         maxUpfrontFee: 2n ** 256n - 1n,
       }),

@@ -2,6 +2,8 @@ import { publicProcedure, router } from "../trpc";
 import { getBitcoinprice } from "workers/services/utils";
 import { z } from "zod";
 import type { CollateralType } from "~/lib/contracts/constants";
+import * as dn from "dnum";
+import { dnum18 } from "~/lib/decimal";
 
 export const priceRouter = router({
   getBitcoinPrice: publicProcedure
@@ -12,9 +14,9 @@ export const priceRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const price = await getBitcoinprice(input.collateralType as CollateralType);
-      const rawPrice = price[0];
+      const rawPrice = dnum18(price[0] as bigint);
       return {
-        price: Number(rawPrice) / 1e18,
+        price: dn.toNumber(rawPrice),
       };
     }),
   getUSDUPrice: publicProcedure.query(({ ctx }) => {

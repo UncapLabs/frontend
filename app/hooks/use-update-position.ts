@@ -12,6 +12,7 @@ import {
   getInterestRatePercentage 
 } from "~/lib/utils/position-helpers";
 import { getAnnualInterestRate } from "~/lib/utils/calc";
+import { bigintToDecimal } from "~/lib/decimal";
 
 // Update form data structure
 export interface UpdateFormData {
@@ -92,10 +93,10 @@ export function useUpdatePosition({
         const description = createTransactionDescription("adjust", {
           hasCollateralChange: changes?.hasCollateralChange || false,
           isCollIncrease: changes?.isCollIncrease || false,
-          collateralChange: changes?.collateralChange ? Number(changes.collateralChange) / 1e18 : 0,
+          collateralChange: changes?.collateralChange ? bigintToDecimal(changes.collateralChange, 18) : 0,
           hasDebtChange: changes?.hasDebtChange || false,
           isDebtIncrease: changes?.isDebtIncrease || false,
-          debtChange: changes?.debtChange ? Number(changes.debtChange) / 1e18 : 0,
+          debtChange: changes?.debtChange ? bigintToDecimal(changes.debtChange, 18) : 0,
           hasInterestRateChange: changes?.hasInterestRateChange || false,
           newInterestRate: interestRate,
           collateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,

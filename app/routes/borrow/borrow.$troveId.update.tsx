@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
 import { useTroveData } from "~/hooks/use-trove-data";
 import { useUpdatePosition } from "~/hooks/use-update-position";
+import { bigintToDecimal } from "~/lib/decimal";
 import { useQueryState, parseAsFloat, parseAsInteger } from "nuqs";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { getInterestRatePercentage } from "~/lib/utils/position-helpers";
@@ -306,7 +307,7 @@ function UpdatePosition() {
                           <>
                             <NumericFormat
                               displayType="text"
-                              value={Number(changes.collateralChange) / 1e18}
+                              value={bigintToDecimal(changes.collateralChange, 18)}
                               thousandSeparator=","
                               decimalScale={7}
                               fixedDecimalScale={false}
@@ -323,7 +324,7 @@ function UpdatePosition() {
                           <>
                             <NumericFormat
                               displayType="text"
-                              value={Number(changes.debtChange) / 1e18}
+                              value={bigintToDecimal(changes.debtChange, 18)}
                               thousandSeparator=","
                               decimalScale={2}
                               fixedDecimalScale
