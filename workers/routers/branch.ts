@@ -25,11 +25,17 @@ export const branchRouter = router({
         const price = priceResult[0] as bigint;
 
         // Get branch data
-        const { totalCollateral, totalDebt, ccr } =
+        const { totalCollateral, totalDebt } =
           await contractRead.troveManager.getBranchTCR(
             provider,
             input.branchId as CollateralType
           );
+
+        const ccrResult = await contractRead.addressesRegistry.getCcr(
+          provider,
+          input.branchId as CollateralType
+        );
+        const ccr = ccrResult.ccr as bigint;
 
         // Calculate TCR
         // TCR = (totalCollateral * price) / totalDebt

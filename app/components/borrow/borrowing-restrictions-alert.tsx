@@ -3,10 +3,10 @@ import { useBranchTCR } from "~/hooks/use-branch-tcr";
 import type { CollateralType } from "~/lib/contracts/constants";
 import { AlertTriangle } from "lucide-react";
 
-export function BorrowingRestrictionsAlert({ 
-  collateralType 
-}: { 
-  collateralType: CollateralType 
+export function BorrowingRestrictionsAlert({
+  collateralType,
+}: {
+  collateralType: CollateralType;
 }) {
   const { data, isLoading } = useBranchTCR(collateralType);
 
@@ -29,27 +29,26 @@ export function BorrowingRestrictionsAlert({
           <div>Current TCR: {tcrPercentage}%</div>
           <div>Critical Threshold: {ccrPercentage}%</div>
         </div>
-        
+
         <p>
-          When the Total Collateralization Ratio falls below the Critical 
+          When the Total Collateralization Ratio falls below the Critical
           Collateral Ratio, these restrictions apply:
         </p>
-        
+
         <ul className="list-disc pl-5 space-y-1">
           <li>
             Opening positions: only if resulting TCR &gt; {ccrPercentage}%
           </li>
+          <li>New borrowing: must bring TCR above {ccrPercentage}%</li>
+          <li>Collateral withdrawal: requires matching debt repayment</li>
           <li>
-            New borrowing: must bring TCR above {ccrPercentage}%
-          </li>
-          <li>
-            Collateral withdrawal: requires matching debt repayment
+            Closing positions: only if resulting TCR &gt; {ccrPercentage}%
           </li>
         </ul>
-        
-        <a 
-          href="https://docs.bitusd.io/recovery-mode" 
-          target="_blank" 
+
+        <a
+          href="https://docs.bitusd.io/recovery-mode"
+          target="_blank"
           rel="noopener noreferrer"
           className="inline-block text-sm underline hover:no-underline"
         >

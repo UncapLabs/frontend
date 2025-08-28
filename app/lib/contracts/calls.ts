@@ -7,6 +7,7 @@ import {
   PRICE_FEED_ABI,
   TROVE_MANAGER_ABI,
   COLL_SURPLUS_POOL_ABI,
+  ADDRESSES_REGISTRY_ABI,
 } from ".";
 
 /**
@@ -403,8 +404,23 @@ export const contractRead = {
       return {
         totalCollateral: entireColl as bigint,
         totalDebt: entireDebt as bigint,
-        ccr: 1100000000000000000n, // 110% in 18 decimals
       };
+    },
+  },
+
+  addressesRegistry: {
+    /**
+     * Get the CCR
+     */
+    getCcr: async (provider: RpcProvider, collateralType: CollateralType) => {
+      const addresses = getCollateralAddresses(collateralType);
+      const contract = new Contract(
+        ADDRESSES_REGISTRY_ABI,
+        addresses.addressesRegistry,
+        provider
+      );
+      const result = await contract.call("get_ccr", []);
+      return { ccr: result ?? 1100000000000000000n }; // 110% in 18 decimals as bigint;
     },
   },
 
