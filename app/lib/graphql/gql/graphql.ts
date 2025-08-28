@@ -358,6 +358,146 @@ export enum Collateral_OrderBy {
   MinCollRatio = 'minCollRatio'
 }
 
+export type EkuboPosition = {
+  __typename?: 'EkuboPosition';
+  _indexer: Scalars['String']['output'];
+  earningRate: Scalars['BigDecimalU256']['output'];
+  id: Scalars['ID']['output'];
+  lastUpdateTime: Scalars['Int']['output'];
+  pointsEarned: Scalars['BigDecimalU256']['output'];
+  pool: Scalars['String']['output'];
+  poolAddress: Scalars['String']['output'];
+  user: User;
+  value: Scalars['BigDecimalU256']['output'];
+};
+
+export type EkuboPosition_User_Filter = {
+  _indexer?: InputMaybe<Scalars['String']['input']>;
+  _indexer_contains?: InputMaybe<Scalars['String']['input']>;
+  _indexer_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  _indexer_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  _indexer_not?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_contains?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id?: InputMaybe<Scalars['ID']['input']>;
+  id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  id_not?: InputMaybe<Scalars['ID']['input']>;
+  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  lastUpdateTime?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_gt?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_gte?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  lastUpdateTime_lt?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_lte?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_not?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  totalPoints?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  totalPoints_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  totalRate?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  totalRate_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  totalValue?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  totalValue_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+};
+
+export type EkuboPosition_Filter = {
+  _indexer?: InputMaybe<Scalars['String']['input']>;
+  _indexer_contains?: InputMaybe<Scalars['String']['input']>;
+  _indexer_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  _indexer_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  _indexer_not?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_contains?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  earningRate?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  earningRate_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  earningRate_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  earningRate_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  earningRate_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  earningRate_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  earningRate_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  earningRate_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  id?: InputMaybe<Scalars['ID']['input']>;
+  id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  id_not?: InputMaybe<Scalars['ID']['input']>;
+  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  lastUpdateTime?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_gt?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_gte?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  lastUpdateTime_lt?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_lte?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_not?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  pointsEarned?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pointsEarned_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pointsEarned_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pointsEarned_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  pointsEarned_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pointsEarned_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pointsEarned_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pointsEarned_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  pool?: InputMaybe<Scalars['String']['input']>;
+  poolAddress?: InputMaybe<Scalars['String']['input']>;
+  poolAddress_contains?: InputMaybe<Scalars['String']['input']>;
+  poolAddress_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  poolAddress_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  poolAddress_not?: InputMaybe<Scalars['String']['input']>;
+  poolAddress_not_contains?: InputMaybe<Scalars['String']['input']>;
+  poolAddress_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  poolAddress_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  pool_contains?: InputMaybe<Scalars['String']['input']>;
+  pool_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  pool_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  pool_not?: InputMaybe<Scalars['String']['input']>;
+  pool_not_contains?: InputMaybe<Scalars['String']['input']>;
+  pool_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  pool_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  user?: InputMaybe<Scalars['ID']['input']>;
+  user_?: InputMaybe<EkuboPosition_User_Filter>;
+  user_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  user_not?: InputMaybe<Scalars['ID']['input']>;
+  user_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  value?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  value_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  value_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  value_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  value_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  value_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  value_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  value_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+};
+
+export enum EkuboPosition_OrderBy {
+  Indexer = '_indexer',
+  EarningRate = 'earningRate',
+  Id = 'id',
+  LastUpdateTime = 'lastUpdateTime',
+  PointsEarned = 'pointsEarned',
+  Pool = 'pool',
+  PoolAddress = 'poolAddress',
+  User = 'user',
+  Value = 'value'
+}
+
 export type InterestBatch = {
   __typename?: 'InterestBatch';
   _indexer: Scalars['String']['output'];
@@ -581,16 +721,24 @@ export type Query = {
   collateral?: Maybe<Collateral>;
   collateraladdresses: Array<CollateralAddresses>;
   collaterals: Array<Collateral>;
+  ekuboposition?: Maybe<EkuboPosition>;
+  ekubopositions: Array<EkuboPosition>;
   interestbatch?: Maybe<InterestBatch>;
   interestbatches: Array<InterestBatch>;
   interestratebracket?: Maybe<InterestRateBracket>;
   interestratebrackets: Array<InterestRateBracket>;
+  stabilitypoolposition?: Maybe<StabilityPoolPosition>;
+  stabilitypoolpositions: Array<StabilityPoolPosition>;
   trove?: Maybe<Trove>;
   trovemanagereventsemitter?: Maybe<TroveManagerEventsEmitter>;
   trovemanagereventsemitters: Array<TroveManagerEventsEmitter>;
   trovenft?: Maybe<TroveNft>;
   trovenfts: Array<TroveNft>;
   troves: Array<Trove>;
+  user?: Maybe<User>;
+  users: Array<User>;
+  vesuposition?: Maybe<VesuPosition>;
+  vesupositions: Array<VesuPosition>;
 };
 
 
@@ -677,6 +825,24 @@ export type QueryCollateralsArgs = {
 };
 
 
+export type QueryEkubopositionArgs = {
+  block?: InputMaybe<Scalars['Int']['input']>;
+  id: Scalars['ID']['input'];
+  indexer?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryEkubopositionsArgs = {
+  block?: InputMaybe<Scalars['Int']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  indexer?: InputMaybe<Scalars['String']['input']>;
+  orderBy?: InputMaybe<EkuboPosition_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  where?: InputMaybe<EkuboPosition_Filter>;
+};
+
+
 export type QueryInterestbatchArgs = {
   block?: InputMaybe<Scalars['Int']['input']>;
   id: Scalars['ID']['input'];
@@ -710,6 +876,24 @@ export type QueryInterestratebracketsArgs = {
   orderDirection?: InputMaybe<OrderDirection>;
   skip?: InputMaybe<Scalars['Int']['input']>;
   where?: InputMaybe<InterestRateBracket_Filter>;
+};
+
+
+export type QueryStabilitypoolpositionArgs = {
+  block?: InputMaybe<Scalars['Int']['input']>;
+  id: Scalars['ID']['input'];
+  indexer?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryStabilitypoolpositionsArgs = {
+  block?: InputMaybe<Scalars['Int']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  indexer?: InputMaybe<Scalars['String']['input']>;
+  orderBy?: InputMaybe<StabilityPoolPosition_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  where?: InputMaybe<StabilityPoolPosition_Filter>;
 };
 
 
@@ -765,6 +949,182 @@ export type QueryTrovesArgs = {
   skip?: InputMaybe<Scalars['Int']['input']>;
   where?: InputMaybe<Trove_Filter>;
 };
+
+
+export type QueryUserArgs = {
+  block?: InputMaybe<Scalars['Int']['input']>;
+  id: Scalars['ID']['input'];
+  indexer?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryUsersArgs = {
+  block?: InputMaybe<Scalars['Int']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  indexer?: InputMaybe<Scalars['String']['input']>;
+  orderBy?: InputMaybe<User_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  where?: InputMaybe<User_Filter>;
+};
+
+
+export type QueryVesupositionArgs = {
+  block?: InputMaybe<Scalars['Int']['input']>;
+  id: Scalars['ID']['input'];
+  indexer?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryVesupositionsArgs = {
+  block?: InputMaybe<Scalars['Int']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  indexer?: InputMaybe<Scalars['String']['input']>;
+  orderBy?: InputMaybe<VesuPosition_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  where?: InputMaybe<VesuPosition_Filter>;
+};
+
+export type StabilityPoolPosition = {
+  __typename?: 'StabilityPoolPosition';
+  _indexer: Scalars['String']['output'];
+  earningRate: Scalars['BigDecimalU256']['output'];
+  id: Scalars['ID']['output'];
+  lastUpdateTime: Scalars['Int']['output'];
+  pointsEarned: Scalars['BigDecimalU256']['output'];
+  poolAddress: Scalars['String']['output'];
+  stashedColl: Scalars['BigDecimalU256']['output'];
+  user: User;
+  value: Scalars['BigDecimalU256']['output'];
+};
+
+export type StabilityPoolPosition_User_Filter = {
+  _indexer?: InputMaybe<Scalars['String']['input']>;
+  _indexer_contains?: InputMaybe<Scalars['String']['input']>;
+  _indexer_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  _indexer_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  _indexer_not?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_contains?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id?: InputMaybe<Scalars['ID']['input']>;
+  id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  id_not?: InputMaybe<Scalars['ID']['input']>;
+  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  lastUpdateTime?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_gt?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_gte?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  lastUpdateTime_lt?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_lte?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_not?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  totalPoints?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  totalPoints_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  totalRate?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  totalRate_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  totalValue?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  totalValue_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+};
+
+export type StabilityPoolPosition_Filter = {
+  _indexer?: InputMaybe<Scalars['String']['input']>;
+  _indexer_contains?: InputMaybe<Scalars['String']['input']>;
+  _indexer_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  _indexer_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  _indexer_not?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_contains?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  earningRate?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  earningRate_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  earningRate_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  earningRate_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  earningRate_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  earningRate_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  earningRate_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  earningRate_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  id?: InputMaybe<Scalars['ID']['input']>;
+  id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  id_not?: InputMaybe<Scalars['ID']['input']>;
+  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  lastUpdateTime?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_gt?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_gte?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  lastUpdateTime_lt?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_lte?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_not?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  pointsEarned?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pointsEarned_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pointsEarned_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pointsEarned_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  pointsEarned_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pointsEarned_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pointsEarned_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pointsEarned_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  poolAddress?: InputMaybe<Scalars['String']['input']>;
+  poolAddress_contains?: InputMaybe<Scalars['String']['input']>;
+  poolAddress_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  poolAddress_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  poolAddress_not?: InputMaybe<Scalars['String']['input']>;
+  poolAddress_not_contains?: InputMaybe<Scalars['String']['input']>;
+  poolAddress_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  poolAddress_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  stashedColl?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  stashedColl_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  stashedColl_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  stashedColl_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  stashedColl_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  stashedColl_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  stashedColl_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  stashedColl_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  user?: InputMaybe<Scalars['ID']['input']>;
+  user_?: InputMaybe<StabilityPoolPosition_User_Filter>;
+  user_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  user_not?: InputMaybe<Scalars['ID']['input']>;
+  user_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  value?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  value_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  value_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  value_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  value_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  value_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  value_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  value_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+};
+
+export enum StabilityPoolPosition_OrderBy {
+  Indexer = '_indexer',
+  EarningRate = 'earningRate',
+  Id = 'id',
+  LastUpdateTime = 'lastUpdateTime',
+  PointsEarned = 'pointsEarned',
+  PoolAddress = 'poolAddress',
+  StashedColl = 'stashedColl',
+  User = 'user',
+  Value = 'value'
+}
 
 export type Trove = {
   __typename?: 'Trove';
@@ -1138,6 +1498,215 @@ export enum Trove_OrderBy {
   UpdatedAt = 'updatedAt'
 }
 
+export type User = {
+  __typename?: 'User';
+  _indexer: Scalars['String']['output'];
+  ekuboPositions: Array<EkuboPosition>;
+  id: Scalars['ID']['output'];
+  lastUpdateTime: Scalars['Int']['output'];
+  stabilityPoolPositions: Array<StabilityPoolPosition>;
+  totalPoints: Scalars['BigDecimalU256']['output'];
+  totalRate: Scalars['BigDecimalU256']['output'];
+  totalValue: Scalars['BigDecimalU256']['output'];
+  vesuPositions: Array<VesuPosition>;
+};
+
+export type User_Filter = {
+  _indexer?: InputMaybe<Scalars['String']['input']>;
+  _indexer_contains?: InputMaybe<Scalars['String']['input']>;
+  _indexer_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  _indexer_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  _indexer_not?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_contains?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id?: InputMaybe<Scalars['ID']['input']>;
+  id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  id_not?: InputMaybe<Scalars['ID']['input']>;
+  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  lastUpdateTime?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_gt?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_gte?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  lastUpdateTime_lt?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_lte?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_not?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  totalPoints?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  totalPoints_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  totalRate?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  totalRate_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  totalValue?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  totalValue_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+};
+
+export enum User_OrderBy {
+  Indexer = '_indexer',
+  Id = 'id',
+  LastUpdateTime = 'lastUpdateTime',
+  TotalPoints = 'totalPoints',
+  TotalRate = 'totalRate',
+  TotalValue = 'totalValue'
+}
+
+export type VesuPosition = {
+  __typename?: 'VesuPosition';
+  _indexer: Scalars['String']['output'];
+  earningRate: Scalars['BigDecimalU256']['output'];
+  id: Scalars['ID']['output'];
+  lastUpdateTime: Scalars['Int']['output'];
+  market: Scalars['String']['output'];
+  pointsEarned: Scalars['BigDecimalU256']['output'];
+  positionType: Scalars['String']['output'];
+  user: User;
+  value: Scalars['BigDecimalU256']['output'];
+};
+
+export type VesuPosition_User_Filter = {
+  _indexer?: InputMaybe<Scalars['String']['input']>;
+  _indexer_contains?: InputMaybe<Scalars['String']['input']>;
+  _indexer_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  _indexer_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  _indexer_not?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_contains?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id?: InputMaybe<Scalars['ID']['input']>;
+  id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  id_not?: InputMaybe<Scalars['ID']['input']>;
+  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  lastUpdateTime?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_gt?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_gte?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  lastUpdateTime_lt?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_lte?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_not?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  totalPoints?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  totalPoints_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalPoints_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  totalRate?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  totalRate_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalRate_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  totalValue?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  totalValue_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  totalValue_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+};
+
+export type VesuPosition_Filter = {
+  _indexer?: InputMaybe<Scalars['String']['input']>;
+  _indexer_contains?: InputMaybe<Scalars['String']['input']>;
+  _indexer_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  _indexer_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  _indexer_not?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_contains?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  earningRate?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  earningRate_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  earningRate_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  earningRate_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  earningRate_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  earningRate_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  earningRate_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  earningRate_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  id?: InputMaybe<Scalars['ID']['input']>;
+  id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  id_not?: InputMaybe<Scalars['ID']['input']>;
+  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  lastUpdateTime?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_gt?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_gte?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  lastUpdateTime_lt?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_lte?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_not?: InputMaybe<Scalars['Int']['input']>;
+  lastUpdateTime_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  market?: InputMaybe<Scalars['String']['input']>;
+  market_contains?: InputMaybe<Scalars['String']['input']>;
+  market_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  market_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  market_not?: InputMaybe<Scalars['String']['input']>;
+  market_not_contains?: InputMaybe<Scalars['String']['input']>;
+  market_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  market_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  pointsEarned?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pointsEarned_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pointsEarned_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pointsEarned_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  pointsEarned_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pointsEarned_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pointsEarned_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pointsEarned_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  positionType?: InputMaybe<Scalars['String']['input']>;
+  positionType_contains?: InputMaybe<Scalars['String']['input']>;
+  positionType_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  positionType_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  positionType_not?: InputMaybe<Scalars['String']['input']>;
+  positionType_not_contains?: InputMaybe<Scalars['String']['input']>;
+  positionType_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  positionType_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  user?: InputMaybe<Scalars['ID']['input']>;
+  user_?: InputMaybe<VesuPosition_User_Filter>;
+  user_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  user_not?: InputMaybe<Scalars['ID']['input']>;
+  user_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  value?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  value_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  value_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  value_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  value_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  value_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  value_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  value_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+};
+
+export enum VesuPosition_OrderBy {
+  Indexer = '_indexer',
+  EarningRate = 'earningRate',
+  Id = 'id',
+  LastUpdateTime = 'lastUpdateTime',
+  Market = 'market',
+  PointsEarned = 'pointsEarned',
+  PositionType = 'positionType',
+  User = 'user',
+  Value = 'value'
+}
+
 /** Contract and Block where its event is found. */
 export type _Checkpoint = {
   __typename?: '_Checkpoint';
@@ -1229,14 +1798,14 @@ export type TrovesAsBorrowerQueryVariables = Exact<{
 }>;
 
 
-export type TrovesAsBorrowerQuery = { __typename?: 'Query', troves: Array<{ __typename?: 'Trove', id: string, troveId: string, borrower: string, debt: any, deposit: any, interestRate: any, status: string, closedAt?: number | null, createdAt: number, updatedAt: number, mightBeLeveraged: boolean, previousOwner: string, collateral: { __typename?: 'Collateral', id: string } }> };
+export type TrovesAsBorrowerQuery = { __typename?: 'Query', troves: Array<{ __typename?: 'Trove', id: string, troveId: string, borrower: string, debt: any, deposit: any, interestRate: any, redemptionCount: number, redeemedColl: any, redeemedDebt: any, status: string, closedAt?: number | null, createdAt: number, updatedAt: number, mightBeLeveraged: boolean, previousOwner: string, collateral: { __typename?: 'Collateral', id: string } }> };
 
 export type TrovesAsPreviousOwnerQueryVariables = Exact<{
   account: Scalars['String']['input'];
 }>;
 
 
-export type TrovesAsPreviousOwnerQuery = { __typename?: 'Query', troves: Array<{ __typename?: 'Trove', id: string, troveId: string, borrower: string, debt: any, deposit: any, interestRate: any, status: string, closedAt?: number | null, createdAt: number, updatedAt: number, mightBeLeveraged: boolean, previousOwner: string, collateral: { __typename?: 'Collateral', id: string } }> };
+export type TrovesAsPreviousOwnerQuery = { __typename?: 'Query', troves: Array<{ __typename?: 'Trove', id: string, troveId: string, borrower: string, debt: any, deposit: any, interestRate: any, redemptionCount: number, redeemedColl: any, redeemedDebt: any, status: string, closedAt?: number | null, createdAt: number, updatedAt: number, mightBeLeveraged: boolean, previousOwner: string, collateral: { __typename?: 'Collateral', id: string } }> };
 
 export type GetTroveByIdQueryVariables = Exact<{
   troveId: Scalars['ID']['input'];
@@ -1250,7 +1819,7 @@ export type TroveByIdQueryVariables = Exact<{
 }>;
 
 
-export type TroveByIdQuery = { __typename?: 'Query', trove?: { __typename?: 'Trove', id: string, borrower: string, closedAt?: number | null, createdAt: number, mightBeLeveraged: boolean, status: string, previousOwner: string } | null };
+export type TroveByIdQuery = { __typename?: 'Query', trove?: { __typename?: 'Trove', id: string, borrower: string, closedAt?: number | null, createdAt: number, mightBeLeveraged: boolean, status: string, previousOwner: string, redemptionCount: number, redeemedColl: any, redeemedDebt: any } | null };
 
 export type GetTrovesByCollateralQueryVariables = Exact<{
   collateralId?: InputMaybe<Scalars['ID']['input']>;
@@ -1274,10 +1843,10 @@ export type NextOwnerIndexesByBorrowerQueryVariables = Exact<{
 export type NextOwnerIndexesByBorrowerQuery = { __typename?: 'Query', borrowerinfo?: { __typename?: 'BorrowerInfo', nextOwnerIndexes: Array<number> } | null };
 
 
-export const TrovesAsBorrowerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"TrovesAsBorrower"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"account"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"troves"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"borrower"},"value":{"kind":"Variable","name":{"kind":"Name","value":"account"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"status_in"},"value":{"kind":"ListValue","values":[{"kind":"StringValue","value":"active","block":false},{"kind":"StringValue","value":"redeemed","block":false},{"kind":"StringValue","value":"closed","block":false}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"updatedAt"}},{"kind":"Argument","name":{"kind":"Name","value":"orderDirection"},"value":{"kind":"EnumValue","value":"desc"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"troveId"}},{"kind":"Field","name":{"kind":"Name","value":"borrower"}},{"kind":"Field","name":{"kind":"Name","value":"debt"}},{"kind":"Field","name":{"kind":"Name","value":"deposit"}},{"kind":"Field","name":{"kind":"Name","value":"interestRate"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"collateral"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"closedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"mightBeLeveraged"}},{"kind":"Field","name":{"kind":"Name","value":"previousOwner"}}]}}]}}]} as unknown as DocumentNode<TrovesAsBorrowerQuery, TrovesAsBorrowerQueryVariables>;
-export const TrovesAsPreviousOwnerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"TrovesAsPreviousOwner"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"account"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"troves"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"previousOwner"},"value":{"kind":"Variable","name":{"kind":"Name","value":"account"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"status"},"value":{"kind":"StringValue","value":"liquidated","block":false}}]}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"updatedAt"}},{"kind":"Argument","name":{"kind":"Name","value":"orderDirection"},"value":{"kind":"EnumValue","value":"desc"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"troveId"}},{"kind":"Field","name":{"kind":"Name","value":"borrower"}},{"kind":"Field","name":{"kind":"Name","value":"debt"}},{"kind":"Field","name":{"kind":"Name","value":"deposit"}},{"kind":"Field","name":{"kind":"Name","value":"interestRate"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"collateral"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"closedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"mightBeLeveraged"}},{"kind":"Field","name":{"kind":"Name","value":"previousOwner"}}]}}]}}]} as unknown as DocumentNode<TrovesAsPreviousOwnerQuery, TrovesAsPreviousOwnerQueryVariables>;
+export const TrovesAsBorrowerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"TrovesAsBorrower"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"account"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"troves"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"borrower"},"value":{"kind":"Variable","name":{"kind":"Name","value":"account"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"status_in"},"value":{"kind":"ListValue","values":[{"kind":"StringValue","value":"active","block":false},{"kind":"StringValue","value":"redeemed","block":false}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"updatedAt"}},{"kind":"Argument","name":{"kind":"Name","value":"orderDirection"},"value":{"kind":"EnumValue","value":"desc"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"troveId"}},{"kind":"Field","name":{"kind":"Name","value":"borrower"}},{"kind":"Field","name":{"kind":"Name","value":"debt"}},{"kind":"Field","name":{"kind":"Name","value":"deposit"}},{"kind":"Field","name":{"kind":"Name","value":"interestRate"}},{"kind":"Field","name":{"kind":"Name","value":"redemptionCount"}},{"kind":"Field","name":{"kind":"Name","value":"redeemedColl"}},{"kind":"Field","name":{"kind":"Name","value":"redeemedDebt"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"collateral"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"closedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"mightBeLeveraged"}},{"kind":"Field","name":{"kind":"Name","value":"previousOwner"}}]}}]}}]} as unknown as DocumentNode<TrovesAsBorrowerQuery, TrovesAsBorrowerQueryVariables>;
+export const TrovesAsPreviousOwnerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"TrovesAsPreviousOwner"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"account"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"troves"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"previousOwner"},"value":{"kind":"Variable","name":{"kind":"Name","value":"account"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"status"},"value":{"kind":"StringValue","value":"liquidated","block":false}}]}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"updatedAt"}},{"kind":"Argument","name":{"kind":"Name","value":"orderDirection"},"value":{"kind":"EnumValue","value":"desc"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"troveId"}},{"kind":"Field","name":{"kind":"Name","value":"borrower"}},{"kind":"Field","name":{"kind":"Name","value":"debt"}},{"kind":"Field","name":{"kind":"Name","value":"deposit"}},{"kind":"Field","name":{"kind":"Name","value":"interestRate"}},{"kind":"Field","name":{"kind":"Name","value":"redemptionCount"}},{"kind":"Field","name":{"kind":"Name","value":"redeemedColl"}},{"kind":"Field","name":{"kind":"Name","value":"redeemedDebt"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"collateral"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"closedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"mightBeLeveraged"}},{"kind":"Field","name":{"kind":"Name","value":"previousOwner"}}]}}]}}]} as unknown as DocumentNode<TrovesAsPreviousOwnerQuery, TrovesAsPreviousOwnerQueryVariables>;
 export const GetTroveByIdDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetTroveById"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"troveId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"trove"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"troveId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"troveId"}},{"kind":"Field","name":{"kind":"Name","value":"borrower"}},{"kind":"Field","name":{"kind":"Name","value":"debt"}},{"kind":"Field","name":{"kind":"Name","value":"deposit"}},{"kind":"Field","name":{"kind":"Name","value":"interestRate"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"interestBatch"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"batchManager"}},{"kind":"Field","name":{"kind":"Name","value":"debt"}},{"kind":"Field","name":{"kind":"Name","value":"coll"}}]}},{"kind":"Field","name":{"kind":"Name","value":"collateral"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]} as unknown as DocumentNode<GetTroveByIdQuery, GetTroveByIdQueryVariables>;
-export const TroveByIdDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"TroveById"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"trove"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"borrower"}},{"kind":"Field","name":{"kind":"Name","value":"closedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"mightBeLeveraged"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"previousOwner"}}]}}]}}]} as unknown as DocumentNode<TroveByIdQuery, TroveByIdQueryVariables>;
+export const TroveByIdDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"TroveById"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"trove"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"borrower"}},{"kind":"Field","name":{"kind":"Name","value":"closedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"mightBeLeveraged"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"previousOwner"}},{"kind":"Field","name":{"kind":"Name","value":"redemptionCount"}},{"kind":"Field","name":{"kind":"Name","value":"redeemedColl"}},{"kind":"Field","name":{"kind":"Name","value":"redeemedDebt"}}]}}]}}]} as unknown as DocumentNode<TroveByIdQuery, TroveByIdQueryVariables>;
 export const GetTrovesByCollateralDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetTrovesByCollateral"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"collateralId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"skip"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"troves"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"collateral"},"value":{"kind":"Variable","name":{"kind":"Name","value":"collateralId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"status"},"value":{"kind":"StringValue","value":"active","block":false}}]}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"skip"},"value":{"kind":"Variable","name":{"kind":"Name","value":"skip"}}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"debt"}},{"kind":"Argument","name":{"kind":"Name","value":"orderDirection"},"value":{"kind":"EnumValue","value":"desc"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"troveId"}},{"kind":"Field","name":{"kind":"Name","value":"borrower"}},{"kind":"Field","name":{"kind":"Name","value":"debt"}},{"kind":"Field","name":{"kind":"Name","value":"deposit"}},{"kind":"Field","name":{"kind":"Name","value":"interestRate"}}]}}]}}]} as unknown as DocumentNode<GetTrovesByCollateralQuery, GetTrovesByCollateralQueryVariables>;
 export const GetAllCollateralsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAllCollaterals"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"collaterals"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"collIndex"}}]}}]}}]} as unknown as DocumentNode<GetAllCollateralsQuery, GetAllCollateralsQueryVariables>;
 export const NextOwnerIndexesByBorrowerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"NextOwnerIndexesByBorrower"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"borrowerinfo"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nextOwnerIndexes"}}]}}]}}]} as unknown as DocumentNode<NextOwnerIndexesByBorrowerQuery, NextOwnerIndexesByBorrowerQueryVariables>;

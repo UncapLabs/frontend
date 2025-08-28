@@ -247,7 +247,11 @@ function MyTroves() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {troves.map((trove) => {
+            const MIN_DEBT = 2000;
             const isLiquidated = trove.status === "liquidated";
+            // Zombie = redeemed trove with debt < MIN_DEBT
+            const isZombie = trove.status === "redeemed" && trove.borrowedAmount < MIN_DEBT;
+            const isFullyRedeemed = trove.status === "redeemed" && trove.borrowedAmount === 0;
 
             return (
               <Card
@@ -255,6 +259,8 @@ function MyTroves() {
                 className={`border transition-all duration-300 ${
                   isLiquidated
                     ? "border-orange-300 bg-orange-50/50 cursor-pointer hover:bg-orange-100/50"
+                    : isZombie || isFullyRedeemed
+                    ? "border-amber-300 bg-amber-50/50"
                     : "border-slate-200 hover:shadow-lg"
                 }`}
                 onClick={isLiquidated ? () => handleLiquidatedPosition(trove.id) : undefined}
@@ -268,6 +274,11 @@ function MyTroves() {
                       <div className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 rounded-md text-xs font-medium">
                         <AlertTriangle className="h-3 w-3" />
                         Liquidated
+                      </div>
+                    )}
+                    {(isZombie || isFullyRedeemed) && (
+                      <div className="px-2 py-1 bg-amber-100 text-amber-700 rounded-md text-xs font-medium">
+                        🧟 Zombie
                       </div>
                     )}
                   </div>
@@ -387,7 +398,36 @@ function MyTroves() {
                         </div>
                       </div>
 
-                      {/* Action buttons for active positions */}
+                      {/* Zombie-specific warning */}
+                      {isZombie && !isFullyRedeemed && (
+                        <div className="bg-amber-100 rounded-lg p-3">
+                          <p className="text-sm font-medium text-amber-800 mb-2">
+                            ⚠️ Position Below Minimum Debt
+                          </p>
+                          <div className="space-y-1 text-xs text-amber-700">
+                            <div>Current debt: {trove.borrowedAmount.toFixed(2)} USDU</div>
+                            <div>Minimum required: {MIN_DEBT} USDU</div>
+                            <div className="font-medium pt-1">
+                              Must borrow {(MIN_DEBT - trove.borrowedAmount).toFixed(2)} USDU to restore
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Fully redeemed (zombie with 0 debt) info */}
+                      {isFullyRedeemed && (
+                        <div className="bg-amber-100 rounded-lg p-3">
+                          <p className="text-sm font-medium text-amber-800">
+                            Position fully redeemed - no debt remaining
+                          </p>
+                          <p className="text-xs text-amber-700 mt-1">
+                            You can only close this position to withdraw collateral.
+                          </p>
+                        </div>
+                      )}
+
+
+                      {/* Action buttons - same for all non-liquidated troves */}
                       <div className="flex gap-2 pt-2">
                         <Button
                           variant="outline"

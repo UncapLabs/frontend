@@ -32,7 +32,6 @@ import { DEFAULT_RETRY_OPTIONS, retryWithBackoff } from "./retry";
 const USDU_DECIMALS = 18;
 const MCR_VALUE = 1.1;
 const CCR_VALUE = 1.5;
-const TROVE_STATUS_ZOMBIE = 5n;
 
 // Prefixed trove ID format: "branchId:troveId"
 type PrefixedTroveId = string;
@@ -44,6 +43,9 @@ export interface IndexedTrove {
   createdAt: number;
   mightBeLeveraged: boolean;
   status: string;
+  redemptionCount?: number;
+  redeemedColl?: string;
+  redeemedDebt?: string;
 }
 
 export interface Position {
@@ -53,17 +55,14 @@ export interface Position {
   collateralValue: number;
   borrowedAsset: string;
   borrowedAmount: number;
+  redemptionCount: number;
+  redeemedColl: number;
+  redeemedDebt: number;
   healthFactor: number;
   liquidationPrice: number;
   debtLimit: number;
   interestRate: number;
-  status:
-    | "active"
-    | "zombie"
-    | "closed"
-    | "non-existent"
-    | "liquidated"
-    | "redeemed";
+  status: "active" | "closed" | "non-existent" | "liquidated" | "redeemed";
   batchManager: string | null;
 }
 
@@ -90,6 +89,9 @@ export async function getIndexedTroveById(
         createdAt: Number(trove.createdAt) * 1000,
         mightBeLeveraged: trove.mightBeLeveraged || false,
         status: trove.status,
+        redemptionCount: trove.redemptionCount || 0,
+        redeemedColl: trove.redeemedColl || "0",
+        redeemedDebt: trove.redeemedDebt || "0",
       };
 }
 
@@ -148,6 +150,9 @@ export async function getIndexedTrovesByAccount(
     createdAt: Number(trove.createdAt) * 1000,
     mightBeLeveraged: trove.mightBeLeveraged || false,
     status: trove.status,
+    redemptionCount: trove.redemptionCount || 0,
+    redeemedColl: trove.redeemedColl || "0",
+    redeemedDebt: trove.redeemedDebt || "0",
   }));
 
   console.log(
@@ -288,8 +293,8 @@ export async function fetchPositionById(
     const isZeroAddress =
       batchManagerAddress === "0x0" || BigInt(batchManagerAddress) === 0n;
 
-    // Check if zombie (for status enrichment)
-    const isZombie = troveStatus === TROVE_STATUS_ZOMBIE;
+    // Get collateral decimals for conversion
+    const collDecimals = collateralToken.decimals;
 
     return {
       id: fullId,
@@ -298,13 +303,18 @@ export async function fetchPositionById(
       collateralValue: collateralAmount, // Using BTC amount directly
       borrowedAsset: "USDU",
       borrowedAmount,
+      redemptionCount: indexedTrove?.redemptionCount ?? 0,
+      redeemedColl: indexedTrove?.redeemedColl
+        ? formatBigIntToNumber(BigInt(indexedTrove.redeemedColl), collDecimals)
+        : 0,
+      redeemedDebt: indexedTrove?.redeemedDebt
+        ? formatBigIntToNumber(BigInt(indexedTrove.redeemedDebt), USDU_DECIMALS)
+        : 0,
       healthFactor,
       liquidationPrice,
       debtLimit,
       interestRate,
-      status: isZombie
-        ? "zombie"
-        : (indexedTrove?.status as Position["status"]) ?? "active",
+      status: indexedTrove?.status as Position["status"],
       batchManager: isZeroAddress ? null : batchManagerAddress,
     };
   } catch (error) {
@@ -327,18 +337,9 @@ export async function fetchLoansByAccount(
   graphqlClient: GraphQLClient,
   account: string | null | undefined
 ): Promise<{ positions: Position[]; errors: PositionWithError["error"][] }> {
-  // console.log(
-  //   `[fetchLoansByAccountEnhanced] Starting fetch for account: ${account}`
-  // );
-
   if (!account) return { positions: [], errors: [] };
 
   const troves = await getIndexedTrovesByAccount(graphqlClient, account);
-
-  // console.log(
-  //   `[fetchLoansByAccountEnhanced] Found ${troves.length} indexed troves:`,
-  //   troves.map((t) => ({ id: t.id, status: t.status }))
-  // );
 
   // Process troves with individual error handling
   const results = await Promise.allSettled(

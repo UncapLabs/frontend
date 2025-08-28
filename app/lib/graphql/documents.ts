@@ -4,7 +4,7 @@ import { graphql } from "./gql";
 export const TROVES_AS_BORROWER = graphql(/* GraphQL */ `
   query TrovesAsBorrower($account: String!) {
     troves(
-      where: { borrower: $account, status_in: ["active", "redeemed", "closed"] }
+      where: { borrower: $account, status_in: ["active", "redeemed"] }
       orderBy: updatedAt
       orderDirection: desc
     ) {
@@ -14,6 +14,9 @@ export const TROVES_AS_BORROWER = graphql(/* GraphQL */ `
       debt
       deposit
       interestRate
+      redemptionCount
+      redeemedColl
+      redeemedDebt
       status
       collateral {
         id
@@ -41,6 +44,9 @@ export const TROVES_AS_PREVIOUS_OWNER = graphql(/* GraphQL */ `
       debt
       deposit
       interestRate
+      redemptionCount
+      redeemedColl
+      redeemedDebt
       status
       collateral {
         id
@@ -87,6 +93,9 @@ export const TROVE_BY_ID = graphql(/* GraphQL */ `
       mightBeLeveraged
       status
       previousOwner
+      redemptionCount
+      redeemedColl
+      redeemedDebt
     }
   }
 `);
