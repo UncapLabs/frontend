@@ -3,6 +3,7 @@ import { testRouter } from "./routers/test";
 import { positionsRouter } from "./routers/positions";
 import { branchRouter } from "./routers/branch";
 import { rebateRouter } from "./routers/rebate";
+import { pointsRouter } from "./routers/points";
 import { createCallerFactory, router } from "./trpc";
 
 // Define our app's router
@@ -12,6 +13,7 @@ export const appRouter = router({
   positionsRouter,
   branchRouter,
   rebateRouter,
+  pointsRouter,
 });
 
 // Export type of AppRouter for client-side use
