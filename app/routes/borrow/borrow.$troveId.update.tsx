@@ -29,6 +29,8 @@ import {
 } from "~/hooks/use-position-metrics";
 import { getMinCollateralizationRatio } from "~/lib/utils/collateral-config";
 import type { CollateralType } from "~/lib/contracts/constants";
+import { useRebateCalculation } from "~/hooks/use-rebate-calculation";
+import { useDebouncedValue } from "@tanstack/react-pacer";
 
 function UpdatePosition() {
   const { address } = useAccount();
@@ -85,9 +87,6 @@ function UpdatePosition() {
     collateralType
   );
 
-  const annualInterestCost =
-    borrowAmount && interestRate ? (borrowAmount * interestRate) / 100 : 0;
-
   const minCollateralizationRatio =
     getMinCollateralizationRatio(collateralType);
 
@@ -97,6 +96,18 @@ function UpdatePosition() {
     bitcoinPrice: bitcoin?.price,
     usduPrice: usdu?.price,
     minCollateralizationRatio,
+  });
+
+  // Debounced interest rate for rebate calculation
+  const [debouncedInterestRate] = useDebouncedValue(interestRate, {
+    wait: 500,
+  });
+
+  // Calculate STRK rebate with debounced interest rate
+  const { rebateData, isFetching: isLoadingRebate } = useRebateCalculation({
+    borrowAmount: borrowAmount ?? undefined,
+    interestRate: debouncedInterestRate,
+    enabled: !!borrowAmount && borrowAmount > 0,
   });
 
   // Initialize form with position values
@@ -699,6 +710,9 @@ function UpdatePosition() {
                         }
                       }}
                       disabled={isSending || isPending || (isZombie && borrowAmount < MIN_DEBT)}
+                      borrowAmount={borrowAmount ?? undefined}
+                      isLoadingRebate={isLoadingRebate}
+                      rebateData={rebateData}
                     />
 
                     {/* Interest Rate Lock Notice for Zombie Troves */}
@@ -719,28 +733,6 @@ function UpdatePosition() {
                       </div>
                     )}
 
-                    {/* Interest Cost Preview */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2">
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-blue-700">
-                          Annual Interest Cost:
-                        </span>
-                        <span className="font-medium text-blue-800">
-                          <NumericFormat
-                            displayType="text"
-                            value={annualInterestCost}
-                            thousandSeparator=","
-                            decimalScale={2}
-                            fixedDecimalScale
-                          />{" "}
-                          USDU/year
-                        </span>
-                      </div>
-                      <p className="text-xs text-blue-600">
-                        Higher rates reduce redemption risk. Positions with
-                        lower rates are redeemed first.
-                      </p>
-                    </div>
                   </div>
 
                   {/* Update Button */}
