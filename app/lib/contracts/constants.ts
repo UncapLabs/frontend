@@ -49,7 +49,8 @@ export const COLLATERAL_ADDRESSES = {
     priceFeed: deploymentData.UBTC.priceFeed as Address,
     hintHelpers: deploymentData.UBTC.hintHelpers as Address,
     multiTroveGetter: deploymentData.UBTC.multiTroveGetter as Address,
-    troveManagerEventsEmitter: deploymentData.UBTC.troveManagerEventsEmitter as Address,
+    troveManagerEventsEmitter: deploymentData.UBTC
+      .troveManagerEventsEmitter as Address,
   },
   GBTC: {
     collateral: deploymentData.GBTC.collateral as Address,
@@ -70,14 +71,16 @@ export const COLLATERAL_ADDRESSES = {
     priceFeed: deploymentData.GBTC.priceFeed as Address,
     hintHelpers: deploymentData.GBTC.hintHelpers as Address,
     multiTroveGetter: deploymentData.GBTC.multiTroveGetter as Address,
-    troveManagerEventsEmitter: deploymentData.GBTC.troveManagerEventsEmitter as Address,
+    troveManagerEventsEmitter: deploymentData.GBTC
+      .troveManagerEventsEmitter as Address,
   },
 } as const;
 
 // Global addresses (same for all collaterals)
 export const USDU_ADDRESS = deploymentData.USDU as Address;
 export const GAS_TOKEN_ADDRESS = deploymentData.gasToken as Address;
-export const COLLATERAL_REGISTRY_ADDRESS = deploymentData.collateralRegistry as Address;
+export const COLLATERAL_REGISTRY_ADDRESS =
+  deploymentData.collateralRegistry as Address;
 
 export const USDU_DECIMALS = 18;
 export const USDU_SYMBOL = "USDU";
@@ -105,6 +108,13 @@ export const USDU_TOKEN = {
   symbol: "USDU",
   decimals: 18,
   icon: "/usdu.png",
+} as const;
+
+export const STRK_TOKEN = {
+  address: GAS_TOKEN_ADDRESS,
+  symbol: "STRK",
+  decimals: 18,
+  icon: "/starknet.png",
 } as const;
 
 // Available collateral tokens

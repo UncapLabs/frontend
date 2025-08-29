@@ -13,7 +13,9 @@ export const priceRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      const price = await getBitcoinprice(input.collateralType as CollateralType);
+      const price = await getBitcoinprice(
+        input.collateralType as CollateralType
+      );
       const rawPrice = dnum18(price[0] as bigint);
       return {
         price: dn.toNumber(rawPrice),

@@ -8,7 +8,7 @@ import { BorrowingRestrictionsAlert } from "~/components/borrow";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { TransactionSummary } from "~/components/transaction-summary";
 import { TokenInput } from "~/components/token-input";
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
 import { MAX_LIMIT, computeDebtLimit } from "~/lib/utils/calc";
@@ -32,6 +32,8 @@ import {
 } from "~/hooks/use-position-metrics";
 import { getMinCollateralizationRatio } from "~/lib/utils/collateral-config";
 import type { CollateralType } from "~/lib/contracts/constants";
+import { useRebateCalculation } from "~/hooks/use-rebate-calculation";
+import { useDebouncedValue } from "@tanstack/react-pacer";
 
 function Borrow() {
   const { address } = useAccount();
@@ -61,7 +63,7 @@ function Borrow() {
   });
 
   const collateralType = selectedCollateralToken.symbol as CollateralType;
-  
+
   const { bitcoin, usdu } = useFetchPrices(
     collateralAmount ?? undefined,
     collateralType
@@ -75,6 +77,18 @@ function Borrow() {
     bitcoinPrice: bitcoin?.price,
     usduPrice: usdu?.price,
     minCollateralizationRatio,
+  });
+
+  // Debounced interest rate for rebate calculation
+  const [debouncedInterestRate] = useDebouncedValue(interestRate, {
+    wait: 500,
+  });
+
+  // Calculate STRK rebate with debounced interest rate
+  const { rebateData, isFetching: isLoadingRebate } = useRebateCalculation({
+    borrowAmount: borrowAmount ?? undefined,
+    interestRate: debouncedInterestRate,
+    enabled: !!borrowAmount && borrowAmount > 0,
   });
 
   // Initialize form with URL values
@@ -264,7 +278,7 @@ function Borrow() {
             >
               {/* Show borrowing restrictions alert if TCR is below CCR */}
               <BorrowingRestrictionsAlert collateralType={collateralType} />
-              
+
               <Card
                 className={`border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden ${
                   isSending || isPending ? "opacity-75" : ""
@@ -422,6 +436,9 @@ function Borrow() {
                       }
                     }}
                     disabled={isSending || isPending}
+                    borrowAmount={borrowAmount ?? undefined}
+                    isLoadingRebate={isLoadingRebate}
+                    rebateData={rebateData}
                   />
 
                   {/* Borrow Button */}
