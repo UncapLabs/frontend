@@ -5,6 +5,40 @@
     "interface_name": "usdu::branch::trove::interfaces::ITroveManagerEventsEmitter::ITroveManagerEventsEmitter"
   },
   {
+    "type": "enum",
+    "name": "usdu::branch::trove::interfaces::ITroveManagerEventsEmitter::BatchOperation",
+    "variants": [
+      {
+        "name": "RegisterBatchManager",
+        "type": "()"
+      },
+      {
+        "name": "LowerBatchManagerAnnualFee",
+        "type": "()"
+      },
+      {
+        "name": "SetBatchManagerAnnualInterestRate",
+        "type": "()"
+      },
+      {
+        "name": "ApplyBatchInterestAndFee",
+        "type": "()"
+      },
+      {
+        "name": "JoinBatch",
+        "type": "()"
+      },
+      {
+        "name": "ExitBatch",
+        "type": "()"
+      },
+      {
+        "name": "TroveChange",
+        "type": "()"
+      }
+    ]
+  },
+  {
     "type": "struct",
     "name": "core::integer::u256",
     "members": [
@@ -62,34 +96,46 @@
   },
   {
     "type": "enum",
-    "name": "usdu::branch::trove::interfaces::ITroveManagerEventsEmitter::BatchOperation",
+    "name": "usdu::branch::trove::interfaces::ITroveManager::Operation",
     "variants": [
       {
-        "name": "RegisterBatchManager",
+        "name": "OpenTrove",
         "type": "()"
       },
       {
-        "name": "LowerBatchManagerAnnualFee",
+        "name": "CloseTrove",
         "type": "()"
       },
       {
-        "name": "SetBatchManagerAnnualInterestRate",
+        "name": "AdjustTrove",
         "type": "()"
       },
       {
-        "name": "ApplyBatchInterestAndFee",
+        "name": "AdjustTroveInterestRate",
         "type": "()"
       },
       {
-        "name": "JoinBatch",
+        "name": "ApplyPendingDebt",
         "type": "()"
       },
       {
-        "name": "ExitBatch",
+        "name": "Liquidate",
         "type": "()"
       },
       {
-        "name": "TroveChange",
+        "name": "RedeemCollateral",
+        "type": "()"
+      },
+      {
+        "name": "OpenTroveAndJoinBatch",
+        "type": "()"
+      },
+      {
+        "name": "SetInterestBatchManager",
+        "type": "()"
+      },
+      {
+        "name": "RemoveFromBatch",
         "type": "()"
       }
     ]
@@ -105,6 +151,20 @@
       {
         "name": "True",
         "type": "()"
+      }
+    ]
+  },
+  {
+    "type": "struct",
+    "name": "usdu::utils::i257::i257",
+    "members": [
+      {
+        "name": "abs",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "is_negative",
+        "type": "core::bool"
       }
     ]
   },
@@ -172,6 +232,82 @@
     "items": [
       {
         "type": "function",
+        "name": "emit_batch_updated",
+        "inputs": [
+          {
+            "name": "interest_batch_manager",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "operation",
+            "type": "usdu::branch::trove::interfaces::ITroveManagerEventsEmitter::BatchOperation"
+          },
+          {
+            "name": "debt",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "coll",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "annual_interest_rate",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "annual_management_fee",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "total_debt_shares",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "debt_increase_from_upfront_fee",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "emit_batched_trove_updated",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "interest_batch_manager",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "batch_debt_shares",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "coll",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "stake",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "snapshot_of_total_coll_redist",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "snapshot_of_total_debt_redist",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
         "name": "emit_liquidation",
         "inputs": [
           {
@@ -196,23 +332,123 @@
       },
       {
         "type": "function",
-        "name": "emit_batch_updated",
+        "name": "emit_redemption",
         "inputs": [
           {
-            "name": "batch_address",
-            "type": "core::starknet::contract_address::ContractAddress"
+            "name": "attempted_usdu_amount",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "actual_usdu_amount",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "coll_sent",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "coll_fee",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "price",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "redemption_price",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "emit_redemption_fee_paid_to_trove",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "coll_fee",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "emit_trove_updated",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "debt",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "coll",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "stake",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "annual_interest_rate",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "snapshot_of_total_coll_redist",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "snapshot_of_total_debt_redist",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "emit_trove_operation",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
           },
           {
             "name": "operation",
-            "type": "usdu::branch::trove::interfaces::ITroveManagerEventsEmitter::BatchOperation"
+            "type": "usdu::branch::trove::interfaces::ITroveManager::Operation"
           },
           {
-            "name": "batch_debt",
+            "name": "annual_interest_rate",
             "type": "core::integer::u256"
           },
           {
-            "name": "batch_coll",
+            "name": "debt_increase_from_redist",
             "type": "core::integer::u256"
+          },
+          {
+            "name": "debt_increase_from_upfront_fee",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "debt_change_from_operation",
+            "type": "usdu::utils::i257::i257"
+          },
+          {
+            "name": "coll_increase_from_redist",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "coll_change_from_operation",
+            "type": "usdu::utils::i257::i257"
           }
         ],
         "outputs": [],
@@ -648,66 +884,6 @@
         "name": "snapshot_of_total_debt_redist",
         "type": "core::integer::u256",
         "kind": "data"
-      }
-    ]
-  },
-  {
-    "type": "enum",
-    "name": "usdu::branch::trove::interfaces::ITroveManager::Operation",
-    "variants": [
-      {
-        "name": "OpenTrove",
-        "type": "()"
-      },
-      {
-        "name": "CloseTrove",
-        "type": "()"
-      },
-      {
-        "name": "AdjustTrove",
-        "type": "()"
-      },
-      {
-        "name": "AdjustTroveInterestRate",
-        "type": "()"
-      },
-      {
-        "name": "ApplyPendingDebt",
-        "type": "()"
-      },
-      {
-        "name": "Liquidate",
-        "type": "()"
-      },
-      {
-        "name": "RedeemCollateral",
-        "type": "()"
-      },
-      {
-        "name": "OpenTroveAndJoinBatch",
-        "type": "()"
-      },
-      {
-        "name": "SetInterestBatchManager",
-        "type": "()"
-      },
-      {
-        "name": "RemoveFromBatch",
-        "type": "()"
-      }
-    ]
-  },
-  {
-    "type": "struct",
-    "name": "usdu::utils::i257::i257",
-    "members": [
-      {
-        "name": "abs",
-        "type": "core::integer::u256"
-      },
-      {
-        "name": "is_negative",
-        "type": "core::bool"
       }
     ]
   },
