@@ -21,6 +21,7 @@ type Documents = {
     "\n  query GetTrovesByCollateral($collateralId: ID, $first: Int!, $skip: Int!) {\n    troves(\n      where: { collateral: $collateralId, status: \"active\" }\n      first: $first\n      skip: $skip\n      orderBy: debt\n      orderDirection: desc\n    ) {\n      id\n      troveId\n      borrower\n      debt\n      deposit\n      interestRate\n    }\n  }\n": typeof types.GetTrovesByCollateralDocument,
     "\n  query GetAllCollaterals {\n    collaterals {\n      id\n      collIndex\n    }\n  }\n": typeof types.GetAllCollateralsDocument,
     "\n  query NextOwnerIndexesByBorrower($id: ID!) {\n    borrowerinfo(id: $id) {\n      nextOwnerIndexes\n    }\n  }\n": typeof types.NextOwnerIndexesByBorrowerDocument,
+    "\n  query AllInterestRateBrackets {\n    interestratebrackets(\n      first: 1000\n      where: { totalDebt_gt: 0 }\n      orderBy: rate\n    ) {\n      rate\n      totalDebt\n      sumDebtTimesRateD36\n      pendingDebtTimesOneYearD36\n      updatedAt\n      collateral {\n        collIndex\n      }\n    }\n  }\n": typeof types.AllInterestRateBracketsDocument,
 };
 const documents: Documents = {
     "\n  query TrovesAsBorrower($account: String!) {\n    troves(\n      where: { borrower: $account, status_in: [\"active\", \"redeemed\"] }\n      orderBy: updatedAt\n      orderDirection: desc\n    ) {\n      id\n      troveId\n      borrower\n      debt\n      deposit\n      interestRate\n      redemptionCount\n      redeemedColl\n      redeemedDebt\n      status\n      collateral {\n        id\n      }\n      closedAt\n      createdAt\n      updatedAt\n      mightBeLeveraged\n      previousOwner\n    }\n  }\n": types.TrovesAsBorrowerDocument,
@@ -30,6 +31,7 @@ const documents: Documents = {
     "\n  query GetTrovesByCollateral($collateralId: ID, $first: Int!, $skip: Int!) {\n    troves(\n      where: { collateral: $collateralId, status: \"active\" }\n      first: $first\n      skip: $skip\n      orderBy: debt\n      orderDirection: desc\n    ) {\n      id\n      troveId\n      borrower\n      debt\n      deposit\n      interestRate\n    }\n  }\n": types.GetTrovesByCollateralDocument,
     "\n  query GetAllCollaterals {\n    collaterals {\n      id\n      collIndex\n    }\n  }\n": types.GetAllCollateralsDocument,
     "\n  query NextOwnerIndexesByBorrower($id: ID!) {\n    borrowerinfo(id: $id) {\n      nextOwnerIndexes\n    }\n  }\n": types.NextOwnerIndexesByBorrowerDocument,
+    "\n  query AllInterestRateBrackets {\n    interestratebrackets(\n      first: 1000\n      where: { totalDebt_gt: 0 }\n      orderBy: rate\n    ) {\n      rate\n      totalDebt\n      sumDebtTimesRateD36\n      pendingDebtTimesOneYearD36\n      updatedAt\n      collateral {\n        collIndex\n      }\n    }\n  }\n": types.AllInterestRateBracketsDocument,
 };
 
 /**
@@ -74,6 +76,10 @@ export function graphql(source: "\n  query GetAllCollaterals {\n    collaterals 
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query NextOwnerIndexesByBorrower($id: ID!) {\n    borrowerinfo(id: $id) {\n      nextOwnerIndexes\n    }\n  }\n"): (typeof documents)["\n  query NextOwnerIndexesByBorrower($id: ID!) {\n    borrowerinfo(id: $id) {\n      nextOwnerIndexes\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query AllInterestRateBrackets {\n    interestratebrackets(\n      first: 1000\n      where: { totalDebt_gt: 0 }\n      orderBy: rate\n    ) {\n      rate\n      totalDebt\n      sumDebtTimesRateD36\n      pendingDebtTimesOneYearD36\n      updatedAt\n      collateral {\n        collIndex\n      }\n    }\n  }\n"): (typeof documents)["\n  query AllInterestRateBrackets {\n    interestratebrackets(\n      first: 1000\n      where: { totalDebt_gt: 0 }\n      orderBy: rate\n    ) {\n      rate\n      totalDebt\n      sumDebtTimesRateD36\n      pendingDebtTimesOneYearD36\n      updatedAt\n      collateral {\n        collIndex\n      }\n    }\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

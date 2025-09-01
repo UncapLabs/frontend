@@ -4,6 +4,7 @@ import { positionsRouter } from "./routers/positions";
 import { branchRouter } from "./routers/branch";
 import { rebateRouter } from "./routers/rebate";
 import { pointsRouter } from "./routers/points";
+import { interestRouter } from "./routers/interest";
 import { createCallerFactory, router } from "./trpc";
 
 // Define our app's router
@@ -14,6 +15,7 @@ export const appRouter = router({
   branchRouter,
   rebateRouter,
   pointsRouter,
+  interestRouter,
 });
 
 // Export type of AppRouter for client-side use

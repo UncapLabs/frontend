@@ -135,3 +135,23 @@ export const NEXT_OWNER_INDEX_BY_BORROWER = graphql(/* GraphQL */ `
     }
   }
 `);
+
+// Query for all interest rate brackets
+export const ALL_INTEREST_RATE_BRACKETS = graphql(/* GraphQL */ `
+  query AllInterestRateBrackets {
+    interestratebrackets(
+      first: 1000
+      where: { totalDebt_gt: 0 }
+      orderBy: rate
+    ) {
+      rate
+      totalDebt
+      sumDebtTimesRateD36
+      pendingDebtTimesOneYearD36
+      updatedAt
+      collateral {
+        collIndex
+      }
+    }
+  }
+`);

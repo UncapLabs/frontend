@@ -509,6 +509,7 @@ export type InterestBatch = {
   debt: Scalars['BigDecimalU256']['output'];
   id: Scalars['ID']['output'];
   troves: Array<Trove>;
+  updatedAt: Scalars['Int']['output'];
 };
 
 export type InterestBatch_Collateral_Filter = {
@@ -604,6 +605,14 @@ export type InterestBatch_Filter = {
   id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
   id_not?: InputMaybe<Scalars['ID']['input']>;
   id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  updatedAt?: InputMaybe<Scalars['Int']['input']>;
+  updatedAt_gt?: InputMaybe<Scalars['Int']['input']>;
+  updatedAt_gte?: InputMaybe<Scalars['Int']['input']>;
+  updatedAt_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  updatedAt_lt?: InputMaybe<Scalars['Int']['input']>;
+  updatedAt_lte?: InputMaybe<Scalars['Int']['input']>;
+  updatedAt_not?: InputMaybe<Scalars['Int']['input']>;
+  updatedAt_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
 };
 
 export enum InterestBatch_OrderBy {
@@ -614,7 +623,8 @@ export enum InterestBatch_OrderBy {
   Coll = 'coll',
   Collateral = 'collateral',
   Debt = 'debt',
-  Id = 'id'
+  Id = 'id',
+  UpdatedAt = 'updatedAt'
 }
 
 export type InterestRateBracket = {
@@ -622,8 +632,11 @@ export type InterestRateBracket = {
   _indexer: Scalars['String']['output'];
   collateral: Collateral;
   id: Scalars['ID']['output'];
+  pendingDebtTimesOneYearD36: Scalars['BigDecimalU256']['output'];
   rate: Scalars['BigDecimalU256']['output'];
+  sumDebtTimesRateD36: Scalars['BigDecimalU256']['output'];
   totalDebt: Scalars['BigDecimalU256']['output'];
+  updatedAt: Scalars['Int']['output'];
 };
 
 export type InterestRateBracket_Collateral_Filter = {
@@ -679,6 +692,14 @@ export type InterestRateBracket_Filter = {
   id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
   id_not?: InputMaybe<Scalars['ID']['input']>;
   id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  pendingDebtTimesOneYearD36?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pendingDebtTimesOneYearD36_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pendingDebtTimesOneYearD36_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pendingDebtTimesOneYearD36_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  pendingDebtTimesOneYearD36_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pendingDebtTimesOneYearD36_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pendingDebtTimesOneYearD36_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  pendingDebtTimesOneYearD36_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
   rate?: InputMaybe<Scalars['BigDecimalU256']['input']>;
   rate_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
   rate_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
@@ -687,6 +708,14 @@ export type InterestRateBracket_Filter = {
   rate_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
   rate_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
   rate_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  sumDebtTimesRateD36?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  sumDebtTimesRateD36_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  sumDebtTimesRateD36_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  sumDebtTimesRateD36_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  sumDebtTimesRateD36_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  sumDebtTimesRateD36_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  sumDebtTimesRateD36_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  sumDebtTimesRateD36_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
   totalDebt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
   totalDebt_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
   totalDebt_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
@@ -695,14 +724,25 @@ export type InterestRateBracket_Filter = {
   totalDebt_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
   totalDebt_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
   totalDebt_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  updatedAt?: InputMaybe<Scalars['Int']['input']>;
+  updatedAt_gt?: InputMaybe<Scalars['Int']['input']>;
+  updatedAt_gte?: InputMaybe<Scalars['Int']['input']>;
+  updatedAt_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  updatedAt_lt?: InputMaybe<Scalars['Int']['input']>;
+  updatedAt_lte?: InputMaybe<Scalars['Int']['input']>;
+  updatedAt_not?: InputMaybe<Scalars['Int']['input']>;
+  updatedAt_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
 };
 
 export enum InterestRateBracket_OrderBy {
   Indexer = '_indexer',
   Collateral = 'collateral',
   Id = 'id',
+  PendingDebtTimesOneYearD36 = 'pendingDebtTimesOneYearD36',
   Rate = 'rate',
-  TotalDebt = 'totalDebt'
+  SumDebtTimesRateD36 = 'sumDebtTimesRateD36',
+  TotalDebt = 'totalDebt',
+  UpdatedAt = 'updatedAt'
 }
 
 export enum OrderDirection {
@@ -1315,6 +1355,14 @@ export type Trove_InterestBatch_Filter = {
   id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
   id_not?: InputMaybe<Scalars['ID']['input']>;
   id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  updatedAt?: InputMaybe<Scalars['Int']['input']>;
+  updatedAt_gt?: InputMaybe<Scalars['Int']['input']>;
+  updatedAt_gte?: InputMaybe<Scalars['Int']['input']>;
+  updatedAt_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  updatedAt_lt?: InputMaybe<Scalars['Int']['input']>;
+  updatedAt_lte?: InputMaybe<Scalars['Int']['input']>;
+  updatedAt_not?: InputMaybe<Scalars['Int']['input']>;
+  updatedAt_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
 };
 
 export type Trove_Filter = {
@@ -1842,6 +1890,11 @@ export type NextOwnerIndexesByBorrowerQueryVariables = Exact<{
 
 export type NextOwnerIndexesByBorrowerQuery = { __typename?: 'Query', borrowerinfo?: { __typename?: 'BorrowerInfo', nextOwnerIndexes: Array<number> } | null };
 
+export type AllInterestRateBracketsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type AllInterestRateBracketsQuery = { __typename?: 'Query', interestratebrackets: Array<{ __typename?: 'InterestRateBracket', rate: any, totalDebt: any, sumDebtTimesRateD36: any, pendingDebtTimesOneYearD36: any, updatedAt: number, collateral: { __typename?: 'Collateral', collIndex: number } }> };
+
 
 export const TrovesAsBorrowerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"TrovesAsBorrower"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"account"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"troves"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"borrower"},"value":{"kind":"Variable","name":{"kind":"Name","value":"account"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"status_in"},"value":{"kind":"ListValue","values":[{"kind":"StringValue","value":"active","block":false},{"kind":"StringValue","value":"redeemed","block":false}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"updatedAt"}},{"kind":"Argument","name":{"kind":"Name","value":"orderDirection"},"value":{"kind":"EnumValue","value":"desc"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"troveId"}},{"kind":"Field","name":{"kind":"Name","value":"borrower"}},{"kind":"Field","name":{"kind":"Name","value":"debt"}},{"kind":"Field","name":{"kind":"Name","value":"deposit"}},{"kind":"Field","name":{"kind":"Name","value":"interestRate"}},{"kind":"Field","name":{"kind":"Name","value":"redemptionCount"}},{"kind":"Field","name":{"kind":"Name","value":"redeemedColl"}},{"kind":"Field","name":{"kind":"Name","value":"redeemedDebt"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"collateral"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"closedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"mightBeLeveraged"}},{"kind":"Field","name":{"kind":"Name","value":"previousOwner"}}]}}]}}]} as unknown as DocumentNode<TrovesAsBorrowerQuery, TrovesAsBorrowerQueryVariables>;
 export const TrovesAsPreviousOwnerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"TrovesAsPreviousOwner"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"account"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"troves"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"previousOwner"},"value":{"kind":"Variable","name":{"kind":"Name","value":"account"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"status"},"value":{"kind":"StringValue","value":"liquidated","block":false}}]}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"updatedAt"}},{"kind":"Argument","name":{"kind":"Name","value":"orderDirection"},"value":{"kind":"EnumValue","value":"desc"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"troveId"}},{"kind":"Field","name":{"kind":"Name","value":"borrower"}},{"kind":"Field","name":{"kind":"Name","value":"debt"}},{"kind":"Field","name":{"kind":"Name","value":"deposit"}},{"kind":"Field","name":{"kind":"Name","value":"interestRate"}},{"kind":"Field","name":{"kind":"Name","value":"redemptionCount"}},{"kind":"Field","name":{"kind":"Name","value":"redeemedColl"}},{"kind":"Field","name":{"kind":"Name","value":"redeemedDebt"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"collateral"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"closedAt"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"mightBeLeveraged"}},{"kind":"Field","name":{"kind":"Name","value":"previousOwner"}}]}}]}}]} as unknown as DocumentNode<TrovesAsPreviousOwnerQuery, TrovesAsPreviousOwnerQueryVariables>;
@@ -1850,3 +1903,4 @@ export const TroveByIdDocument = {"kind":"Document","definitions":[{"kind":"Oper
 export const GetTrovesByCollateralDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetTrovesByCollateral"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"collateralId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"skip"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"troves"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"collateral"},"value":{"kind":"Variable","name":{"kind":"Name","value":"collateralId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"status"},"value":{"kind":"StringValue","value":"active","block":false}}]}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"skip"},"value":{"kind":"Variable","name":{"kind":"Name","value":"skip"}}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"debt"}},{"kind":"Argument","name":{"kind":"Name","value":"orderDirection"},"value":{"kind":"EnumValue","value":"desc"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"troveId"}},{"kind":"Field","name":{"kind":"Name","value":"borrower"}},{"kind":"Field","name":{"kind":"Name","value":"debt"}},{"kind":"Field","name":{"kind":"Name","value":"deposit"}},{"kind":"Field","name":{"kind":"Name","value":"interestRate"}}]}}]}}]} as unknown as DocumentNode<GetTrovesByCollateralQuery, GetTrovesByCollateralQueryVariables>;
 export const GetAllCollateralsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAllCollaterals"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"collaterals"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"collIndex"}}]}}]}}]} as unknown as DocumentNode<GetAllCollateralsQuery, GetAllCollateralsQueryVariables>;
 export const NextOwnerIndexesByBorrowerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"NextOwnerIndexesByBorrower"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"borrowerinfo"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nextOwnerIndexes"}}]}}]}}]} as unknown as DocumentNode<NextOwnerIndexesByBorrowerQuery, NextOwnerIndexesByBorrowerQueryVariables>;
+export const AllInterestRateBracketsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AllInterestRateBrackets"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"interestratebrackets"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"IntValue","value":"1000"}},{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"totalDebt_gt"},"value":{"kind":"IntValue","value":"0"}}]}},{"kind":"Argument","name":{"kind":"Name","value":"orderBy"},"value":{"kind":"EnumValue","value":"rate"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"rate"}},{"kind":"Field","name":{"kind":"Name","value":"totalDebt"}},{"kind":"Field","name":{"kind":"Name","value":"sumDebtTimesRateD36"}},{"kind":"Field","name":{"kind":"Name","value":"pendingDebtTimesOneYearD36"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"collateral"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"collIndex"}}]}}]}}]}}]} as unknown as DocumentNode<AllInterestRateBracketsQuery, AllInterestRateBracketsQueryVariables>;
