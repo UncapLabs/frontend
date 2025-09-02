@@ -3,7 +3,6 @@ import { RedemptionInfo } from "./redemption-info";
 import { NumericFormat } from "react-number-format";
 import { Info } from "lucide-react";
 import { Skeleton } from "~/components/ui/skeleton";
-import { useEffect } from "react";
 import {
   useInterestRateBrackets,
   useInterestRateChartData,
@@ -11,6 +10,7 @@ import {
   useRedemptionRiskOfInterestRate,
   useAverageInterestRate,
 } from "~/hooks/useInterestRate";
+import { getBranchId, type CollateralType } from "~/lib/contracts/constants";
 import * as dn from "dnum";
 
 interface InterestRateSelectorProps {
@@ -27,6 +27,7 @@ interface InterestRateSelectorProps {
     effectiveYearlyInterestUSD: number;
     yearlyRebateUSD: number;
   };
+  collateralType?: CollateralType;
 }
 
 export function InterestRateSelector({
@@ -36,53 +37,20 @@ export function InterestRateSelector({
   borrowAmount,
   isLoadingRebate = false,
   rebateData,
+  collateralType = "GBTC", // Default to GBTC for backwards compatibility
 }: InterestRateSelectorProps) {
   const effectiveRate = rebateData?.effectiveInterestRate ?? interestRate;
 
   // Convert interest rate to Dnum for the hooks
   const interestRateDnum = dn.from(interestRate / 100, 18); // Convert percentage to decimal
 
-  // Fetch all interest rate data using the hooks
-  const brackets = useInterestRateBrackets(0); // Using branch 0 as default
-  const chartData = useInterestRateChartData(0);
-  const debtInFront = useDebtInFrontOfInterestRate(0, interestRateDnum);
-  const redemptionRisk = useRedemptionRiskOfInterestRate(0, interestRateDnum);
-  const averageRate = useAverageInterestRate(0);
-
-  // Log all the data to console
-  useEffect(() => {
-    console.log("=== Interest Rate Data ===");
-    
-    console.log("1. Interest Rate Brackets:", brackets);
-    if (brackets.data) {
-      console.log("   - Last Updated At:", brackets.data.lastUpdatedAt);
-      console.log("   - Number of brackets:", brackets.data.brackets.length);
-    }
-    
-    console.log("2. Chart Data:", chartData);
-    if (chartData.data) {
-      console.log("   - Number of data points:", chartData.data.length);
-      console.log("   - First few points:", chartData.data.slice(0, 5));
-    }
-    
-    console.log("3. Debt In Front:", debtInFront);
-    if (debtInFront.data) {
-      console.log("   - Debt ahead of you:", dn.format(debtInFront.data.debtInFront, 2));
-      console.log("   - Total debt:", dn.format(debtInFront.data.totalDebt, 2));
-    }
-    
-    console.log("4. Redemption Risk:", redemptionRisk);
-    if (redemptionRisk.data) {
-      console.log("   - Risk level:", redemptionRisk.data);
-    }
-    
-    console.log("5. Average Interest Rate:", averageRate);
-    if (averageRate.data) {
-      console.log("   - Average rate:", (averageRate.data * 100).toFixed(2) + "%");
-    }
-    
-    console.log("=========================");
-  }, [brackets, chartData, debtInFront, redemptionRisk, averageRate]);
+  // Get branchId from collateralType
+  const branchId = getBranchId(collateralType);
+  const brackets = useInterestRateBrackets(branchId);
+  const chartData = useInterestRateChartData(branchId);
+  const debtInFront = useDebtInFrontOfInterestRate(branchId, interestRateDnum);
+  const redemptionRisk = useRedemptionRiskOfInterestRate(branchId, interestRateDnum);
+  const averageRate = useAverageInterestRate(branchId);
   
   return (
     <div className="space-y-3 mt-6">

@@ -713,6 +713,7 @@ function UpdatePosition() {
                       borrowAmount={borrowAmount ?? undefined}
                       isLoadingRebate={isLoadingRebate}
                       rebateData={rebateData}
+                      collateralType={collateralType}
                     />
 
                     {/* Interest Rate Lock Notice for Zombie Troves */}

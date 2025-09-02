@@ -45,7 +45,10 @@ export function useInterestRateBrackets(branchId: number = 0) {
 
     // Process brackets with totalDebt function exactly like Liquity
     const brackets = data.brackets.map((bracket: any) => ({
-      rate: dn.from(bracket.rate, 18),
+      // bracket.rate is already a JSON string from tRPC, parse it properly
+      rate: typeof bracket.rate === 'string' && bracket.rate.startsWith('[') 
+        ? dn.from(JSON.parse(bracket.rate)[0], 18)
+        : dn.from(bracket.rate, 18),
       // Create a totalDebt function that calculates current debt with pending interest
       totalDebt: (timestamp: bigint) => {
         const ts = timestamp;
@@ -183,9 +186,14 @@ export function useRedemptionRiskOfInterestRate(
   return useMemo(() => {
     if (!debtInFront.data) return { data: null };
 
-    const ratio =
-      dn.toNumber(debtInFront.data.debtInFront) /
-      dn.toNumber(debtInFront.data.totalDebt);
+    const totalDebt = dn.toNumber(debtInFront.data.totalDebt);
+    
+    // Avoid division by zero - if no debt exists, risk is low
+    if (totalDebt === 0) {
+      return { data: "low" };
+    }
+
+    const ratio = dn.toNumber(debtInFront.data.debtInFront) / totalDebt;
 
     // IMPORTANT: Lower debt in front = LOWER risk
     return {

@@ -13,13 +13,6 @@ export const INTEREST_RATE_INCREMENT_NORMAL = dn.from(0.005, 18); // 0.5%
 // Time constants
 export const ONE_YEAR_D18 = 365n * 24n * 60n * 60n * 10n ** 18n;
 
-// Redemption risk thresholds
-export const REDEMPTION_RISK = {
-  low: dn.from(0.10, 18), // < 10% of debt ahead = low risk
-  medium: dn.from(0.25, 18), // 10-25% of debt ahead = medium risk
-  // > 25% of debt ahead = high risk
-};
-
 // Helper functions for dnum conversions
 export const dnum18 = (value: bigint | string): Dnum => {
   if (typeof value === "string") {
@@ -31,16 +24,6 @@ export const dnum18 = (value: bigint | string): Dnum => {
     return dn.from(BigInt(value), 18);
   }
   return dn.from(value, 18);
-};
-
-export const dnum36 = (value: bigint | string): Dnum => {
-  if (typeof value === "string") {
-    if (value.startsWith("[") || value.startsWith("{")) {
-      return dn.from(value, 36);
-    }
-    return dn.from(BigInt(value), 36);
-  }
-  return dn.from(value, 36);
 };
 
 export const DNUM_0 = dn.from(0, 18);

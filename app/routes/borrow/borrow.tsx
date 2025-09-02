@@ -439,6 +439,7 @@ function Borrow() {
                     borrowAmount={borrowAmount ?? undefined}
                     isLoadingRebate={isLoadingRebate}
                     rebateData={rebateData}
+                    collateralType={collateralType}
                   />
 
                   {/* Borrow Button */}
