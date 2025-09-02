@@ -1,13 +1,13 @@
-export type TransactionStatus = 'pending' | 'success' | 'error';
+export type TransactionStatus = "pending" | "success" | "error";
 
 export type TransactionType =
-  | 'borrow'
-  | 'adjust'
-  | 'close'
-  | 'claim'
-  | 'claimSurplus'
-  | 'adjust_rate'
-  | 'unknown';
+  | "borrow"
+  | "adjust"
+  | "close"
+  | "claim"
+  | "claim_surplus"
+  | "adjust_rate"
+  | "unknown";
 
 export interface StarknetTransaction {
   hash: string;
@@ -21,6 +21,9 @@ export interface StarknetTransaction {
   details?: Record<string, any>;
 }
 
-export type NewTransaction = Omit<StarknetTransaction, 'status' | 'timestamp' | 'accountAddress'>;
+export type NewTransaction = Omit<
+  StarknetTransaction,
+  "status" | "timestamp" | "accountAddress"
+>;
 
 export type TransactionData = Record<string, StarknetTransaction[] | undefined>;
