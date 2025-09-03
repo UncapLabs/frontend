@@ -169,52 +169,15 @@ export function InterestRateSelector({
 
   return (
     <div className="space-y-3 mt-6">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-1">
-          <h3 className="text-sm font-medium text-slate-700">Interest Rate</h3>
-          <RedemptionInfo variant="modal" />
-        </div>
-        <div className="flex items-center gap-2">
-          {averageRate.data !== undefined && averageRate.data !== null && (
-            <button
-              onClick={() => {
-                // averageRate.data is already a decimal number from tRPC, convert to percentage
-                const avgRatePercentage = averageRate.data * 100;
-                onInterestRateChange(avgRatePercentage);
-              }}
-              className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-              disabled={disabled}
-            >
-              Avg: {(averageRate.data * 100).toFixed(2)}%
-            </button>
-          )}
-          {rebateData && borrowAmount && borrowAmount > 0 ? (
-            <>
-              <span className="text-sm text-slate-400 line-through">
-                {interestRate}% APR
-              </span>
-              <div className="flex items-center gap-1">
-                <span className="text-sm font-semibold text-green-600">
-                  {effectiveRate.toFixed(2)}% APR
-                </span>
-                <div className="flex items-center gap-0.5">
-                  <span className="text-[10px] text-purple-600 font-medium">
-                    (30% STRK rebate)
-                  </span>
-                  <img
-                    src="/starknet.png"
-                    alt="STRK"
-                    className="w-3 h-3 object-contain"
-                  />
-                </div>
-              </div>
-            </>
-          ) : (
-            <span className="text-sm font-semibold text-blue-600">
-              {interestRate}% APR
-            </span>
-          )}
-        </div>
+      {/* Title with average rate */}
+      <div className="flex items-center gap-1">
+        <h3 className="text-sm font-medium text-slate-700">Interest Rate</h3>
+        <RedemptionInfo variant="modal" />
+        {averageRate.data !== undefined && averageRate.data !== null && (
+          <span className="text-xs text-slate-500">
+            (avg: {(averageRate.data * 100).toFixed(2)}%)
+          </span>
+        )}
       </div>
 
       <div className="bg-slate-50 rounded-lg p-4">
@@ -228,109 +191,119 @@ export function InterestRateSelector({
           {isLoading ? (
             // Loading state with skeleton - matches InterestSlider dimensions exactly
             <>
-              <div className="max-w-md">
-                <div
-                  className="relative"
-                  style={{ height: 60 }} // Matches CHART_CONSTANTS.HEIGHT
-                >
-                  {/* Skeleton bars for histogram using SVG like InterestSlider */}
+              <div className="flex items-center gap-3">
+                {/* Input field skeleton on the left */}
+                <div className="flex items-center gap-1 bg-white rounded-md border border-slate-200 px-3 py-2">
+                  <Skeleton className="h-5 w-16 animate-none" />
+                  <span className="text-sm font-semibold text-slate-400">
+                    %
+                  </span>
+                </div>
+
+                <div className="flex-1 max-w-md">
                   <div
-                    className="absolute inset-x-0 top-0"
-                    style={{ height: 30 }} // Matches CHART_CONSTANTS.CHART_MAX_HEIGHT
+                    className="relative"
+                    style={{ height: 60 }} // Matches CHART_CONSTANTS.HEIGHT
                   >
-                    <svg
-                      width="100%"
-                      height={30}
-                      viewBox="0 0 100 30"
-                      preserveAspectRatio="none"
-                      className="absolute inset-0"
-                    >
-                      {/* Render thin bars with realistic distribution - peak around middle */}
-                      {Array.from({ length: 50 }).map((_, i) => {
-                        const barWidth = 100 / 50;
-                        const x = i * barWidth;
-
-                        // Create a more realistic distribution with a peak around 25-35 (middle-high area)
-                        // This mimics typical interest rate distributions where there's usually a concentration
-                        let heightPercent: number;
-                        if (i >= 20 && i <= 35) {
-                          // Peak area - taller bars where most debt typically concentrates
-                          heightPercent =
-                            50 +
-                            Math.sin((i - 20) * 0.4) * 25 +
-                            Math.random() * 10;
-                        } else if (i < 20) {
-                          // Lower rates - gradually increasing
-                          heightPercent =
-                            10 + (i / 20) * 30 + Math.random() * 10;
-                        } else {
-                          // Higher rates - gradually decreasing
-                          heightPercent =
-                            40 - ((i - 35) / 15) * 30 + Math.random() * 10;
-                        }
-
-                        // Ensure height is within reasonable bounds
-                        heightPercent = Math.max(
-                          5,
-                          Math.min(85, heightPercent)
-                        );
-
-                        const barHeight = (heightPercent / 100) * 30;
-                        const y = 30 - barHeight;
-
-                        return (
-                          <rect
-                            key={`skeleton-bar-${i}`}
-                            x={`${x}%`}
-                            y={y}
-                            width={`${barWidth * 0.5}%`} // Very thin bars (50% of allocated width)
-                            height={barHeight}
-                            fill="#e2e8f0"
-                            opacity={0.5}
-                            style={{
-                              transform: `translateX(${barWidth * 0.25}%)`, // Center the bar
-                            }}
-                          />
-                        );
-                      })}
-
-                      {/* Base line */}
-                      <rect
-                        x="0"
-                        y={28}
-                        width="100"
-                        height="2"
-                        fill="#94a3b8"
-                        opacity={0.3}
-                      />
-                    </svg>
-                  </div>
-
-                  {/* Handle container positioned exactly like InterestSlider */}
-                  <div
-                    className="pointer-events-none absolute inset-y-0"
-                    style={{
-                      width: `calc(100% + 26px)`,
-                      transform: `translateX(-13px)`,
-                    }}
-                  >
+                    {/* Skeleton bars for histogram using SVG like InterestSlider */}
                     <div
-                      className="h-full"
+                      className="absolute inset-x-0 top-0"
+                      style={{ height: 30 }} // Matches CHART_CONSTANTS.CHART_MAX_HEIGHT
+                    >
+                      <svg
+                        width="100%"
+                        height={30}
+                        viewBox="0 0 100 30"
+                        preserveAspectRatio="none"
+                        className="absolute inset-0"
+                      >
+                        {/* Render thin bars with realistic distribution - peak around middle */}
+                        {Array.from({ length: 50 }).map((_, i) => {
+                          const barWidth = 100 / 50;
+                          const x = i * barWidth;
+
+                          // Create a more realistic distribution with a peak around 25-35 (middle-high area)
+                          // This mimics typical interest rate distributions where there's usually a concentration
+                          let heightPercent: number;
+                          if (i >= 20 && i <= 35) {
+                            // Peak area - taller bars where most debt typically concentrates
+                            heightPercent =
+                              50 +
+                              Math.sin((i - 20) * 0.4) * 25 +
+                              Math.random() * 10;
+                          } else if (i < 20) {
+                            // Lower rates - gradually increasing
+                            heightPercent =
+                              10 + (i / 20) * 30 + Math.random() * 10;
+                          } else {
+                            // Higher rates - gradually decreasing
+                            heightPercent =
+                              40 - ((i - 35) / 15) * 30 + Math.random() * 10;
+                          }
+
+                          // Ensure height is within reasonable bounds
+                          heightPercent = Math.max(
+                            5,
+                            Math.min(85, heightPercent)
+                          );
+
+                          const barHeight = (heightPercent / 100) * 30;
+                          const y = 30 - barHeight;
+
+                          return (
+                            <rect
+                              key={`skeleton-bar-${i}`}
+                              x={`${x}%`}
+                              y={y}
+                              width={`${barWidth * 0.5}%`} // Very thin bars (50% of allocated width)
+                              height={barHeight}
+                              fill="#e2e8f0"
+                              opacity={0.5}
+                              style={{
+                                transform: `translateX(${barWidth * 0.25}%)`, // Center the bar
+                              }}
+                            />
+                          );
+                        })}
+
+                        {/* Base line */}
+                        <rect
+                          x="0"
+                          y={28}
+                          width="100"
+                          height="2"
+                          fill="#94a3b8"
+                          opacity={0.3}
+                        />
+                      </svg>
+                    </div>
+
+                    {/* Handle container positioned exactly like InterestSlider */}
+                    <div
+                      className="pointer-events-none absolute inset-y-0"
                       style={{
-                        width: `calc(100% - 26px)`,
-                        transform: `translateX(30%)`, // 30% position
+                        width: `calc(100% + 26px)`,
+                        transform: `translateX(-13px)`,
                       }}
                     >
-                      {/* Handle */}
                       <div
-                        className="absolute left-0 top-1/2"
+                        className="h-full"
                         style={{
-                          width: 26,
-                          height: 26,
-                          transform: `translateY(-50%)`,
+                          width: `calc(100% - 26px)`,
+                          transform: `translateX(30%)`, // 30% position
                         }}
                       >
-                        <Skeleton className="h-full w-full rounded-full animate-none bg-slate-200 border-2 border-slate-300" />
+                        {/* Handle */}
+                        <div
+                          className="absolute left-0 top-1/2"
+                          style={{
+                            width: 26,
+                            height: 26,
+                            transform: `translateY(-50%)`,
+                          }}
+                        >
+                          <Skeleton className="h-full w-full rounded-full animate-none bg-slate-200 border-2 border-slate-300" />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -363,15 +336,51 @@ export function InterestRateSelector({
           ) : hasData ? (
             // Data available - show full visualization
             <>
-              <div className="max-w-md">
-                <InterestSlider
-                  value={sliderValue}
-                  onChange={handleSliderChange}
-                  chart={chartSizes}
-                  riskZones={riskZones}
-                  gradientMode="high-to-low"
-                  disabled={disabled}
-                />
+              <div className="flex items-center gap-3">
+                {/* Input field on the left - now visible on mobile too */}
+                <div className="flex items-center gap-1 bg-white rounded-md border border-slate-200 px-3 py-2">
+                  <NumericFormat
+                    value={interestRate}
+                    onValueChange={(values) => {
+                      const numericValue = values.floatValue;
+                      if (
+                        numericValue !== undefined &&
+                        numericValue >= 0.5 &&
+                        numericValue <= 20
+                      ) {
+                        onInterestRateChange(numericValue);
+                      }
+                    }}
+                    disabled={disabled}
+                    className="w-20 text-sm font-semibold bg-transparent border-none focus:outline-none text-right p-0"
+                    placeholder="0.50"
+                    decimalScale={2}
+                    fixedDecimalScale={true}
+                    allowNegative={false}
+                    thousandSeparator={false}
+                    isAllowed={(values) => {
+                      const { floatValue } = values;
+                      return (
+                        floatValue === undefined ||
+                        (floatValue >= 0.5 && floatValue <= 20)
+                      );
+                    }}
+                  />
+                  <span className="text-sm font-semibold text-slate-600">
+                    %
+                  </span>
+                </div>
+
+                <div className="flex-1 max-w-md">
+                  <InterestSlider
+                    value={sliderValue}
+                    onChange={handleSliderChange}
+                    chart={chartSizes}
+                    riskZones={riskZones}
+                    gradientMode="high-to-low"
+                    disabled={disabled}
+                  />
+                </div>
               </div>
 
               {/* Risk Indicator */}
@@ -453,18 +462,6 @@ export function InterestRateSelector({
               </div>
             </>
           )}
-
-          <div className="flex justify-between text-xs text-slate-500 mt-1">
-            <span>0.5%</span>
-            {rebateData && borrowAmount && borrowAmount > 0 && (
-              <span className="text-center flex-1">
-                <span className="text-purple-600 font-medium">
-                  Effective: {effectiveRate.toFixed(2)}%
-                </span>
-              </span>
-            )}
-            <span>20%</span>
-          </div>
         </div>
 
         {/* STRK Rebate Information - Now calculated locally, no loading state needed! */}
