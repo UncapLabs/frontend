@@ -65,7 +65,7 @@ function MyTroves() {
   const { price: gbtcPrice } = useBitcoinPrice("GBTC");
 
   const handleCreateNew = () => {
-    navigate("/");
+    navigate("/borrow");
   };
 
   const handleUpdatePosition = (troveId: string, collateralAsset: string) => {
@@ -249,8 +249,10 @@ function MyTroves() {
           {troves.map((trove) => {
             const isLiquidated = trove.status === "liquidated";
             // Zombie = redeemed trove with debt < MIN_DEBT
-            const isZombie = trove.status === "redeemed" && trove.borrowedAmount < MIN_DEBT;
-            const isFullyRedeemed = trove.status === "redeemed" && trove.borrowedAmount === 0;
+            const isZombie =
+              trove.status === "redeemed" && trove.borrowedAmount < MIN_DEBT;
+            const isFullyRedeemed =
+              trove.status === "redeemed" && trove.borrowedAmount === 0;
 
             return (
               <Card
@@ -262,7 +264,11 @@ function MyTroves() {
                     ? "border-amber-300 bg-amber-50/50"
                     : "border-slate-200 hover:shadow-lg"
                 }`}
-                onClick={isLiquidated ? () => handleLiquidatedPosition(trove.id) : undefined}
+                onClick={
+                  isLiquidated
+                    ? () => handleLiquidatedPosition(trove.id)
+                    : undefined
+                }
               >
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
@@ -404,10 +410,15 @@ function MyTroves() {
                             ⚠️ Position Below Minimum Debt
                           </p>
                           <div className="space-y-1 text-xs text-amber-700">
-                            <div>Current debt: {trove.borrowedAmount.toFixed(2)} USDU</div>
+                            <div>
+                              Current debt: {trove.borrowedAmount.toFixed(2)}{" "}
+                              USDU
+                            </div>
                             <div>Minimum required: {MIN_DEBT} USDU</div>
                             <div className="font-medium pt-1">
-                              Must borrow {(MIN_DEBT - trove.borrowedAmount).toFixed(2)} USDU to restore
+                              Must borrow{" "}
+                              {(MIN_DEBT - trove.borrowedAmount).toFixed(2)}{" "}
+                              USDU to restore
                             </div>
                           </div>
                         </div>
@@ -420,11 +431,11 @@ function MyTroves() {
                             Position fully redeemed - no debt remaining
                           </p>
                           <p className="text-xs text-amber-700 mt-1">
-                            You can only close this position to withdraw collateral.
+                            You can only close this position to withdraw
+                            collateral.
                           </p>
                         </div>
                       )}
-
 
                       {/* Action buttons - same for all non-liquidated troves */}
                       <div className="flex gap-2 pt-2">
@@ -432,7 +443,10 @@ function MyTroves() {
                           variant="outline"
                           className="flex-1 hover:bg-blue-50 hover:border-blue-300"
                           onClick={() =>
-                            handleUpdatePosition(trove.id, trove.collateralAsset)
+                            handleUpdatePosition(
+                              trove.id,
+                              trove.collateralAsset
+                            )
                           }
                           size="sm"
                         >
@@ -452,7 +466,9 @@ function MyTroves() {
                         </Button>
                         <LiquidateButton
                           troveId={trove.id}
-                          collateralType={trove.collateralAsset as CollateralType}
+                          collateralType={
+                            trove.collateralAsset as CollateralType
+                          }
                         />
                       </div>
                     </>
