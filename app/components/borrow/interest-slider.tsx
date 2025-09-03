@@ -46,10 +46,8 @@ export function InterestSlider({
   const sliderRef = useRef<HTMLDivElement>(null);
   const svgId = useId();
 
-  // Ensure value is between 0 and 1
   value = Math.max(0, Math.min(1, value));
 
-  // Get gradient colors based on mode
   const gradientColors = useMemo(
     () => getGradientColors(gradientMode),
     [gradientMode]
@@ -59,7 +57,6 @@ export function InterestSlider({
     [gradientMode]
   );
 
-  // Calculate handle color based on position in risk zones
   const currentHandleColor = useMemo(
     () => getHandleColorFromPosition(
       value, 

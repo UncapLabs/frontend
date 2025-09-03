@@ -16,7 +16,6 @@ import {
   type Dnum,
 } from "~/lib/interest-rate-utils";
 
-// Type definitions
 type InterestRateBracket = {
   branchId: number;
   rate: Dnum;
@@ -33,7 +32,6 @@ type ChartDataPoint = {
   size: number;
 };
 
-// Fetch all interest rate brackets
 async function fetchAllInterestRateBrackets(): Promise<{
   lastUpdatedAt: bigint;
   brackets: InterestRateBracket[];
@@ -66,7 +64,6 @@ async function fetchAllInterestRateBrackets(): Promise<{
       dn.compare(a.rate, b.rate)
     );
 
-  // Find the latest update timestamp
   const lastUpdatedAt =
     brackets.length > 0
       ? brackets
@@ -318,37 +315,6 @@ export const interestRouter = router({
         })),
       };
     }),
-  calculateTotalDebt: publicProcedure
-    .input(
-      z.object({
-        bracket: z.object({
-          totalDebt: z.string(),
-          pendingDebtTimesOneYearD36: z.string(),
-          sumDebtTimesRateD36: z.string(),
-          updatedAt: z.string(),
-        }),
-        timestamp: z.string(),
-        lastUpdatedAt: z.string(),
-      })
-    )
-    .query(async ({ input }) => {
-      const ts = BigInt(input.timestamp);
-      const updatedAt = BigInt(input.bracket.updatedAt);
-      const lastUpdated = BigInt(input.lastUpdatedAt);
-
-      // Use max of timestamp and lastUpdatedAt (like Liquity)
-      const effectiveTimestamp = ts < lastUpdated ? lastUpdated : ts;
-
-      const totalDebt = BigInt(input.bracket.totalDebt);
-      const ONE_YEAR_D36 = ONE_YEAR_D18 * 10n ** 18n; // ONE_YEAR in 36 decimal format
-      const pendingDebt =
-        (BigInt(input.bracket.pendingDebtTimesOneYearD36) +
-          BigInt(input.bracket.sumDebtTimesRateD36) *
-            (effectiveTimestamp - updatedAt)) /
-        ONE_YEAR_D36;
-
-      return dn.toJSON(dnum18(totalDebt + pendingDebt));
-    }),
   getInterestRateChartData: publicProcedure
     .input(
       z.object({
@@ -440,186 +406,6 @@ export const interestRouter = router({
         totalDebt,
         // Return the chart length for position calculations
         chartLength: chartBars.length,
-      };
-    }),
-  getDebtInFront: publicProcedure
-    .input(
-      z.object({
-        branchId: z.number().optional().default(0),
-        interestRate: z.string(), // Dnum as JSON
-        excludedLoan: z
-          .object({
-            id: z.string(),
-            interestRate: z.string(), // Dnum as JSON
-            recordedDebt: z.string(), // Dnum as JSON
-            updatedAt: z.number(), // timestamp in ms
-          })
-          .optional(),
-      })
-    )
-    .query(
-      async ({
-        input,
-      }): Promise<{ debtInFront: string; totalDebt: string }> => {
-        // Use the shared function to get chart data
-        const chartData = await calculateChartData(
-          input.branchId,
-          input.excludedLoan
-        );
-
-        const targetRate = dn.from(input.interestRate, 18);
-
-        let debtInFront = DNUM_0;
-        let found = false;
-
-        for (const bracket of chartData) {
-          // Parse the rate from JSON string
-          const bracketRate =
-            typeof bracket.rate === "string"
-              ? dn.from(JSON.parse(bracket.rate)[0], 18)
-              : dn.from(bracket.rate, 18);
-
-          const increment = dn.lt(bracketRate, INTEREST_RATE_PRECISE_UNTIL)
-            ? INTEREST_RATE_INCREMENT_PRECISE
-            : INTEREST_RATE_INCREMENT_NORMAL;
-
-          // Check if target rate falls within this bracket
-          if (
-            dn.gte(targetRate, bracketRate) &&
-            dn.lt(targetRate, dn.add(bracketRate, increment))
-          ) {
-            // Parse debtInFront from JSON string
-            debtInFront =
-              typeof bracket.debtInFront === "string"
-                ? dn.from(JSON.parse(bracket.debtInFront)[0], 18)
-                : dn.from(bracket.debtInFront, 18);
-
-            found = true;
-            break;
-          }
-        }
-
-        // If rate is at the very bottom (below all brackets), debt in front is 0
-        // If rate is at the very top, debt in front is all debt
-        if (!found) {
-          const firstBracket = chartData[0];
-          if (
-            firstBracket &&
-            dn.lt(targetRate, dn.from(firstBracket.rate, 18))
-          ) {
-            debtInFront = DNUM_0;
-          } else {
-            // Rate is above all brackets, sum all debt
-            debtInFront = chartData.reduce(
-              (sum: Dnum, b: ChartDataPoint) =>
-                dn.add(sum, dn.from(b.debt, 18)),
-              DNUM_0
-            );
-          }
-        }
-
-        const totalDebt: Dnum = chartData.reduce(
-          (sum: Dnum, b: ChartDataPoint) => dn.add(sum, dn.from(b.debt, 18)),
-          DNUM_0
-        );
-
-        return {
-          debtInFront: dn.toJSON(debtInFront),
-          totalDebt: dn.toJSON(totalDebt),
-        };
-      }
-    ),
-  getRedemptionRisk: publicProcedure
-    .input(
-      z.object({
-        branchId: z.number().optional().default(0),
-        interestRate: z.string(), // Dnum as JSON
-        excludedLoan: z
-          .object({
-            id: z.string(),
-            interestRate: z.string(),
-            recordedDebt: z.string(),
-            updatedAt: z.number(),
-          })
-          .optional(),
-      })
-    )
-    .query(async ({ input }) => {
-      // Calculate debt in front for the given interest rate
-      const chartData = await calculateChartData(
-        input.branchId,
-        input.excludedLoan
-      );
-
-      const targetRate = dn.from(input.interestRate, 18);
-
-      // Find the bracket containing this rate
-      let debtInFront = DNUM_0;
-      let found = false;
-
-      for (const bracket of chartData) {
-        const bracketRate = dn.from(bracket.rate, 18);
-        const increment = dn.lt(bracketRate, INTEREST_RATE_PRECISE_UNTIL)
-          ? INTEREST_RATE_INCREMENT_PRECISE
-          : INTEREST_RATE_INCREMENT_NORMAL;
-
-        // Check if target rate falls within this bracket
-        if (
-          dn.gte(targetRate, bracketRate) &&
-          dn.lt(targetRate, dn.add(bracketRate, increment))
-        ) {
-          debtInFront = dn.from(bracket.debtInFront, 18);
-          found = true;
-          break;
-        }
-      }
-
-      // If rate is at the very bottom (below all brackets), debt in front is 0
-      // If rate is at the very top, debt in front is all debt
-      if (!found) {
-        const firstBracket = chartData[0];
-        if (firstBracket && dn.lt(targetRate, dn.from(firstBracket.rate, 18))) {
-          debtInFront = DNUM_0;
-        } else {
-          // Rate is above all brackets, sum all debt
-          debtInFront = chartData.reduce(
-            (sum: Dnum, b: ChartDataPoint) => dn.add(sum, dn.from(b.debt, 18)),
-            DNUM_0
-          );
-        }
-      }
-
-      const totalDebt: Dnum = chartData.reduce(
-        (sum: Dnum, b: ChartDataPoint) => dn.add(sum, dn.from(b.debt, 18)),
-        DNUM_0
-      );
-
-      // Avoid division by zero - if no debt exists, risk is low
-      if (dn.eq(totalDebt, DNUM_0)) {
-        return {
-          risk: "low" as const,
-          debtInFront: dn.toJSON(debtInFront),
-          totalDebt: dn.toJSON(totalDebt),
-          percentilePosition: 100,
-        };
-      }
-
-      const ratio = dn.toNumber(dn.div(debtInFront, totalDebt));
-
-      // IMPORTANT: Lower debt in front = LOWER risk
-      // If less than 10% of debt is ahead of you, you have LOW risk
-      // If 10-25% of debt is ahead of you, you have MEDIUM risk
-      // If more than 25% of debt is ahead of you, you have HIGH risk
-      return {
-        risk:
-          ratio < 0.1
-            ? ("low" as const)
-            : ratio < 0.25
-            ? ("medium" as const)
-            : ("high" as const),
-        debtInFront: dn.toJSON(debtInFront),
-        totalDebt: dn.toJSON(totalDebt),
-        percentilePosition: (1 - ratio) * 100,
       };
     }),
   getAverageInterestRate: publicProcedure
