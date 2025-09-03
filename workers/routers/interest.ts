@@ -80,6 +80,74 @@ async function fetchAllInterestRateBrackets(): Promise<{
   };
 }
 
+// Calculate risk zone thresholds based on debt distribution
+function calculateRiskZones(chartData: ChartDataPoint[]): {
+  highRiskThreshold: number;
+  mediumRiskThreshold: number;
+} {
+  if (chartData.length === 0) {
+    return { highRiskThreshold: 0.1, mediumRiskThreshold: 0.25 };
+  }
+
+  // Calculate total debt - properly parse the JSON Dnum format
+  const totalDebt = chartData.reduce(
+    (sum: Dnum, item: ChartDataPoint) => {
+      let debt: Dnum;
+      if (typeof item.debt === "string") {
+        const parsed = JSON.parse(item.debt);
+        debt = [BigInt(parsed[0]), parsed[1]] as Dnum;
+      } else {
+        debt = item.debt as any;
+      }
+      return dn.add(sum, debt);
+    },
+    DNUM_0
+  );
+
+  if (dn.eq(totalDebt, DNUM_0)) {
+    return { highRiskThreshold: 0.1, mediumRiskThreshold: 0.25 };
+  }
+
+  let highRiskThreshold = 0.1;
+  let mediumRiskThreshold = 0.25;
+  let foundHighRisk = false;
+  let foundMediumRisk = false;
+
+  // Find positions where risk changes
+  // We're looking for the position where cumulative debt crosses 10% and 25%
+  for (let i = 0; i < chartData.length; i++) {
+    const item = chartData[i];
+    let debtInFront: Dnum;
+    if (typeof item.debtInFront === "string") {
+      const parsed = JSON.parse(item.debtInFront);
+      debtInFront = [BigInt(parsed[0]), parsed[1]] as Dnum;
+    } else {
+      debtInFront = item.debtInFront as any;
+    }
+
+    const ratio = dn.toNumber(dn.div(debtInFront, totalDebt));
+    // Use the center of the bar for more accurate positioning
+    const position = (i + 0.5) / Math.max(1, chartData.length);
+
+    // Find where 10% of debt is in front (transition from high to medium risk)
+    // Positions with < 10% debt in front = HIGH risk
+    if (ratio >= 0.1 && !foundHighRisk) {
+      highRiskThreshold = position;
+      foundHighRisk = true;
+    }
+    
+    // Find where 25% of debt is in front (transition from medium to low risk)
+    // Positions with < 25% debt in front = MEDIUM risk
+    if (ratio >= 0.25 && !foundMediumRisk) {
+      mediumRiskThreshold = position;
+      foundMediumRisk = true;
+      break; // We found both thresholds
+    }
+  }
+
+  return { highRiskThreshold, mediumRiskThreshold };
+}
+
 // Calculate chart data for a given branch and optional excluded loan
 async function calculateChartData(
   branchId: number,
@@ -298,6 +366,81 @@ export const interestRouter = router({
     .query(async ({ input }) => {
       // Use the shared function to calculate chart data
       return calculateChartData(input.branchId, input.excludedLoan);
+    }),
+  // Enhanced endpoint that returns clean, pre-processed visualization data
+  getInterestRateVisualizationData: publicProcedure
+    .input(
+      z.object({
+        branchId: z.number().optional().default(0),
+        excludedLoan: z
+          .object({
+            id: z.string(),
+            interestRate: z.string(),
+            recordedDebt: z.string(),
+            updatedAt: z.number(),
+          })
+          .optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      const chartData = await calculateChartData(
+        input.branchId,
+        input.excludedLoan
+      );
+
+      // Calculate risk zones
+      const riskZones = calculateRiskZones(chartData);
+
+      // Convert chart data to cleaner format with plain numbers
+      const chartBars = chartData.map((point) => {
+        // Parse Dnum JSON strings and convert to regular numbers
+        let rate: number;
+        let debt: number;
+        let debtInFront: number;
+        
+        if (typeof point.rate === "string") {
+          const parsed = JSON.parse(point.rate);
+          // The value is already in 18 decimal format as [bigint, decimals]
+          const rateDnum: Dnum = [BigInt(parsed[0]), parsed[1]];
+          rate = dn.toNumber(rateDnum);
+        } else {
+          rate = dn.toNumber(point.rate);
+        }
+        
+        if (typeof point.debt === "string") {
+          const parsed = JSON.parse(point.debt);
+          const debtDnum: Dnum = [BigInt(parsed[0]), parsed[1]];
+          debt = dn.toNumber(debtDnum);
+        } else {
+          debt = dn.toNumber(point.debt);
+        }
+        
+        if (typeof point.debtInFront === "string") {
+          const parsed = JSON.parse(point.debtInFront);
+          const debtInFrontDnum: Dnum = [BigInt(parsed[0]), parsed[1]];
+          debtInFront = dn.toNumber(debtInFrontDnum);
+        } else {
+          debtInFront = dn.toNumber(point.debtInFront);
+        }
+
+        return {
+          rate,              // Plain number (decimal rate)
+          debt,             // Plain number
+          debtInFront,      // Plain number
+          normalized: point.size,  // Already normalized 0-1
+        };
+      });
+
+      // Calculate total debt for statistics
+      const totalDebt = chartBars.reduce((sum, bar) => sum + bar.debt, 0);
+
+      return {
+        chartBars,
+        riskZones,
+        totalDebt,
+        // Return the chart length for position calculations
+        chartLength: chartBars.length,
+      };
     }),
   getDebtInFront: publicProcedure
     .input(

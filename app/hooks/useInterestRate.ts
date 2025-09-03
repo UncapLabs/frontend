@@ -105,6 +105,29 @@ export function useInterestRateChartData(
   });
 }
 
+// Enhanced hook that returns clean, pre-processed visualization data
+export function useInterestRateVisualizationData(
+  branchId: number = 0,
+  excludedLoan?: PositionLoanCommitted
+) {
+  const trpc = useTRPC();
+  return useQuery({
+    ...trpc.interestRouter.getInterestRateVisualizationData.queryOptions({
+      branchId,
+      excludedLoan: excludedLoan
+        ? {
+            id: excludedLoan.id,
+            interestRate: dn.toJSON(excludedLoan.interestRate),
+            recordedDebt: dn.toJSON(excludedLoan.recordedDebt),
+            updatedAt: excludedLoan.updatedAt,
+          }
+        : undefined,
+    }),
+    staleTime: 10000,
+    refetchInterval: 15000,
+  });
+}
+
 // Calculate debt in front of interest rate
 export function useDebtInFrontOfInterestRate(
   branchId: number,

@@ -5,14 +5,18 @@ import { NumericFormat } from "react-number-format";
 import { Info, AlertTriangle, CheckCircle } from "lucide-react";
 import { Skeleton } from "~/components/ui/skeleton";
 import {
-  useInterestRateChartData,
-  useDebtInFrontOfInterestRate,
+  useInterestRateVisualizationData,
   useRedemptionRiskOfInterestRate,
   useAverageInterestRate,
 } from "~/hooks/useInterestRate";
 import { getBranchId, type CollateralType } from "~/lib/contracts/constants";
-import { findClosestRateIndex, type Dnum } from "~/lib/interest-rate-utils";
-import { riskLevelToHandleColor, type RiskLevel } from "~/lib/interest-rate-visualization";
+import { type Dnum } from "~/lib/interest-rate-utils";
+import { 
+  riskLevelToHandleColor, 
+  findPositionInChart,
+  getRateFromPosition,
+  type RiskLevel 
+} from "~/lib/interest-rate-visualization";
 import * as dn from "dnum";
 
 interface InterestRateSelectorProps {
@@ -48,104 +52,72 @@ export function InterestRateSelector({
 
   // Get branchId from collateralType
   const branchId = getBranchId(collateralType);
-  const chartData = useInterestRateChartData(branchId);
-  const debtInFront = useDebtInFrontOfInterestRate(branchId, interestRateDnum);
+  
+  // Use the enhanced visualization data endpoint
+  const visualizationData = useInterestRateVisualizationData(branchId);
   const redemptionRisk = useRedemptionRiskOfInterestRate(
     branchId,
     interestRateDnum
   );
   const averageRate = useAverageInterestRate(branchId);
-  // Process chart data for visualization
-  const { chartSizes, gradientStops, sliderValue } = useMemo(() => {
-    if (!chartData.data || chartData.data.length === 0) {
+  
+  // Process chart data and calculate debt statistics
+  const { chartSizes, riskZones, sliderValue, debtInFront, totalDebt } = useMemo(() => {
+    if (!visualizationData.data) {
       return {
         chartSizes: [],
-        gradientStops: [0.33, 0.66] as [number, number],
+        riskZones: { highRiskThreshold: 0.1, mediumRiskThreshold: 0.25 },
         sliderValue: 0,
+        debtInFront: 0,
+        totalDebt: 0,
       };
     }
 
-    // The chart data already has normalized sizes (0-1) from tRPC!
-    const sizes = chartData.data.map((item: any) => item.size || 0);
-
+    // Data is already normalized from the server!
+    const sizes = visualizationData.data.chartBars.map((bar: any) => bar.normalized);
+    
     // Find current position in the chart
-    const chartRates = chartData.data.map((item: any) => {
-      if (typeof item.rate === "string") {
-        const parsed = JSON.parse(item.rate);
-        return BigInt(parsed[0]);
+    const currentRateDecimal = dn.toNumber(interestRateDnum); // Convert to decimal
+    const sliderPos = findPositionInChart(
+      currentRateDecimal, 
+      visualizationData.data.chartBars
+    );
+
+    // Calculate debt in front based on current interest rate
+    // Find the bar that contains our current rate
+    const currentBar = visualizationData.data.chartBars.find((bar: any, index: number) => {
+      const nextBar = visualizationData.data.chartBars[index + 1];
+      if (!nextBar) {
+        // Last bar - check if rate is >= this bar's rate
+        return currentRateDecimal >= bar.rate;
       }
-      return item.rate[0];
+      // Check if rate falls between this bar and next
+      return currentRateDecimal >= bar.rate && currentRateDecimal < nextBar.rate;
     });
 
-    const currentRateBigInt = interestRateDnum[0];
-    let sliderPos = 0;
-    if (chartRates.length > 0) {
-      const index = findClosestRateIndex(chartRates, currentRateBigInt);
-      sliderPos = index / Math.max(1, chartRates.length - 1);
-    }
-
-    // Calculate gradient stops for risk zones based on debt in front
-    // The tRPC already calculated cumulative debtInFront for us!
-    const totalDebt = debtInFront.data?.totalDebt || dn.from(0, 18);
-    let highRiskThreshold = 0.1; // Position where < 10% debt in front (HIGH risk)
-    let mediumRiskThreshold = 0.25; // Position where < 25% debt in front (MEDIUM risk)
-
-    if (dn.gt(totalDebt, dn.from(0, 18))) {
-      // Find positions where risk changes
-      for (let i = 0; i < chartData.data.length; i++) {
-        const item = chartData.data[i];
-        let debtInFront: Dnum;
-        if (typeof item.debtInFront === "string") {
-          const parsed = JSON.parse(item.debtInFront);
-          debtInFront = [BigInt(parsed[0]), parsed[1]] as Dnum;
-        } else {
-          debtInFront = item.debtInFront;
-        }
-
-        const ratio = dn.toNumber(dn.div(debtInFront, totalDebt));
-        const position = i / Math.max(1, chartData.data.length - 1);
-
-        // IMPORTANT: Less debt in front = HIGHER risk!
-        if (ratio < 0.1 && highRiskThreshold === 0.1) {
-          highRiskThreshold = position;
-        }
-        if (ratio < 0.25 && mediumRiskThreshold === 0.25) {
-          mediumRiskThreshold = position;
-        }
-      }
-    }
+    const debtInFrontValue = currentBar ? currentBar.debtInFront : 0;
+    const totalDebtValue = visualizationData.data.totalDebt;
 
     return {
       chartSizes: sizes,
-      gradientStops: [highRiskThreshold, mediumRiskThreshold] as [
-        number,
-        number
-      ],
+      riskZones: visualizationData.data.riskZones,
       sliderValue: sliderPos,
+      debtInFront: debtInFrontValue,
+      totalDebt: totalDebtValue,
     };
-  }, [chartData.data, interestRateDnum, debtInFront.data]);
+  }, [visualizationData.data, interestRateDnum]);
 
-  // Handle slider value change
+  // Handle slider value change - now simpler with clean data
   const handleSliderChange = useCallback(
     (value: number) => {
-      if (!chartData.data || chartData.data.length === 0) return;
+      if (!visualizationData.data) return;
 
-      const index = Math.round(value * (chartData.data.length - 1));
-      const item = chartData.data[index];
-      if (item) {
-        let rate: Dnum;
-        if (typeof item.rate === "string") {
-          const parsed = JSON.parse(item.rate);
-          rate = [BigInt(parsed[0]), parsed[1]] as Dnum;
-        } else {
-          rate = item.rate;
-        }
-        // Convert from decimal to percentage
-        const ratePercentage = dn.toNumber(rate) * 100;
-        onInterestRateChange(ratePercentage);
-      }
+      const rate = getRateFromPosition(value, visualizationData.data.chartBars);
+      // Convert from decimal to percentage
+      const ratePercentage = rate * 100;
+      onInterestRateChange(ratePercentage);
     },
-    [chartData.data, onInterestRateChange]
+    [visualizationData.data, onInterestRateChange]
   );
 
   // Get risk indicator details
@@ -249,16 +221,15 @@ export function InterestRateSelector({
 
         {/* Enhanced Interest Rate Slider with Chart */}
         <div className="mb-4">
-          {chartData.data && chartData.data.length > 0 ? (
+          {visualizationData.data && visualizationData.data.chartBars.length > 0 ? (
             <>
               <div className="max-w-md">
                 <InterestSlider
                   value={sliderValue}
                   onChange={handleSliderChange}
                   chart={chartSizes}
-                  gradient={gradientStops}
+                  riskZones={riskZones}
                   gradientMode="high-to-low"
-                  handleColor={handleColor}
                   disabled={disabled}
                 />
               </div>
@@ -287,14 +258,14 @@ export function InterestRateSelector({
               )}
 
               {/* Debt Statistics */}
-              {debtInFront.data && (
+              {visualizationData.data && totalDebt > 0 && (
                 <div className="grid grid-cols-2 gap-3 mt-3">
                   <div className="bg-white rounded-lg border border-slate-200 p-2">
                     <p className="text-xs text-slate-500">Debt in front</p>
                     <p className="text-sm font-semibold text-slate-700">
                       <NumericFormat
                         displayType="text"
-                        value={dn.toNumber(debtInFront.data.debtInFront)}
+                        value={debtInFront}
                         thousandSeparator=","
                         decimalScale={0}
                         fixedDecimalScale={false}
@@ -307,7 +278,7 @@ export function InterestRateSelector({
                     <p className="text-sm font-semibold text-slate-700">
                       <NumericFormat
                         displayType="text"
-                        value={dn.toNumber(debtInFront.data.totalDebt)}
+                        value={totalDebt}
                         thousandSeparator=","
                         decimalScale={0}
                         fixedDecimalScale={false}

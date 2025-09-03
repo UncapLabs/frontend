@@ -12,22 +12,18 @@ import {
   type RiskLevel,
   getGradientColors,
   getGradientColorsDimmed,
-  calculateHandleColor,
-  calculateGradientGeometry,
-  normalizeChartData,
+  getHandleColorFromPosition,
+  calculateGradientGeometry as calculateGradientGeometryUI,
   CHART_CONSTANTS,
+  HANDLE_COLORS,
 } from "~/lib/interest-rate-visualization";
 
-type Chart = number[];
-
-interface LiquitySliderProps {
+interface InterestSliderProps {
   value: number;
   onChange: (value: number) => void;
-  chart?: Chart;
-  gradient?: [number, number]; // [medium threshold, low threshold]
+  chart?: number[]; // Pre-normalized heights from server (0-1)
+  riskZones?: { highRiskThreshold: number; mediumRiskThreshold: number }; // From server
   gradientMode?: GradientMode;
-  handleColor?: 0 | 1 | 2; // 0 = high risk (red), 1 = medium (yellow), 2 = low (green)
-  riskLevel?: RiskLevel; // New prop to use tRPC risk data directly
   disabled?: boolean;
   onDragStart?: () => void;
   onDragEnd?: () => void;
@@ -38,15 +34,13 @@ export function InterestSlider({
   value,
   onChange,
   chart,
-  gradient,
+  riskZones = { highRiskThreshold: 0.1, mediumRiskThreshold: 0.25 }, // Default zones
   gradientMode = "high-to-low",
-  handleColor,
-  riskLevel,
   disabled = false,
   onDragStart,
   onDragEnd,
   className,
-}: LiquitySliderProps) {
+}: InterestSliderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const sliderRef = useRef<HTMLDivElement>(null);
@@ -65,10 +59,14 @@ export function InterestSlider({
     [gradientMode]
   );
 
-  // Calculate handle color based on position and gradient
+  // Calculate handle color based on position in risk zones
   const currentHandleColor = useMemo(
-    () => calculateHandleColor(value, gradient, riskLevel),
-    [value, gradient, riskLevel]
+    () => getHandleColorFromPosition(
+      value, 
+      riskZones?.highRiskThreshold,
+      riskZones?.mediumRiskThreshold
+    ),
+    [value, riskZones]
   );
 
   const updateValueFromClientX = useCallback(
@@ -147,16 +145,10 @@ export function InterestSlider({
     }
   };
 
-  // Normalize chart data for rendering
-  const normalizedChart = useMemo(
-    () => normalizeChartData(chart || []),
-    [chart]
-  );
-
   // Calculate gradient geometry for zones
   const gradientGeometry = useMemo(
-    () => calculateGradientGeometry(gradient),
-    [gradient]
+    () => calculateGradientGeometryUI(riskZones),
+    [riskZones]
   );
 
   return (
@@ -225,29 +217,20 @@ export function InterestSlider({
             ))}
 
             {/* Histogram bars - each bar represents debt at that interest rate */}
-            {normalizedChart.map((barValue, index) => {
-              const barWidth = 100 / normalizedChart.length;
+            {(chart || []).map((barValue: number, index: number) => {
+              const barWidth = 100 / (chart?.length || 1);
               const x = index * barWidth;
               const barHeight = barValue * CHART_CONSTANTS.CHART_MAX_HEIGHT;
               const y = CHART_CONSTANTS.CHART_MAX_HEIGHT - barHeight;
-              const barPosition = index / normalizedChart.length;
+              const barPosition = index / (chart?.length || 1);
               const isActive = barPosition <= value;
 
-              // Determine bar color based on position and gradient zones
-              let barColor = "#cbd5e1"; // default gray for inactive
-              if (isActive) {
-                if (gradient) {
-                  if (barPosition <= gradient[0]) {
-                    barColor = gradientColors[0]; // high risk
-                  } else if (barPosition <= gradient[1]) {
-                    barColor = gradientColors[2]; // medium risk
-                  } else {
-                    barColor = gradientColors[4]; // low risk
-                  }
-                } else {
-                  barColor = currentHandleColor;
-                }
-              }
+              // Determine bar color - ALL bars colored by their risk zone, active ones are brighter
+              const barColor = getHandleColorFromPosition(
+                barPosition, 
+                riskZones?.highRiskThreshold,
+                riskZones?.mediumRiskThreshold
+              );
 
               return (
                 <rect
@@ -268,16 +251,16 @@ export function InterestSlider({
               );
             })}
 
-            {/* Base line */}
+            {/* Base line - always dark grey */}
             <rect
               x="0"
               y={CHART_CONSTANTS.CHART_MAX_HEIGHT - 2}
               width="100"
               height="2"
-              fill="#94a3b8"
+              fill="#475569"
             />
 
-            {/* Active line */}
+            {/* Active line - matches handle color */}
             <rect
               x="0"
               y={CHART_CONSTANTS.CHART_MAX_HEIGHT - 2}
@@ -297,40 +280,27 @@ export function InterestSlider({
             className="absolute inset-0 overflow-hidden"
             style={{ borderRadius: CHART_CONSTANTS.BAR_HEIGHT / 2 }}
           >
-            {/* Background with gradient */}
-            {gradient ? (
-              <div
-                className="absolute inset-0"
-                style={{
-                  background: `linear-gradient(to right,
-                    ${gradientColors[0]} 0%,
-                    ${gradientColors[1]} calc(${gradient[0] * 100}% - ${
-                    CHART_CONSTANTS.GRADIENT_TRANSITION_BLUR
-                  }%),
-                    ${gradientColors[2]} calc(${gradient[0] * 100}% + ${
-                    CHART_CONSTANTS.GRADIENT_TRANSITION_BLUR
-                  }%),
-                    ${gradientColors[3]} calc(${gradient[1] * 100}% - ${
-                    CHART_CONSTANTS.GRADIENT_TRANSITION_BLUR
-                  }%),
-                    ${gradientColors[4]} calc(${gradient[1] * 100}% + ${
-                    CHART_CONSTANTS.GRADIENT_TRANSITION_BLUR
-                  }%),
-                    ${gradientColors[4]} 100%)`,
-                }}
-              />
-            ) : (
-              <>
-                <div className="absolute inset-0 bg-slate-200" />
-                <div
-                  className="absolute inset-y-0 left-0 bg-blue-500"
-                  style={{
-                    width: `${value * 100}%`,
-                    transition: isDragging ? "none" : "width 150ms ease-out",
-                  }}
-                />
-              </>
-            )}
+            {/* Background with risk zone gradient */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: `linear-gradient(to right,
+                  ${gradientColors[0]} 0%,
+                  ${gradientColors[1]} calc(${riskZones.highRiskThreshold * 100}% - ${
+                  CHART_CONSTANTS.GRADIENT_TRANSITION_BLUR
+                }%),
+                  ${gradientColors[2]} calc(${riskZones.highRiskThreshold * 100}% + ${
+                  CHART_CONSTANTS.GRADIENT_TRANSITION_BLUR
+                }%),
+                  ${gradientColors[3]} calc(${riskZones.mediumRiskThreshold * 100}% - ${
+                  CHART_CONSTANTS.GRADIENT_TRANSITION_BLUR
+                }%),
+                  ${gradientColors[4]} calc(${riskZones.mediumRiskThreshold * 100}% + ${
+                  CHART_CONSTANTS.GRADIENT_TRANSITION_BLUR
+                }%),
+                  ${gradientColors[4]} 100%)`,
+              }}
+            />
           </div>
         </div>
       )}
@@ -373,9 +343,7 @@ export function InterestSlider({
                 borderColor: disabled ? "#cbd5e1" : "#64748b",
                 backgroundColor: disabled
                   ? "#f1f5f9"
-                  : gradient || chart
-                  ? currentHandleColor
-                  : "#ffffff",
+                  : currentHandleColor,
               }}
             />
           </div>
