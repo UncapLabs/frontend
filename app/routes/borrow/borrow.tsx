@@ -32,8 +32,6 @@ import {
 } from "~/hooks/use-position-metrics";
 import { getMinCollateralizationRatio } from "~/lib/utils/collateral-config";
 import type { CollateralType } from "~/lib/contracts/constants";
-import { useRebateCalculation } from "~/hooks/use-rebate-calculation";
-import { useDebouncedValue } from "@tanstack/react-pacer";
 
 function Borrow() {
   const { address } = useAccount();
@@ -77,18 +75,6 @@ function Borrow() {
     bitcoinPrice: bitcoin?.price,
     usduPrice: usdu?.price,
     minCollateralizationRatio,
-  });
-
-  // Debounced interest rate for rebate calculation
-  const [debouncedInterestRate] = useDebouncedValue(interestRate, {
-    wait: 500,
-  });
-
-  // Calculate STRK rebate with debounced interest rate
-  const { rebateData, isFetching: isLoadingRebate } = useRebateCalculation({
-    borrowAmount: borrowAmount ?? undefined,
-    interestRate: debouncedInterestRate,
-    enabled: !!borrowAmount && borrowAmount > 0,
   });
 
   // Initialize form with URL values
@@ -437,8 +423,6 @@ function Borrow() {
                     }}
                     disabled={isSending || isPending}
                     borrowAmount={borrowAmount ?? undefined}
-                    isLoadingRebate={isLoadingRebate}
-                    rebateData={rebateData}
                     collateralType={collateralType}
                   />
 
