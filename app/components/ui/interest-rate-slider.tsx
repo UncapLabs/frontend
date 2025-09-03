@@ -1,12 +1,18 @@
 import * as React from "react";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 import { cn } from "~/lib/utils";
+import {
+  type RiskLevel,
+  THUMB_COLOR_CLASSES,
+  riskLevelToHandleColor,
+} from "~/lib/interest-rate-visualization";
 
 interface InterestRateSliderProps
   extends React.ComponentProps<typeof SliderPrimitive.Root> {
   gradient?: [medium: number, low: number];
   gradientMode?: "high-to-low";
   handleColor?: number; // 0 = red, 1 = yellow, 2 = green
+  riskLevel?: RiskLevel; // New prop to use tRPC risk data directly
   chart?: number[]; // Array of heights (0-1) for chart bars
 }
 
@@ -19,6 +25,7 @@ function InterestRateSlider({
   gradient,
   gradientMode,
   handleColor,
+  riskLevel,
   chart,
   ...props
 }: InterestRateSliderProps) {
@@ -51,19 +58,21 @@ function InterestRateSlider({
     };
   }, [gradient, gradientMode]);
 
-  // Get thumb color based on handleColor
+  // Get thumb color based on handleColor or riskLevel
   const thumbColorClass = React.useMemo(() => {
-    switch (handleColor) {
-      case 0:
-        return "border-red-500 bg-red-500";
-      case 1:
-        return "border-yellow-500 bg-yellow-500";
-      case 2:
-        return "border-green-500 bg-green-500";
-      default:
-        return "border-primary bg-background";
+    // If we have explicit risk level from tRPC, use it
+    if (riskLevel) {
+      const colorIndex = riskLevelToHandleColor(riskLevel);
+      return THUMB_COLOR_CLASSES[colorIndex];
     }
-  }, [handleColor]);
+
+    // Otherwise use the provided handleColor
+    if (handleColor !== undefined && handleColor in THUMB_COLOR_CLASSES) {
+      return THUMB_COLOR_CLASSES[handleColor as keyof typeof THUMB_COLOR_CLASSES];
+    }
+
+    return "border-primary bg-background";
+  }, [handleColor, riskLevel]);
 
   return (
     <div className="relative">

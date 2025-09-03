@@ -12,6 +12,7 @@ import {
 } from "~/hooks/useInterestRate";
 import { getBranchId, type CollateralType } from "~/lib/contracts/constants";
 import { findClosestRateIndex, type Dnum } from "~/lib/interest-rate-utils";
+import { riskLevelToHandleColor, type RiskLevel } from "~/lib/interest-rate-visualization";
 import * as dn from "dnum";
 
 interface InterestRateSelectorProps {
@@ -184,15 +185,10 @@ export function InterestRateSelector({
     }
   }, [redemptionRisk.data]);
 
-  // Handle color for slider based on risk
+  // Handle color for slider based on risk - use shared utility
   const handleColor = useMemo(() => {
     if (!redemptionRisk.data) return undefined;
-    // Map risk to color: 0=red (high risk), 1=yellow (medium), 2=green (low)
-    return redemptionRisk.data === "low" // low debt in front = HIGH risk = red
-      ? 0
-      : redemptionRisk.data === "medium"
-      ? 1
-      : 2; // high debt in front = LOW risk = green
+    return riskLevelToHandleColor(redemptionRisk.data as RiskLevel);
   }, [redemptionRisk.data]);
 
   return (

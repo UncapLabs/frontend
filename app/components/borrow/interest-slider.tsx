@@ -7,16 +7,18 @@ import React, {
   useId,
 } from "react";
 import { cn } from "~/lib/utils";
+import {
+  type GradientMode,
+  type RiskLevel,
+  getGradientColors,
+  getGradientColorsDimmed,
+  calculateHandleColor,
+  calculateGradientGeometry,
+  normalizeChartData,
+  CHART_CONSTANTS,
+} from "~/lib/interest-rate-visualization";
 
-type GradientMode = "low-to-high" | "high-to-low";
 type Chart = number[];
-
-const BAR_HEIGHT = 4;
-const HANDLE_SIZE = 26;
-const MIN_WIDTH = HANDLE_SIZE * 2;
-const CHART_MAX_HEIGHT = 30;
-const HEIGHT = 60;
-const GRADIENT_TRANSITION_BLUR = 4;
 
 interface LiquitySliderProps {
   value: number;
@@ -25,26 +27,12 @@ interface LiquitySliderProps {
   gradient?: [number, number]; // [medium threshold, low threshold]
   gradientMode?: GradientMode;
   handleColor?: 0 | 1 | 2; // 0 = high risk (red), 1 = medium (yellow), 2 = low (green)
+  riskLevel?: RiskLevel; // New prop to use tRPC risk data directly
   disabled?: boolean;
   onDragStart?: () => void;
   onDragEnd?: () => void;
   className?: string;
 }
-
-// Define gradient colors to match Liquity's design
-const riskGradient = {
-  high: "#dc2626", // red-600
-  mediumHigh: "#ea580c", // orange-600
-  medium: "#f59e0b", // amber-500
-  mediumLow: "#84cc16", // lime-500
-  low: "#22c55e", // green-500
-};
-
-const riskGradientDimmed = {
-  high: "rgba(220, 38, 38, 0.2)",
-  medium: "rgba(245, 158, 11, 0.2)",
-  low: "rgba(34, 197, 94, 0.2)",
-};
 
 export function InterestSlider({
   value,
@@ -53,6 +41,7 @@ export function InterestSlider({
   gradient,
   gradientMode = "high-to-low",
   handleColor,
+  riskLevel,
   disabled = false,
   onDragStart,
   onDragEnd,
@@ -67,38 +56,20 @@ export function InterestSlider({
   value = Math.max(0, Math.min(1, value));
 
   // Get gradient colors based on mode
-  const gradientColors = useMemo(() => {
-    const colors = [
-      riskGradient.high,
-      riskGradient.mediumHigh,
-      riskGradient.medium,
-      riskGradient.mediumLow,
-      riskGradient.low,
-    ];
-    return gradientMode === "low-to-high" ? colors : colors.reverse();
-  }, [gradientMode]);
-
-  const gradientColorsDimmed = useMemo(() => {
-    const colors = [
-      riskGradientDimmed.high,
-      riskGradientDimmed.medium,
-      riskGradientDimmed.low,
-    ];
-    return gradientMode === "low-to-high" ? colors : colors.reverse();
-  }, [gradientMode]);
+  const gradientColors = useMemo(
+    () => getGradientColors(gradientMode),
+    [gradientMode]
+  );
+  const gradientColorsDimmed = useMemo(
+    () => getGradientColorsDimmed(gradientMode),
+    [gradientMode]
+  );
 
   // Calculate handle color based on position and gradient
-  const currentHandleColor = useMemo(() => {
-    if (handleColor !== undefined) {
-      return gradientColors[handleColor * 2];
-    }
-    if (gradient) {
-      if (value <= gradient[0]) return gradientColors[0];
-      if (value <= gradient[1]) return gradientColors[2];
-      return gradientColors[4];
-    }
-    return "#ffffff";
-  }, [value, gradient, handleColor, gradientColors]);
+  const currentHandleColor = useMemo(
+    () => calculateHandleColor(value, gradient, riskLevel),
+    [value, gradient, riskLevel]
+  );
 
   const updateValueFromClientX = useCallback(
     (clientX: number) => {
@@ -177,22 +148,16 @@ export function InterestSlider({
   };
 
   // Normalize chart data for rendering
-  const normalizedChart = useMemo(() => {
-    if (!chart || chart.length === 0) return [];
-    const max = Math.max(...chart);
-    if (max === 0) return chart.map(() => 0);
-    return chart.map((v) => v / max);
-  }, [chart]);
+  const normalizedChart = useMemo(
+    () => normalizeChartData(chart || []),
+    [chart]
+  );
 
   // Calculate gradient geometry for zones
-  const gradientGeometry = useMemo(() => {
-    if (!gradient) return null;
-    const steps = [0, ...gradient];
-    return steps.map((step, index) => {
-      const next = index === steps.length - 1 ? 1 : steps[index + 1];
-      return { x: step * 100, width: (next - step) * 100, index };
-    });
-  }, [gradient]);
+  const gradientGeometry = useMemo(
+    () => calculateGradientGeometry(gradient),
+    [gradient]
+  );
 
   return (
     <div
@@ -208,9 +173,9 @@ export function InterestSlider({
         className
       )}
       style={{
-        minWidth: MIN_WIDTH,
+        minWidth: CHART_CONSTANTS.MIN_WIDTH,
         width: "100%",
-        height: HEIGHT,
+        height: CHART_CONSTANTS.HEIGHT,
         cursor: disabled ? "default" : "pointer",
       }}
       onMouseDown={handleMouseDown}
@@ -220,12 +185,12 @@ export function InterestSlider({
       {chart && chart.length > 0 ? (
         <div
           className="absolute inset-x-0 top-0"
-          style={{ height: CHART_MAX_HEIGHT }}
+          style={{ height: CHART_CONSTANTS.CHART_MAX_HEIGHT }}
         >
           <svg
             width="100%"
-            height={CHART_MAX_HEIGHT}
-            viewBox={`0 0 100 ${CHART_MAX_HEIGHT}`}
+            height={CHART_CONSTANTS.CHART_MAX_HEIGHT}
+            viewBox={`0 0 100 ${CHART_CONSTANTS.CHART_MAX_HEIGHT}`}
             preserveAspectRatio="none"
             shapeRendering="optimizeSpeed"
             className="absolute inset-0"
@@ -254,7 +219,7 @@ export function InterestSlider({
                 x={`${x}%`}
                 y="0"
                 width={`${width}%`}
-                height={CHART_MAX_HEIGHT}
+                height={CHART_CONSTANTS.CHART_MAX_HEIGHT}
                 fill={`url(#${svgId}-gradient-${index + 1})`}
               />
             ))}
@@ -263,8 +228,8 @@ export function InterestSlider({
             {normalizedChart.map((barValue, index) => {
               const barWidth = 100 / normalizedChart.length;
               const x = index * barWidth;
-              const barHeight = barValue * CHART_MAX_HEIGHT;
-              const y = CHART_MAX_HEIGHT - barHeight;
+              const barHeight = barValue * CHART_CONSTANTS.CHART_MAX_HEIGHT;
+              const y = CHART_CONSTANTS.CHART_MAX_HEIGHT - barHeight;
               const barPosition = index / normalizedChart.length;
               const isActive = barPosition <= value;
 
@@ -306,7 +271,7 @@ export function InterestSlider({
             {/* Base line */}
             <rect
               x="0"
-              y={CHART_MAX_HEIGHT - 2}
+              y={CHART_CONSTANTS.CHART_MAX_HEIGHT - 2}
               width="100"
               height="2"
               fill="#94a3b8"
@@ -315,7 +280,7 @@ export function InterestSlider({
             {/* Active line */}
             <rect
               x="0"
-              y={CHART_MAX_HEIGHT - 2}
+              y={CHART_CONSTANTS.CHART_MAX_HEIGHT - 2}
               width={value * 100}
               height="2"
               fill={currentHandleColor}
@@ -326,31 +291,31 @@ export function InterestSlider({
         /* Simple slider track when no chart */
         <div
           className="absolute left-0 right-0 top-1/2 -translate-y-1/2"
-          style={{ height: BAR_HEIGHT }}
+          style={{ height: CHART_CONSTANTS.BAR_HEIGHT }}
         >
           <div
             className="absolute inset-0 overflow-hidden"
-            style={{ borderRadius: BAR_HEIGHT / 2 }}
+            style={{ borderRadius: CHART_CONSTANTS.BAR_HEIGHT / 2 }}
           >
             {/* Background with gradient */}
             {gradient ? (
               <div
                 className="absolute inset-0"
                 style={{
-                  background: `linear-gradient(to right, 
-                    ${gradientColors[0]} 0%, 
-                    ${gradientColors[1]} calc(${
-                    gradient[0] * 100
-                  }% - ${GRADIENT_TRANSITION_BLUR}%), 
-                    ${gradientColors[2]} calc(${
-                    gradient[0] * 100
-                  }% + ${GRADIENT_TRANSITION_BLUR}%), 
-                    ${gradientColors[3]} calc(${
-                    gradient[1] * 100
-                  }% - ${GRADIENT_TRANSITION_BLUR}%), 
-                    ${gradientColors[4]} calc(${
-                    gradient[1] * 100
-                  }% + ${GRADIENT_TRANSITION_BLUR}%), 
+                  background: `linear-gradient(to right,
+                    ${gradientColors[0]} 0%,
+                    ${gradientColors[1]} calc(${gradient[0] * 100}% - ${
+                    CHART_CONSTANTS.GRADIENT_TRANSITION_BLUR
+                  }%),
+                    ${gradientColors[2]} calc(${gradient[0] * 100}% + ${
+                    CHART_CONSTANTS.GRADIENT_TRANSITION_BLUR
+                  }%),
+                    ${gradientColors[3]} calc(${gradient[1] * 100}% - ${
+                    CHART_CONSTANTS.GRADIENT_TRANSITION_BLUR
+                  }%),
+                    ${gradientColors[4]} calc(${gradient[1] * 100}% + ${
+                    CHART_CONSTANTS.GRADIENT_TRANSITION_BLUR
+                  }%),
                     ${gradientColors[4]} 100%)`,
                 }}
               />
@@ -374,14 +339,14 @@ export function InterestSlider({
       <div
         className="pointer-events-none absolute inset-y-0"
         style={{
-          width: `calc(100% + ${HANDLE_SIZE}px)`,
-          transform: `translateX(-${HANDLE_SIZE / 2}px)`,
+          width: `calc(100% + ${CHART_CONSTANTS.HANDLE_SIZE}px)`,
+          transform: `translateX(-${CHART_CONSTANTS.HANDLE_SIZE / 2}px)`,
         }}
       >
         <div
           className="h-full"
           style={{
-            width: `calc(100% - ${HANDLE_SIZE}px)`,
+            width: `calc(100% - ${CHART_CONSTANTS.HANDLE_SIZE}px)`,
             transform: `translateX(${value * 100}%)`,
             transition: isDragging ? "none" : "transform 150ms ease-out",
           }}
@@ -390,8 +355,8 @@ export function InterestSlider({
           <div
             className="pointer-events-auto absolute left-0 top-1/2"
             style={{
-              width: HANDLE_SIZE,
-              height: HANDLE_SIZE,
+              width: CHART_CONSTANTS.HANDLE_SIZE,
+              height: CHART_CONSTANTS.HANDLE_SIZE,
               transform: `translateY(-50%) translateY(${
                 isDragging ? "1px" : "0"
               })`,
