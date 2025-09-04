@@ -108,6 +108,7 @@ export interface Position {
   interestRate: number;
   status: "active" | "closed" | "non-existent" | "liquidated" | "redeemed";
   batchManager: string | null;
+  lastInterestRateAdjTime: number; // Unix timestamp in seconds
 }
 
 export async function getIndexedTroveById(
@@ -327,6 +328,7 @@ export async function fetchPositionById(
       interestRate,
       status: mapTroveStatus(troveStatus),
       batchManager: isZeroAddress ? null : batchManagerAddress,
+      lastInterestRateAdjTime: Number(troveData.last_interest_rate_adj_time),
     };
   } catch (error) {
     console.error(`Error fetching data for trove ${fullId}:`, error);
