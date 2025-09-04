@@ -9,13 +9,11 @@ import React, {
 import { cn } from "~/lib/utils";
 import {
   type GradientMode,
-  type RiskLevel,
   getGradientColors,
   getGradientColorsDimmed,
   getHandleColorFromPosition,
   calculateGradientGeometry as calculateGradientGeometryUI,
   CHART_CONSTANTS,
-  HANDLE_COLORS,
 } from "~/lib/interest-rate-visualization";
 
 interface InterestSliderProps {
@@ -58,11 +56,12 @@ export function InterestSlider({
   );
 
   const currentHandleColor = useMemo(
-    () => getHandleColorFromPosition(
-      value, 
-      riskZones?.highRiskThreshold,
-      riskZones?.mediumRiskThreshold
-    ),
+    () =>
+      getHandleColorFromPosition(
+        value,
+        riskZones?.highRiskThreshold,
+        riskZones?.mediumRiskThreshold
+      ),
     [value, riskZones]
   );
 
@@ -224,7 +223,7 @@ export function InterestSlider({
 
               // Determine bar color - ALL bars colored by their risk zone, active ones are brighter
               const barColor = getHandleColorFromPosition(
-                barPosition, 
+                barPosition,
                 riskZones?.highRiskThreshold,
                 riskZones?.mediumRiskThreshold
               );
@@ -283,18 +282,18 @@ export function InterestSlider({
               style={{
                 background: `linear-gradient(to right,
                   ${gradientColors[0]} 0%,
-                  ${gradientColors[1]} calc(${riskZones.highRiskThreshold * 100}% - ${
-                  CHART_CONSTANTS.GRADIENT_TRANSITION_BLUR
-                }%),
-                  ${gradientColors[2]} calc(${riskZones.highRiskThreshold * 100}% + ${
-                  CHART_CONSTANTS.GRADIENT_TRANSITION_BLUR
-                }%),
-                  ${gradientColors[3]} calc(${riskZones.mediumRiskThreshold * 100}% - ${
-                  CHART_CONSTANTS.GRADIENT_TRANSITION_BLUR
-                }%),
-                  ${gradientColors[4]} calc(${riskZones.mediumRiskThreshold * 100}% + ${
-                  CHART_CONSTANTS.GRADIENT_TRANSITION_BLUR
-                }%),
+                  ${gradientColors[1]} calc(${
+                  riskZones.highRiskThreshold * 100
+                }% - ${CHART_CONSTANTS.GRADIENT_TRANSITION_BLUR}%),
+                  ${gradientColors[2]} calc(${
+                  riskZones.highRiskThreshold * 100
+                }% + ${CHART_CONSTANTS.GRADIENT_TRANSITION_BLUR}%),
+                  ${gradientColors[3]} calc(${
+                  riskZones.mediumRiskThreshold * 100
+                }% - ${CHART_CONSTANTS.GRADIENT_TRANSITION_BLUR}%),
+                  ${gradientColors[4]} calc(${
+                  riskZones.mediumRiskThreshold * 100
+                }% + ${CHART_CONSTANTS.GRADIENT_TRANSITION_BLUR}%),
                   ${gradientColors[4]} 100%)`,
               }}
             />
@@ -338,9 +337,7 @@ export function InterestSlider({
               )}
               style={{
                 borderColor: disabled ? "#cbd5e1" : "#64748b",
-                backgroundColor: disabled
-                  ? "#f1f5f9"
-                  : currentHandleColor,
+                backgroundColor: disabled ? "#f1f5f9" : currentHandleColor,
               }}
             />
           </div>

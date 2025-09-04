@@ -13,7 +13,12 @@ import { validators } from "~/lib/validators";
 import type { Route } from "./+types/borrow.$troveId.update";
 import { useParams, useNavigate } from "react-router";
 import { useAccount, useBalance } from "@starknet-react/core";
-import { USDU_TOKEN, UBTC_TOKEN, GBTC_TOKEN, MIN_DEBT } from "~/lib/contracts/constants";
+import {
+  USDU_TOKEN,
+  UBTC_TOKEN,
+  GBTC_TOKEN,
+  MIN_DEBT,
+} from "~/lib/contracts/constants";
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
 import { useTroveData } from "~/hooks/use-trove-data";
@@ -24,7 +29,6 @@ import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { getInterestRatePercentage } from "~/lib/utils/position-helpers";
 import { extractTroveId } from "~/lib/utils/trove-id";
 import { TransactionSummary } from "~/components/transaction-summary";
-import { useInterestRateCooldown } from "~/hooks/use-interest-rate-cooldown";
 import {
   usePositionMetrics,
   getRedemptionRisk,
@@ -40,12 +44,19 @@ function UpdatePosition() {
 
   // Fetch existing position data
   const { position, isLoading: isPositionLoading } = useTroveData(troveId);
-  
+
   // Zombie trove detection
-  const isZombie = !!(position && position.status === "redeemed" && 
-    position.borrowedAmount > 0 && position.borrowedAmount < MIN_DEBT);
-  const isFullyRedeemed = !!(position && position.status === "redeemed" && 
-    position.borrowedAmount === 0);
+  const isZombie = !!(
+    position &&
+    position.status === "redeemed" &&
+    position.borrowedAmount > 0 &&
+    position.borrowedAmount < MIN_DEBT
+  );
+  const isFullyRedeemed = !!(
+    position &&
+    position.status === "redeemed" &&
+    position.borrowedAmount === 0
+  );
   const hasBeenRedeemed = !!(position && position.status === "redeemed");
 
   // Get collateral token based on position
@@ -68,10 +79,11 @@ function UpdatePosition() {
     )
   );
   const collateralType = selectedCollateralToken.symbol as CollateralType;
-  
-  // Check interest rate cooldown
-  const interestRateCooldown = useInterestRateCooldown(position?.lastInterestRateAdjTime);
-  const hasInterestRateChange = interestRate !== (position ? getInterestRatePercentage(position) : 5);
+
+  // Get rate mode from URL
+  const [rateMode] = useQueryState("rateMode", {
+    defaultValue: "manual" as const,
+  });
 
   // Balance for selected token
   const { data: bitcoinBalance } = useBalance({
@@ -317,7 +329,10 @@ function UpdatePosition() {
                           <>
                             <NumericFormat
                               displayType="text"
-                              value={bigintToDecimal(changes.collateralChange, 18)}
+                              value={bigintToDecimal(
+                                changes.collateralChange,
+                                18
+                              )}
                               thousandSeparator=","
                               decimalScale={7}
                               fixedDecimalScale={false}
@@ -363,7 +378,7 @@ function UpdatePosition() {
             >
               {/* Show borrowing restrictions alert if TCR is below CCR */}
               <BorrowingRestrictionsAlert collateralType={collateralType} />
-              
+
               {/* Redemption History Alert - Show for all redeemed troves */}
               {hasBeenRedeemed && position && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
@@ -377,10 +392,15 @@ function UpdatePosition() {
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <span className="text-blue-700">Redemptions: </span>
-                            <span className="font-medium">{position.redemptionCount || 0} time{position.redemptionCount !== 1 ? 's' : ''}</span>
+                            <span className="font-medium">
+                              {position.redemptionCount || 0} time
+                              {position.redemptionCount !== 1 ? "s" : ""}
+                            </span>
                           </div>
                           <div>
-                            <span className="text-blue-700">Total Redeemed Debt: </span>
+                            <span className="text-blue-700">
+                              Total Redeemed Debt:{" "}
+                            </span>
                             <span className="font-medium">
                               <NumericFormat
                                 displayType="text"
@@ -388,12 +408,15 @@ function UpdatePosition() {
                                 thousandSeparator=","
                                 decimalScale={2}
                                 fixedDecimalScale
-                              /> USDU
+                              />{" "}
+                              USDU
                             </span>
                           </div>
                         </div>
                         <div>
-                          <span className="text-blue-700">Total Redeemed Collateral: </span>
+                          <span className="text-blue-700">
+                            Total Redeemed Collateral:{" "}
+                          </span>
                           <span className="font-medium">
                             <NumericFormat
                               displayType="text"
@@ -401,7 +424,8 @@ function UpdatePosition() {
                               thousandSeparator=","
                               decimalScale={7}
                               fixedDecimalScale={false}
-                            /> {selectedCollateralToken.symbol}
+                            />{" "}
+                            {selectedCollateralToken.symbol}
                           </span>
                         </div>
                       </div>
@@ -409,7 +433,7 @@ function UpdatePosition() {
                   </div>
                 </div>
               )}
-              
+
               {/* Zombie Trove Warning - Only for zombie troves */}
               {isZombie && position && (
                 <div className="bg-amber-50 border border-amber-300 rounded-lg p-4 mb-4">
@@ -420,23 +444,36 @@ function UpdatePosition() {
                         🧟 Zombie Position - Update Restrictions
                       </h3>
                       <p className="text-sm text-amber-800 mb-3">
-                        Your position is below the minimum debt threshold due to redemptions. You have limited options:
+                        Your position is below the minimum debt threshold due to
+                        redemptions. You have limited options:
                       </p>
                       <ul className="text-sm text-amber-800 space-y-1 ml-4 list-disc">
-                        <li>Borrow at least <span className="font-semibold">{(MIN_DEBT - position.borrowedAmount).toFixed(2)} USDU</span> to restore normal status</li>
-                        <li>Add or remove collateral (maintaining valid collateralization)</li>
+                        <li>
+                          Borrow at least{" "}
+                          <span className="font-semibold">
+                            {(MIN_DEBT - position.borrowedAmount).toFixed(2)}{" "}
+                            USDU
+                          </span>{" "}
+                          to restore normal status
+                        </li>
+                        <li>
+                          Add or remove collateral (maintaining valid
+                          collateralization)
+                        </li>
                         <li>Close the position entirely</li>
                       </ul>
                       <div className="mt-3 pt-3 border-t border-amber-200">
                         <p className="text-xs text-amber-700">
-                          <strong>Note:</strong> You cannot reduce debt below {MIN_DEBT} USDU. Interest rate changes are allowed when increasing debt to {MIN_DEBT}+ USDU.
+                          <strong>Note:</strong> You cannot reduce debt below{" "}
+                          {MIN_DEBT} USDU. Interest rate changes are allowed
+                          when increasing debt to {MIN_DEBT}+ USDU.
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
               )}
-              
+
               {/* Fully Redeemed Notice */}
               {isFullyRedeemed && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
@@ -447,13 +484,14 @@ function UpdatePosition() {
                         Position Fully Redeemed
                       </h3>
                       <p className="text-sm text-yellow-700">
-                        Your position has no remaining debt and can be closed to withdraw your collateral.
+                        Your position has no remaining debt and can be closed to
+                        withdraw your collateral.
                       </p>
                     </div>
                   </div>
                 </div>
               )}
-              
+
               <Card
                 className={`border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden ${
                   isSending || isPending ? "opacity-75" : ""
@@ -538,9 +576,13 @@ function UpdatePosition() {
                           currentDebt > 0
                         ) {
                           // Get the current debt value from the form (user's input) or fall back to existing debt
-                          const formDebt = fieldApi.form.getFieldValue("borrowAmount");
-                          const debtToUse = formDebt !== undefined && formDebt > 0 ? formDebt : currentDebt;
-                          
+                          const formDebt =
+                            fieldApi.form.getFieldValue("borrowAmount");
+                          const debtToUse =
+                            formDebt !== undefined && formDebt > 0
+                              ? formDebt
+                              : currentDebt;
+
                           const newCollateralValue = value * bitcoin.price;
                           console.log("coll value: ", newCollateralValue);
                           const debtValue = debtToUse * usdu.price;
@@ -689,10 +731,6 @@ function UpdatePosition() {
 
                   {/* Interest Rate Section */}
                   <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-slate-700">
-                      Interest Rate
-                    </h3>
-
                     <InterestRateSelector
                       interestRate={interestRate}
                       onInterestRateChange={(rate) => {
@@ -701,58 +739,39 @@ function UpdatePosition() {
                           setInterestRate(rate);
                         }
                       }}
-                      disabled={isSending || isPending || (isZombie && borrowAmount < MIN_DEBT)}
+                      disabled={
+                        isSending ||
+                        isPending ||
+                        (isZombie && borrowAmount < MIN_DEBT)
+                      }
                       borrowAmount={borrowAmount ?? undefined}
                       collateralType={collateralType}
+                      lastInterestRateAdjTime={position?.lastInterestRateAdjTime}
+                      currentInterestRate={position ? getInterestRatePercentage(position) : undefined}
+                      isZombie={isZombie}
                     />
 
                     {/* Interest Rate Lock Notice for Zombie Troves */}
                     {isZombie && borrowAmount < MIN_DEBT && (
                       <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
                         <p className="text-xs text-amber-700">
-                          <strong>Interest rate is locked</strong> - To change the interest rate, increase your debt to at least {MIN_DEBT} USDU in the field above.
+                          <strong>Interest rate is locked</strong> - To change
+                          the interest rate, increase your debt to at least{" "}
+                          {MIN_DEBT} USDU in the field above.
                         </p>
                       </div>
                     )}
-                    
+
                     {/* Interest Rate Unlock Notice for Zombie Troves restoring debt */}
                     {isZombie && borrowAmount >= MIN_DEBT && (
                       <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                         <p className="text-xs text-green-700">
-                          <strong>Interest rate unlocked!</strong> - You can now change your interest rate since you're restoring debt above {MIN_DEBT} USDU.
+                          <strong>Interest rate unlocked!</strong> - You can now
+                          change your interest rate since you're restoring debt
+                          above {MIN_DEBT} USDU.
                         </p>
                       </div>
                     )}
-                    
-                    {/* Interest Rate Cooldown Warning */}
-                    {interestRateCooldown.isInCooldown && hasInterestRateChange && !isZombie && (
-                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                        <div className="flex items-start gap-2">
-                          <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                          <div className="text-xs text-amber-700 space-y-1">
-                            <p>
-                              <strong>Premature Adjustment Fee:</strong> Changing the interest rate now will incur a fee equal to 7 days of average interest.
-                            </p>
-                            <p className="text-amber-600">
-                              Fee-free adjustment available in <strong>{interestRateCooldown.remainingTimeFormatted}</strong>
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* No Fee Notice */}
-                    {!interestRateCooldown.isInCooldown && hasInterestRateChange && !isZombie && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                        <div className="flex items-center gap-2">
-                          <Info className="h-4 w-4 text-blue-600 flex-shrink-0" />
-                          <p className="text-xs text-blue-700">
-                            No fee for interest rate adjustment
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
                   </div>
 
                   {/* Update Button */}
