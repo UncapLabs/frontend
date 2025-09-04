@@ -1,6 +1,6 @@
 import { Contract, type RpcProvider } from "starknet";
 import { USDU } from "./definitions";
-import { getCollateralAddresses, type CollateralType } from "./constants";
+import { getCollateralAddresses, getBranchId, type CollateralType } from "./constants";
 import {
   BORROWER_OPERATIONS_ABI,
   UBTC_ABI,
@@ -8,6 +8,7 @@ import {
   TROVE_MANAGER_ABI,
   COLL_SURPLUS_POOL_ABI,
   ADDRESSES_REGISTRY_ABI,
+  HINT_HELPERS_ABI,
 } from ".";
 
 /**
@@ -472,6 +473,62 @@ export const contractRead = {
         provider
       );
       const result = await contract.call("get_collateral", [borrower]);
+      return result as bigint;
+    },
+  },
+
+  hintHelpers: {
+    /**
+     * Predict the upfront fee for opening a new trove
+     */
+    predictOpenTroveUpfrontFee: async (
+      provider: RpcProvider,
+      collateralType: CollateralType,
+      borrowedAmount: bigint,
+      interestRate: bigint
+    ): Promise<bigint> => {
+      const addresses = getCollateralAddresses(collateralType);
+      const branchId = getBranchId(collateralType);
+      
+      const contract = new Contract(
+        HINT_HELPERS_ABI,
+        addresses.hintHelpers,
+        provider
+      );
+      
+      const result = await contract.call("predict_open_trove_upfront_fee", [
+        branchId,
+        borrowedAmount,
+        interestRate,
+      ]);
+      
+      return result as bigint;
+    },
+
+    /**
+     * Predict the upfront fee for adjusting a trove (increasing debt)
+     */
+    predictAdjustTroveUpfrontFee: async (
+      provider: RpcProvider,
+      collateralType: CollateralType,
+      troveId: bigint,
+      debtIncrease: bigint
+    ): Promise<bigint> => {
+      const addresses = getCollateralAddresses(collateralType);
+      const branchId = getBranchId(collateralType);
+      
+      const contract = new Contract(
+        HINT_HELPERS_ABI,
+        addresses.hintHelpers,
+        provider
+      );
+      
+      const result = await contract.call("predict_adjust_trove_upfront_fee", [
+        branchId,
+        troveId,
+        debtIncrease,
+      ]);
+      
       return result as bigint;
     },
   },

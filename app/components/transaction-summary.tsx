@@ -8,6 +8,10 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { Badge } from "~/components/ui/badge";
+import { usePredictUpfrontFee } from "~/hooks/use-predict-upfront-fee";
+import { decimalToBigint, bigintToDecimal } from "~/lib/decimal";
+import type { CollateralType } from "~/lib/contracts/constants";
+import { Skeleton } from "~/components/ui/skeleton";
 
 interface PositionChange {
   collateral?: {
@@ -38,6 +42,9 @@ interface TransactionSummaryProps {
   isValid?: boolean;
   warnings?: string[];
   redemptionRisk?: "High" | "Medium" | "Low";
+  // For fee calculation
+  collateralType?: CollateralType;
+  troveId?: bigint; // For update operations
 }
 
 export function TransactionSummary({
@@ -48,6 +55,8 @@ export function TransactionSummary({
   className,
   warnings = [],
   redemptionRisk,
+  collateralType,
+  troveId,
 }: TransactionSummaryProps) {
   const title =
     type === "open"
@@ -60,6 +69,37 @@ export function TransactionSummary({
   const annualInterestCost = changes.debt?.to && changes.interestRate?.to 
     ? (changes.debt.to * changes.interestRate.to) / 100
     : 0;
+
+  // Determine if we're increasing debt (for updates)
+  const isDebtIncrease = type === "update" && 
+    changes.debt?.from !== undefined && 
+    changes.debt?.to !== undefined && 
+    changes.debt.to > changes.debt.from;
+
+  // Calculate upfront fee using the unified hook
+  const { upfrontFee, isLoading: isFeeLoading } = usePredictUpfrontFee(
+    type === "open" 
+      ? {
+          type: "open",
+          collateralType: collateralType || "UBTC",
+          borrowedAmount: changes.debt?.to 
+            ? decimalToBigint(changes.debt.to, 18)
+            : undefined,
+          interestRate: changes.interestRate?.to 
+            ? decimalToBigint(changes.interestRate.to / 100, 18)
+            : undefined,
+          enabled: !!collateralType && !!changes.debt?.to && !!changes.interestRate?.to,
+        }
+      : {
+          type: "adjust",
+          collateralType: collateralType || "UBTC",
+          troveId: troveId,
+          debtIncrease: isDebtIncrease && changes.debt?.from !== undefined && changes.debt?.to !== undefined
+            ? decimalToBigint(changes.debt.to - changes.debt.from, 18)
+            : undefined,
+          enabled: !!collateralType && !!troveId && isDebtIncrease,
+        }
+  );
 
   const getRiskBadgeVariant = (
     risk?: "High" | "Medium" | "Low"
@@ -181,7 +221,7 @@ export function TransactionSummary({
         </div>
 
         {/* Loan */}
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-start">
           <div className="flex items-center gap-1.5">
             <span className="text-sm text-slate-700 font-medium">Loan</span>
             <Tooltip>
@@ -195,18 +235,53 @@ export function TransactionSummary({
           </div>
           <div className="text-right">
             {type === "update" && changes.debt?.from !== changes.debt?.to ? (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-slate-400 line-through">
-                  <NumericFormat
-                    displayType="text"
-                    value={changes.debt?.from || 0}
-                    thousandSeparator=","
-                    decimalScale={2}
-                    fixedDecimalScale
-                  />{" "}
-                  USDU
-                </span>
-                <span className="text-xs text-slate-400">→</span>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 justify-end">
+                  <span className="text-sm text-slate-400 line-through">
+                    <NumericFormat
+                      displayType="text"
+                      value={changes.debt?.from || 0}
+                      thousandSeparator=","
+                      decimalScale={2}
+                      fixedDecimalScale
+                    />{" "}
+                    USDU
+                  </span>
+                  <span className="text-xs text-slate-400">→</span>
+                  <span className="text-sm font-semibold text-slate-900">
+                    <NumericFormat
+                      displayType="text"
+                      value={changes.debt?.to || 0}
+                      thousandSeparator=","
+                      decimalScale={2}
+                      fixedDecimalScale
+                    />{" "}
+                    USDU
+                  </span>
+                </div>
+                {/* Show fee for debt increase */}
+                {isDebtIncrease && (
+                  <div className="text-xs text-slate-500">
+                    {isFeeLoading ? (
+                      <Skeleton className="h-3 w-24 ml-auto" />
+                    ) : upfrontFee ? (
+                      <>
+                        Incl.{" "}
+                        <NumericFormat
+                          displayType="text"
+                          value={bigintToDecimal(upfrontFee, 18)}
+                          thousandSeparator=","
+                          decimalScale={2}
+                          fixedDecimalScale
+                        />{" "}
+                        USDU fee
+                      </>
+                    ) : null}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-0.5">
                 <span className="text-sm font-semibold text-slate-900">
                   <NumericFormat
                     displayType="text"
@@ -217,18 +292,27 @@ export function TransactionSummary({
                   />{" "}
                   USDU
                 </span>
+                {/* Show fee for new loan */}
+                {type === "open" && (
+                  <div className="text-xs text-slate-500">
+                    {isFeeLoading ? (
+                      <Skeleton className="h-3 w-24 ml-auto" />
+                    ) : upfrontFee ? (
+                      <>
+                        Incl.{" "}
+                        <NumericFormat
+                          displayType="text"
+                          value={bigintToDecimal(upfrontFee, 18)}
+                          thousandSeparator=","
+                          decimalScale={2}
+                          fixedDecimalScale
+                        />{" "}
+                        USDU creation fee
+                      </>
+                    ) : null}
+                  </div>
+                )}
               </div>
-            ) : (
-              <span className="text-sm font-semibold text-slate-900">
-                <NumericFormat
-                  displayType="text"
-                  value={changes.debt?.to || 0}
-                  thousandSeparator=","
-                  decimalScale={2}
-                  fixedDecimalScale
-                />{" "}
-                USDU
-              </span>
             )}
           </div>
         </div>

@@ -1,0 +1,81 @@
+import { publicProcedure, router } from "../trpc";
+import { z } from "zod";
+import { RpcProvider } from "starknet";
+import { contractRead } from "~/lib/contracts/calls";
+import type { CollateralType } from "~/lib/contracts/constants";
+
+export const feesRouter = router({
+  predictOpenTroveUpfrontFee: publicProcedure
+    .input(
+      z.object({
+        collateralType: z.enum(["UBTC", "GBTC"]),
+        borrowedAmount: z.string(), // BigInt as string for JSON serialization
+        interestRate: z.string(), // BigInt as string for JSON serialization
+      })
+    )
+    .query(async ({ input }) => {
+      const provider = new RpcProvider({
+        nodeUrl: process.env.NODE_URL,
+      });
+
+      try {
+        // Convert string inputs back to bigints
+        const borrowedAmount = BigInt(input.borrowedAmount);
+        const interestRate = BigInt(input.interestRate);
+
+        // Call the contract to get the upfront fee
+        const upfrontFee = await contractRead.hintHelpers.predictOpenTroveUpfrontFee(
+          provider,
+          input.collateralType as CollateralType,
+          borrowedAmount,
+          interestRate
+        );
+
+        // Return the fee as a string for JSON serialization
+        return {
+          upfrontFee: upfrontFee.toString(),
+        };
+      } catch (error) {
+        console.error("Error predicting open trove upfront fee:", error);
+        throw new Error("Failed to predict upfront fee");
+      }
+    }),
+
+  predictAdjustTroveUpfrontFee: publicProcedure
+    .input(
+      z.object({
+        collateralType: z.enum(["UBTC", "GBTC"]),
+        troveId: z.string(), // BigInt as string for JSON serialization
+        debtIncrease: z.string(), // BigInt as string for JSON serialization
+      })
+    )
+    .query(async ({ input }) => {
+      const provider = new RpcProvider({
+        nodeUrl: process.env.NODE_URL,
+      });
+
+      try {
+        // Convert string inputs back to bigints
+        const troveId = BigInt(input.troveId);
+        const debtIncrease = BigInt(input.debtIncrease);
+
+        // Call the contract to get the upfront fee
+        const upfrontFee = await contractRead.hintHelpers.predictAdjustTroveUpfrontFee(
+          provider,
+          input.collateralType as CollateralType,
+          troveId,
+          debtIncrease
+        );
+
+        // Return the fee as a string for JSON serialization
+        return {
+          upfrontFee: upfrontFee.toString(),
+        };
+      } catch (error) {
+        console.error("Error predicting adjust trove upfront fee:", error);
+        throw new Error("Failed to predict upfront fee");
+      }
+    }),
+});
+
+export type FeesRouter = typeof feesRouter;

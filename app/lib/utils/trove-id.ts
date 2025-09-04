@@ -55,3 +55,21 @@ export function truncateTroveId(fullId: string): string {
   }
   return id;
 }
+
+/**
+ * Extracts the trove ID from a prefixed trove ID
+ * @param prefixedId The prefixed trove ID in format "branchId:troveId"
+ * @returns The extracted trove ID as a bigint, or undefined if invalid
+ */
+export function extractTroveId(prefixedId: string | undefined): bigint | undefined {
+  if (!prefixedId) return undefined;
+  
+  const parts = prefixedId.split(':');
+  const troveId = parts.length > 1 ? parts[1] : prefixedId;
+  
+  try {
+    return BigInt(troveId);
+  } catch {
+    return undefined;
+  }
+}

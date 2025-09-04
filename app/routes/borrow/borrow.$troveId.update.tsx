@@ -22,6 +22,7 @@ import { bigintToDecimal } from "~/lib/decimal";
 import { useQueryState, parseAsFloat, parseAsInteger } from "nuqs";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { getInterestRatePercentage } from "~/lib/utils/position-helpers";
+import { extractTroveId } from "~/lib/utils/trove-id";
 import { TransactionSummary } from "~/components/transaction-summary";
 import {
   usePositionMetrics,
@@ -831,6 +832,8 @@ function UpdatePosition() {
                 ? ["Minimum debt requirement is $2,000 USDU"]
                 : []
             }
+            collateralType={position?.collateralAsset as CollateralType}
+            troveId={extractTroveId(position?.id)}
             className="sticky top-8"
           />
         </div>

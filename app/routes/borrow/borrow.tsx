@@ -519,6 +519,7 @@ function Borrow() {
                 ? ["Minimum debt requirement is $2,000 USDU"]
                 : []
             }
+            collateralType={selectedCollateralToken.collateralType}
             className="sticky top-8"
           />
           <RedemptionInfo
