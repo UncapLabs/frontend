@@ -41,6 +41,7 @@ interface TokenInputProps {
   helperText?: string;
   showBalance?: boolean;
   maxValue?: number;
+  includeMax?: boolean;
 }
 
 export const TokenInput = memo(function TokenInput({
@@ -62,6 +63,7 @@ export const TokenInput = memo(function TokenInput({
   helperText,
   showBalance = true,
   maxValue = MAX_LIMIT,
+  includeMax = false,
 }: TokenInputProps) {
   const usdValue = value && price ? value * price.price : 0;
 
@@ -88,7 +90,7 @@ export const TokenInput = memo(function TokenInput({
                 : ""
             } flex items-center space-x-1`}
           >
-            {[25, 50, 75].map((pct) => (
+            {(includeMax ? [25, 50, 75, 100] : [25, 50, 75]).map((pct) => (
               <Button
                 key={pct}
                 type="button"
@@ -96,7 +98,7 @@ export const TokenInput = memo(function TokenInput({
                 className="h-6 px-2 text-xs rounded-md bg-white border-slate-200 hover:bg-slate-100 transition-colors"
                 onClick={() => onPercentageClick(pct / 100)}
               >
-                {pct}%
+                {pct === 100 ? "Max" : `${pct}%`}
               </Button>
             ))}
           </div>

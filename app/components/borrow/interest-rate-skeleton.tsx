@@ -122,26 +122,20 @@ export function InterestRateSkeleton() {
         </div>
       </div>
 
-      {/* Skeleton for Risk Indicator */}
-      <div className="mt-3 p-2 rounded-lg border bg-slate-50 border-slate-200">
-        <div className="flex items-start gap-2">
-          <Skeleton className="h-4 w-4 mt-0.5 rounded animate-none" />
-          <div className="flex-1">
-            <Skeleton className="h-3 w-24 mb-1 animate-none" />
-            <Skeleton className="h-3 w-full animate-none" />
-          </div>
-        </div>
+      {/* Skeleton for Yearly Interest Cost - positioned below interest input on the left */}
+      <div className="mt-2 ml-1">
+        <Skeleton className="h-3 w-24 animate-none" />
       </div>
 
-      {/* Skeleton for Debt Statistics */}
-      <div className="grid grid-cols-2 gap-3 mt-3">
-        <div className="bg-white rounded-lg border border-slate-200 p-2">
-          <Skeleton className="h-3 w-16 mb-1 animate-none" />
-          <Skeleton className="h-4 w-20 animate-none" />
+      {/* Skeleton for Combined Redemption Risk and Redeemable Before You */}
+      <div className="flex items-center justify-between mt-3 py-2 px-3 bg-white rounded-md border border-slate-200">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-3 w-20 animate-none" />
+          <Skeleton className="h-3 w-12 animate-none" />
         </div>
-        <div className="bg-white rounded-lg border border-slate-200 p-2">
-          <Skeleton className="h-3 w-14 mb-1 animate-none" />
-          <Skeleton className="h-4 w-24 animate-none" />
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-3 w-28 animate-none" />
+          <Skeleton className="h-3 w-16 animate-none" />
         </div>
       </div>
     </>

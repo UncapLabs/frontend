@@ -137,32 +137,71 @@ export function InterestRateSelector({
                 <InterestRateSkeleton />
               ) : hasData ? (
                 <>
-                  <ManualRateControls
-                    interestRate={interestRate}
-                    onInterestRateChange={onInterestRateChange}
-                    visualizationData={visualizationData.data}
-                    disabled={disabled}
-                  />
+                  <div>
+                    <ManualRateControls
+                      interestRate={interestRate}
+                      onInterestRateChange={onInterestRateChange}
+                      visualizationData={visualizationData.data}
+                      disabled={disabled}
+                    />
+                    {/* Yearly Interest Cost - Display below the interest rate input */}
+                    {borrowAmount && borrowAmount > 0 && (
+                      <div className="mt-2 ml-1">
+                        <span className="text-xs text-slate-500">
+                          {((borrowAmount * interestRate) / 100).toLocaleString('en-US', { 
+                            minimumFractionDigits: 2, 
+                            maximumFractionDigits: 2 
+                          })} USDU / year
+                        </span>
+                      </div>
+                    )}
+                  </div>
 
-                  {/* Risk Indicator */}
-                  <RiskIndicator riskLevel={redemptionRisk.data as RiskLevel} />
-
-                  {/* Debt Statistics */}
-                  <DebtStatistics
-                    debtInFront={debtInFront}
-                    totalDebt={totalDebt}
-                  />
+                  {/* Combined Redemption Risk and Redeemable Before You */}
+                  <div className="flex items-center justify-between mt-3 py-2 px-3 bg-white rounded-md border border-slate-200">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-600">Redemption Risk:</span>
+                      <span className={`text-xs font-medium ${
+                        redemptionRisk.data === "Low" ? "text-green-600" :
+                        redemptionRisk.data === "Medium" ? "text-amber-600" :
+                        redemptionRisk.data === "High" ? "text-red-600" :
+                        "text-slate-400"
+                      }`}>
+                        {redemptionRisk.data || "—"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-600">Redeemable before you:</span>
+                      <span className="text-xs font-medium text-slate-900">
+                        {debtInFront > 0 ? `$${(debtInFront / 1000000).toFixed(2)}M` : "—"}
+                      </span>
+                    </div>
+                  </div>
                 </>
               ) : (
                 // No data or error - show ManualRateControls without chart
                 <>
                   <div className="max-w-md">
-                    <ManualRateControls
-                      interestRate={interestRate}
-                      onInterestRateChange={onInterestRateChange}
-                      visualizationData={undefined} // No data available
-                      disabled={disabled}
-                    />
+                    <div>
+                      <ManualRateControls
+                        interestRate={interestRate}
+                        onInterestRateChange={onInterestRateChange}
+                        visualizationData={undefined} // No data available
+                        disabled={disabled}
+                      />
+                      {/* Yearly Interest Cost - Display below the interest rate input */}
+                      {borrowAmount && borrowAmount > 0 && (
+                        <div className="mt-2 ml-1">
+                          <span className="text-xs text-slate-500">
+                            {((borrowAmount * interestRate) / 100).toLocaleString('en-US', { 
+                              minimumFractionDigits: 2, 
+                              maximumFractionDigits: 2 
+                            })} USDU / year
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
                     <p className="text-xs text-slate-500 text-center mt-2">
                       {hasError
                         ? "Unable to load distribution data"

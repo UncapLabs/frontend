@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { NumericFormat } from "react-number-format";
-import { AlertCircle, Info } from "lucide-react";
+import { AlertCircle, Info, Sparkles } from "lucide-react";
 import { cn } from "~/lib/utils";
 import {
   Tooltip,
@@ -68,6 +68,12 @@ export function TransactionSummary({
   // Calculate annual interest cost
   const annualInterestCost = changes.debt?.to && changes.interestRate?.to 
     ? (changes.debt.to * changes.interestRate.to) / 100
+    : 0;
+
+  // Calculate STRK rebate (30% of yearly interest)
+  const REBATE_PERCENTAGE = 30;
+  const yearlyRebate = annualInterestCost > 0 
+    ? (annualInterestCost * REBATE_PERCENTAGE) / 100
     : 0;
 
   // Determine if we're increasing debt (for updates)
@@ -317,6 +323,51 @@ export function TransactionSummary({
           </div>
         </div>
 
+        {/* LTV Ratio */}
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm text-slate-700 font-medium">LTV</span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-3 w-3 text-slate-400 cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Loan-to-Value ratio. Shows how much you're borrowing against your collateral value.</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <div className="text-right">
+            {(() => {
+              const currentLTV = changes.collateralValueUSD?.to && changes.debt?.to
+                ? (changes.debt.to / changes.collateralValueUSD.to) * 100
+                : 0;
+              const previousLTV = type === "update" && changes.collateralValueUSD?.from && changes.debt?.from
+                ? (changes.debt.from / changes.collateralValueUSD.from) * 100
+                : undefined;
+              
+              if (type === "update" && previousLTV !== undefined && Math.abs(currentLTV - previousLTV) > 0.01) {
+                return (
+                  <div className="flex items-center gap-2 justify-end">
+                    <span className="text-sm text-slate-400 line-through">
+                      {previousLTV.toFixed(1)}%
+                    </span>
+                    <span className="text-xs text-slate-400">→</span>
+                    <span className="text-sm font-semibold text-slate-900">
+                      {currentLTV.toFixed(1)}%
+                    </span>
+                  </div>
+                );
+              } else {
+                return (
+                  <span className="text-sm font-semibold text-slate-900">
+                    {currentLTV > 0 ? `${currentLTV.toFixed(1)}%` : <span className="text-slate-400">—</span>}
+                  </span>
+                );
+              }
+            })()}
+          </div>
+        </div>
+
         {/* Interest Rate with annual cost */}
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-1.5">
@@ -382,6 +433,39 @@ export function TransactionSummary({
             )}
           </div>
         </div>
+
+        {/* STRK Rebate - Only show if there's a yearly rebate */}
+        {yearlyRebate > 0 && (
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-purple-500" />
+              <span className="text-sm text-slate-700 font-medium">
+                STRK Rebate
+              </span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="h-3 w-3 text-slate-400 cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    You earn a 30% rebate on interest payments through the STRK rebate program
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <span className="text-sm font-semibold text-green-600">
+              +$
+              <NumericFormat
+                displayType="text"
+                value={yearlyRebate}
+                thousandSeparator=","
+                decimalScale={0}
+                fixedDecimalScale={false}
+              />
+              {" "}/year
+            </span>
+          </div>
+        )}
 
         {/* Liquidation Price */}
         <div className="flex justify-between items-center">

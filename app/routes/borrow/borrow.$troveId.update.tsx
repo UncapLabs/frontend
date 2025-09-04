@@ -634,6 +634,20 @@ function UpdatePosition() {
                         onBlur={field.handleBlur}
                         label="New collateral amount"
                         disabled={isSending || isPending}
+                        percentageButtons
+                        onPercentageClick={(percentage: number) => {
+                          const balance = bitcoinBalance?.value
+                            ? Number(bitcoinBalance.value) / 10 ** selectedCollateralToken.decimals
+                            : 0;
+                          // For update position, Max should be current position + available balance
+                          const currentCollateral = position?.collateralAmount || 0;
+                          const newValue = percentage === 1 
+                            ? currentCollateral + balance  // Max = current + balance
+                            : currentCollateral + (balance * percentage); // Others = current + percentage of balance
+                          field.handleChange(newValue);
+                          setCollateralAmount(newValue);
+                        }}
+                        includeMax={true}
                       />
                     )}
                   </form.Field>
@@ -725,6 +739,19 @@ function UpdatePosition() {
                         onBlur={field.handleBlur}
                         label="New debt amount"
                         disabled={isSending || isPending}
+                        percentageButtons
+                        percentageButtonsOnHover
+                        onPercentageClick={(percentage: number) => {
+                          // For debt update, percentage represents target LTV
+                          const collateral = form.getFieldValue("collateralAmount") || position?.collateralAmount || 0;
+                          const btcPrice = bitcoin?.price || 0;
+                          const usduPrice = usdu?.price || 1;
+                          const collateralValueUSD = collateral * btcPrice;
+                          const newDebtUSD = collateralValueUSD * percentage;
+                          const newValue = newDebtUSD / usduPrice;
+                          field.handleChange(newValue);
+                          setBorrowAmount(newValue);
+                        }}
                       />
                     )}
                   </form.Field>

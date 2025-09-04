@@ -149,15 +149,14 @@ function Borrow() {
         // Manually trigger validation after setting value
         form.validateField("collateralAmount", "change");
       } else {
-        // Calculate debt limit inline with proper collateralization ratio
+        // For borrow, percentage represents LTV (Loan-to-Value)
+        // If collateral is worth $100k and user clicks 50%, they want to borrow $50k
         const collateral = form.getFieldValue("collateralAmount") || 0;
         const btcPrice = bitcoin?.price || 0;
-        const maxBorrowable = computeDebtLimit(
-          collateral,
-          btcPrice,
-          minCollateralizationRatio
-        );
-        const newValue = maxBorrowable * percentage;
+        const usduPrice = usdu?.price || 1;
+        const collateralValueUSD = collateral * btcPrice;
+        const borrowAmountUSD = collateralValueUSD * percentage;
+        const newValue = borrowAmountUSD / usduPrice; // Convert USD value to USDU amount
         form.setFieldValue("borrowAmount", newValue);
         // Manually trigger validation after setting value
         form.validateField("borrowAmount", "change");
@@ -167,8 +166,8 @@ function Borrow() {
       bitcoinBalance?.value,
       selectedCollateralToken.decimals,
       bitcoin?.price,
+      usdu?.price,
       form,
-      minCollateralizationRatio,
     ]
   );
 
@@ -330,6 +329,7 @@ function Borrow() {
                         percentageButtons
                         onPercentageClick={handleCollateralPercentageClick}
                         disabled={isSending || isPending}
+                        includeMax={true}
                       />
                     )}
                   </form.Field>

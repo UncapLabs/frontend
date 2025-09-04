@@ -1,5 +1,11 @@
-import { Info } from "lucide-react";
+import { ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import { NumericFormat } from "react-number-format";
+import { useState } from "react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "~/components/ui/collapsible";
 
 interface STRKRebateInfoProps {
   yearlyInterestUSD: number;
@@ -12,21 +18,49 @@ export function STRKRebateInfo({
   effectiveYearlyInterestUSD,
   yearlyRebateUSD,
 }: STRKRebateInfoProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <div className="bg-white rounded-lg p-3 mt-4 border border-slate-200">
-      <div className="flex items-start gap-2">
-        <div className="mt-0.5">
+    <Collapsible
+      open={isOpen}
+      onOpenChange={setIsOpen}
+      className="bg-white rounded-lg border border-slate-200 mt-4"
+    >
+      <CollapsibleTrigger className="w-full p-3 flex items-center justify-between hover:bg-slate-50 transition-colors">
+        <div className="flex items-center gap-2">
           <div className="w-5 h-5 rounded-full bg-purple-100 flex items-center justify-center">
-            <Info className="h-3 w-3 text-purple-600" />
+            <Sparkles className="h-3 w-3 text-purple-600" />
           </div>
-        </div>
-        <div className="flex-1">
-          <h4 className="text-sm font-semibold text-slate-700 mb-1">
+          <span className="text-sm font-semibold text-slate-700">
             STRK Rebate Program
-          </h4>
-          <p className="text-xs text-slate-600 mb-3">
-            You get a 30% discount on your interest rate, paid as STRK
-            tokens claimable weekly.
+          </span>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-purple-600">
+            +$
+            <NumericFormat
+              displayType="text"
+              value={yearlyRebateUSD}
+              thousandSeparator=","
+              decimalScale={0}
+              fixedDecimalScale={false}
+            />
+            /year
+          </span>
+          {isOpen ? (
+            <ChevronUp className="h-4 w-4 text-slate-400" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-slate-400" />
+          )}
+        </div>
+      </CollapsibleTrigger>
+
+      <CollapsibleContent>
+        <div className="px-3 pb-3 border-t border-slate-100">
+          <p className="text-xs text-slate-600 mt-3 mb-3">
+            You get a 30% discount on your interest rate, paid as STRK tokens
+            claimable weekly.
           </p>
 
           <div className="space-y-2">
@@ -80,7 +114,7 @@ export function STRKRebateInfo({
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }

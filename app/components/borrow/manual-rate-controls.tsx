@@ -76,7 +76,6 @@ export function ManualRateControls({
       };
     }, [visualizationData, interestRateDnum, interestRate]);
 
-  // Handle slider value change - now simpler with clean data
   const handleSliderChange = useCallback(
     (value: number) => {
       if (!visualizationData) {
@@ -94,50 +93,53 @@ export function ManualRateControls({
     [visualizationData, onInterestRateChange]
   );
 
-  // Return the component with the debt data accessible via a separate hook
   return (
-    <div className="flex items-center gap-3">
-      {/* Input field on the left - now visible on mobile too */}
-      <div className="flex items-center gap-1 bg-white rounded-md border border-slate-200 px-3 py-2">
-        <NumericFormat
-          value={interestRate}
-          onValueChange={(values) => {
-            const numericValue = values.floatValue;
-            if (
-              numericValue !== undefined &&
-              numericValue >= 0.5 &&
-              numericValue <= 20
-            ) {
-              onInterestRateChange(numericValue);
-            }
-          }}
-          disabled={disabled}
-          className="w-20 text-sm font-semibold bg-transparent border-none focus:outline-none text-right p-0"
-          placeholder="0.50"
-          decimalScale={2}
-          fixedDecimalScale={true}
-          allowNegative={false}
-          thousandSeparator={false}
-          isAllowed={(values) => {
-            const { floatValue } = values;
-            return (
-              floatValue === undefined ||
-              (floatValue >= 0.5 && floatValue <= 20)
-            );
-          }}
-        />
-        <span className="text-sm font-semibold text-slate-600">%</span>
-      </div>
+    <div>
+      <div className="flex items-center gap-3">
+        {/* Input field on the left with yearly interest below */}
+        <div>
+          <div className="flex items-center gap-1 bg-white rounded-md border border-slate-200 px-3 py-2">
+            <NumericFormat
+              value={interestRate}
+              onValueChange={(values) => {
+                const numericValue = values.floatValue;
+                if (
+                  numericValue !== undefined &&
+                  numericValue >= 0.5 &&
+                  numericValue <= 20
+                ) {
+                  onInterestRateChange(numericValue);
+                }
+              }}
+              disabled={disabled}
+              className="w-20 text-sm font-semibold bg-transparent border-none focus:outline-none text-right p-0"
+              placeholder="0.50"
+              decimalScale={2}
+              fixedDecimalScale={true}
+              allowNegative={false}
+              thousandSeparator={false}
+              isAllowed={(values) => {
+                const { floatValue } = values;
+                return (
+                  floatValue === undefined ||
+                  (floatValue >= 0.5 && floatValue <= 20)
+                );
+              }}
+            />
+            <span className="text-sm font-semibold text-slate-600">%</span>
+          </div>
+        </div>
 
-      <div className="flex-1 max-w-md">
-        <InterestSlider
-          value={sliderValue}
-          onChange={handleSliderChange}
-          chart={chartSizes}
-          riskZones={riskZones}
-          gradientMode="high-to-low"
-          disabled={disabled}
-        />
+        <div className="flex-1 max-w-md">
+          <InterestSlider
+            value={sliderValue}
+            onChange={handleSliderChange}
+            chart={chartSizes}
+            riskZones={riskZones}
+            gradientMode="high-to-low"
+            disabled={disabled}
+          />
+        </div>
       </div>
     </div>
   );
