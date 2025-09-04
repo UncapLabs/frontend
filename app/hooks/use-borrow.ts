@@ -7,7 +7,6 @@ import { useTransactionState } from "./use-transaction-state";
 import {
   getCollateralAddresses,
   UBTC_TOKEN,
-  GAS_TOKEN_ADDRESS,
   type CollateralType,
   getBranchId,
 } from "~/lib/contracts/constants";
@@ -92,14 +91,7 @@ export function useBorrow({
         decimalToBigint(collateralAmount, 18)
       ),
 
-      // 2. Approve STRK for gas payment
-      contractCall.token.approve(
-        GAS_TOKEN_ADDRESS,
-        addresses.borrowerOperations,
-        BigInt(1e18) // Approve 1 STRK for gas fees
-      ),
-
-      // 3. Open trove
+      // 2. Open trove
       contractCall.borrowerOperations.openTrove({
         owner: address,
         ownerIndex: nextOwnerIndex,

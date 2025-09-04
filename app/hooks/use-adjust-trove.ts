@@ -3,7 +3,7 @@ import { useAccount } from "@starknet-react/core";
 import { contractCall } from "~/lib/contracts/calls";
 import { useTransaction } from "./use-transaction";
 import { toBigInt } from "~/lib/utils";
-import { getCollateralAddresses, type CollateralType, GAS_TOKEN_ADDRESS } from "~/lib/contracts/constants";
+import { getCollateralAddresses, type CollateralType } from "~/lib/contracts/constants";
 
 interface UseAdjustTroveParams {
   troveId?: bigint;
@@ -45,15 +45,6 @@ function getAdjustmentCalls(params: {
   
   // Get contract addresses for this collateral type
   const addresses = getCollateralAddresses(collateralType);
-
-  // Always approve STRK for gas payment
-  calls.push(
-    contractCall.token.approve(
-      GAS_TOKEN_ADDRESS,
-      addresses.borrowerOperations,
-      BigInt(10e18) // Approve a reasonable amount for gas fees
-    )
-  );
 
   // Special handling for zombie troves - must use adjust_zombie_trove
   if (isZombie) {
@@ -224,12 +215,6 @@ export function useAdjustTrove({
     // If only interest rate is changing, use adjust_trove_interest_rate
     if (!changes.hasCollateralChange && !changes.hasDebtChange && changes.hasInterestRateChange) {
       return [
-        // Approve STRK for gas payment
-        contractCall.token.approve(
-          GAS_TOKEN_ADDRESS,
-          addresses.borrowerOperations,
-          BigInt(10e18) // Approve a reasonable amount for gas fees
-        ),
         contractCall.borrowerOperations.adjustTroveInterestRate({
           troveId,
           annualInterestRate: changes.newInterestRate,
