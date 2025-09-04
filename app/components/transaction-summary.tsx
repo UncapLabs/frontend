@@ -341,11 +341,11 @@ export function TransactionSummary({
               <div className="space-y-1">
                 <div className="flex items-center gap-2 justify-end">
                   <span className="text-sm text-slate-400 line-through">
-                    {changes.interestRate?.from}.00%
+                    {changes.interestRate?.from?.toFixed(2)}%
                   </span>
                   <span className="text-xs text-slate-400">→</span>
                   <span className="text-sm font-semibold text-slate-900">
-                    {changes.interestRate?.to}.00%
+                    {changes.interestRate?.to?.toFixed(2)}%
                   </span>
                 </div>
                 {annualInterestCost > 0 && (
@@ -364,7 +364,7 @@ export function TransactionSummary({
             ) : (
               <div className="space-y-0.5">
                 <div className="text-sm font-semibold text-slate-900">
-                  {changes.interestRate?.to || 5}.00%
+                  {(changes.interestRate?.to || 5).toFixed(2)}%
                 </div>
                 {annualInterestCost > 0 && (
                   <div className="text-xs text-slate-500">
