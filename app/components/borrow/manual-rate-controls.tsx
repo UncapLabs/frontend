@@ -2,7 +2,10 @@ import { NumericFormat } from "react-number-format";
 import { InterestSlider } from "~/components/borrow/interest-slider";
 import { useMemo, useCallback } from "react";
 import * as dn from "dnum";
-import { findPositionInChart, getRateFromPosition } from "~/lib/interest-rate-visualization";
+import {
+  findPositionInChart,
+  getRateFromPosition,
+} from "~/lib/interest-rate-visualization";
 
 interface ManualRateControlsProps {
   interestRate: number;
@@ -90,7 +93,7 @@ export function ManualRateControls({
     },
     [visualizationData, onInterestRateChange]
   );
-  
+
   // Return the component with the debt data accessible via a separate hook
   return (
     <div className="flex items-center gap-3">
@@ -123,9 +126,7 @@ export function ManualRateControls({
             );
           }}
         />
-        <span className="text-sm font-semibold text-slate-600">
-          %
-        </span>
+        <span className="text-sm font-semibold text-slate-600">%</span>
       </div>
 
       <div className="flex-1 max-w-md">
@@ -140,31 +141,4 @@ export function ManualRateControls({
       </div>
     </div>
   );
-}
-
-// Export just the data extraction if needed
-export function useManualRateData(visualizationData: any, interestRate: number) {
-  const interestRateDnum = dn.from(interestRate / 100, 18);
-  
-  if (!visualizationData) {
-    return { debtInFront: 0, totalDebt: 0 };
-  }
-
-  const currentRateDecimal = dn.toNumber(interestRateDnum);
-  const currentBar = visualizationData.chartBars?.find(
-    (bar: any, index: number) => {
-      const nextBar = visualizationData.chartBars[index + 1];
-      if (!nextBar) {
-        return currentRateDecimal >= bar.rate;
-      }
-      return (
-        currentRateDecimal >= bar.rate && currentRateDecimal < nextBar.rate
-      );
-    }
-  );
-
-  return {
-    debtInFront: currentBar ? currentBar.debtInFront : 0,
-    totalDebt: visualizationData.totalDebt || 0,
-  };
 }

@@ -12,13 +12,11 @@ export function ManagedStrategy({
   disabled = false,
   borrowAmount 
 }: ManagedStrategyProps) {
-  // Calculate managed amount and fee based on borrow amount
-  const managedAmount = borrowAmount || 14000;
-  const annualFee = managedAmount * 0.001; // 0.1% annual fee
   const interestRate = 4.3; // Managed strategy uses 4.3% interest rate
+  const annualFee = borrowAmount ? borrowAmount * 0.001 : 0; // 0.1% annual fee
   
-  // Calculate STRK rebate for the managed strategy
-  const rebateData = useCalculatedRebate(managedAmount, interestRate);
+  // Calculate STRK rebate for the managed strategy (only if borrowAmount exists)
+  const rebateData = useCalculatedRebate(borrowAmount, interestRate);
 
   return (
     <div className="space-y-4">
@@ -29,36 +27,36 @@ export function ManagedStrategy({
             <h4 className="text-base font-semibold text-slate-800">
               Balanced Strategy
             </h4>
-            <div className="flex items-center gap-3 mt-1 text-sm text-slate-600">
-              <span>
-                USDU Managed: $
-                <NumericFormat
-                  displayType="text"
-                  value={managedAmount}
-                  thousandSeparator=","
-                  decimalScale={0}
-                  fixedDecimalScale={false}
-                />
-              </span>
-              <span className="text-slate-400">•</span>
-              <span>
-                Annual Fee:{" "}
-                {annualFee > 0 ? (
-                  <>
-                    $
-                    <NumericFormat
-                      displayType="text"
-                      value={annualFee}
-                      thousandSeparator=","
-                      decimalScale={2}
-                      fixedDecimalScale
-                    />
-                  </>
-                ) : (
-                  "0.1%"
-                )}
-              </span>
-            </div>
+            {borrowAmount && borrowAmount > 0 && (
+              <div className="flex items-center gap-3 mt-1 text-sm text-slate-600">
+                <span>
+                  USDU Managed: $
+                  <NumericFormat
+                    displayType="text"
+                    value={borrowAmount}
+                    thousandSeparator=","
+                    decimalScale={0}
+                    fixedDecimalScale={false}
+                  />
+                </span>
+                <span className="text-slate-400">•</span>
+                <span>
+                  Annual Fee: $
+                  <NumericFormat
+                    displayType="text"
+                    value={annualFee}
+                    thousandSeparator=","
+                    decimalScale={2}
+                    fixedDecimalScale
+                  />
+                </span>
+              </div>
+            )}
+            {!borrowAmount && (
+              <div className="mt-1 text-sm text-slate-500">
+                Enter a borrow amount to see details
+              </div>
+            )}
           </div>
           <div className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
             Active
@@ -166,8 +164,8 @@ export function ManagedStrategy({
         </div>
       )}
 
-      {/* STRK Rebate Information - Reusing existing component */}
-      {managedAmount > 0 && rebateData && (
+      {/* STRK Rebate Information - Only show when borrowAmount is provided */}
+      {borrowAmount && borrowAmount > 0 && rebateData && (
         <STRKRebateInfo 
           yearlyInterestUSD={rebateData.yearlyInterestUSD}
           effectiveYearlyInterestUSD={rebateData.effectiveYearlyInterestUSD}
