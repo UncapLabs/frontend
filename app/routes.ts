@@ -8,7 +8,7 @@ import {
 export default [
   // Landing page without header/layout
   index("routes/landing.tsx"),
-  
+
   // All other pages with header/layout
   layout("routes/app.tsx", [
     route("/unanim/dashboard", "routes/dashboard/dashboard.tsx"),
