@@ -213,14 +213,15 @@ export function useRedemptionRiskOfInterestRate(
     
     // Avoid division by zero - if no debt exists, risk is low
     if (totalDebt === 0) {
-      return { data: "low" };
+      return { data: "Low" };
     }
 
     const ratio = dn.toNumber(debtInFront.data.debtInFront) / totalDebt;
 
-    // IMPORTANT: Lower debt in front = LOWER risk
+    // IMPORTANT: Lower debt in front = HIGHER risk (you're more likely to be redeemed)
+    // Higher debt in front = LOWER risk (many others would be redeemed before you)
     return {
-      data: ratio < 0.10 ? "low" : ratio < 0.25 ? "medium" : "high",
+      data: ratio < 0.10 ? "High" : ratio < 0.25 ? "Medium" : "Low",
     };
   }, [debtInFront.data]);
 }
