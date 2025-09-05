@@ -65,21 +65,21 @@ function MyTroves() {
   const { price: gbtcPrice } = useBitcoinPrice("GBTC");
 
   const handleCreateNew = () => {
-    navigate("/borrow");
+    navigate("/unanim/borrow");
   };
 
   const handleUpdatePosition = (troveId: string, collateralAsset: string) => {
     const collateralType = collateralAsset === "GBTC" ? "GBTC" : "UBTC";
-    navigate(`/borrow/${troveId}/update?type=${collateralType}`);
+    navigate(`/unanim/borrow/${troveId}/update?type=${collateralType}`);
   };
 
   const handleClosePosition = (troveId: string, collateralAsset: string) => {
     const collateralType = collateralAsset === "GBTC" ? "GBTC" : "UBTC";
-    navigate(`/borrow/${troveId}/close?type=${collateralType}`);
+    navigate(`/unanim/borrow/${troveId}/close?type=${collateralType}`);
   };
 
   const handleLiquidatedPosition = (troveId: string) => {
-    navigate(`/borrow/${troveId}/liquidated`);
+    navigate(`/unanim/borrow/${troveId}/liquidated`);
   };
 
   return (

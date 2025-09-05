@@ -69,8 +69,8 @@ function NavLink({
 
 function Header() {
   const navItems = [
-    { name: "Dashboard", href: "/", icon: <DollarIcon size={16} /> },
-    { name: "Borrow", href: "/borrow", icon: <DollarIcon size={16} /> },
+    { name: "Dashboard", href: "/unanim/dashboard", icon: <DollarIcon size={16} /> },
+    { name: "Borrow", href: "/unanim/borrow", icon: <DollarIcon size={16} /> },
     { name: "Earn", href: "/earn", icon: <LayersIcon size={16} /> },
     // { name: "Analytics", href: "/analytics", icon: <ChartIcon size={16} /> },
   ];

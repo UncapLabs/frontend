@@ -2,9 +2,8 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Separator } from "~/components/ui/separator";
-import { AlertTriangle, ArrowLeft, DollarSign, Info } from "lucide-react";
+import { AlertTriangle, DollarSign, Info } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
-import { truncateTroveId } from "~/lib/utils/trove-id";
 import type { Route } from "./+types/borrow.$troveId.liquidated";
 
 function LiquidatedTrovePage() {
@@ -136,13 +135,13 @@ function LiquidatedTrovePage() {
       <div className="flex gap-4 mt-8">
         <Button
           variant="outline"
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate("/unanim/dashboard")}
           className="flex-1"
         >
           Back to Dashboard
         </Button>
         <Button
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/unanim/borrow")}
           className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
         >
           Open New Position
