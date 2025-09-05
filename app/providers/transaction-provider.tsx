@@ -95,6 +95,16 @@ export function TransactionStoreProvider({
                   }
                 ),
               });
+
+              // Invalidate getNextOwnerIndex for borrow transactions
+              if (transaction.details?.collateralType) {
+                queryClient.invalidateQueries({
+                  queryKey: trpc.positionsRouter.getNextOwnerIndex.queryKey({
+                    borrower: address,
+                    collateralType: transaction.details.collateralType,
+                  }),
+                });
+              }
             },
           });
         } else {

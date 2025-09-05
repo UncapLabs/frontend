@@ -10,11 +10,10 @@ import {
   useInterestRateVisualizationData,
   useRedemptionRiskOfInterestRate,
   useAverageInterestRate,
-} from "~/hooks/useInterestRate";
+} from "~/hooks/use-interest-rate";
 import { useCalculatedRebate } from "~/hooks/use-rebate-config";
 import { useInterestRateCooldown } from "~/hooks/use-interest-rate-cooldown";
 import { getBranchId, type CollateralType } from "~/lib/contracts/constants";
-import { type RiskLevel } from "~/lib/interest-rate-visualization";
 import * as dn from "dnum";
 import { RateModeSelector, type RateMode } from "./rate-mode-selector";
 export type { RateMode } from "./rate-mode-selector";

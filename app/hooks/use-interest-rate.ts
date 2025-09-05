@@ -26,8 +26,8 @@ function useAllInterestRateBrackets() {
   const trpc = useTRPC();
   return useQuery({
     ...trpc.interestRouter.getAllInterestRateBrackets.queryOptions(),
-    staleTime: 10000,
-    refetchInterval: 15000,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 60 * 1000, // 1 minute
   });
 }
 
@@ -36,8 +36,8 @@ export function useInterestRateBrackets(branchId: number = 0) {
   const trpc = useTRPC();
   const { status, data } = useQuery({
     ...trpc.interestRouter.getInterestRateBrackets.queryOptions({ branchId }),
-    staleTime: 10000,
-    refetchInterval: 15000,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 60 * 1000, // 1 minute
   });
 
   return useMemo(() => {
@@ -100,8 +100,8 @@ export function useInterestRateChartData(
           }
         : undefined,
     }),
-    staleTime: 10000,
-    refetchInterval: 15000,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 60 * 1000, // 1 minute
   });
 }
 
@@ -123,8 +123,8 @@ export function useInterestRateVisualizationData(
           }
         : undefined,
     }),
-    staleTime: 10000,
-    refetchInterval: 15000,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 60 * 1000, // 1 minute
   });
 }
 
@@ -231,6 +231,6 @@ export function useAverageInterestRate(branchId: number = 0) {
   const trpc = useTRPC();
   return useQuery({
     ...trpc.interestRouter.getAverageInterestRate.queryOptions({ branchId }),
-    staleTime: 30000,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
