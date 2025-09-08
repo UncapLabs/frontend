@@ -138,7 +138,7 @@ function StabilityPool() {
   const allPositions = useAllStabilityPoolPositions();
 
   // Fetch USDU price
-  const { usdu } = useFetchPrices(1);
+  const { usdu } = useFetchPrices({ fetchBitcoin: false, fetchUsdu: true });
 
   // Build pool data with actual contract data
   const poolsData = [

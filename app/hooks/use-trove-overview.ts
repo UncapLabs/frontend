@@ -26,7 +26,9 @@ interface UseTroveOverviewResult {
 
 export function useTroveOverview(troveId?: string): UseTroveOverviewResult {
   const { position, isLoading: isTroveLoading } = useTroveData(troveId);
-  const { bitcoin, usdu } = useFetchPrices(position?.collateralAmount);
+  const { bitcoin, usdu } = useFetchPrices({ 
+    enabled: position !== undefined && position !== null
+  });
 
   const metrics = useMemo<TroveMetrics | null>(() => {
     if (!position) return null;

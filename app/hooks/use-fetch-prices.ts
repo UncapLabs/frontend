@@ -2,30 +2,51 @@ import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "~/lib/trpc";
 import type { CollateralType } from "~/lib/contracts/constants";
 
-export function useFetchPrices(
-  collateralAmount: number | undefined,
-  collateralType: CollateralType = "UBTC"
-) {
+interface UseFetchPricesOptions {
+  collateralType?: CollateralType;
+  fetchBitcoin?: boolean;
+  fetchUsdu?: boolean;
+  enabled?: boolean;
+}
+
+/**
+ * Hook to fetch Bitcoin and/or USDU prices
+ * @param options - Configuration options for which prices to fetch
+ * @param options.collateralType - The type of collateral (UBTC or GBTC), defaults to "UBTC"
+ * @param options.fetchBitcoin - Whether to fetch Bitcoin price, defaults to true
+ * @param options.fetchUsdu - Whether to fetch USDU price, defaults to true
+ * @param options.enabled - Whether to enable the queries, defaults to true
+ */
+export function useFetchPrices(options: UseFetchPricesOptions = {}) {
+  const {
+    collateralType = "UBTC",
+    fetchBitcoin = true,
+    fetchUsdu = true,
+    enabled = true,
+  } = options;
+
   const trpc = useTRPC();
-  const shouldFetchPrices =
-    collateralAmount !== undefined && collateralAmount > 0;
 
   const bitcoinQuery = useQuery({
     ...trpc.priceRouter.getBitcoinPrice.queryOptions({ collateralType }),
-    enabled: shouldFetchPrices,
-    refetchInterval: shouldFetchPrices ? 30000 : false,
+    enabled: enabled && fetchBitcoin,
+    refetchInterval: enabled && fetchBitcoin ? 30000 : false,
+    staleTime: 10000,
   });
 
   const usduQuery = useQuery({
     ...trpc.priceRouter.getUSDUPrice.queryOptions(),
-    enabled: shouldFetchPrices,
-    refetchInterval: shouldFetchPrices ? 30000 : false,
+    enabled: enabled && fetchUsdu,
+    refetchInterval: enabled && fetchUsdu ? 30000 : false,
+    staleTime: 10000,
   });
 
   return {
     bitcoin: bitcoinQuery.data,
     usdu: usduQuery.data,
-    isLoading: bitcoinQuery.isLoading || usduQuery.isLoading,
+    isLoading: 
+      (fetchBitcoin && bitcoinQuery.isLoading) || 
+      (fetchUsdu && usduQuery.isLoading),
     refetchBitcoin: bitcoinQuery.refetch,
     refetchUsdu: usduQuery.refetch,
   };

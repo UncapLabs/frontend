@@ -98,10 +98,10 @@ function UpdatePosition() {
     refetchInterval: 30000,
   });
 
-  const { bitcoin, usdu } = useFetchPrices(
-    collateralAmount ?? undefined,
-    collateralType
-  );
+  const { bitcoin, usdu } = useFetchPrices({
+    collateralType,
+    enabled: position !== undefined
+  });
 
   const minCollateralizationRatio =
     getMinCollateralizationRatio(collateralType);
