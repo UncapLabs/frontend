@@ -3,7 +3,7 @@ import { Button } from "~/components/ui/button";
 
 export default function Landing({ loaderData }: Route.ComponentProps) {
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-[#001b40]">
+    <div className="relative w-full h-screen overflow-hidden bg-[#003680]">
       {/* Bitcoin SVG patterns in background */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Large Bitcoin icon */}
