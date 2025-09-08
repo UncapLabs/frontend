@@ -1,7 +1,5 @@
 import { z } from "zod";
 import { publicProcedure, router } from "../trpc";
-import { createGraphQLClient } from "~/lib/graphql/client";
-import { ALL_INTEREST_RATE_BRACKETS } from "~/lib/graphql/documents";
 import * as dn from "dnum";
 import {
   INTEREST_RATE_START,
@@ -15,6 +13,7 @@ import {
   calculatePendingInterest,
   type Dnum,
 } from "~/lib/interest-rate-utils";
+import { fetchAllInterestRateBrackets, getAverageInterestRateForBranch } from "../services/interest";
 
 type InterestRateBracket = {
   branchId: number;
@@ -32,50 +31,6 @@ type ChartDataPoint = {
   size: number;
 };
 
-async function fetchAllInterestRateBrackets(): Promise<{
-  lastUpdatedAt: bigint;
-  brackets: InterestRateBracket[];
-}> {
-  const graphqlEndpoint =
-    process.env.GRAPHQL_ENDPOINT || "http://localhost:3000/graphql";
-  const graphqlClient = createGraphQLClient(graphqlEndpoint);
-
-  const result = await graphqlClient.request(ALL_INTEREST_RATE_BRACKETS);
-
-  if (!result.interestratebrackets) {
-    return {
-      lastUpdatedAt: 0n,
-      brackets: [],
-    };
-  }
-
-  const brackets: InterestRateBracket[] = result.interestratebrackets
-    .map((bracket) => ({
-      branchId: bracket.collateral.collIndex,
-      rate: [BigInt(bracket.rate), 18] as Dnum,
-      totalDebt: BigInt(bracket.totalDebt),
-      sumDebtTimesRateD36: BigInt(bracket.sumDebtTimesRateD36 || "0"),
-      pendingDebtTimesOneYearD36: BigInt(
-        bracket.pendingDebtTimesOneYearD36 || "0"
-      ),
-      updatedAt: BigInt(bracket.updatedAt || "0"),
-    }))
-    .sort((a: InterestRateBracket, b: InterestRateBracket) =>
-      dn.compare(a.rate, b.rate)
-    );
-
-  const lastUpdatedAt =
-    brackets.length > 0
-      ? brackets
-          .map((bracket: InterestRateBracket) => bracket.updatedAt)
-          .reduce((a: bigint, b: bigint) => (a > b ? a : b), 0n)
-      : 0n;
-
-  return {
-    lastUpdatedAt,
-    brackets,
-  };
-}
 
 // Calculate risk zone thresholds based on debt distribution
 function calculateRiskZones(chartData: ChartDataPoint[]): {
@@ -415,26 +370,7 @@ export const interestRouter = router({
       })
     )
     .query(async ({ input }) => {
-      const data = await fetchAllInterestRateBrackets();
-
-      const filteredBrackets = data.brackets.filter(
-        (bracket: InterestRateBracket) => bracket.branchId === input.branchId
-      );
-
-      let totalDebt = 0n;
-      let weightedSum = 0n;
-
-      for (const bracket of filteredBrackets) {
-        const debt = bracket.totalDebt;
-        const rate = bracket.rate;
-        totalDebt += debt;
-        // rate is already a Dnum with 18 decimals, just get the bigint value
-        weightedSum += debt * rate[0];
-      }
-
-      return totalDebt > 0n
-        ? Number(weightedSum / totalDebt) / 1e18
-        : dn.toNumber(INTEREST_RATE_START);
+      return getAverageInterestRateForBranch(input.branchId);
     }),
 });
 

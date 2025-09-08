@@ -20,7 +20,7 @@ import {
 } from "~/components/ui/table";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { TokenInput } from "~/components/token-input";
-import { useEffect, useCallback, useState, useMemo } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useAccount, useBalance } from "@starknet-react/core";
 import {
@@ -39,8 +39,6 @@ import {
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { validators } from "~/lib/validators";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
-import { useAverageInterestRate } from "~/hooks/use-interest-rate";
-import { useBranchTCR } from "~/hooks/use-branch-tcr";
 import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "~/lib/trpc";
 
@@ -50,13 +48,11 @@ function StabilityPool() {
   const { address } = useAccount();
   const { connectWallet } = useWalletConnect();
 
-  // State for action and collateral selection
   const [action, setAction] = useState<ActionType>("deposit");
   const [selectedCollateral, setSelectedCollateral] =
     useState<CollateralType>("UBTC");
   const [claimRewards, setClaimRewards] = useState(true);
 
-  // Form state
   const form = useForm({
     defaultValues: {
       amount: undefined as number | undefined,
@@ -96,7 +92,6 @@ function StabilityPool() {
 
   const amount = form.state.values.amount;
 
-  // Deposit hook
   const {
     deposit,
     isPending: depositPending,
@@ -113,7 +108,6 @@ function StabilityPool() {
     collateralType: selectedCollateral,
   });
 
-  // Withdraw hook
   const {
     withdraw,
     isPending: withdrawPending,
@@ -130,7 +124,6 @@ function StabilityPool() {
     collateralType: selectedCollateral,
   });
 
-  // Combined states
   const isPending = action === "deposit" ? depositPending : withdrawPending;
   const isSending = action === "deposit" ? depositSending : withdrawSending;
   const transactionError = action === "deposit" ? depositError : withdrawError;
@@ -138,16 +131,12 @@ function StabilityPool() {
   const currentState = action === "deposit" ? depositState : withdrawState;
   const formData = action === "deposit" ? depositFormData : withdrawFormData;
 
-  // Fetch all stability pool positions at once
   const allPositions = useAllStabilityPoolPositions();
 
-  // Fetch USDU price
   const { usdu } = useFetchPrices({ fetchBitcoin: false, fetchUsdu: true });
 
-  // tRPC client
   const trpc = useTRPC();
 
-  // Fetch total deposits for each pool (available even when wallet disconnected)
   const ubtcTotalDepositsQuery = useQuery({
     ...trpc.stabilityPoolRouter.getTotalDeposits.queryOptions({
       collateralType: "UBTC",
@@ -161,61 +150,26 @@ function StabilityPool() {
     refetchInterval: 30000,
   });
 
-  // Fetch average interest rates (per branch)
-  const ubtcAverageRateQuery = useAverageInterestRate(0); // UBTC => branch 0
-  const gbtcAverageRateQuery = useAverageInterestRate(1); // GBTC => branch 1
+  const ubtcAprQuery = useQuery({
+    ...trpc.stabilityPoolRouter.getPoolApr.queryOptions({
+      collateralType: "UBTC",
+    }),
+    refetchInterval: 30000,
+  });
+  const gbtcAprQuery = useQuery({
+    ...trpc.stabilityPoolRouter.getPoolApr.queryOptions({
+      collateralType: "GBTC",
+    }),
+    refetchInterval: 30000,
+  });
 
-  // Fetch branch totals (includes totalDebt which we use as USDU supply proxy)
-  const ubtcBranchQuery = useBranchTCR("UBTC");
-  const gbtcBranchQuery = useBranchTCR("GBTC");
-
-  const computeApr = useCallback(
-    (avgRate?: number, usduSupply?: number, totalDeposits?: number) => {
-      if (!avgRate || avgRate <= 0) return 0;
-      if (!usduSupply || usduSupply <= 0) return 0;
-      if (!totalDeposits || totalDeposits <= 0) return 0;
-      const aprDecimal = 0.75 * avgRate * (usduSupply / totalDeposits);
-      return aprDecimal * 100; // convert to percentage
-    },
-    []
-  );
-
-  const computedAprs = useMemo(() => {
-    const ubtcTotalDeposits =
-      ubtcTotalDepositsQuery.data ?? allPositions.UBTC.totalDeposits ?? 0;
-    const gbtcTotalDeposits =
-      gbtcTotalDepositsQuery.data ?? allPositions.GBTC.totalDeposits ?? 0;
-
-    const ubtcAvgRate = ubtcAverageRateQuery.data; // decimal (e.g., 0.05)
-    const gbtcAvgRate = gbtcAverageRateQuery.data; // decimal (e.g., 0.05)
-
-    const ubtcUsduSupply = ubtcBranchQuery.data?.totalDebt; // number
-    const gbtcUsduSupply = gbtcBranchQuery.data?.totalDebt; // number
-
-    return {
-      UBTC: computeApr(ubtcAvgRate, ubtcUsduSupply, ubtcTotalDeposits),
-      GBTC: computeApr(gbtcAvgRate, gbtcUsduSupply, gbtcTotalDeposits),
-    } as const;
-  }, [
-    ubtcTotalDepositsQuery.data,
-    gbtcTotalDepositsQuery.data,
-    allPositions.UBTC.totalDeposits,
-    allPositions.GBTC.totalDeposits,
-    ubtcAverageRateQuery.data,
-    gbtcAverageRateQuery.data,
-    ubtcBranchQuery.data?.totalDebt,
-    gbtcBranchQuery.data?.totalDebt,
-    computeApr,
-  ]);
-
-  // Build pool data with actual contract data
   const poolsData = [
     {
       collateralType: "UBTC" as CollateralType,
       token: UBTC_TOKEN,
       totalDeposits:
         ubtcTotalDepositsQuery.data ?? allPositions.UBTC.totalDeposits,
-      apr: computedAprs.UBTC,
+      apr: ubtcAprQuery.data ?? 0,
       userDeposit: allPositions.UBTC.userDeposit,
       rewards: allPositions.UBTC.rewards,
       poolShare: allPositions.UBTC.poolShare,
@@ -225,7 +179,7 @@ function StabilityPool() {
       token: GBTC_TOKEN,
       totalDeposits:
         gbtcTotalDepositsQuery.data ?? allPositions.GBTC.totalDeposits,
-      apr: computedAprs.GBTC,
+      apr: gbtcAprQuery.data ?? 0,
       userDeposit: allPositions.GBTC.userDeposit,
       rewards: allPositions.GBTC.rewards,
       poolShare: allPositions.GBTC.poolShare,
@@ -236,7 +190,6 @@ function StabilityPool() {
     (p) => p.collateralType === selectedCollateral
   );
 
-  // Revalidate when wallet connects
   useEffect(() => {
     if (address && amount && amount > 0) {
       form.validateField("amount", "change");
@@ -262,7 +215,6 @@ function StabilityPool() {
       <Separator className="mb-8 bg-slate-200" />
 
       <div className="space-y-6">
-        {/* Stability Pools Overview Table - Always visible */}
         <Card className="border border-slate-200">
           <CardContent className="pt-6">
             <div className="space-y-4">
@@ -369,7 +321,7 @@ function StabilityPool() {
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        {address && pool.userDeposit > 0 ? (
+                        {address && pool.rewards ? (
                           <div className="text-sm">
                             <div>{pool.rewards.usdu} USDU</div>
                             <div className="text-slate-500">
@@ -388,7 +340,6 @@ function StabilityPool() {
           </CardContent>
         </Card>
 
-        {/* Show transaction status or form */}
         {["pending", "success", "error"].includes(currentState) ? (
           <TransactionStatus
             transactionHash={transactionHash}
@@ -456,7 +407,6 @@ function StabilityPool() {
           />
         ) : (
           <>
-            {/* Action Form */}
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -470,7 +420,6 @@ function StabilityPool() {
                 }`}
               >
                 <CardContent className="pt-6 space-y-6">
-                  {/* Action and Pool Selection */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="collateral-select">
@@ -599,8 +548,7 @@ function StabilityPool() {
                           disabled={isSending || isPending}
                           includeMax={true}
                         />
-                        
-                        {/* Projected Pool Share for Deposits */}
+
                         {action === "deposit" &&
                           field.state.value &&
                           field.state.value > 0 &&
@@ -615,8 +563,10 @@ function StabilityPool() {
                                     displayType="text"
                                     value={
                                       selectedPool.totalDeposits > 0
-                                        ? ((selectedPool.userDeposit + field.state.value) /
-                                            (selectedPool.totalDeposits + field.state.value)) *
+                                        ? ((selectedPool.userDeposit +
+                                            field.state.value) /
+                                            (selectedPool.totalDeposits +
+                                              field.state.value)) *
                                           100
                                         : 100
                                     }
@@ -639,9 +589,9 @@ function StabilityPool() {
                               )}
                             </div>
                           )}
-                        
+
                         {action === "withdraw" &&
-                          selectedPool &&
+                          selectedPool?.userDeposit &&
                           selectedPool.userDeposit > 0 && (
                             <div className="flex justify-between text-sm">
                               <span className="text-slate-500">
@@ -677,7 +627,6 @@ function StabilityPool() {
                     )}
                   </form.Field>
 
-                  {/* Claim Rewards Checkbox */}
                   <div className="space-y-2">
                     <div className="flex items-center space-x-2">
                       <Checkbox
@@ -702,7 +651,7 @@ function StabilityPool() {
                         ? `If unchecked, USDU rewards will be compounded into your deposit and ${selectedCollateral} rewards will be saved for later claiming.`
                         : `If checked, your USDU and ${selectedCollateral} rewards will be sent to your wallet. If unchecked, they'll remain in the pool for later claiming.`}
                     </p>
-                    {selectedPool && selectedPool.rewards && claimRewards && (
+                    {selectedPool?.rewards && claimRewards && (
                       <div className="ml-6 p-2 bg-slate-50 rounded text-xs">
                         <div className="font-medium text-slate-700">
                           Rewards to claim:
@@ -740,8 +689,7 @@ function StabilityPool() {
                               : "Enter withdraw amount";
                         } else if (
                           action === "withdraw" &&
-                          selectedPool &&
-                          selectedPool.userDeposit === 0
+                          selectedPool?.userDeposit === 0
                         ) {
                           buttonText = "No deposit in this pool";
                         }
@@ -755,8 +703,7 @@ function StabilityPool() {
                               (!amount ||
                                 amount <= 0 ||
                                 (action === "withdraw" &&
-                                  selectedPool &&
-                                  selectedPool.userDeposit === 0) ||
+                                  selectedPool?.userDeposit === 0) ||
                                 isSending ||
                                 isPending ||
                                 !canSubmit)
@@ -785,7 +732,6 @@ function StabilityPool() {
 
 export default StabilityPool;
 
-// Meta function for React Router
 export function meta() {
   return [
     { title: "Stability Pool" },

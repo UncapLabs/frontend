@@ -4,7 +4,7 @@ import { RpcProvider } from "starknet";
 import { contractRead } from "~/lib/contracts/calls";
 import { USDU_TOKEN } from "~/lib/contracts/constants";
 import { bigintToDecimal } from "~/lib/decimal";
-import { fetchPoolPosition } from "workers/services/stability-pool";
+import { fetchPoolPosition, calculateStabilityPoolAPR } from "workers/services/stability-pool";
 
 const provider = new RpcProvider({
   nodeUrl: process.env.NODE_URL,
@@ -66,5 +66,16 @@ export const stabilityPoolRouter = router({
         );
         return 0;
       }
+    }),
+
+  getPoolApr: publicProcedure
+    .input(
+      z.object({
+        collateralType: z.enum(["UBTC", "GBTC"]),
+      })
+    )
+    .query(async ({ input }) => {
+      const { collateralType } = input;
+      return calculateStabilityPoolAPR(provider, collateralType);
     }),
 });
