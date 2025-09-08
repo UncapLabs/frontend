@@ -20,7 +20,7 @@ import {
 } from "~/components/ui/table";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { TokenInput } from "~/components/token-input";
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useMemo } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useAccount, useBalance } from "@starknet-react/core";
 import {
@@ -39,6 +39,10 @@ import {
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { validators } from "~/lib/validators";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
+import { useAverageInterestRate } from "~/hooks/use-interest-rate";
+import { useBranchTCR } from "~/hooks/use-branch-tcr";
+import { useQuery } from "@tanstack/react-query";
+import { useTRPC } from "~/lib/trpc";
 
 type ActionType = "deposit" | "withdraw";
 
@@ -140,13 +144,78 @@ function StabilityPool() {
   // Fetch USDU price
   const { usdu } = useFetchPrices({ fetchBitcoin: false, fetchUsdu: true });
 
+  // tRPC client
+  const trpc = useTRPC();
+
+  // Fetch total deposits for each pool (available even when wallet disconnected)
+  const ubtcTotalDepositsQuery = useQuery({
+    ...trpc.stabilityPoolRouter.getTotalDeposits.queryOptions({
+      collateralType: "UBTC",
+    }),
+    refetchInterval: 30000,
+  });
+  const gbtcTotalDepositsQuery = useQuery({
+    ...trpc.stabilityPoolRouter.getTotalDeposits.queryOptions({
+      collateralType: "GBTC",
+    }),
+    refetchInterval: 30000,
+  });
+
+  // Fetch average interest rates (per branch)
+  const ubtcAverageRateQuery = useAverageInterestRate(0); // UBTC => branch 0
+  const gbtcAverageRateQuery = useAverageInterestRate(1); // GBTC => branch 1
+
+  // Fetch branch totals (includes totalDebt which we use as USDU supply proxy)
+  const ubtcBranchQuery = useBranchTCR("UBTC");
+  const gbtcBranchQuery = useBranchTCR("GBTC");
+
+  const computeApr = useCallback(
+    (avgRate?: number, usduSupply?: number, totalDeposits?: number) => {
+      if (!avgRate || avgRate <= 0) return 0;
+      if (!usduSupply || usduSupply <= 0) return 0;
+      if (!totalDeposits || totalDeposits <= 0) return 0;
+      const aprDecimal = 0.75 * avgRate * (usduSupply / totalDeposits);
+      return aprDecimal * 100; // convert to percentage
+    },
+    []
+  );
+
+  const computedAprs = useMemo(() => {
+    const ubtcTotalDeposits =
+      ubtcTotalDepositsQuery.data ?? allPositions.UBTC.totalDeposits ?? 0;
+    const gbtcTotalDeposits =
+      gbtcTotalDepositsQuery.data ?? allPositions.GBTC.totalDeposits ?? 0;
+
+    const ubtcAvgRate = ubtcAverageRateQuery.data; // decimal (e.g., 0.05)
+    const gbtcAvgRate = gbtcAverageRateQuery.data; // decimal (e.g., 0.05)
+
+    const ubtcUsduSupply = ubtcBranchQuery.data?.totalDebt; // number
+    const gbtcUsduSupply = gbtcBranchQuery.data?.totalDebt; // number
+
+    return {
+      UBTC: computeApr(ubtcAvgRate, ubtcUsduSupply, ubtcTotalDeposits),
+      GBTC: computeApr(gbtcAvgRate, gbtcUsduSupply, gbtcTotalDeposits),
+    } as const;
+  }, [
+    ubtcTotalDepositsQuery.data,
+    gbtcTotalDepositsQuery.data,
+    allPositions.UBTC.totalDeposits,
+    allPositions.GBTC.totalDeposits,
+    ubtcAverageRateQuery.data,
+    gbtcAverageRateQuery.data,
+    ubtcBranchQuery.data?.totalDebt,
+    gbtcBranchQuery.data?.totalDebt,
+    computeApr,
+  ]);
+
   // Build pool data with actual contract data
   const poolsData = [
     {
       collateralType: "UBTC" as CollateralType,
       token: UBTC_TOKEN,
-      totalDeposits: allPositions.UBTC.totalDeposits,
-      apr: 8.5, // TODO: Fetch from API
+      totalDeposits:
+        ubtcTotalDepositsQuery.data ?? allPositions.UBTC.totalDeposits,
+      apr: computedAprs.UBTC,
       userDeposit: allPositions.UBTC.userDeposit,
       rewards: allPositions.UBTC.rewards,
       poolShare: allPositions.UBTC.poolShare,
@@ -154,8 +223,9 @@ function StabilityPool() {
     {
       collateralType: "GBTC" as CollateralType,
       token: GBTC_TOKEN,
-      totalDeposits: allPositions.GBTC.totalDeposits,
-      apr: 7.2, // TODO: Fetch from API
+      totalDeposits:
+        gbtcTotalDepositsQuery.data ?? allPositions.GBTC.totalDeposits,
+      apr: computedAprs.GBTC,
       userDeposit: allPositions.GBTC.userDeposit,
       rewards: allPositions.GBTC.rewards,
       poolShare: allPositions.GBTC.poolShare,
@@ -264,7 +334,12 @@ function StabilityPool() {
                       </TableCell>
                       <TableCell className="text-right">
                         <span className="font-semibold text-green-600">
-                          {pool.apr}%
+                          <NumericFormat
+                            displayType="text"
+                            value={pool.apr}
+                            decimalScale={2}
+                          />
+                          %
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
