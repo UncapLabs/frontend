@@ -7,6 +7,8 @@ export type TransactionType =
   | "claim"
   | "claim_surplus"
   | "adjust_rate"
+  | "deposit"
+  | "withdraw"
   | "unknown";
 
 export interface StarknetTransaction {

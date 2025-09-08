@@ -1,6 +1,10 @@
 import { Contract, type RpcProvider } from "starknet";
 import { USDU } from "./definitions";
-import { getCollateralAddresses, getBranchId, type CollateralType } from "./constants";
+import {
+  getCollateralAddresses,
+  getBranchId,
+  type CollateralType,
+} from "./constants";
 import {
   BORROWER_OPERATIONS_ABI,
   UBTC_ABI,
@@ -9,6 +13,7 @@ import {
   COLL_SURPLUS_POOL_ABI,
   ADDRESSES_REGISTRY_ABI,
   HINT_HELPERS_ABI,
+  STABILITY_POOL_ABI,
 } from ".";
 
 /**
@@ -318,6 +323,38 @@ export const contractCall = {
     },
   },
 
+  stabilityPool: {
+    /**
+     * Deposit USDU into the Stability Pool
+     * @param amount - Amount of USDU to deposit
+     * @param doClaim - Whether to claim rewards when depositing
+     * @param collateralType - Type of collateral
+     */
+    deposit: (amount: bigint, doClaim: boolean, collateralType: CollateralType) => {
+      const addresses = getCollateralAddresses(collateralType);
+      const contract = new Contract(
+        STABILITY_POOL_ABI,
+        addresses.stabilityPool
+      );
+      return contract.populate("provide_to_sp", [amount, doClaim]);
+    },
+
+    /**
+     * Withdraw USDU from the Stability Pool
+     * @param amount - Amount of USDU to withdraw
+     * @param doClaim - Whether to claim rewards when withdrawing
+     * @param collateralType - Type of collateral
+     */
+    withdraw: (amount: bigint, doClaim: boolean, collateralType: CollateralType) => {
+      const addresses = getCollateralAddresses(collateralType);
+      const contract = new Contract(
+        STABILITY_POOL_ABI,
+        addresses.stabilityPool
+      );
+      return contract.populate("withdraw_from_sp", [amount, doClaim]);
+    },
+  },
+
   collSurplusPool: {
     /**
      * Get the collateral surplus for a borrower
@@ -489,19 +526,19 @@ export const contractRead = {
     ): Promise<bigint> => {
       const addresses = getCollateralAddresses(collateralType);
       const branchId = getBranchId(collateralType);
-      
+
       const contract = new Contract(
         HINT_HELPERS_ABI,
         addresses.hintHelpers,
         provider
       );
-      
+
       const result = await contract.call("predict_open_trove_upfront_fee", [
         branchId,
         borrowedAmount,
         interestRate,
       ]);
-      
+
       return result as bigint;
     },
 
@@ -516,20 +553,124 @@ export const contractRead = {
     ): Promise<bigint> => {
       const addresses = getCollateralAddresses(collateralType);
       const branchId = getBranchId(collateralType);
-      
+
       const contract = new Contract(
         HINT_HELPERS_ABI,
         addresses.hintHelpers,
         provider
       );
-      
+
       const result = await contract.call("predict_adjust_trove_upfront_fee", [
         branchId,
         troveId,
         debtIncrease,
       ]);
-      
+
       return result as bigint;
+    },
+  },
+
+  stabilityPool: {
+    /**
+     * Get user's deposit in the stability pool
+     */
+    getDeposit: async (
+      provider: RpcProvider,
+      userAddress: string,
+      collateralType: CollateralType
+    ): Promise<bigint> => {
+      const addresses = getCollateralAddresses(collateralType);
+      const contract = new Contract(
+        STABILITY_POOL_ABI,
+        addresses.stabilityPool,
+        provider
+      );
+      const result = await contract.call("deposits", [userAddress]);
+      return result as bigint;
+    },
+
+    /**
+     * Get user's USDU rewards (gains) from the stability pool
+     */
+    getDepositorGain: async (
+      provider: RpcProvider,
+      userAddress: string,
+      collateralType: CollateralType
+    ): Promise<bigint> => {
+      const addresses = getCollateralAddresses(collateralType);
+      const contract = new Contract(
+        STABILITY_POOL_ABI,
+        addresses.stabilityPool,
+        provider
+      );
+      const result = await contract.call("get_depositor_yield_gain", [userAddress]);
+      return result as bigint;
+    },
+
+    /**
+     * Get user's collateral rewards from liquidations
+     */
+    getDepositorCollateralGain: async (
+      provider: RpcProvider,
+      userAddress: string,
+      collateralType: CollateralType
+    ): Promise<bigint> => {
+      const addresses = getCollateralAddresses(collateralType);
+      const contract = new Contract(
+        STABILITY_POOL_ABI,
+        addresses.stabilityPool,
+        provider
+      );
+      const result = await contract.call("get_depositor_coll_gain", [userAddress]);
+      return result as bigint;
+    },
+
+    /**
+     * Get total deposits in the stability pool
+     */
+    getTotalDeposits: async (
+      provider: RpcProvider,
+      collateralType: CollateralType
+    ): Promise<bigint> => {
+      const addresses = getCollateralAddresses(collateralType);
+      const contract = new Contract(
+        STABILITY_POOL_ABI,
+        addresses.stabilityPool,
+        provider
+      );
+      const result = await contract.call("get_total_usdu_deposits", []);
+      return result as bigint;
+    },
+
+    /**
+     * Get all stability pool data for a user in one call
+     */
+    getUserPosition: async (
+      provider: RpcProvider,
+      userAddress: string,
+      collateralType: CollateralType
+    ) => {
+      const addresses = getCollateralAddresses(collateralType);
+      const contract = new Contract(
+        STABILITY_POOL_ABI,
+        addresses.stabilityPool,
+        provider
+      );
+
+      // Fetch all data in parallel
+      const [deposit, usduGain, collateralGain, totalDeposits] = await Promise.all([
+        contract.call("deposits", [userAddress]),
+        contract.call("get_depositor_yield_gain", [userAddress]),
+        contract.call("get_depositor_coll_gain", [userAddress]),
+        contract.call("get_total_usdu_deposits", []),
+      ]);
+
+      return {
+        deposit: deposit as bigint,
+        usduGain: usduGain as bigint,
+        collateralGain: collateralGain as bigint,
+        totalDeposits: totalDeposits as bigint,
+      };
     },
   },
 };

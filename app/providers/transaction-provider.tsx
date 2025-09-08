@@ -107,15 +107,38 @@ export function TransactionStoreProvider({
               }
             },
           });
-        } else {
-          // Fallback for other transaction types
+        } else if (
+          transaction?.type === "deposit" ||
+          transaction?.type === "withdraw"
+        ) {
+          // For stability pool transactions, wait a bit for the chain to update
+          // then invalidate queries
           setTimeout(() => {
+            // Invalidate all stability pool positions
             queryClient.invalidateQueries({
-              queryKey: trpc.positionsRouter.getUserOnChainPositions.queryKey({
+              queryKey: trpc.stabilityPoolRouter.getAllPositions.queryKey({
                 userAddress: address,
               }),
             });
-          }, 6000);
+
+            // Also invalidate individual position queries if collateral type is known
+            if (transaction.details?.collateralType) {
+              queryClient.invalidateQueries({
+                queryKey:
+                  trpc.stabilityPoolRouter.getPositionByCollateral.queryKey({
+                    userAddress: address,
+                    collateralType: transaction.details.collateralType,
+                  }),
+              });
+
+              // Invalidate total deposits for that collateral
+              queryClient.invalidateQueries({
+                queryKey: trpc.stabilityPoolRouter.getTotalDeposits.queryKey({
+                  collateralType: transaction.details.collateralType,
+                }),
+              });
+            }
+          }, 2000);
         }
       }
     },

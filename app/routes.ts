@@ -16,6 +16,7 @@ export default [
     route("claim", "routes/claim/claim.tsx"),
     route("price-management", "routes/admin.price-management.tsx"),
     route("mint-btc", "routes/admin.mint-btc.tsx"),
+    route("unanim/earn", "routes/earn/index.tsx"),
     route("unanim/borrow/:troveId", "routes/borrow/borrow.$troveId.tsx", [
       route("update", "routes/borrow/borrow.$troveId.update.tsx"),
       route("close", "routes/borrow/borrow.$troveId.close.tsx"),

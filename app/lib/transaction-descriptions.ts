@@ -36,7 +36,7 @@ export function createTransactionDescription(
       }
       return 'Claim rewards';
 
-    case 'claimSurplus':
+    case 'claim_surplus':
       if (details?.collateralType) {
         return `Claim ${details.collateralType} collateral surplus`;
       }
@@ -47,6 +47,18 @@ export function createTransactionDescription(
         return `Change interest rate to ${details.newRate}%`;
       }
       return 'Adjust interest rate';
+
+    case 'deposit':
+      if (details?.amount) {
+        return `Deposit ${details.amount} ${details.token || 'USDU'} to Stability Pool`;
+      }
+      return 'Deposit to Stability Pool';
+
+    case 'withdraw':
+      if (details?.amount) {
+        return `Withdraw ${details.amount} ${details.token || 'USDU'} from Stability Pool`;
+      }
+      return 'Withdraw from Stability Pool';
 
     default:
       return 'Transaction';
