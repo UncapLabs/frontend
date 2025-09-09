@@ -6,8 +6,11 @@ export const validators = {
   /**
    * Validates that the value doesn't exceed the available balance
    */
-  insufficientBalance: (value: number, balance: number) => 
-    value > balance ? "Insufficient balance" : undefined,
+  insufficientBalance: (value: number, balance: number) => {
+    // Use epsilon for floating-point comparison to handle precision issues
+    const epsilon = 1e-8;
+    return value > balance + epsilon ? "Insufficient balance" : undefined;
+  },
 
   /**
    * Validates minimum amount requirements
@@ -19,14 +22,18 @@ export const validators = {
    * Validates maximum amount limits
    */
   maximumAmount: (value: number, maximum: number) =>
-    value > maximum ? `Maximum amount is ${maximum.toLocaleString()}` : undefined,
+    value > maximum
+      ? `Maximum amount is ${maximum.toLocaleString()}`
+      : undefined,
 
   /**
    * Validates minimum USD value requirements
    */
   minimumUsdValue: (value: number, price: number, minimumUsd: number) => {
     const usdValue = value * price;
-    return usdValue < minimumUsd ? `Minimum value is $${minimumUsd.toLocaleString()}` : undefined;
+    return usdValue < minimumUsd
+      ? `Minimum value is $${minimumUsd.toLocaleString()}`
+      : undefined;
   },
 
   /**
@@ -41,13 +48,15 @@ export const validators = {
    * Validates LTV ratio
    */
   ltvRatio: (
-    borrowValue: number, 
-    collateralValue: number, 
+    borrowValue: number,
+    collateralValue: number,
     maxLtvPercent: number
   ) => {
     if (collateralValue <= 0) return undefined;
     const ltv = (borrowValue / collateralValue) * 100;
-    return ltv > maxLtvPercent ? `LTV ratio too high (max ${maxLtvPercent}%)` : undefined;
+    return ltv > maxLtvPercent
+      ? `LTV ratio too high (max ${maxLtvPercent}%)`
+      : undefined;
   },
 
   /**
@@ -60,7 +69,9 @@ export const validators = {
    * Validates minimum debt requirement ($2000)
    */
   minimumDebt: (value: number, minDebt: number = 2000) =>
-    value < minDebt ? `Minimum debt is $${minDebt.toLocaleString()}` : undefined,
+    value < minDebt
+      ? `Minimum debt is $${minDebt.toLocaleString()}`
+      : undefined,
 
   /**
    * Validates minimum collateral ratio for withdrawals
@@ -72,8 +83,10 @@ export const validators = {
   ) => {
     if (debtValue <= 0) return undefined;
     const ratio = newCollateralValue / debtValue;
-    return ratio < minRatio 
-      ? `Must maintain at least ${(minRatio * 100).toFixed(0)}% collateral ratio` 
+    return ratio < minRatio
+      ? `Must maintain at least ${(minRatio * 100).toFixed(
+          0
+        )}% collateral ratio`
       : undefined;
   },
 
@@ -106,13 +119,13 @@ export const validators = {
    * Zombie troves cannot have debt between 0 and MIN_DEBT (exclusive)
    */
   zombieTroveDebt: (
-    newDebt: number, 
-    currentDebt: number, 
+    newDebt: number,
+    currentDebt: number,
     minDebt: number,
     isZombie: boolean
   ) => {
     if (!isZombie) return undefined;
-    
+
     // Cannot reduce debt to a value between 0 and MIN_DEBT
     if (newDebt > 0 && newDebt < minDebt) {
       if (newDebt < currentDebt) {
@@ -120,7 +133,7 @@ export const validators = {
       }
       return `Zombie positions must have at least ${minDebt} USDU debt or be closed entirely`;
     }
-    
+
     return undefined;
   },
 
@@ -129,8 +142,8 @@ export const validators = {
    * Returns the first error found or undefined if all pass
    */
   compose: (...validatorResults: (string | undefined)[]) => {
-    return validatorResults.find(result => result !== undefined);
-  }
+    return validatorResults.find((result) => result !== undefined);
+  },
 };
 
 /**

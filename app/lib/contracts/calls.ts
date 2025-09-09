@@ -658,9 +658,10 @@ export const contractRead = {
       );
 
       // Fetch all data in parallel
+      // Use get_depositor_yield_gain_with_pending to include pending rewards
       const [deposit, usduGain, collateralGain, totalDeposits] = await Promise.all([
         contract.call("deposits", [userAddress]),
-        contract.call("get_depositor_yield_gain", [userAddress]),
+        contract.call("get_depositor_yield_gain_with_pending", [userAddress]),
         contract.call("get_depositor_coll_gain", [userAddress]),
         contract.call("get_total_usdu_deposits", []),
       ]);

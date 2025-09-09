@@ -323,9 +323,25 @@ function StabilityPool() {
                       <TableCell className="text-right">
                         {address && pool.rewards ? (
                           <div className="text-sm">
-                            <div>{pool.rewards.usdu} USDU</div>
+                            <div>
+                              <NumericFormat
+                                displayType="text"
+                                value={pool.rewards.usdu}
+                                thousandSeparator=","
+                                decimalScale={2}
+                                fixedDecimalScale
+                              />{" "}
+                              USDU
+                            </div>
                             <div className="text-slate-500">
-                              {pool.rewards.collateral} {pool.token.symbol}
+                              <NumericFormat
+                                displayType="text"
+                                value={pool.rewards.collateral}
+                                thousandSeparator=","
+                                decimalScale={6}
+                                fixedDecimalScale
+                              />{" "}
+                              {pool.token.symbol}
                             </div>
                           </div>
                         ) : (
@@ -395,6 +411,43 @@ function StabilityPool() {
                       label: "Pool",
                       value: `${selectedCollateral} Stability Pool`,
                     },
+                    // Add rewards claimed if applicable
+                    ...(claimRewards && selectedPool?.rewards && 
+                      (selectedPool.rewards.usdu > 0 || selectedPool.rewards.collateral > 0)
+                      ? [
+                          {
+                            label: "Rewards Claimed",
+                            value: (
+                              <div className="space-y-1">
+                                {selectedPool.rewards.usdu > 0 && (
+                                  <div>
+                                    <NumericFormat
+                                      displayType="text"
+                                      value={selectedPool.rewards.usdu}
+                                      thousandSeparator=","
+                                      decimalScale={2}
+                                      fixedDecimalScale
+                                    />{" "}
+                                    USDU
+                                  </div>
+                                )}
+                                {selectedPool.rewards.collateral > 0 && (
+                                  <div>
+                                    <NumericFormat
+                                      displayType="text"
+                                      value={selectedPool.rewards.collateral}
+                                      thousandSeparator=","
+                                      decimalScale={6}
+                                      fixedDecimalScale
+                                    />{" "}
+                                    {selectedCollateral}
+                                  </div>
+                                )}
+                              </div>
+                            ),
+                          },
+                        ]
+                      : []),
                   ]
                 : undefined
             }
@@ -503,9 +556,7 @@ function StabilityPool() {
                         } else {
                           const userDeposit = selectedPool?.userDeposit || 0;
                           return validators.compose(
-                            value > userDeposit
-                              ? "Insufficient deposited balance"
-                              : undefined
+                            validators.insufficientBalance(value, userDeposit)
                           );
                         }
                       },
@@ -657,8 +708,22 @@ function StabilityPool() {
                           Rewards to claim:
                         </div>
                         <div className="text-slate-600 mt-1">
-                          {selectedPool.rewards.usdu} USDU +{" "}
-                          {selectedPool.rewards.collateral} {selectedCollateral}
+                          <NumericFormat
+                            displayType="text"
+                            value={selectedPool.rewards.usdu}
+                            thousandSeparator=","
+                            decimalScale={2}
+                            fixedDecimalScale
+                          />{" "}
+                          USDU +{" "}
+                          <NumericFormat
+                            displayType="text"
+                            value={selectedPool.rewards.collateral}
+                            thousandSeparator=","
+                            decimalScale={6}
+                            fixedDecimalScale
+                          />{" "}
+                          {selectedCollateral}
                         </div>
                       </div>
                     )}

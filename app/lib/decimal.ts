@@ -58,5 +58,7 @@ export function bigintToDecimal(value: bigint, decimals: number = 18): number {
 }
 
 export function decimalToBigint(value: number, decimals: number = 18): bigint {
-  return BigInt(Math.floor(value * Math.pow(10, decimals)));
+  // Use dnum for precise conversion to avoid floating-point errors
+  const dnum = dn.from(value, decimals);
+  return dnum[0]; // dnum is a tuple [bigint, decimals], we want the bigint part
 }
