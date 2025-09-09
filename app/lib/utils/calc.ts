@@ -1,19 +1,16 @@
-export const MINIMUM_COLLATERAL_RATIO = 1.1;
-export const MAX_LTV = 1 / MINIMUM_COLLATERAL_RATIO;
 
-export const MAX_LIMIT = 100000000;
 
 /**
  * Computes the debt limit based on the collateral amount, the collateral price and the minimum collateral ratio
  * @param collateralAmount - The amount of collateral in BTC
  * @param bitcoinPrice - The price of Bitcoin in USD
- * @param minCollateralRatio - The minimum collateralization ratio (default 1.1 = 110%)
+ * @param minCollateralRatio - The minimum collateralization ratio (e.g., 1.1 = 110%)
  * @returns The debt limit in USD
  */
 export function computeDebtLimit(
   collateralAmount: number,
   bitcoinPrice: number,
-  minCollateralRatio: number = MINIMUM_COLLATERAL_RATIO
+  minCollateralRatio: number
 ) {
   const collateralValue = collateralAmount * bitcoinPrice;
   return collateralValue / minCollateralRatio;

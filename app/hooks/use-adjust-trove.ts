@@ -3,7 +3,10 @@ import { useAccount } from "@starknet-react/core";
 import { contractCall } from "~/lib/contracts/calls";
 import { useTransaction } from "./use-transaction";
 import { toBigInt } from "~/lib/utils";
-import { getCollateralAddresses, type CollateralType } from "~/lib/contracts/constants";
+import {
+  getCollateralAddresses,
+  type CollateralType,
+} from "~/lib/contracts/constants";
 
 interface UseAdjustTroveParams {
   troveId?: bigint;
@@ -42,7 +45,7 @@ function getAdjustmentCalls(params: {
     isZombie = false,
   } = params;
   const calls = [];
-  
+
   // Get contract addresses for this collateral type
   const addresses = getCollateralAddresses(collateralType);
 
@@ -51,7 +54,11 @@ function getAdjustmentCalls(params: {
     // Need approvals for additions
     if (isCollIncrease && collateralTokenAddress) {
       calls.push(
-        contractCall.token.approve(collateralTokenAddress, addresses.borrowerOperations, collateralChange)
+        contractCall.token.approve(
+          collateralTokenAddress,
+          addresses.borrowerOperations,
+          collateralChange
+        )
       );
     }
     if (!isDebtIncrease && debtChange !== 0n) {
@@ -83,7 +90,11 @@ function getAdjustmentCalls(params: {
     // Need approvals for additions
     if (isCollIncrease && collateralTokenAddress) {
       calls.push(
-        contractCall.token.approve(collateralTokenAddress, addresses.borrowerOperations, collateralChange)
+        contractCall.token.approve(
+          collateralTokenAddress,
+          addresses.borrowerOperations,
+          collateralChange
+        )
       );
     }
     if (!isDebtIncrease) {
@@ -121,12 +132,20 @@ function getAdjustmentCalls(params: {
         );
       }
       calls.push(
-        contractCall.borrowerOperations.addColl(troveId, collateralChange, collateralType)
+        contractCall.borrowerOperations.addColl(
+          troveId,
+          collateralChange,
+          collateralType
+        )
       );
     } else {
       // Withdrawing collateral
       calls.push(
-        contractCall.borrowerOperations.withdrawColl(troveId, collateralChange, collateralType)
+        contractCall.borrowerOperations.withdrawColl(
+          troveId,
+          collateralChange,
+          collateralType
+        )
       );
     }
   } else if (debtChange !== 0n) {
@@ -144,7 +163,11 @@ function getAdjustmentCalls(params: {
       // Repaying debt
       calls.push(
         contractCall.usdu.approve(addresses.borrowerOperations, debtChange),
-        contractCall.borrowerOperations.repayUsdu(troveId, debtChange, collateralType)
+        contractCall.borrowerOperations.repayUsdu(
+          troveId,
+          debtChange,
+          collateralType
+        )
       );
     }
   }
@@ -192,7 +215,14 @@ export function useAdjustTrove({
       hasInterestRateChange: currentInterestRate !== newInterestRate,
       newInterestRate: newInterestRate,
     };
-  }, [currentCollateral, currentDebt, currentInterestRate, newCollateral, newDebt, newInterestRate]);
+  }, [
+    currentCollateral,
+    currentDebt,
+    currentInterestRate,
+    newCollateral,
+    newDebt,
+    newInterestRate,
+  ]);
 
   // Prepare the calls using smart routing
   const calls = useMemo(() => {
@@ -201,19 +231,27 @@ export function useAdjustTrove({
     }
 
     // Determine collateral type
-    const collateralType: CollateralType = collateralToken.collateralType || 
-      (collateralToken.address === getCollateralAddresses("UBTC").collateral ? "UBTC" : "GBTC");
-    
-    // Get addresses for this collateral type
-    const addresses = getCollateralAddresses(collateralType);
+    const collateralType: CollateralType =
+      collateralToken.collateralType ||
+      (collateralToken.address === getCollateralAddresses("UBTC").collateral
+        ? "UBTC"
+        : "GBTC");
 
     // No changes
-    if (!changes.hasCollateralChange && !changes.hasDebtChange && !changes.hasInterestRateChange) {
+    if (
+      !changes.hasCollateralChange &&
+      !changes.hasDebtChange &&
+      !changes.hasInterestRateChange
+    ) {
       return undefined;
     }
-    
+
     // If only interest rate is changing, use adjust_trove_interest_rate
-    if (!changes.hasCollateralChange && !changes.hasDebtChange && changes.hasInterestRateChange) {
+    if (
+      !changes.hasCollateralChange &&
+      !changes.hasDebtChange &&
+      changes.hasInterestRateChange
+    ) {
       return [
         contractCall.borrowerOperations.adjustTroveInterestRate({
           troveId,
@@ -265,7 +303,9 @@ export function useAdjustTrove({
     isReady:
       !!calls &&
       !!changes &&
-      (changes.hasCollateralChange || changes.hasDebtChange || changes.hasInterestRateChange),
+      (changes.hasCollateralChange ||
+        changes.hasDebtChange ||
+        changes.hasInterestRateChange),
     changes,
   };
 }

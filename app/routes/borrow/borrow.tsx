@@ -11,7 +11,8 @@ import { TokenInput } from "~/components/token-input";
 import { useEffect, useCallback } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
-import { MAX_LIMIT, computeDebtLimit } from "~/lib/utils/calc";
+import { computeDebtLimit } from "~/lib/utils/calc";
+import { MAX_LIMIT } from "~/lib/contracts/constants";
 import { validators } from "~/lib/validators";
 import type { Route } from "./+types/borrow";
 import { useAccount, useBalance } from "@starknet-react/core";
@@ -30,7 +31,7 @@ import {
   usePositionMetrics,
   getRedemptionRisk,
 } from "~/hooks/use-position-metrics";
-import { getMinCollateralizationRatio } from "~/lib/utils/collateral-config";
+import { getMinCollateralizationRatio } from "~/lib/contracts/collateral-config";
 import type { CollateralType } from "~/lib/contracts/constants";
 
 function Borrow() {
@@ -65,8 +66,10 @@ function Borrow() {
   const { bitcoin, usdu } = useFetchPrices({
     collateralType,
     enabled:
-      (collateralAmount !== undefined && collateralAmount > 0) ||
-      (borrowAmount !== undefined && borrowAmount > 0),
+      (collateralAmount !== null &&
+        collateralAmount !== undefined &&
+        collateralAmount > 0) ||
+      (borrowAmount !== null && borrowAmount !== undefined && borrowAmount > 0),
   });
   const minCollateralizationRatio =
     getMinCollateralizationRatio(collateralType);

@@ -8,12 +8,14 @@ import {
   INTEREST_RATE_INCREMENT_PRECISE,
   INTEREST_RATE_INCREMENT_NORMAL,
   ONE_YEAR_D18,
-  DNUM_0,
-  dnum18,
   calculatePendingInterest,
   type Dnum,
 } from "~/lib/interest-rate-utils";
-import { fetchAllInterestRateBrackets, getAverageInterestRateForBranch } from "../services/interest";
+import {
+  fetchAllInterestRateBrackets,
+  getAverageInterestRateForBranch,
+} from "../services/interest";
+import { dnum18, DNUM_0 } from "~/lib/decimal";
 
 type InterestRateBracket = {
   branchId: number;
@@ -31,7 +33,6 @@ type ChartDataPoint = {
   size: number;
 };
 
-
 // Calculate risk zone thresholds based on debt distribution
 function calculateRiskZones(chartData: ChartDataPoint[]): {
   highRiskThreshold: number;
@@ -42,19 +43,16 @@ function calculateRiskZones(chartData: ChartDataPoint[]): {
   }
 
   // Calculate total debt - properly parse the JSON Dnum format
-  const totalDebt = chartData.reduce(
-    (sum: Dnum, item: ChartDataPoint) => {
-      let debt: Dnum;
-      if (typeof item.debt === "string") {
-        const parsed = JSON.parse(item.debt);
-        debt = [BigInt(parsed[0]), parsed[1]] as Dnum;
-      } else {
-        debt = item.debt as any;
-      }
-      return dn.add(sum, debt);
-    },
-    DNUM_0
-  );
+  const totalDebt = chartData.reduce((sum: Dnum, item: ChartDataPoint) => {
+    let debt: Dnum;
+    if (typeof item.debt === "string") {
+      const parsed = JSON.parse(item.debt);
+      debt = [BigInt(parsed[0]), parsed[1]] as Dnum;
+    } else {
+      debt = item.debt as any;
+    }
+    return dn.add(sum, debt);
+  }, DNUM_0);
 
   if (dn.eq(totalDebt, DNUM_0)) {
     return { highRiskThreshold: 0.1, mediumRiskThreshold: 0.25 };
@@ -87,7 +85,7 @@ function calculateRiskZones(chartData: ChartDataPoint[]): {
       highRiskThreshold = position;
       foundHighRisk = true;
     }
-    
+
     // Find where 25% of debt is in front (transition from medium to low risk)
     // Positions with < 25% debt in front = MEDIUM risk
     if (ratio >= 0.25 && !foundMediumRisk) {
@@ -318,7 +316,7 @@ export const interestRouter = router({
         let rate: number;
         let debt: number;
         let debtInFront: number;
-        
+
         if (typeof point.rate === "string") {
           const parsed = JSON.parse(point.rate);
           // The value is already in 18 decimal format as [bigint, decimals]
@@ -327,7 +325,7 @@ export const interestRouter = router({
         } else {
           rate = dn.toNumber(point.rate);
         }
-        
+
         if (typeof point.debt === "string") {
           const parsed = JSON.parse(point.debt);
           const debtDnum: Dnum = [BigInt(parsed[0]), parsed[1]];
@@ -335,7 +333,7 @@ export const interestRouter = router({
         } else {
           debt = dn.toNumber(point.debt);
         }
-        
+
         if (typeof point.debtInFront === "string") {
           const parsed = JSON.parse(point.debtInFront);
           const debtInFrontDnum: Dnum = [BigInt(parsed[0]), parsed[1]];
@@ -345,10 +343,10 @@ export const interestRouter = router({
         }
 
         return {
-          rate,              // Plain number (decimal rate)
-          debt,             // Plain number
-          debtInFront,      // Plain number
-          normalized: point.size,  // Already normalized 0-1
+          rate, // Plain number (decimal rate)
+          debt, // Plain number
+          debtInFront, // Plain number
+          normalized: point.size, // Already normalized 0-1
         };
       });
 

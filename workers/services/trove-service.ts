@@ -19,7 +19,9 @@ import {
   getBranchId,
   getCollateralType,
   type BranchId,
+  USDU_TOKEN,
 } from "~/lib/contracts/constants";
+import { getMinCollateralizationRatio } from "~/lib/contracts/collateral-config";
 import {
   formatBigIntToNumber,
   formatInterestRateForDisplay,
@@ -29,10 +31,6 @@ import {
 import { contractRead } from "~/lib/contracts/calls";
 import { DEFAULT_RETRY_OPTIONS, retryWithBackoff } from "./retry";
 
-const USDU_DECIMALS = 18;
-const MCR_VALUE = 1.1;
-const CCR_VALUE = 1.5;
-
 // Prefixed trove ID format: "branchId:troveId"
 type PrefixedTroveId = string;
 
@@ -40,9 +38,9 @@ type PrefixedTroveId = string;
 function mapTroveStatus(status: any): Position["status"] {
   // Status comes as a CairoCustomEnum, we need to find which variant is active
   // The active variant is the one that doesn't have undefined value
-  
+
   let activeVariant: string | null = null;
-  
+
   // Check if status has the expected structure
   if (status && status.variant) {
     // Find the variant that has a non-undefined value
@@ -60,7 +58,7 @@ function mapTroveStatus(status: any): Position["status"] {
       console.warn("Failed to get active variant from CairoCustomEnum:", e);
     }
   }
-  
+
   switch (activeVariant) {
     case "NonExistent":
       return "non-existent";
@@ -75,7 +73,10 @@ function mapTroveStatus(status: any): Position["status"] {
       // Frontend determines zombie state by checking debt < MIN_DEBT
       return "redeemed";
     default:
-      console.warn(`Unknown trove status: ${activeVariant}, raw status:`, status);
+      console.warn(
+        `Unknown trove status: ${activeVariant}, raw status:`,
+        status
+      );
       return "non-existent";
   }
 }
@@ -102,10 +103,8 @@ export interface Position {
   redemptionCount: number;
   redeemedColl: number;
   redeemedDebt: number;
-  healthFactor: number;
-  liquidationPrice: number;
-  debtLimit: number;
   interestRate: number;
+  liquidationPrice: number;
   status: "active" | "closed" | "non-existent" | "liquidated" | "redeemed";
   batchManager: string | null;
   lastInterestRateAdjTime: number; // Unix timestamp in seconds
@@ -282,21 +281,9 @@ export async function fetchPositionById(
     );
     const borrowedAmount = formatBigIntToNumber(
       troveData.entire_debt,
-      USDU_DECIMALS
+      USDU_TOKEN.decimals
     );
 
-    // Calculate derived values
-    const healthFactor =
-      borrowedAmount > 0
-        ? collateralAmount / borrowedAmount / MCR_VALUE
-        : Infinity;
-
-    const liquidationPrice =
-      collateralAmount > 0
-        ? (borrowedAmount * MCR_VALUE) / collateralAmount
-        : 0;
-
-    const debtLimit = collateralAmount / CCR_VALUE;
     const interestRate = formatInterestRateForDisplay(
       troveData.annual_interest_rate
     );
@@ -307,6 +294,12 @@ export async function fetchPositionById(
 
     // Get collateral decimals for conversion
     const collDecimals = collateralToken.decimals;
+
+    // Calculate liquidation price
+    const minCollateralizationRatio = getMinCollateralizationRatio(collateralType);
+    const liquidationPrice = collateralAmount > 0 && borrowedAmount > 0
+      ? (borrowedAmount * minCollateralizationRatio) / collateralAmount
+      : 0;
 
     return {
       id: fullId,
@@ -320,12 +313,13 @@ export async function fetchPositionById(
         ? formatBigIntToNumber(BigInt(indexedTrove.redeemedColl), collDecimals)
         : 0,
       redeemedDebt: indexedTrove?.redeemedDebt
-        ? formatBigIntToNumber(BigInt(indexedTrove.redeemedDebt), USDU_DECIMALS)
+        ? formatBigIntToNumber(
+            BigInt(indexedTrove.redeemedDebt),
+            USDU_TOKEN.decimals
+          )
         : 0,
-      healthFactor,
-      liquidationPrice,
-      debtLimit,
       interestRate,
+      liquidationPrice,
       status: mapTroveStatus(troveStatus),
       batchManager: isZeroAddress ? null : batchManagerAddress,
       lastInterestRateAdjTime: Number(troveData.last_interest_rate_adj_time),

@@ -5,7 +5,7 @@ interface PositionMetricsParams {
   borrowAmount?: number | null;
   bitcoinPrice?: number;
   usduPrice?: number;
-  minCollateralizationRatio?: number; // Default 1.1 (110%)
+  minCollateralizationRatio: number;
 }
 
 interface PositionMetrics {
@@ -22,7 +22,7 @@ export function usePositionMetrics({
   borrowAmount,
   bitcoinPrice,
   usduPrice = 1,
-  minCollateralizationRatio = 1.1, // 110% default
+  minCollateralizationRatio,
 }: PositionMetricsParams): PositionMetrics {
   return useMemo(() => {
     // Convert null to 0 for calculations

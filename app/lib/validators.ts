@@ -7,9 +7,7 @@ export const validators = {
    * Validates that the value doesn't exceed the available balance
    */
   insufficientBalance: (value: number, balance: number) => {
-    // Use epsilon for floating-point comparison to handle precision issues
-    const epsilon = 1e-8;
-    return value > balance + epsilon ? "Insufficient balance" : undefined;
+    return value > balance ? "Insufficient balance" : undefined;
   },
 
   /**

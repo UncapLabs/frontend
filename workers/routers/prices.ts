@@ -12,7 +12,7 @@ export const priceRouter = router({
         collateralType: z.enum(["UBTC", "GBTC"]).optional().default("UBTC"),
       })
     )
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       const price = await getBitcoinprice(
         input.collateralType as CollateralType
       );
@@ -21,7 +21,7 @@ export const priceRouter = router({
         price: dn.toNumber(rawPrice),
       };
     }),
-  getUSDUPrice: publicProcedure.query(({ ctx }) => {
+  getUSDUPrice: publicProcedure.query(({}) => {
     return {
       price: 1.0,
     };

@@ -1,7 +1,7 @@
 import type { Route } from "./+types/landing";
 import { Button } from "~/components/ui/button";
 
-export default function Landing({ loaderData }: Route.ComponentProps) {
+export default function Landing({}: Route.ComponentProps) {
   return (
     <div className="relative w-full h-screen overflow-hidden bg-[#003680]">
       {/* Bitcoin SVG patterns in background */}

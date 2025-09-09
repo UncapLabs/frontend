@@ -37,7 +37,7 @@ export const branchRouter = router({
           provider,
           input.branchId as CollateralType
         );
-        const ccr = dnum18(ccrResult.ccr as bigint);
+        const ccr = dnum18(ccrResult);
 
         // Convert to dnum for calculations
         const totalCollateralDnum = dnum18(totalCollateral);

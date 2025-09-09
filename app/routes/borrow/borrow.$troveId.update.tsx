@@ -8,7 +8,8 @@ import { TokenInput } from "~/components/token-input";
 import { useEffect, useCallback } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
-import { MAX_LIMIT, computeDebtLimit } from "~/lib/utils/calc";
+import { computeDebtLimit } from "~/lib/utils/calc";
+import { MAX_LIMIT } from "~/lib/contracts/constants";
 import { validators } from "~/lib/validators";
 import type { Route } from "./+types/borrow.$troveId.update";
 import { useParams, useNavigate } from "react-router";
@@ -33,7 +34,7 @@ import {
   usePositionMetrics,
   getRedemptionRisk,
 } from "~/hooks/use-position-metrics";
-import { getMinCollateralizationRatio } from "~/lib/utils/collateral-config";
+import { getMinCollateralizationRatio } from "~/lib/contracts/collateral-config";
 import type { CollateralType } from "~/lib/contracts/constants";
 
 function UpdatePosition() {

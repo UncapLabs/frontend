@@ -6,9 +6,9 @@ import {
   INTEREST_RATE_PRECISE_UNTIL,
   INTEREST_RATE_INCREMENT_PRECISE,
   INTEREST_RATE_INCREMENT_NORMAL,
-  DNUM_0,
   type Dnum,
 } from "~/lib/interest-rate-utils";
+import { DNUM_0 } from "~/lib/decimal";
 
 // Types matching our loan structure
 type PositionLoanCommitted = {

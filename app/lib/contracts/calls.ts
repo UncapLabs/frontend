@@ -1,9 +1,9 @@
 import { Contract, type RpcProvider } from "starknet";
-import { USDU } from "./definitions";
 import {
   getCollateralAddresses,
   getBranchId,
   type CollateralType,
+  USDU_TOKEN,
 } from "./constants";
 import {
   BORROWER_OPERATIONS_ABI,
@@ -14,6 +14,7 @@ import {
   ADDRESSES_REGISTRY_ABI,
   HINT_HELPERS_ABI,
   STABILITY_POOL_ABI,
+  USDU_ABI,
 } from ".";
 
 /**
@@ -277,17 +278,10 @@ export const contractCall = {
 
   usdu: {
     /**
-     * Get USDU balance of an account
-     */
-    balanceOf: (account: string) => {
-      const contract = new Contract(USDU.abi, USDU.address);
-      return contract.populate("balanceOf", [account]);
-    },
-    /**
      * Approve spending of USDU tokens
      */
     approve: (spender: string, amount: bigint) => {
-      const contract = new Contract(USDU.abi, USDU.address);
+      const contract = new Contract(USDU_ABI, USDU_TOKEN.address);
       return contract.populate("approve", [spender, amount]);
     },
   },
@@ -300,15 +294,6 @@ export const contractCall = {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(PRICE_FEED_ABI, addresses.priceFeed);
       return contract.populate("fetch_price", []);
-    },
-
-    /**
-     * Fetch the redemption price
-     */
-    fetchRedemptionPrice: (collateralType: CollateralType) => {
-      const addresses = getCollateralAddresses(collateralType);
-      const contract = new Contract(PRICE_FEED_ABI, addresses.priceFeed);
-      return contract.populate("fetch_redemption_price", []);
     },
   },
 
@@ -330,7 +315,11 @@ export const contractCall = {
      * @param doClaim - Whether to claim rewards when depositing
      * @param collateralType - Type of collateral
      */
-    deposit: (amount: bigint, doClaim: boolean, collateralType: CollateralType) => {
+    deposit: (
+      amount: bigint,
+      doClaim: boolean,
+      collateralType: CollateralType
+    ) => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(
         STABILITY_POOL_ABI,
@@ -345,7 +334,11 @@ export const contractCall = {
      * @param doClaim - Whether to claim rewards when withdrawing
      * @param collateralType - Type of collateral
      */
-    withdraw: (amount: bigint, doClaim: boolean, collateralType: CollateralType) => {
+    withdraw: (
+      amount: bigint,
+      doClaim: boolean,
+      collateralType: CollateralType
+    ) => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(
         STABILITY_POOL_ABI,
@@ -480,9 +473,9 @@ export const contractRead = {
 
   addressesRegistry: {
     /**
-     * Get the CCR
+     * Get the CCR (Critical Collateralization Ratio)
      */
-    getCcr: async (provider: RpcProvider, collateralType: CollateralType) => {
+    getCcr: async (provider: RpcProvider, collateralType: CollateralType): Promise<bigint> => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(
         ADDRESSES_REGISTRY_ABI,
@@ -490,8 +483,9 @@ export const contractRead = {
         provider
       );
       const result = await contract.call("get_ccr", []);
-      return { ccr: result ?? 1100000000000000000n }; // 110% in 18 decimals as bigint;
+      return result as bigint;
     },
+
   },
 
   collSurplusPool: {
@@ -603,7 +597,9 @@ export const contractRead = {
         addresses.stabilityPool,
         provider
       );
-      const result = await contract.call("get_depositor_yield_gain", [userAddress]);
+      const result = await contract.call("get_depositor_yield_gain", [
+        userAddress,
+      ]);
       return result as bigint;
     },
 
@@ -621,7 +617,9 @@ export const contractRead = {
         addresses.stabilityPool,
         provider
       );
-      const result = await contract.call("get_depositor_coll_gain", [userAddress]);
+      const result = await contract.call("get_depositor_coll_gain", [
+        userAddress,
+      ]);
       return result as bigint;
     },
 
@@ -659,12 +657,13 @@ export const contractRead = {
 
       // Fetch all data in parallel
       // Use get_depositor_yield_gain_with_pending to include pending rewards
-      const [deposit, usduGain, collateralGain, totalDeposits] = await Promise.all([
-        contract.call("deposits", [userAddress]),
-        contract.call("get_depositor_yield_gain_with_pending", [userAddress]),
-        contract.call("get_depositor_coll_gain", [userAddress]),
-        contract.call("get_total_usdu_deposits", []),
-      ]);
+      const [deposit, usduGain, collateralGain, totalDeposits] =
+        await Promise.all([
+          contract.call("deposits", [userAddress]),
+          contract.call("get_depositor_yield_gain_with_pending", [userAddress]),
+          contract.call("get_depositor_coll_gain", [userAddress]),
+          contract.call("get_total_usdu_deposits", []),
+        ]);
 
       return {
         deposit: deposit as bigint,
@@ -697,7 +696,7 @@ export const createContracts = (
       addresses.borrowerOperations,
       provider
     ),
-    usdu: new Contract(USDU.abi, USDU.address, provider),
+    usdu: new Contract(USDU_ABI, USDU_TOKEN.address, provider),
     priceFeed: new Contract(PRICE_FEED_ABI, addresses.priceFeed, provider),
     troveManager: new Contract(
       TROVE_MANAGER_ABI,

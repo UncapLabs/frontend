@@ -24,7 +24,6 @@ import { useLiquidate } from "~/hooks/use-liquidate";
 import {
   MIN_DEBT,
   type CollateralType,
-  USDU_TOKEN,
   UBTC_TOKEN,
   GBTC_TOKEN,
 } from "~/lib/contracts/constants";
@@ -69,13 +68,13 @@ export default function Dashboard() {
     isRefetching,
   } = useUserTroves(address);
   // Fetch prices for both collateral types
-  const { bitcoin: ubtcPrice } = useFetchPrices({ 
-    collateralType: "UBTC", 
-    fetchUsdu: false 
+  const { bitcoin: ubtcPrice } = useFetchPrices({
+    collateralType: "UBTC",
+    fetchUsdu: false,
   });
-  const { bitcoin: gbtcPrice } = useFetchPrices({ 
-    collateralType: "GBTC", 
-    fetchUsdu: false 
+  const { bitcoin: gbtcPrice } = useFetchPrices({
+    collateralType: "GBTC",
+    fetchUsdu: false,
   });
 
   // Fetch stability pool positions

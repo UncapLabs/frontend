@@ -58,5 +58,10 @@ export const formatBigIntToNumber = (
 };
 
 export const formatInterestRateForDisplay = (rawValue: bigint): number => {
-  return Number(rawValue) / Number(INTEREST_RATE_SCALE_DOWN_FACTOR);
+  // rawValue is in 18 decimals, we need to scale down by 16 to get percentage
+  // Do the division in bigint to avoid floating point issues
+  const percentageInThousandths =
+    (rawValue * 1000n) / INTEREST_RATE_SCALE_DOWN_FACTOR;
+  // Convert to number and divide by 1000 to get the percentage
+  return Number(percentageInThousandths) / 1000;
 };

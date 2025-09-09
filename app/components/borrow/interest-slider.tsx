@@ -156,7 +156,6 @@ export function InterestSlider({
       onKeyDown={handleKeyDown}
       className={cn(
         "relative select-none rounded",
-        isFocused && "outline outline-2 outline-blue-500 outline-offset-2",
         disabled && "opacity-50",
         className
       )}

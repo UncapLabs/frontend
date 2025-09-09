@@ -47,7 +47,7 @@ export function BorrowingRestrictionsAlert({
         </ul>
 
         <a
-          href="https://docs.bitusd.io/recovery-mode"
+          href="https://uncap.finance/docs"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-block text-sm underline hover:no-underline"

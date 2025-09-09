@@ -3,32 +3,13 @@ import deploymentData from "./deployment_addresses.json";
 import type { Address } from "@starknet-react/chains";
 
 export const INTEREST_RATE_SCALE_DOWN_FACTOR = 10n ** 16n;
+export const MIN_DEBT = 2000; // Minimum debt threshold in USDU
+export const MAX_LIMIT = 1000000; // Maximum amount limit for UI inputs
 
-// Collateral types and branch mapping
-export type CollateralType = "UBTC" | "GBTC";
-export type BranchId = 0 | 1;
+// Contract addresses
+export const USDU_ADDRESS = deploymentData.USDU as Address;
+export const GAS_TOKEN_ADDRESS = deploymentData.gasToken as Address;
 
-// Mapping between collateral types and branch IDs
-export const COLLATERAL_TO_BRANCH: Record<CollateralType, BranchId> = {
-  UBTC: 0,
-  GBTC: 1,
-} as const;
-
-export const BRANCH_TO_COLLATERAL: Record<BranchId, CollateralType> = {
-  0: "UBTC",
-  1: "GBTC",
-} as const;
-
-// Helper functions
-export function getBranchId(collateralType: CollateralType): BranchId {
-  return COLLATERAL_TO_BRANCH[collateralType];
-}
-
-export function getCollateralType(branchId: BranchId): CollateralType {
-  return BRANCH_TO_COLLATERAL[branchId];
-}
-
-// Contract addresses by collateral type
 export const COLLATERAL_ADDRESSES = {
   UBTC: {
     collateral: deploymentData.UBTC.collateral as Address,
@@ -76,16 +57,6 @@ export const COLLATERAL_ADDRESSES = {
   },
 } as const;
 
-// Global addresses (same for all collaterals)
-export const USDU_ADDRESS = deploymentData.USDU as Address;
-export const GAS_TOKEN_ADDRESS = deploymentData.gasToken as Address;
-export const COLLATERAL_REGISTRY_ADDRESS =
-  deploymentData.collateralRegistry as Address;
-
-export const USDU_DECIMALS = 18;
-export const USDU_SYMBOL = "USDU";
-export const MIN_DEBT = 2000; // Minimum debt threshold in USDU
-
 // Token definitions
 export const UBTC_TOKEN = {
   address: COLLATERAL_ADDRESSES.UBTC.collateral,
@@ -116,6 +87,30 @@ export const STRK_TOKEN = {
   decimals: 18,
   icon: "/starknet.png",
 } as const;
+
+// Collateral types and branch mapping
+export type CollateralType = "UBTC" | "GBTC";
+export type BranchId = 0 | 1;
+
+// Mapping between collateral types and branch IDs
+export const COLLATERAL_TO_BRANCH: Record<CollateralType, BranchId> = {
+  UBTC: 0,
+  GBTC: 1,
+} as const;
+
+export const BRANCH_TO_COLLATERAL: Record<BranchId, CollateralType> = {
+  0: "UBTC",
+  1: "GBTC",
+} as const;
+
+// Helper functions
+export function getBranchId(collateralType: CollateralType): BranchId {
+  return COLLATERAL_TO_BRANCH[collateralType];
+}
+
+export function getCollateralType(branchId: BranchId): CollateralType {
+  return BRANCH_TO_COLLATERAL[branchId];
+}
 
 // Available collateral tokens
 export const COLLATERAL_TOKENS = [UBTC_TOKEN, GBTC_TOKEN];

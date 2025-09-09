@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { MAX_LIMIT } from "~/lib/utils/calc";
+import { MAX_LIMIT } from "~/lib/contracts/constants";
 
 export interface Token {
   address: string;

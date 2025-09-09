@@ -75,7 +75,7 @@ export function InterestRateSelector({
   );
 
   // Use the data extraction function from ManualRateControls for debt statistics
-  const { debtInFront, totalDebt } = useMemo(() => {
+  const { debtInFront } = useMemo(() => {
     if (!visualizationData.data) {
       return { debtInFront: 0, totalDebt: 0 };
     }
@@ -145,10 +145,14 @@ export function InterestRateSelector({
                     {borrowAmount && borrowAmount > 0 && (
                       <div className="mt-2 ml-1">
                         <span className="text-xs text-slate-500">
-                          {((borrowAmount * interestRate) / 100).toLocaleString('en-US', { 
-                            minimumFractionDigits: 2, 
-                            maximumFractionDigits: 2 
-                          })} USDU / year
+                          {((borrowAmount * interestRate) / 100).toLocaleString(
+                            "en-US",
+                            {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            }
+                          )}{" "}
+                          USDU / year
                         </span>
                       </div>
                     )}
@@ -157,20 +161,31 @@ export function InterestRateSelector({
                   {/* Combined Redemption Risk and Redeemable Before You */}
                   <div className="flex items-center justify-between mt-3 py-2 px-3 bg-white rounded-md border border-slate-200">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-600">Redemption Risk:</span>
-                      <span className={`text-xs font-medium ${
-                        redemptionRisk.data === "Low" ? "text-green-600" :
-                        redemptionRisk.data === "Medium" ? "text-amber-600" :
-                        redemptionRisk.data === "High" ? "text-red-600" :
-                        "text-slate-400"
-                      }`}>
+                      <span className="text-xs text-slate-600">
+                        Redemption Risk:
+                      </span>
+                      <span
+                        className={`text-xs font-medium ${
+                          redemptionRisk.data === "Low"
+                            ? "text-green-600"
+                            : redemptionRisk.data === "Medium"
+                            ? "text-amber-600"
+                            : redemptionRisk.data === "High"
+                            ? "text-red-600"
+                            : "text-slate-400"
+                        }`}
+                      >
                         {redemptionRisk.data || "—"}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-600">Redeemable before you:</span>
+                      <span className="text-xs text-slate-600">
+                        Redeemable before you:
+                      </span>
                       <span className="text-xs font-medium text-slate-900">
-                        {debtInFront > 0 ? `$${(debtInFront / 1000000).toFixed(2)}M` : "—"}
+                        {debtInFront > 0
+                          ? `$${(debtInFront / 1000000).toFixed(2)}M`
+                          : "—"}
                       </span>
                     </div>
                   </div>
@@ -190,10 +205,14 @@ export function InterestRateSelector({
                       {borrowAmount && borrowAmount > 0 && (
                         <div className="mt-2 ml-1">
                           <span className="text-xs text-slate-500">
-                            {((borrowAmount * interestRate) / 100).toLocaleString('en-US', { 
-                              minimumFractionDigits: 2, 
-                              maximumFractionDigits: 2 
-                            })} USDU / year
+                            {(
+                              (borrowAmount * interestRate) /
+                              100
+                            ).toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}{" "}
+                            USDU / year
                           </span>
                         </div>
                       )}
