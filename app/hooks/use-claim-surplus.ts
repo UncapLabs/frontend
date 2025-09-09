@@ -52,8 +52,8 @@ export function useClaimAllSurplus({
       if (address) {
         const transactionData = {
           hash,
-          type: "claimSurplus" as const,
-          description: createTransactionDescription("claimSurplus", {
+          type: "claim_surplus" as const,
+          description: createTransactionDescription("claim_surplus", {
             collateralType:
               collateralTypes.length === 1
                 ? collateralTypes[0]

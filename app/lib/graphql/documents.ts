@@ -60,29 +60,6 @@ export const TROVES_AS_PREVIOUS_OWNER = graphql(/* GraphQL */ `
   }
 `);
 
-export const GET_TROVE_BY_ID = graphql(/* GraphQL */ `
-  query GetTroveById($troveId: ID!) {
-    trove(id: $troveId) {
-      id
-      troveId
-      borrower
-      debt
-      deposit
-      interestRate
-      status
-      interestBatch {
-        id
-        batchManager
-        debt
-        coll
-      }
-      collateral {
-        id
-      }
-    }
-  }
-`);
-
 export const TROVE_BY_ID = graphql(/* GraphQL */ `
   query TroveById($id: ID!) {
     trove(id: $id) {
@@ -96,34 +73,6 @@ export const TROVE_BY_ID = graphql(/* GraphQL */ `
       redemptionCount
       redeemedColl
       redeemedDebt
-    }
-  }
-`);
-
-export const GET_TROVES_BY_COLLATERAL = graphql(/* GraphQL */ `
-  query GetTrovesByCollateral($collateralId: ID, $first: Int!, $skip: Int!) {
-    troves(
-      where: { collateral: $collateralId, status: "active" }
-      first: $first
-      skip: $skip
-      orderBy: debt
-      orderDirection: desc
-    ) {
-      id
-      troveId
-      borrower
-      debt
-      deposit
-      interestRate
-    }
-  }
-`);
-
-export const GET_ALL_COLLATERALS = graphql(/* GraphQL */ `
-  query GetAllCollaterals {
-    collaterals {
-      id
-      collIndex
     }
   }
 `);

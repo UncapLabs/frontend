@@ -1,9 +1,9 @@
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { ArrowDown, AlertTriangle, Info } from "lucide-react";
-import { InterestRateSelector } from "~/components/borrow";
+import { InterestRateSelector } from "~/components/borrow/interest-rate-selector";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
-import { BorrowingRestrictionsAlert } from "~/components/borrow";
+import { BorrowingRestrictionsAlert } from "~/components/borrow/borrowing-restrictions-alert";
 import { TokenInput } from "~/components/token-input";
 import { useEffect, useCallback } from "react";
 import { useForm } from "@tanstack/react-form";
@@ -100,7 +100,7 @@ function UpdatePosition() {
 
   const { bitcoin, usdu } = useFetchPrices({
     collateralType,
-    enabled: position !== undefined
+    enabled: position !== undefined,
   });
 
   const minCollateralizationRatio =
@@ -637,13 +637,16 @@ function UpdatePosition() {
                         percentageButtons
                         onPercentageClick={(percentage: number) => {
                           const balance = bitcoinBalance?.value
-                            ? Number(bitcoinBalance.value) / 10 ** selectedCollateralToken.decimals
+                            ? Number(bitcoinBalance.value) /
+                              10 ** selectedCollateralToken.decimals
                             : 0;
                           // For update position, Max should be current position + available balance
-                          const currentCollateral = position?.collateralAmount || 0;
-                          const newValue = percentage === 1 
-                            ? currentCollateral + balance  // Max = current + balance
-                            : currentCollateral + (balance * percentage); // Others = current + percentage of balance
+                          const currentCollateral =
+                            position?.collateralAmount || 0;
+                          const newValue =
+                            percentage === 1
+                              ? currentCollateral + balance // Max = current + balance
+                              : currentCollateral + balance * percentage; // Others = current + percentage of balance
                           field.handleChange(newValue);
                           setCollateralAmount(newValue);
                         }}
@@ -743,7 +746,10 @@ function UpdatePosition() {
                         percentageButtonsOnHover
                         onPercentageClick={(percentage: number) => {
                           // For debt update, percentage represents target LTV
-                          const collateral = form.getFieldValue("collateralAmount") || position?.collateralAmount || 0;
+                          const collateral =
+                            form.getFieldValue("collateralAmount") ||
+                            position?.collateralAmount ||
+                            0;
                           const btcPrice = bitcoin?.price || 0;
                           const usduPrice = usdu?.price || 1;
                           const collateralValueUSD = collateral * btcPrice;
@@ -773,8 +779,14 @@ function UpdatePosition() {
                       }
                       borrowAmount={borrowAmount ?? undefined}
                       collateralType={collateralType}
-                      lastInterestRateAdjTime={position?.lastInterestRateAdjTime}
-                      currentInterestRate={position ? getInterestRatePercentage(position) : undefined}
+                      lastInterestRateAdjTime={
+                        position?.lastInterestRateAdjTime
+                      }
+                      currentInterestRate={
+                        position
+                          ? getInterestRatePercentage(position)
+                          : undefined
+                      }
                       isZombie={isZombie}
                     />
 

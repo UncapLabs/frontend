@@ -6,8 +6,8 @@ import type {
 } from "~/types/transaction";
 import type { ProviderInterface } from "starknet";
 
-const STORAGE_KEY = "bitusd-transactions";
-const MAX_COMPLETED_TRANSACTIONS = 10;
+const STORAGE_KEY = "uncap-transactions";
+const MAX_COMPLETED_TRANSACTIONS = 50;
 const TRANSACTION_HASH_REGEX = /^0x[0-9a-fA-F]+$/;
 
 function safeParseJsonData(string: string | null): TransactionData {
@@ -55,7 +55,10 @@ export interface TransactionStore {
   addTransaction: (account: string, transaction: NewTransaction) => void;
   clearTransactions: (account: string) => void;
   getTransactions: (account: string) => StarknetTransaction[];
-  getTransaction: (account: string, hash: string) => StarknetTransaction | undefined;
+  getTransaction: (
+    account: string,
+    hash: string
+  ) => StarknetTransaction | undefined;
   setTransactionStatus: (
     account: string,
     hash: string,
@@ -64,7 +67,9 @@ export interface TransactionStore {
   waitForPendingTransactions: (account: string) => Promise<void>;
   setProvider: (provider: ProviderInterface) => void;
   onChange: (fn: () => void) => () => void;
-  onTransactionStatus: (fn: (status: TransactionStatus, hash: string) => void) => () => void;
+  onTransactionStatus: (
+    fn: (status: TransactionStatus, hash: string) => void
+  ) => () => void;
 }
 
 export function createTransactionStore(): TransactionStore {
@@ -72,8 +77,9 @@ export function createTransactionStore(): TransactionStore {
 
   let provider: ProviderInterface | null = null;
   const listeners: Set<() => void> = new Set();
-  const transactionListeners: Set<(status: TransactionStatus, hash: string) => void> =
-    new Set();
+  const transactionListeners: Set<
+    (status: TransactionStatus, hash: string) => void
+  > = new Set();
   const transactionRequestCache: Map<string, Promise<void>> = new Map();
 
   function setProvider(newProvider: ProviderInterface): void {
@@ -213,7 +219,6 @@ export function createTransactionStore(): TransactionStore {
       listener();
     }
   }
-
 
   function onChange(fn: () => void): () => void {
     listeners.add(fn);

@@ -25,6 +25,8 @@ const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
   claim: "Claim Rewards",
   claim_surplus: "Claim Collateral Surplus",
   adjust_rate: "Adjust Interest Rate",
+  deposit: "Deposit to Stability Pool",
+  withdraw: "Withdraw from Stability Pool",
   unknown: "Transaction",
 };
 

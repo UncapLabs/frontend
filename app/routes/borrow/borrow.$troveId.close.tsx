@@ -21,7 +21,7 @@ import { useState, useCallback } from "react";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "~/components/ui/alert";
-import { BorrowingRestrictionsAlert } from "~/components/borrow";
+import { BorrowingRestrictionsAlert } from "~/components/borrow/borrowing-restrictions-alert";
 
 function ClosePosition() {
   const { address } = useAccount();

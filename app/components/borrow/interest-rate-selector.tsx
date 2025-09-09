@@ -2,8 +2,6 @@ import { useMemo, useCallback } from "react";
 import { RedemptionInfo } from "./redemption-info";
 import { InterestRateSkeleton } from "./interest-rate-skeleton";
 import { ManualRateControls } from "./manual-rate-controls";
-import { RiskIndicator } from "./risk-indicator";
-import { DebtStatistics } from "./debt-statistics";
 import { STRKRebateInfo } from "./strk-rebate-info";
 import { Info, AlertTriangle } from "lucide-react";
 import {

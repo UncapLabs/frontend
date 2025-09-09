@@ -2,13 +2,13 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { ArrowDown } from "lucide-react";
 import { Separator } from "~/components/ui/separator";
-import { InterestRateSelector } from "~/components/borrow";
+import { InterestRateSelector } from "~/components/borrow/interest-rate-selector";
 import { RedemptionInfo } from "~/components/borrow/redemption-info";
-import { BorrowingRestrictionsAlert } from "~/components/borrow";
+import { BorrowingRestrictionsAlert } from "~/components/borrow/borrowing-restrictions-alert";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { TransactionSummary } from "~/components/transaction-summary";
 import { TokenInput } from "~/components/token-input";
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
 import { MAX_LIMIT, computeDebtLimit } from "~/lib/utils/calc";
@@ -64,8 +64,9 @@ function Borrow() {
 
   const { bitcoin, usdu } = useFetchPrices({
     collateralType,
-    enabled: (collateralAmount !== undefined && collateralAmount > 0) || 
-             (borrowAmount !== undefined && borrowAmount > 0)
+    enabled:
+      (collateralAmount !== undefined && collateralAmount > 0) ||
+      (borrowAmount !== undefined && borrowAmount > 0),
   });
   const minCollateralizationRatio =
     getMinCollateralizationRatio(collateralType);
