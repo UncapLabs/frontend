@@ -261,18 +261,8 @@ export function useAllStabilityPoolPositions() {
   // Return default structure if no data
   if (!data) {
     return {
-      UBTC: {
-        userDeposit: 0,
-        rewards: { usdu: 0, collateral: 0 },
-        totalDeposits: 0,
-        poolShare: 0,
-      },
-      GBTC: {
-        userDeposit: 0,
-        rewards: { usdu: 0, collateral: 0 },
-        totalDeposits: 0,
-        poolShare: 0,
-      },
+      UBTC: null,
+      GBTC: null,
     };
   }
   

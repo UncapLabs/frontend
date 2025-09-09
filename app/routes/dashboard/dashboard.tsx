@@ -83,8 +83,8 @@ export default function Dashboard() {
 
   // Check if user has any stability pool positions
   const hasStabilityPoolPositions =
-    allStabilityPoolPositions.UBTC.userDeposit > 0 ||
-    allStabilityPoolPositions.GBTC.userDeposit > 0;
+    (allStabilityPoolPositions.UBTC?.userDeposit ?? 0) > 0 ||
+    (allStabilityPoolPositions.GBTC?.userDeposit ?? 0) > 0;
 
   const handleCreateNew = () => {
     navigate("/unanim/borrow");
@@ -514,7 +514,7 @@ export default function Dashboard() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* UBTC Pool Card */}
-            {allStabilityPoolPositions.UBTC.userDeposit > 0 && (
+            {allStabilityPoolPositions.UBTC && allStabilityPoolPositions.UBTC.userDeposit > 0 && (
               <Card className="border border-slate-200 hover:shadow-lg transition-all duration-300">
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
@@ -618,7 +618,7 @@ export default function Dashboard() {
             )}
 
             {/* GBTC Pool Card */}
-            {allStabilityPoolPositions.GBTC.userDeposit > 0 && (
+            {allStabilityPoolPositions.GBTC && allStabilityPoolPositions.GBTC.userDeposit > 0 && (
               <Card className="border border-slate-200 hover:shadow-lg transition-all duration-300">
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">

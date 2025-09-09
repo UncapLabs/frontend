@@ -31,19 +31,6 @@ export const stabilityPoolRouter = router({
         GBTC: gbtcPosition,
       };
     }),
-
-  getPositionByCollateral: publicProcedure
-    .input(
-      z.object({
-        userAddress: z.string(),
-        collateralType: z.enum(["UBTC", "GBTC"]),
-      })
-    )
-    .query(async ({ input }) => {
-      const { userAddress, collateralType } = input;
-      return fetchPoolPosition(provider, userAddress, collateralType);
-    }),
-
   getTotalDeposits: publicProcedure
     .input(
       z.object({
@@ -67,7 +54,6 @@ export const stabilityPoolRouter = router({
         return 0;
       }
     }),
-
   getPoolApr: publicProcedure
     .input(
       z.object({

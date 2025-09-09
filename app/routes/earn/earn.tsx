@@ -10,17 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { TokenInput } from "~/components/token-input";
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useAccount, useBalance } from "@starknet-react/core";
 import {
@@ -31,16 +23,18 @@ import {
 } from "~/lib/contracts/constants";
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
-import {
-  useDepositToStabilityPool,
-  useWithdrawFromStabilityPool,
-  useAllStabilityPoolPositions,
-} from "~/hooks/use-stability-pool";
+import { useAllStabilityPoolPositions } from "~/hooks/use-stability-pool";
+import { useStabilityPoolTransaction } from "~/hooks/use-stability-pool-transaction";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { validators } from "~/lib/validators";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
-import { useQuery } from "@tanstack/react-query";
-import { useTRPC } from "~/lib/trpc";
+import { StabilityPoolsTable } from "~/components/earn/stability-pools-table";
+import {
+  useQueryState,
+  parseAsFloat,
+  parseAsString,
+  parseAsBoolean,
+} from "nuqs";
 
 type ActionType = "deposit" | "withdraw";
 
@@ -48,36 +42,35 @@ function StabilityPool() {
   const { address } = useAccount();
   const { connectWallet } = useWalletConnect();
 
-  const [action, setAction] = useState<ActionType>("deposit");
-  const [selectedCollateral, setSelectedCollateral] =
-    useState<CollateralType>("UBTC");
-  const [claimRewards, setClaimRewards] = useState(true);
+  const [action, setAction] = useQueryState(
+    "action",
+    parseAsString.withDefault("deposit")
+  );
+  const [selectedCollateral, setSelectedCollateral] = useQueryState(
+    "collateral",
+    parseAsString.withDefault("UBTC")
+  ) as [CollateralType, (value: CollateralType | null) => void];
+  const [claimRewards, setClaimRewards] = useQueryState(
+    "claim",
+    parseAsBoolean.withDefault(true)
+  );
+  const [amountParam, setAmountParam] = useQueryState("amount", parseAsFloat);
 
   const form = useForm({
     defaultValues: {
-      amount: undefined as number | undefined,
+      amount: amountParam ?? (undefined as number | undefined),
     },
     onSubmit: async ({ value }) => {
       if (!value.amount) return;
 
       try {
-        if (action === "deposit") {
-          if (!depositReady) {
-            if (!address) {
-              toast.error("Please connect your wallet");
-            }
-            return;
+        if (!isReady) {
+          if (!address) {
+            toast.error("Please connect your wallet");
           }
-          await deposit();
-        } else {
-          if (!withdrawReady) {
-            if (!address) {
-              toast.error("Please connect your wallet");
-            }
-            return;
-          }
-          await withdraw();
+          return;
         }
+        await send();
       } catch (error) {
         console.error("Transaction error:", error);
       }
@@ -93,102 +86,26 @@ function StabilityPool() {
   const amount = form.state.values.amount;
 
   const {
-    deposit,
-    isPending: depositPending,
-    isSending: depositSending,
-    error: depositError,
-    transactionHash: depositHash,
-    isReady: depositReady,
-    currentState: depositState,
-    formData: depositFormData,
-    reset: depositReset,
-  } = useDepositToStabilityPool({
+    send,
+    isPending,
+    isSending,
+    error: transactionError,
+    transactionHash,
+    isReady,
+    currentState,
+    formData,
+    reset: transactionReset,
+  } = useStabilityPoolTransaction({
+    action: action as "deposit" | "withdraw",
     amount: amount,
     doClaim: claimRewards,
     collateralType: selectedCollateral,
   });
-
-  const {
-    withdraw,
-    isPending: withdrawPending,
-    isSending: withdrawSending,
-    error: withdrawError,
-    transactionHash: withdrawHash,
-    isReady: withdrawReady,
-    currentState: withdrawState,
-    formData: withdrawFormData,
-    reset: withdrawReset,
-  } = useWithdrawFromStabilityPool({
-    amount: amount,
-    doClaim: claimRewards,
-    collateralType: selectedCollateral,
-  });
-
-  const isPending = action === "deposit" ? depositPending : withdrawPending;
-  const isSending = action === "deposit" ? depositSending : withdrawSending;
-  const transactionError = action === "deposit" ? depositError : withdrawError;
-  const transactionHash = action === "deposit" ? depositHash : withdrawHash;
-  const currentState = action === "deposit" ? depositState : withdrawState;
-  const formData = action === "deposit" ? depositFormData : withdrawFormData;
 
   const allPositions = useAllStabilityPoolPositions();
-
   const { usdu } = useFetchPrices({ fetchBitcoin: false, fetchUsdu: true });
-
-  const trpc = useTRPC();
-
-  const ubtcTotalDepositsQuery = useQuery({
-    ...trpc.stabilityPoolRouter.getTotalDeposits.queryOptions({
-      collateralType: "UBTC",
-    }),
-    refetchInterval: 30000,
-  });
-  const gbtcTotalDepositsQuery = useQuery({
-    ...trpc.stabilityPoolRouter.getTotalDeposits.queryOptions({
-      collateralType: "GBTC",
-    }),
-    refetchInterval: 30000,
-  });
-
-  const ubtcAprQuery = useQuery({
-    ...trpc.stabilityPoolRouter.getPoolApr.queryOptions({
-      collateralType: "UBTC",
-    }),
-    refetchInterval: 30000,
-  });
-  const gbtcAprQuery = useQuery({
-    ...trpc.stabilityPoolRouter.getPoolApr.queryOptions({
-      collateralType: "GBTC",
-    }),
-    refetchInterval: 30000,
-  });
-
-  const poolsData = [
-    {
-      collateralType: "UBTC" as CollateralType,
-      token: UBTC_TOKEN,
-      totalDeposits:
-        ubtcTotalDepositsQuery.data ?? allPositions.UBTC.totalDeposits,
-      apr: ubtcAprQuery.data ?? 0,
-      userDeposit: allPositions.UBTC.userDeposit,
-      rewards: allPositions.UBTC.rewards,
-      poolShare: allPositions.UBTC.poolShare,
-    },
-    {
-      collateralType: "GBTC" as CollateralType,
-      token: GBTC_TOKEN,
-      totalDeposits:
-        gbtcTotalDepositsQuery.data ?? allPositions.GBTC.totalDeposits,
-      apr: gbtcAprQuery.data ?? 0,
-      userDeposit: allPositions.GBTC.userDeposit,
-      rewards: allPositions.GBTC.rewards,
-      poolShare: allPositions.GBTC.poolShare,
-    },
-  ];
-
-  const selectedPool = poolsData.find(
-    (p) => p.collateralType === selectedCollateral
-  );
+  
+  const selectedPosition = allPositions[selectedCollateral];
 
   useEffect(() => {
     if (address && amount && amount > 0) {
@@ -198,12 +115,9 @@ function StabilityPool() {
 
   const handleComplete = useCallback(() => {
     form.reset();
-    if (action === "deposit") {
-      depositReset();
-    } else {
-      withdrawReset();
-    }
-  }, [form, action, depositReset, withdrawReset]);
+    setAmountParam(null);
+    transactionReset();
+  }, [form, transactionReset, setAmountParam]);
 
   return (
     <div className="mx-auto max-w-6xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
@@ -215,146 +129,7 @@ function StabilityPool() {
       <Separator className="mb-8 bg-slate-200" />
 
       <div className="space-y-6">
-        <Card className="border border-slate-200">
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              <div>
-                <h2 className="text-lg font-semibold">
-                  Stability Pools Overview
-                </h2>
-                <p className="text-sm text-slate-500 mt-1">
-                  Earn liquidation rewards by depositing USDU into stability
-                  pools
-                </p>
-              </div>
-
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Pool</TableHead>
-                    <TableHead className="text-right">Total Deposits</TableHead>
-                    <TableHead className="text-right">Supply APR</TableHead>
-                    <TableHead className="text-right">Your Deposit</TableHead>
-                    <TableHead className="text-right">
-                      Claimable Rewards
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {poolsData.map((pool) => (
-                    <TableRow
-                      key={pool.collateralType}
-                      className={
-                        pool.collateralType === selectedCollateral
-                          ? "bg-slate-50"
-                          : ""
-                      }
-                    >
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <img
-                            src={pool.token.icon}
-                            alt={pool.token.symbol}
-                            className="w-5 h-5"
-                          />
-                          <span className="font-medium">
-                            {pool.token.symbol}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div>
-                          <NumericFormat
-                            displayType="text"
-                            value={pool.totalDeposits}
-                            thousandSeparator=","
-                            decimalScale={0}
-                            suffix=" USDU"
-                          />
-                          {usdu?.price && (
-                            <div className="text-xs text-slate-500">
-                              $
-                              <NumericFormat
-                                displayType="text"
-                                value={pool.totalDeposits * usdu.price}
-                                thousandSeparator=","
-                                decimalScale={0}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <span className="font-semibold text-green-600">
-                          <NumericFormat
-                            displayType="text"
-                            value={pool.apr}
-                            decimalScale={2}
-                          />
-                          %
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {address && pool.userDeposit > 0 ? (
-                          <div>
-                            <NumericFormat
-                              displayType="text"
-                              value={pool.userDeposit}
-                              thousandSeparator=","
-                              suffix=" USDU"
-                              decimalScale={0}
-                            />
-                            {usdu?.price && (
-                              <div className="text-xs text-slate-500">
-                                $
-                                <NumericFormat
-                                  displayType="text"
-                                  value={pool.userDeposit * usdu.price}
-                                  thousandSeparator=","
-                                  decimalScale={0}
-                                />
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-slate-400">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {address && pool.rewards ? (
-                          <div className="text-sm">
-                            <div>
-                              <NumericFormat
-                                displayType="text"
-                                value={pool.rewards.usdu}
-                                thousandSeparator=","
-                                decimalScale={2}
-                                fixedDecimalScale
-                              />{" "}
-                              USDU
-                            </div>
-                            <div className="text-slate-500">
-                              <NumericFormat
-                                displayType="text"
-                                value={pool.rewards.collateral}
-                                thousandSeparator=","
-                                decimalScale={6}
-                                fixedDecimalScale
-                              />{" "}
-                              {pool.token.symbol}
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="text-slate-400">—</span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+        <StabilityPoolsTable selectedCollateral={selectedCollateral} />
 
         {["pending", "success", "error"].includes(currentState) ? (
           <TransactionStatus
@@ -412,18 +187,20 @@ function StabilityPool() {
                       value: `${selectedCollateral} Stability Pool`,
                     },
                     // Add rewards claimed if applicable
-                    ...(claimRewards && selectedPool?.rewards && 
-                      (selectedPool.rewards.usdu > 0 || selectedPool.rewards.collateral > 0)
+                    ...(claimRewards &&
+                    selectedPosition?.rewards &&
+                    (selectedPosition.rewards.usdu > 0 ||
+                      selectedPosition.rewards.collateral > 0)
                       ? [
                           {
                             label: "Rewards Claimed",
                             value: (
                               <div className="space-y-1">
-                                {selectedPool.rewards.usdu > 0 && (
+                                {selectedPosition.rewards.usdu > 0 && (
                                   <div>
                                     <NumericFormat
                                       displayType="text"
-                                      value={selectedPool.rewards.usdu}
+                                      value={selectedPosition.rewards.usdu}
                                       thousandSeparator=","
                                       decimalScale={2}
                                       fixedDecimalScale
@@ -431,11 +208,13 @@ function StabilityPool() {
                                     USDU
                                   </div>
                                 )}
-                                {selectedPool.rewards.collateral > 0 && (
+                                {selectedPosition.rewards.collateral > 0 && (
                                   <div>
                                     <NumericFormat
                                       displayType="text"
-                                      value={selectedPool.rewards.collateral}
+                                      value={
+                                        selectedPosition.rewards.collateral
+                                      }
                                       thousandSeparator=","
                                       decimalScale={6}
                                       fixedDecimalScale
@@ -554,7 +333,8 @@ function StabilityPool() {
                             validators.insufficientBalance(value, balance)
                           );
                         } else {
-                          const userDeposit = selectedPool?.userDeposit || 0;
+                          const userDeposit =
+                            selectedPosition?.userDeposit || 0;
                           return validators.compose(
                             validators.insufficientBalance(value, userDeposit)
                           );
@@ -573,6 +353,7 @@ function StabilityPool() {
                           value={field.state.value}
                           onChange={(value) => {
                             field.handleChange(value);
+                            setAmountParam(value || null);
                           }}
                           onBlur={field.handleBlur}
                           label={
@@ -589,11 +370,13 @@ function StabilityPool() {
                                 : 0;
                               const newValue = balance * percentage;
                               field.handleChange(newValue);
+                              setAmountParam(newValue || null);
                             } else {
                               const userDeposit =
-                                selectedPool?.userDeposit || 0;
+                                selectedPosition?.userDeposit || 0;
                               const newValue = userDeposit * percentage;
                               field.handleChange(newValue);
+                              setAmountParam(newValue || null);
                             }
                           }}
                           disabled={isSending || isPending}
@@ -603,7 +386,7 @@ function StabilityPool() {
                         {action === "deposit" &&
                           field.state.value &&
                           field.state.value > 0 &&
-                          selectedPool && (
+                          selectedPosition && (
                             <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                               <div className="flex justify-between items-center text-sm">
                                 <span className="text-blue-700 font-medium">
@@ -613,10 +396,11 @@ function StabilityPool() {
                                   <NumericFormat
                                     displayType="text"
                                     value={
-                                      selectedPool.totalDeposits > 0
-                                        ? ((selectedPool.userDeposit +
+                                      (allPositions[selectedCollateral]?.totalDeposits || 0) > 0
+                                        ? (((selectedPosition?.userDeposit ||
+                                            0) +
                                             field.state.value) /
-                                            (selectedPool.totalDeposits +
+                                            ((allPositions[selectedCollateral]?.totalDeposits || 0) +
                                               field.state.value)) *
                                           100
                                         : 100
@@ -642,8 +426,8 @@ function StabilityPool() {
                           )}
 
                         {action === "withdraw" &&
-                          selectedPool?.userDeposit &&
-                          selectedPool.userDeposit > 0 && (
+                          selectedPosition?.userDeposit &&
+                          selectedPosition.userDeposit > 0 && (
                             <div className="flex justify-between text-sm">
                               <span className="text-slate-500">
                                 Deposited in pool:
@@ -651,19 +435,26 @@ function StabilityPool() {
                               <button
                                 type="button"
                                 onClick={() => {
-                                  field.handleChange(selectedPool.userDeposit);
+                                  field.handleChange(
+                                    selectedPosition.userDeposit
+                                  );
+                                  setAmountParam(
+                                    selectedPosition.userDeposit || null
+                                  );
                                   setClaimRewards(true);
                                 }}
                                 className="font-medium text-blue-600 hover:text-blue-700 transition-colors"
                               >
-                                {selectedPool.userDeposit.toLocaleString()} USDU
+                                {selectedPosition.userDeposit.toLocaleString()}{" "}
+                                USDU
                                 {usdu?.price && (
                                   <span className="text-slate-500 ml-1">
                                     ($
                                     <NumericFormat
                                       displayType="text"
                                       value={
-                                        selectedPool.userDeposit * usdu.price
+                                        selectedPosition.userDeposit *
+                                        usdu.price
                                       }
                                       thousandSeparator=","
                                       decimalScale={0}
@@ -702,7 +493,7 @@ function StabilityPool() {
                         ? `If unchecked, USDU rewards will be compounded into your deposit and ${selectedCollateral} rewards will be saved for later claiming.`
                         : `If checked, your USDU and ${selectedCollateral} rewards will be sent to your wallet. If unchecked, they'll remain in the pool for later claiming.`}
                     </p>
-                    {selectedPool?.rewards && claimRewards && (
+                    {selectedPosition?.rewards && claimRewards && (
                       <div className="ml-6 p-2 bg-slate-50 rounded text-xs">
                         <div className="font-medium text-slate-700">
                           Rewards to claim:
@@ -710,7 +501,7 @@ function StabilityPool() {
                         <div className="text-slate-600 mt-1">
                           <NumericFormat
                             displayType="text"
-                            value={selectedPool.rewards.usdu}
+                            value={selectedPosition.rewards.usdu}
                             thousandSeparator=","
                             decimalScale={2}
                             fixedDecimalScale
@@ -718,7 +509,7 @@ function StabilityPool() {
                           USDU +{" "}
                           <NumericFormat
                             displayType="text"
-                            value={selectedPool.rewards.collateral}
+                            value={selectedPosition.rewards.collateral}
                             thousandSeparator=","
                             decimalScale={6}
                             fixedDecimalScale
@@ -754,7 +545,7 @@ function StabilityPool() {
                               : "Enter withdraw amount";
                         } else if (
                           action === "withdraw" &&
-                          selectedPool?.userDeposit === 0
+                          (selectedPosition?.userDeposit ?? 0) === 0
                         ) {
                           buttonText = "No deposit in this pool";
                         }
@@ -768,7 +559,7 @@ function StabilityPool() {
                               (!amount ||
                                 amount <= 0 ||
                                 (action === "withdraw" &&
-                                  selectedPool?.userDeposit === 0) ||
+                                  (selectedPosition?.userDeposit ?? 0) === 0) ||
                                 isSending ||
                                 isPending ||
                                 !canSubmit)

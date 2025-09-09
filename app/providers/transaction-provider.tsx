@@ -121,14 +121,12 @@ export function TransactionStoreProvider({
               }),
             });
 
-            // Also invalidate individual position queries if collateral type is known
+            // Also invalidate total deposits queries if collateral type is known
             if (transaction.details?.collateralType) {
               queryClient.invalidateQueries({
-                queryKey:
-                  trpc.stabilityPoolRouter.getPositionByCollateral.queryKey({
-                    userAddress: address,
-                    collateralType: transaction.details.collateralType,
-                  }),
+                queryKey: trpc.stabilityPoolRouter.getPoolApr.queryKey({
+                  collateralType: transaction.details.collateralType,
+                }),
               });
 
               // Invalidate total deposits for that collateral

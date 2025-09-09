@@ -54,7 +54,10 @@ export const jsonParseWithDnum: typeof JSON.parse = (data, reviver) => {
 };
 
 export function bigintToDecimal(value: bigint, decimals: number = 18): number {
-  return Number(value) / Math.pow(10, decimals);
+  // Create a dnum tuple [value, decimals] where value is the raw bigint
+  // and decimals indicates how many decimal places it represents
+  const dnum: Dnum = [value, decimals];
+  return dn.toNumber(dnum);
 }
 
 export function decimalToBigint(value: number, decimals: number = 18): bigint {

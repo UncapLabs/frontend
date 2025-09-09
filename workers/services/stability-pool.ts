@@ -38,16 +38,7 @@ export async function fetchPoolPosition(
       `Error fetching stability pool position for ${collateralType}:`,
       error
     );
-    // Return default values on error
-    return {
-      userDeposit: 0,
-      rewards: {
-        usdu: 0,
-        collateral: 0,
-      },
-      totalDeposits: 0,
-      poolShare: 0,
-    };
+    return null;
   }
 }
 
