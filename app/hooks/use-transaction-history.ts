@@ -8,7 +8,10 @@ export type TransactionType =
   | "adjust"
   | "close"
   | "claim"
+  | "claim_surplus"
   | "adjust_rate"
+  | "deposit"
+  | "withdraw"
   | "unknown";
 
 // Transaction status
@@ -209,11 +212,29 @@ export function createTransactionDetails(
         amount: details.amount,
         token: details.token,
       };
+    case "claim_surplus":
+      return {
+        amount: details.amount,
+        token: details.token,
+        collateralType: details.collateralType,
+      };
     case "adjust_rate":
       return {
         troveId: details.troveId,
         oldRate: details.oldRate,
         newRate: details.newRate,
+      };
+    case "deposit":
+      return {
+        amount: details.amount,
+        token: details.token,
+        poolId: details.poolId,
+      };
+    case "withdraw":
+      return {
+        amount: details.amount,
+        token: details.token,
+        poolId: details.poolId,
       };
     default:
       return details;
