@@ -475,7 +475,10 @@ export const contractRead = {
     /**
      * Get the CCR (Critical Collateralization Ratio)
      */
-    getCcr: async (provider: RpcProvider, collateralType: CollateralType): Promise<bigint> => {
+    getCcr: async (
+      provider: RpcProvider,
+      collateralType: CollateralType
+    ): Promise<bigint> => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(
         ADDRESSES_REGISTRY_ABI,
@@ -485,7 +488,6 @@ export const contractRead = {
       const result = await contract.call("get_ccr", []);
       return result as bigint;
     },
-
   },
 
   collSurplusPool: {
@@ -565,64 +567,6 @@ export const contractRead = {
   },
 
   stabilityPool: {
-    /**
-     * Get user's deposit in the stability pool
-     */
-    getDeposit: async (
-      provider: RpcProvider,
-      userAddress: string,
-      collateralType: CollateralType
-    ): Promise<bigint> => {
-      const addresses = getCollateralAddresses(collateralType);
-      const contract = new Contract(
-        STABILITY_POOL_ABI,
-        addresses.stabilityPool,
-        provider
-      );
-      const result = await contract.call("deposits", [userAddress]);
-      return result as bigint;
-    },
-
-    /**
-     * Get user's USDU rewards (gains) from the stability pool
-     */
-    getDepositorGain: async (
-      provider: RpcProvider,
-      userAddress: string,
-      collateralType: CollateralType
-    ): Promise<bigint> => {
-      const addresses = getCollateralAddresses(collateralType);
-      const contract = new Contract(
-        STABILITY_POOL_ABI,
-        addresses.stabilityPool,
-        provider
-      );
-      const result = await contract.call("get_depositor_yield_gain", [
-        userAddress,
-      ]);
-      return result as bigint;
-    },
-
-    /**
-     * Get user's collateral rewards from liquidations
-     */
-    getDepositorCollateralGain: async (
-      provider: RpcProvider,
-      userAddress: string,
-      collateralType: CollateralType
-    ): Promise<bigint> => {
-      const addresses = getCollateralAddresses(collateralType);
-      const contract = new Contract(
-        STABILITY_POOL_ABI,
-        addresses.stabilityPool,
-        provider
-      );
-      const result = await contract.call("get_depositor_coll_gain", [
-        userAddress,
-      ]);
-      return result as bigint;
-    },
-
     /**
      * Get total deposits in the stability pool
      */
