@@ -5,7 +5,7 @@ import {
 } from "~/hooks/use-stability-pool";
 import type { CollateralType } from "~/lib/contracts/constants";
 
-type ActionType = "deposit" | "withdraw";
+type ActionType = "deposit" | "withdraw" | "claim";
 
 interface UseStabilityPoolTransactionParams {
   action: ActionType;
@@ -20,35 +20,59 @@ export function useStabilityPoolTransaction({
   doClaim,
   collateralType,
 }: UseStabilityPoolTransactionParams) {
+  // Determine amounts for each hook based on action
+  // For deposits: only pass amount to deposit hook
+  // For withdrawals: only pass amount to withdraw hook
+  // For claims: pass 0 to withdraw hook
+  const depositAmount = action === "deposit" ? amount : undefined;
+  const withdrawAmount = action === "withdraw" ? amount : (action === "claim" ? 0 : undefined);
+  
+  // Always call both hooks - we cannot conditionally call hooks
   const depositHook = useDepositToStabilityPool({
-    amount,
+    amount: depositAmount,
     doClaim,
     collateralType,
   });
 
   const withdrawHook = useWithdrawFromStabilityPool({
-    amount,
+    amount: withdrawAmount,
     doClaim,
     collateralType,
   });
 
   return useMemo(() => {
     const isDeposit = action === "deposit";
-    const activeHook = isDeposit ? depositHook : withdrawHook;
-
-    return {
-      send: activeHook[isDeposit ? "deposit" : "withdraw"],
-      isPending: activeHook.isPending,
-      isSending: activeHook.isSending,
-      error: activeHook.error,
-      transactionHash: activeHook.transactionHash,
-      isReady: activeHook.isReady,
-      currentState: activeHook.currentState,
-      formData: activeHook.formData,
-      reset: activeHook.reset,
-      // Keep original hooks accessible if needed
-      depositHook: isDeposit ? activeHook : null,
-      withdrawHook: !isDeposit ? activeHook : null,
-    };
+    
+    // Select the appropriate hook data based on action
+    if (isDeposit) {
+      return {
+        send: depositHook.deposit,
+        isPending: depositHook.isPending,
+        isSending: depositHook.isSending,
+        error: depositHook.error,
+        transactionHash: depositHook.transactionHash,
+        isReady: depositHook.isReady,
+        currentState: depositHook.currentState,
+        formData: depositHook.formData,
+        reset: depositHook.reset,
+        depositHook,
+        withdrawHook: null,
+      };
+    } else {
+      // For both "withdraw" and "claim" actions
+      return {
+        send: withdrawHook.withdraw,
+        isPending: withdrawHook.isPending,
+        isSending: withdrawHook.isSending,
+        error: withdrawHook.error,
+        transactionHash: withdrawHook.transactionHash,
+        isReady: withdrawHook.isReady,
+        currentState: withdrawHook.currentState,
+        formData: withdrawHook.formData,
+        reset: withdrawHook.reset,
+        depositHook: null,
+        withdrawHook,
+      };
+    }
   }, [action, depositHook, withdrawHook]);
 }

@@ -1,8 +1,9 @@
 import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Label } from "~/components/ui/label";
+import { Badge } from "~/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -10,9 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { TokenInput } from "~/components/token-input";
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useAccount, useBalance } from "@starknet-react/core";
 import {
@@ -29,14 +31,28 @@ import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { validators } from "~/lib/validators";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
 import { StabilityPoolsTable } from "~/components/earn/stability-pools-table";
+import * as dn from "dnum";
 import {
   useQueryState,
   parseAsFloat,
   parseAsString,
   parseAsBoolean,
 } from "nuqs";
+import {
+  Gift,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Plus,
+  Minus,
+  RefreshCw,
+  DollarSign,
+  Coins,
+} from "lucide-react";
+import { DepositSection } from "~/components/earn/deposit-section";
+import { WithdrawSection } from "~/components/earn/withdraw-section";
+import { ClaimRewardsSection } from "~/components/earn/claim-rewards-section";
 
-type ActionType = "deposit" | "withdraw";
+type ActionType = "deposit" | "withdraw" | "claim";
 
 function StabilityPool() {
   const { address } = useAccount();
@@ -45,7 +61,7 @@ function StabilityPool() {
   const [action, setAction] = useQueryState(
     "action",
     parseAsString.withDefault("deposit")
-  );
+  ) as [ActionType, (value: ActionType | null) => void];
   const [selectedCollateral, setSelectedCollateral] = useQueryState(
     "collateral",
     parseAsString.withDefault("UBTC")
@@ -61,7 +77,8 @@ function StabilityPool() {
       amount: amountParam ?? (undefined as number | undefined),
     },
     onSubmit: async ({ value }) => {
-      if (!value.amount) return;
+      // For claim action, we don't need an amount
+      if (action !== "claim" && !value.amount) return;
 
       try {
         if (!isReady) {
@@ -96,7 +113,7 @@ function StabilityPool() {
     formData,
     reset: transactionReset,
   } = useStabilityPoolTransaction({
-    action: action as "deposit" | "withdraw",
+    action: action,
     amount: amount,
     doClaim: claimRewards,
     collateralType: selectedCollateral,
@@ -104,7 +121,7 @@ function StabilityPool() {
 
   const allPositions = useAllStabilityPoolPositions();
   const { usdu } = useFetchPrices({ fetchBitcoin: false, fetchUsdu: true });
-  
+
   const selectedPosition = allPositions[selectedCollateral];
 
   useEffect(() => {
@@ -252,79 +269,89 @@ function StabilityPool() {
                 }`}
               >
                 <CardContent className="pt-6 space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="collateral-select">
-                        Select Collateral
-                      </Label>
-                      <Select
-                        value={selectedCollateral}
-                        onValueChange={(value) =>
-                          setSelectedCollateral(value as CollateralType)
-                        }
-                        disabled={isSending || isPending}
+                  {/* Action Tabs */}
+                  <Tabs
+                    value={action}
+                    onValueChange={(value) => setAction(value as ActionType)}
+                    className="w-full"
+                  >
+                    <TabsList className="grid w-full grid-cols-3">
+                      <TabsTrigger
+                        value="deposit"
+                        className="flex items-center gap-2"
                       >
-                        <SelectTrigger
-                          id="collateral-select"
-                          className="w-full"
-                        >
-                          <SelectValue placeholder="Select a collateral" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="UBTC">
-                            <div className="flex items-center gap-2">
-                              <img
-                                src={UBTC_TOKEN.icon}
-                                alt="UBTC"
-                                className="w-4 h-4"
-                              />
-                              <span>UBTC</span>
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="GBTC">
-                            <div className="flex items-center gap-2">
-                              <img
-                                src={GBTC_TOKEN.icon}
-                                alt="GBTC"
-                                className="w-4 h-4"
-                              />
-                              <span>GBTC</span>
-                            </div>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                        <Plus className="h-4 w-4" />
+                        Deposit
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="withdraw"
+                        className="flex items-center gap-2"
+                      >
+                        <Minus className="h-4 w-4" />
+                        Withdraw
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="claim"
+                        className="flex items-center gap-2"
+                      >
+                        <Gift className="h-4 w-4" />
+                        Claim Rewards
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="action-select">Select Action</Label>
-                      <Select
-                        value={action}
-                        onValueChange={(value) =>
-                          setAction(value as ActionType)
-                        }
-                        disabled={isSending || isPending}
-                      >
-                        <SelectTrigger id="action-select" className="w-full">
-                          <SelectValue placeholder="Select an action" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="deposit">Deposit USDU</SelectItem>
-                          <SelectItem value="withdraw">
-                            Withdraw USDU
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  {/* Collateral Selection */}
+                  <div className="space-y-2">
+                    <Label htmlFor="collateral-select">
+                      Select Collateral Pool
+                    </Label>
+                    <Select
+                      value={selectedCollateral}
+                      onValueChange={(value) =>
+                        setSelectedCollateral(value as CollateralType)
+                      }
+                      disabled={isSending || isPending}
+                    >
+                      <SelectTrigger id="collateral-select" className="w-full">
+                        <SelectValue placeholder="Select a collateral" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="UBTC">
+                          <div className="flex items-center gap-2">
+                            <img
+                              src={UBTC_TOKEN.icon}
+                              alt="UBTC"
+                              className="w-4 h-4"
+                            />
+                            <span>UBTC Pool</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="GBTC">
+                          <div className="flex items-center gap-2">
+                            <img
+                              src={GBTC_TOKEN.icon}
+                              alt="GBTC"
+                              className="w-4 h-4"
+                            />
+                            <span>GBTC Pool</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
-                  <form.Field
-                    name="amount"
-                    asyncDebounceMs={300}
-                    validators={{
-                      onChangeAsync: async ({ value }) => {
-                        if (!address || !value) return undefined;
-
-                        if (action === "deposit") {
+                  {action === "claim" ? (
+                    <ClaimRewardsSection
+                      selectedPosition={selectedPosition}
+                      selectedCollateral={selectedCollateral}
+                    />
+                  ) : action === "deposit" ? (
+                    <form.Field
+                      name="amount"
+                      asyncDebounceMs={300}
+                      validators={{
+                        onChangeAsync: async ({ value }) => {
+                          if (!address || !value) return undefined;
                           if (!usduBalance) return undefined;
                           const balance =
                             Number(usduBalance.value) /
@@ -332,193 +359,228 @@ function StabilityPool() {
                           return validators.compose(
                             validators.insufficientBalance(value, balance)
                           );
-                        } else {
-                          const userDeposit =
-                            selectedPosition?.userDeposit || 0;
-                          return validators.compose(
-                            validators.insufficientBalance(value, userDeposit)
-                          );
-                        }
-                      },
-                    }}
-                  >
-                    {(field) => (
-                      <div className="space-y-2">
-                        <TokenInput
-                          token={USDU_TOKEN}
-                          balance={
-                            action === "deposit" ? usduBalance : undefined
-                          }
-                          price={usdu}
+                        },
+                      }}
+                    >
+                      {(field) => (
+                        <DepositSection
                           value={field.state.value}
                           onChange={(value) => {
                             field.handleChange(value);
                             setAmountParam(value || null);
                           }}
                           onBlur={field.handleBlur}
-                          label={
-                            action === "deposit"
-                              ? "Deposit amount"
-                              : "Withdraw amount"
-                          }
-                          percentageButtons
-                          onPercentageClick={(percentage) => {
-                            if (action === "deposit") {
-                              const balance = usduBalance?.value
-                                ? Number(usduBalance.value) /
-                                  10 ** USDU_TOKEN.decimals
-                                : 0;
-                              const newValue = balance * percentage;
-                              field.handleChange(newValue);
-                              setAmountParam(newValue || null);
-                            } else {
-                              const userDeposit =
-                                selectedPosition?.userDeposit || 0;
-                              const newValue = userDeposit * percentage;
-                              field.handleChange(newValue);
-                              setAmountParam(newValue || null);
-                            }
+                          error={field.state.meta.errors?.[0]}
+                          balance={usduBalance}
+                          selectedPosition={{
+                            ...selectedPosition,
+                            totalDeposits:
+                              allPositions[selectedCollateral]?.totalDeposits ||
+                              0,
                           }}
-                          disabled={isSending || isPending}
-                          includeMax={true}
                         />
+                      )}
+                    </form.Field>
+                  ) : (
+                    <form.Field
+                      name="amount"
+                      asyncDebounceMs={300}
+                      validators={{
+                        onChangeAsync: async ({ value }) => {
+                          if (!address || !value) return undefined;
+                          const userDeposit = selectedPosition?.userDeposit || 0;
+                          return validators.compose(
+                            validators.insufficientBalance(value, userDeposit)
+                          );
+                        },
+                      }}
+                    >
+                      {(field) => (
+                        <WithdrawSection
+                          value={field.state.value}
+                          onChange={(value) => {
+                            field.handleChange(value);
+                            setAmountParam(value || null);
+                          }}
+                          onBlur={field.handleBlur}
+                          error={field.state.meta.errors?.[0]}
+                          selectedCollateral={selectedCollateral}
+                          selectedPosition={selectedPosition}
+                          onPercentageClick={(percentage) => {
+                            const userDeposit = selectedPosition?.userDeposit || 0;
+                            // For MAX (percentage === 1), use exact value to avoid floating-point precision issues
+                            const newValue = percentage === 1 ? userDeposit : userDeposit * percentage;
+                            field.handleChange(newValue);
+                            setAmountParam(newValue || null);
+                          }}
+                        />
+                      )}
+                    </form.Field>
+                  )}
 
-                        {action === "deposit" &&
-                          field.state.value &&
-                          field.state.value > 0 &&
-                          selectedPosition && (
-                            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                              <div className="flex justify-between items-center text-sm">
-                                <span className="text-blue-700 font-medium">
-                                  Projected Pool Share
-                                </span>
-                                <span className="font-semibold text-blue-900">
+                  {action === "claim" ? (
+                    // Compound Option for Claim
+                    <div className="p-4 bg-slate-50 rounded-lg">
+                      <label className="flex items-start gap-3 cursor-pointer">
+                        <Checkbox
+                          checked={!claimRewards} // Note: inverted because claimRewards=false means compound
+                          onCheckedChange={(checked) =>
+                            setClaimRewards(!checked)
+                          }
+                          className="mt-0.5"
+                          disabled={isSending || isPending}
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-medium text-slate-700">
+                              Auto-compound USDU rewards
+                            </span>
+                            <Badge variant="secondary" className="text-xs">
+                              <RefreshCw className="h-3 w-3 mr-1" />
+                              Compound
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-slate-600">
+                            Keep your USDU rewards in the pool to earn more
+                            instead of withdrawing them to your wallet
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+                  ) : (
+                    // Claim Option for Deposit/Withdraw
+                    <div className="space-y-3">
+                      <div className="flex items-start space-x-2">
+                        <Checkbox
+                          id="claim-rewards"
+                          checked={claimRewards}
+                          onCheckedChange={(checked) =>
+                            setClaimRewards(!!checked)
+                          }
+                          disabled={isSending || isPending}
+                          className="mt-0.5"
+                        />
+                        <div className="flex-1">
+                          <Label
+                            htmlFor="claim-rewards"
+                            className="text-sm font-medium leading-none cursor-pointer select-none"
+                          >
+                            Claim rewards to wallet
+                          </Label>
+                          <div className="mt-2 space-y-2">
+                            {action === "deposit" ? (
+                              <>
+                                <p className="text-xs text-slate-600">
+                                  <span className="font-medium">
+                                    ✓ Checked:
+                                  </span>{" "}
+                                  Rewards are paid out to your wallet as part of
+                                  the deposit transaction
+                                </p>
+                                <p className="text-xs text-slate-600">
+                                  <span className="font-medium">
+                                    ☐ Unchecked:
+                                  </span>{" "}
+                                  USDU rewards will be automatically compounded
+                                  into your deposit (increasing your position),
+                                  while {selectedCollateral} rewards stay
+                                  claimable later
+                                </p>
+                              </>
+                            ) : (
+                              <>
+                                <p className="text-xs text-slate-600">
+                                  <span className="font-medium">
+                                    ✓ Checked:
+                                  </span>{" "}
+                                  Rewards are paid out to your wallet as part of
+                                  the withdrawal transaction
+                                </p>
+                                <p className="text-xs text-slate-600">
+                                  <span className="font-medium">
+                                    ☐ Unchecked:
+                                  </span>{" "}
+                                  Rewards remain in the pool for later claiming
+                                </p>
+                                {action === "withdraw" &&
+                                  selectedPosition?.userDeposit && (
+                                    <div className="p-2 bg-amber-50 border border-amber-200 rounded">
+                                      <p className="text-xs text-amber-700">
+                                        <span className="font-medium">
+                                          ⚠️ Note:
+                                        </span>{" "}
+                                        To fully withdraw from the Stability
+                                        Pool, this must be checked
+                                      </p>
+                                    </div>
+                                  )}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {selectedPosition?.rewards &&
+                        (selectedPosition.rewards.usdu > 0 ||
+                          selectedPosition.rewards.collateral > 0) && (
+                          <div
+                            className={`ml-6 p-3 rounded-lg ${
+                              claimRewards
+                                ? "bg-green-50 border border-green-200"
+                                : "bg-slate-50 border border-slate-200"
+                            }`}
+                          >
+                            <div className="font-medium text-slate-700 text-xs mb-1">
+                              {claimRewards
+                                ? "💰 Will be claimed:"
+                                : "📊 Available rewards:"}
+                            </div>
+                            <div className="text-sm font-medium">
+                              {selectedPosition.rewards.usdu > 0 && (
+                                <div
+                                  className={
+                                    claimRewards
+                                      ? "text-green-700"
+                                      : "text-slate-600"
+                                  }
+                                >
                                   <NumericFormat
                                     displayType="text"
-                                    value={
-                                      (allPositions[selectedCollateral]?.totalDeposits || 0) > 0
-                                        ? (((selectedPosition?.userDeposit ||
-                                            0) +
-                                            field.state.value) /
-                                            ((allPositions[selectedCollateral]?.totalDeposits || 0) +
-                                              field.state.value)) *
-                                          100
-                                        : 100
-                                    }
-                                    decimalScale={3}
-                                    suffix="%"
-                                  />
-                                </span>
-                              </div>
-                              {usdu?.price && (
-                                <div className="mt-2 text-xs text-blue-600">
-                                  Value: $
-                                  <NumericFormat
-                                    displayType="text"
-                                    value={field.state.value * usdu.price}
+                                    value={selectedPosition.rewards.usdu}
                                     thousandSeparator=","
                                     decimalScale={2}
                                     fixedDecimalScale
-                                  />
+                                  />{" "}
+                                  USDU{" "}
+                                  {!claimRewards &&
+                                    action === "deposit" &&
+                                    "(→ compounds)"}
+                                </div>
+                              )}
+                              {selectedPosition.rewards.collateral > 0 && (
+                                <div
+                                  className={
+                                    claimRewards
+                                      ? "text-green-700"
+                                      : "text-slate-600"
+                                  }
+                                >
+                                  <NumericFormat
+                                    displayType="text"
+                                    value={selectedPosition.rewards.collateral}
+                                    thousandSeparator=","
+                                    decimalScale={6}
+                                    fixedDecimalScale
+                                  />{" "}
+                                  {selectedCollateral}{" "}
+                                  {!claimRewards && "(→ stays claimable)"}
                                 </div>
                               )}
                             </div>
-                          )}
-
-                        {action === "withdraw" &&
-                          selectedPosition?.userDeposit &&
-                          selectedPosition.userDeposit > 0 && (
-                            <div className="flex justify-between text-sm">
-                              <span className="text-slate-500">
-                                Deposited in pool:
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  field.handleChange(
-                                    selectedPosition.userDeposit
-                                  );
-                                  setAmountParam(
-                                    selectedPosition.userDeposit || null
-                                  );
-                                  setClaimRewards(true);
-                                }}
-                                className="font-medium text-blue-600 hover:text-blue-700 transition-colors"
-                              >
-                                {selectedPosition.userDeposit.toLocaleString()}{" "}
-                                USDU
-                                {usdu?.price && (
-                                  <span className="text-slate-500 ml-1">
-                                    ($
-                                    <NumericFormat
-                                      displayType="text"
-                                      value={
-                                        selectedPosition.userDeposit *
-                                        usdu.price
-                                      }
-                                      thousandSeparator=","
-                                      decimalScale={0}
-                                    />
-                                    )
-                                  </span>
-                                )}
-                              </button>
-                            </div>
-                          )}
-                      </div>
-                    )}
-                  </form.Field>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="claim-rewards"
-                        checked={claimRewards}
-                        onCheckedChange={(checked) =>
-                          setClaimRewards(!!checked)
-                        }
-                        disabled={isSending || isPending}
-                      />
-                      <Label
-                        htmlFor="claim-rewards"
-                        className="text-sm font-medium leading-none cursor-pointer select-none"
-                      >
-                        {action === "deposit"
-                          ? "Claim existing rewards when depositing"
-                          : "Claim rewards when withdrawing"}
-                      </Label>
+                          </div>
+                        )}
                     </div>
-                    <p className="text-xs text-slate-500 ml-6">
-                      {action === "deposit"
-                        ? `If unchecked, USDU rewards will be compounded into your deposit and ${selectedCollateral} rewards will be saved for later claiming.`
-                        : `If checked, your USDU and ${selectedCollateral} rewards will be sent to your wallet. If unchecked, they'll remain in the pool for later claiming.`}
-                    </p>
-                    {selectedPosition?.rewards && claimRewards && (
-                      <div className="ml-6 p-2 bg-slate-50 rounded text-xs">
-                        <div className="font-medium text-slate-700">
-                          Rewards to claim:
-                        </div>
-                        <div className="text-slate-600 mt-1">
-                          <NumericFormat
-                            displayType="text"
-                            value={selectedPosition.rewards.usdu}
-                            thousandSeparator=","
-                            decimalScale={2}
-                            fixedDecimalScale
-                          />{" "}
-                          USDU +{" "}
-                          <NumericFormat
-                            displayType="text"
-                            value={selectedPosition.rewards.collateral}
-                            thousandSeparator=","
-                            decimalScale={6}
-                            fixedDecimalScale
-                          />{" "}
-                          {selectedCollateral}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  )}
 
                   <div className="flex flex-col items-start space-y-4 mt-6">
                     <form.Subscribe
@@ -532,13 +594,17 @@ function StabilityPool() {
                         let buttonText =
                           action === "deposit"
                             ? "Deposit USDU"
-                            : "Withdraw USDU";
+                            : action === "withdraw"
+                            ? "Withdraw USDU"
+                            : !claimRewards
+                            ? "Claim & Compound Rewards"
+                            : "Claim All Rewards";
 
                         if (!address) {
                           buttonText = "Connect Wallet";
-                        } else if (errors.length > 0) {
+                        } else if (action !== "claim" && errors.length > 0) {
                           buttonText = errors[0];
-                        } else if (!amount) {
+                        } else if (action !== "claim" && !amount) {
                           buttonText =
                             action === "deposit"
                               ? "Enter deposit amount"
@@ -548,6 +614,13 @@ function StabilityPool() {
                           (selectedPosition?.userDeposit ?? 0) === 0
                         ) {
                           buttonText = "No deposit in this pool";
+                        } else if (
+                          action === "claim" &&
+                          (!selectedPosition?.rewards ||
+                            (selectedPosition.rewards.usdu === 0 &&
+                              selectedPosition.rewards.collateral === 0))
+                        ) {
+                          buttonText = "No rewards to claim";
                         }
 
                         return (
@@ -556,13 +629,20 @@ function StabilityPool() {
                             onClick={!address ? connectWallet : undefined}
                             disabled={
                               address &&
-                              (!amount ||
-                                amount <= 0 ||
-                                (action === "withdraw" &&
-                                  (selectedPosition?.userDeposit ?? 0) === 0) ||
+                              ((action !== "claim" &&
+                                (!amount ||
+                                  amount <= 0 ||
+                                  (action === "withdraw" &&
+                                    (selectedPosition?.userDeposit ?? 0) ===
+                                      0))) ||
+                                (action === "claim" &&
+                                  (!selectedPosition?.rewards ||
+                                    (selectedPosition.rewards.usdu === 0 &&
+                                      selectedPosition.rewards.collateral ===
+                                        0))) ||
                                 isSending ||
                                 isPending ||
-                                !canSubmit)
+                                (action !== "claim" && !canSubmit))
                             }
                             className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2 px-6 rounded-xl shadow-sm hover:shadow transition-all whitespace-nowrap"
                           >

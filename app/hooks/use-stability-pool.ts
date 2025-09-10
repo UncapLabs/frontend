@@ -169,7 +169,8 @@ export function useWithdrawFromStabilityPool({
 
   // Prepare the calls
   const calls = useMemo(() => {
-    if (!address || !amount || amount <= 0) {
+    // Allow amount to be 0 for claiming rewards without withdrawing
+    if (!address || amount === undefined || amount < 0) {
       return undefined;
     }
 
