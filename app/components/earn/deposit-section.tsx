@@ -3,6 +3,7 @@ import { Badge } from "~/components/ui/badge";
 import { TokenInput } from "~/components/token-input";
 import { USDU_TOKEN, type CollateralType } from "~/lib/contracts/constants";
 import { RewardsDisplay } from "./rewards-display";
+import { Info } from "lucide-react";
 
 interface DepositSectionProps {
   value: number | undefined;
@@ -61,6 +62,30 @@ export function DepositSection({
           }}
           includeMax={true}
         />
+
+        {/* Info box explaining stability pool mechanism */}
+        <Card className="bg-blue-50 border-blue-200">
+          <CardContent className="pt-4 pb-4">
+            <div className="flex gap-3">
+              <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-blue-900">
+                  How Stability Pool Works
+                </p>
+                <p className="text-xs text-blue-700">
+                  A USDU deposit in a stability pool earns rewards from the fees that users pay on their loans. 
+                  Also, the USDU may be swapped to collateral in case the system needs to liquidate positions.
+                </p>
+                <a 
+                  href="#" 
+                  className="text-xs text-blue-600 hover:text-blue-700 underline inline-block"
+                >
+                  Learn more
+                </a>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <RewardsDisplay
           selectedPosition={selectedPosition}
