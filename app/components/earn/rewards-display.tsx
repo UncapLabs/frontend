@@ -3,10 +3,23 @@ import { Badge } from "~/components/ui/badge";
 import { Gift } from "lucide-react";
 import { dnumOrNull } from "~/lib/decimal";
 import * as dn from "dnum";
+import type { CollateralType } from "~/lib/contracts/constants";
 
 interface RewardsDisplayProps {
-  selectedPosition: any;
-  selectedCollateral?: any;
+  selectedPosition: {
+    userDeposit: number;
+    totalDeposits: number;
+    pendingUsduGain: bigint | string | number;
+    pendingCollGain: bigint | string | number;
+    rewards?: {
+      usdu: number;
+      collateral: number;
+    };
+  } | null;
+  selectedCollateral?: CollateralType | {
+    decimals: number;
+    symbol: string;
+  };
   claimRewards?: boolean;
 }
 
@@ -19,7 +32,7 @@ function formatTokenAmount(
   return dn.format(dnum, { digits: 7 });
 }
 
-function hasRewards(position: any): boolean {
+function hasRewards(position: RewardsDisplayProps['selectedPosition']): boolean {
   if (!position) return false;
   return (
     Number(position.pendingUsduGain) > 0 || Number(position.pendingCollGain) > 0
@@ -55,7 +68,7 @@ export function RewardsDisplay({
           </div>
 
           <div className="space-y-2">
-            {Number(selectedPosition.pendingUsduGain) > 0 && (
+            {selectedPosition && Number(selectedPosition.pendingUsduGain) > 0 && (
               <div className="flex justify-between items-center">
                 <span className={`text-sm ${textClass}`}>
                   USDU Interest
@@ -70,7 +83,7 @@ export function RewardsDisplay({
               </div>
             )}
 
-            {Number(selectedPosition.pendingCollGain) > 0 && (
+            {selectedPosition && Number(selectedPosition.pendingCollGain) > 0 && (
               <div className="flex justify-between items-center">
                 <span className={`text-sm ${textClass}`}>
                   Collateral Gains
@@ -78,9 +91,9 @@ export function RewardsDisplay({
                 <Badge variant="secondary" className={badgeClass}>
                   {formatTokenAmount(
                     selectedPosition.pendingCollGain.toString(),
-                    selectedCollateral?.decimals || 18
+                    typeof selectedCollateral === 'object' ? selectedCollateral.decimals : 18
                   )}{" "}
-                  {selectedCollateral?.symbol || selectedCollateral}
+                  {typeof selectedCollateral === 'object' ? selectedCollateral.symbol : selectedCollateral}
                 </Badge>
               </div>
             )}

@@ -1,17 +1,31 @@
 import { Card, CardContent } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { TokenInput } from "~/components/token-input";
-import { USDU_TOKEN } from "~/lib/contracts/constants";
+import { USDU_TOKEN, type CollateralType } from "~/lib/contracts/constants";
 import { RewardsDisplay } from "./rewards-display";
 
 interface DepositSectionProps {
-  value: any;
-  onChange: (value: any) => void;
+  value: number | undefined;
+  onChange: (value: number | undefined) => void;
   onBlur: () => void;
   error?: string;
-  balance: any;
-  selectedPosition: any;
-  selectedCollateral?: any;
+  balance: {
+    value: bigint;
+    formatted: string;
+    decimals: number;
+    symbol: string;
+  } | undefined;
+  selectedPosition: {
+    userDeposit: number;
+    totalDeposits: number;
+    pendingUsduGain: bigint | string | number;
+    pendingCollGain: bigint | string | number;
+    rewards?: {
+      usdu: number;
+      collateral: number;
+    };
+  } | null;
+  selectedCollateral?: CollateralType;
   claimRewards?: boolean;
 }
 

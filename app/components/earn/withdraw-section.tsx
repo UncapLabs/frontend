@@ -1,15 +1,24 @@
 import { Card, CardContent } from "~/components/ui/card";
 import { TokenInput } from "~/components/token-input";
-import { USDU_TOKEN } from "~/lib/contracts/constants";
+import { USDU_TOKEN, type CollateralType } from "~/lib/contracts/constants";
 import { RewardsDisplay } from "./rewards-display";
 
 interface WithdrawSectionProps {
-  value: any;
-  onChange: (value: any) => void;
+  value: number | undefined;
+  onChange: (value: number | undefined) => void;
   onBlur: () => void;
   error?: string;
-  selectedCollateral: any;
-  selectedPosition: any;
+  selectedCollateral: CollateralType;
+  selectedPosition: {
+    userDeposit: number;
+    totalDeposits: number;
+    pendingUsduGain: bigint | string | number;
+    pendingCollGain: bigint | string | number;
+    rewards?: {
+      usdu: number;
+      collateral: number;
+    };
+  } | null;
   onPercentageClick?: (percentage: number) => void;
   claimRewards?: boolean;
 }
@@ -26,10 +35,6 @@ export function WithdrawSection({
 }: WithdrawSectionProps) {
   // Get the userDeposit value directly from selectedPosition
   const userDeposit = selectedPosition?.userDeposit || 0;
-
-  console.log("value", value);
-  console.log("selectedPosition", selectedPosition);
-  console.log("userDeposit", userDeposit);
 
   return (
     <Card className="border-2 border-slate-200">
