@@ -1,8 +1,8 @@
 import { Card, CardContent } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { TokenInput } from "~/components/token-input";
-import { NumericFormat } from "react-number-format";
 import { USDU_TOKEN } from "~/lib/contracts/constants";
+import { RewardsDisplay } from "./rewards-display";
 
 interface DepositSectionProps {
   value: any;
@@ -11,6 +11,8 @@ interface DepositSectionProps {
   error?: string;
   balance: any;
   selectedPosition: any;
+  selectedCollateral?: any;
+  claimRewards?: boolean;
 }
 
 export function DepositSection({
@@ -20,6 +22,8 @@ export function DepositSection({
   error,
   balance,
   selectedPosition,
+  selectedCollateral,
+  claimRewards = true,
 }: DepositSectionProps) {
   return (
     <Card className="border-2 border-slate-200">
@@ -42,6 +46,12 @@ export function DepositSection({
             onChange(newValue);
           }}
           includeMax={true}
+        />
+
+        <RewardsDisplay
+          selectedPosition={selectedPosition}
+          selectedCollateral={selectedCollateral}
+          claimRewards={claimRewards}
         />
 
         {/* Show projected pool share for deposits */}

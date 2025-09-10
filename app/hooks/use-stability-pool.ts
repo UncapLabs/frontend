@@ -18,12 +18,20 @@ import { useTRPC } from "~/lib/trpc";
 export interface DepositFormData {
   depositAmount?: number;
   collateralType: CollateralType;
+  rewardsClaimed?: {
+    usdu: number;
+    collateral: number;
+  };
 }
 
 // Withdraw form data structure  
 export interface WithdrawFormData {
   withdrawAmount?: number;
   collateralType: CollateralType;
+  rewardsClaimed?: {
+    usdu: number;
+    collateral: number;
+  };
 }
 
 interface UseDepositToStabilityPoolParams {
@@ -31,6 +39,10 @@ interface UseDepositToStabilityPoolParams {
   doClaim?: boolean;
   collateralType: CollateralType;
   onSuccess?: () => void;
+  rewards?: {
+    usdu: number;
+    collateral: number;
+  };
 }
 
 /**
@@ -41,6 +53,7 @@ export function useDepositToStabilityPool({
   doClaim = true, // Default to claiming rewards
   collateralType,
   onSuccess,
+  rewards,
 }: UseDepositToStabilityPoolParams) {
   const { address } = useAccount();
   const transactionStore = useTransactionStore();
@@ -88,6 +101,7 @@ export function useDepositToStabilityPool({
       transactionState.updateFormData({
         depositAmount: amount,
         collateralType,
+        rewardsClaimed: doClaim ? rewards : undefined,
       });
       transactionState.setPending(hash);
 
@@ -145,6 +159,10 @@ interface UseWithdrawFromStabilityPoolParams {
   doClaim?: boolean;
   collateralType: CollateralType;
   onSuccess?: () => void;
+  rewards?: {
+    usdu: number;
+    collateral: number;
+  };
 }
 
 /**
@@ -155,6 +173,7 @@ export function useWithdrawFromStabilityPool({
   doClaim = true, // Default to claiming rewards
   collateralType,
   onSuccess,
+  rewards,
 }: UseWithdrawFromStabilityPoolParams) {
   const { address } = useAccount();
   const transactionStore = useTransactionStore();
@@ -192,6 +211,7 @@ export function useWithdrawFromStabilityPool({
       transactionState.updateFormData({
         withdrawAmount: amount,
         collateralType,
+        rewardsClaimed: doClaim ? rewards : undefined,
       });
       transactionState.setPending(hash);
 

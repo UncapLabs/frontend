@@ -33,6 +33,7 @@ interface TokenInputProps {
   onBlur?: () => void;
   label: string;
   placeholder?: string;
+  decimals?: number;
   percentageButtons?: boolean;
   percentageButtonsOnHover?: boolean;
   onPercentageClick?: (percentage: number) => void;
@@ -55,6 +56,7 @@ export const TokenInput = memo(function TokenInput({
   onBlur,
   label,
   placeholder = "0",
+  decimals = 6,
   percentageButtons = false,
   percentageButtonsOnHover = false,
   onPercentageClick,
@@ -114,7 +116,7 @@ export const TokenInput = memo(function TokenInput({
             placeholder={placeholder}
             inputMode="decimal"
             allowNegative={false}
-            decimalScale={6}
+            decimalScale={decimals}
             value={value}
             onValueChange={disabled ? undefined : handleValueChange}
             onBlur={onBlur}

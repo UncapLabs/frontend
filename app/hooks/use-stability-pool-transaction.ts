@@ -12,6 +12,10 @@ interface UseStabilityPoolTransactionParams {
   amount: number | undefined;
   doClaim: boolean;
   collateralType: CollateralType;
+  rewards?: {
+    usdu: number;
+    collateral: number;
+  };
 }
 
 export function useStabilityPoolTransaction({
@@ -19,6 +23,7 @@ export function useStabilityPoolTransaction({
   amount,
   doClaim,
   collateralType,
+  rewards,
 }: UseStabilityPoolTransactionParams) {
   // Determine amounts for each hook based on action
   // For deposits: only pass amount to deposit hook
@@ -32,12 +37,14 @@ export function useStabilityPoolTransaction({
     amount: depositAmount,
     doClaim,
     collateralType,
+    rewards,
   });
 
   const withdrawHook = useWithdrawFromStabilityPool({
     amount: withdrawAmount,
     doClaim,
     collateralType,
+    rewards,
   });
 
   return useMemo(() => {

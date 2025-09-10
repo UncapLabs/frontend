@@ -34,7 +34,6 @@ import { StabilityPoolsTable } from "~/components/earn/stability-pools-table";
 import * as dn from "dnum";
 import {
   useQueryState,
-  parseAsFloat,
   parseAsString,
   parseAsBoolean,
 } from "nuqs";
@@ -70,11 +69,12 @@ function StabilityPool() {
     "claim",
     parseAsBoolean.withDefault(true)
   );
-  const [amountParam, setAmountParam] = useQueryState("amount", parseAsFloat);
+  // Use local state for amount to avoid URL precision issues
+  const [amountState, setAmountState] = useState<number | undefined>(undefined);
 
   const form = useForm({
     defaultValues: {
-      amount: amountParam ?? (undefined as number | undefined),
+      amount: amountState ?? (undefined as number | undefined),
     },
     onSubmit: async ({ value }) => {
       // For claim action, we don't need an amount
@@ -102,6 +102,10 @@ function StabilityPool() {
 
   const amount = form.state.values.amount;
 
+  const allPositions = useAllStabilityPoolPositions();
+  const { usdu } = useFetchPrices({ fetchBitcoin: false, fetchUsdu: true });
+  const selectedPosition = allPositions[selectedCollateral];
+
   const {
     send,
     isPending,
@@ -117,12 +121,8 @@ function StabilityPool() {
     amount: amount,
     doClaim: claimRewards,
     collateralType: selectedCollateral,
+    rewards: selectedPosition?.rewards,
   });
-
-  const allPositions = useAllStabilityPoolPositions();
-  const { usdu } = useFetchPrices({ fetchBitcoin: false, fetchUsdu: true });
-
-  const selectedPosition = allPositions[selectedCollateral];
 
   useEffect(() => {
     if (address && amount && amount > 0) {
@@ -132,9 +132,9 @@ function StabilityPool() {
 
   const handleComplete = useCallback(() => {
     form.reset();
-    setAmountParam(null);
+    setAmountState(undefined);
     transactionReset();
-  }, [form, transactionReset, setAmountParam]);
+  }, [form, transactionReset]);
 
   return (
     <div className="mx-auto max-w-6xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
@@ -205,19 +205,19 @@ function StabilityPool() {
                     },
                     // Add rewards claimed if applicable
                     ...(claimRewards &&
-                    selectedPosition?.rewards &&
-                    (selectedPosition.rewards.usdu > 0 ||
-                      selectedPosition.rewards.collateral > 0)
+                    formData.rewardsClaimed &&
+                    (formData.rewardsClaimed.usdu > 0 ||
+                      formData.rewardsClaimed.collateral > 0)
                       ? [
                           {
                             label: "Rewards Claimed",
                             value: (
                               <div className="space-y-1">
-                                {selectedPosition.rewards.usdu > 0 && (
+                                {formData.rewardsClaimed.usdu > 0 && (
                                   <div>
                                     <NumericFormat
                                       displayType="text"
-                                      value={selectedPosition.rewards.usdu}
+                                      value={formData.rewardsClaimed.usdu}
                                       thousandSeparator=","
                                       decimalScale={2}
                                       fixedDecimalScale
@@ -225,12 +225,12 @@ function StabilityPool() {
                                     USDU
                                   </div>
                                 )}
-                                {selectedPosition.rewards.collateral > 0 && (
+                                {formData.rewardsClaimed.collateral > 0 && (
                                   <div>
                                     <NumericFormat
                                       displayType="text"
                                       value={
-                                        selectedPosition.rewards.collateral
+                                        formData.rewardsClaimed.collateral
                                       }
                                       thousandSeparator=","
                                       decimalScale={6}
@@ -367,11 +367,13 @@ function StabilityPool() {
                           value={field.state.value}
                           onChange={(value) => {
                             field.handleChange(value);
-                            setAmountParam(value || null);
+                            setAmountState(value || undefined);
                           }}
                           onBlur={field.handleBlur}
                           error={field.state.meta.errors?.[0]}
                           balance={usduBalance}
+                          selectedCollateral={selectedCollateral}
+                          claimRewards={claimRewards}
                           selectedPosition={{
                             ...selectedPosition,
                             totalDeposits:
@@ -388,7 +390,9 @@ function StabilityPool() {
                       validators={{
                         onChangeAsync: async ({ value }) => {
                           if (!address || !value) return undefined;
-                          const userDeposit = selectedPosition?.userDeposit || 0;
+                          // Don't validate if position data hasn't loaded yet
+                          if (!selectedPosition) return undefined;
+                          const userDeposit = selectedPosition.userDeposit || 0;
                           return validators.compose(
                             validators.insufficientBalance(value, userDeposit)
                           );
@@ -400,18 +404,23 @@ function StabilityPool() {
                           value={field.state.value}
                           onChange={(value) => {
                             field.handleChange(value);
-                            setAmountParam(value || null);
+                            setAmountState(value || undefined);
                           }}
                           onBlur={field.handleBlur}
                           error={field.state.meta.errors?.[0]}
                           selectedCollateral={selectedCollateral}
                           selectedPosition={selectedPosition}
+                          claimRewards={claimRewards}
                           onPercentageClick={(percentage) => {
-                            const userDeposit = selectedPosition?.userDeposit || 0;
+                            const userDeposit =
+                              selectedPosition?.userDeposit || 0;
                             // For MAX (percentage === 1), use exact value to avoid floating-point precision issues
-                            const newValue = percentage === 1 ? userDeposit : userDeposit * percentage;
+                            const newValue =
+                              percentage === 1
+                                ? userDeposit
+                                : userDeposit * percentage;
                             field.handleChange(newValue);
-                            setAmountParam(newValue || null);
+                            setAmountState(newValue || undefined);
                           }}
                         />
                       )}
@@ -465,57 +474,33 @@ function StabilityPool() {
                             htmlFor="claim-rewards"
                             className="text-sm font-medium leading-none cursor-pointer select-none"
                           >
-                            Claim rewards to wallet
+                            Send rewards to wallet
                           </Label>
                           <div className="mt-2 space-y-2">
-                            {action === "deposit" ? (
-                              <>
-                                <p className="text-xs text-slate-600">
-                                  <span className="font-medium">
-                                    ✓ Checked:
-                                  </span>{" "}
-                                  Rewards are paid out to your wallet as part of
-                                  the deposit transaction
-                                </p>
-                                <p className="text-xs text-slate-600">
-                                  <span className="font-medium">
-                                    ☐ Unchecked:
-                                  </span>{" "}
-                                  USDU rewards will be automatically compounded
-                                  into your deposit (increasing your position),
-                                  while {selectedCollateral} rewards stay
-                                  claimable later
-                                </p>
-                              </>
-                            ) : (
-                              <>
-                                <p className="text-xs text-slate-600">
-                                  <span className="font-medium">
-                                    ✓ Checked:
-                                  </span>{" "}
-                                  Rewards are paid out to your wallet as part of
-                                  the withdrawal transaction
-                                </p>
-                                <p className="text-xs text-slate-600">
-                                  <span className="font-medium">
-                                    ☐ Unchecked:
-                                  </span>{" "}
-                                  Rewards remain in the pool for later claiming
-                                </p>
-                                {action === "withdraw" &&
-                                  selectedPosition?.userDeposit && (
-                                    <div className="p-2 bg-amber-50 border border-amber-200 rounded">
-                                      <p className="text-xs text-amber-700">
-                                        <span className="font-medium">
-                                          ⚠️ Note:
-                                        </span>{" "}
-                                        To fully withdraw from the Stability
-                                        Pool, this must be checked
-                                      </p>
-                                    </div>
-                                  )}
-                              </>
-                            )}
+                            <p className="text-xs text-slate-600">
+                              <span className="font-medium text-green-700">
+                                ✓ Checked:
+                              </span>{" "}
+                              Rewards are sent to your wallet
+                            </p>
+                            <p className="text-xs text-slate-600">
+                              <span className="font-medium text-blue-700">
+                                ☐ Unchecked:
+                              </span>{" "}
+                              Rewards are re-deposited to the stability pool (compounding)
+                            </p>
+                            {action === "withdraw" &&
+                              selectedPosition?.userDeposit && (
+                                <div className="p-2 bg-amber-50 border border-amber-200 rounded">
+                                  <p className="text-xs text-amber-700">
+                                    <span className="font-medium">
+                                      ⚠️ Note:
+                                    </span>{" "}
+                                    To fully withdraw from the Stability
+                                    Pool, this must be checked
+                                  </p>
+                                </div>
+                              )}
                           </div>
                         </div>
                       </div>
