@@ -69,9 +69,14 @@ function NavLink({
 
 function Header() {
   const navItems = [
-    { name: "Dashboard", href: "/unanim/dashboard", icon: <DollarIcon size={16} /> },
+    {
+      name: "Dashboard",
+      href: "/unanim/dashboard",
+      icon: <DollarIcon size={16} />,
+    },
     { name: "Borrow", href: "/unanim/borrow", icon: <DollarIcon size={16} /> },
     { name: "Earn", href: "/unanim/earn", icon: <LayersIcon size={16} /> },
+    { name: "Claim", href: "/unanim/claim", icon: <LayersIcon size={16} /> },
     // { name: "Analytics", href: "/analytics", icon: <ChartIcon size={16} /> },
   ];
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

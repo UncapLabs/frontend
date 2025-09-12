@@ -18,13 +18,8 @@ function ClaimPage() {
   const navigate = useNavigate();
   const { connectWallet } = useWalletConnect();
 
-  const {
-    availableSurpluses,
-    totalSurplusesCount,
-    isLoading,
-    error,
-    refetch,
-  } = useCollateralSurplus(address);
+  const { availableSurpluses, totalSurplusesCount, isLoading, error, refetch } =
+    useCollateralSurplus(address);
 
   // Hook for claiming all surpluses at once
   const {
@@ -36,7 +31,7 @@ function ClaimPage() {
     currentState,
     reset,
   } = useClaimAllSurplus({
-    collateralTypes: availableSurpluses.map(s => s.collateralType),
+    collateralTypes: availableSurpluses.map((s) => s.collateralType),
     onSuccess: () => {
       // Refetch surplus data after successful claim
       refetch();
@@ -61,16 +56,10 @@ function ClaimPage() {
       // Navigate on success
       navigate("/");
     }
-  }, [
-    currentState,
-    reset,
-    refetch,
-    navigate,
-  ]);
+  }, [currentState, reset, refetch, navigate]);
 
   // Show transaction status if in progress
   if (["pending", "success", "error"].includes(currentState)) {
-
     return (
       <>
         <h2 className="text-2xl font-semibold text-slate-800 mb-6">
@@ -86,7 +75,7 @@ function ClaimPage() {
           successSubtitle="Your collateral surpluses have been successfully claimed."
           details={
             currentState === "success" && availableSurpluses.length > 0
-              ? availableSurpluses.map(surplus => ({
+              ? availableSurpluses.map((surplus) => ({
                   label: `${surplus.symbol} Claimed`,
                   value: (
                     <>
@@ -105,9 +94,7 @@ function ClaimPage() {
           }
           onComplete={handleComplete}
           completeButtonText={
-            currentState === "error"
-              ? "Try Again"
-              : "Back to Dashboard"
+            currentState === "error" ? "Try Again" : "Back to Dashboard"
           }
         />
       </>
@@ -115,16 +102,17 @@ function ClaimPage() {
   }
 
   return (
-    <>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-slate-800">
+    <div className="mx-auto max-w-6xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
+      <div className="flex justify-between items-baseline">
+        <h1 className="text-3xl font-bold mb-2 text-slate-800">
           Claim Collateral Surplus
-        </h2>
+        </h1>
         <Button
           onClick={() => refetch()}
           variant="outline"
           size="sm"
           disabled={isLoading}
+          className="ml-4"
         >
           <RefreshCw
             className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
@@ -132,6 +120,7 @@ function ClaimPage() {
           Refresh
         </Button>
       </div>
+      <Separator className="mb-8 bg-slate-200" />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Left Panel - Main Content */}
@@ -233,7 +222,7 @@ function ClaimPage() {
                       </h3>
                       <DollarSign className="h-6 w-6 text-green-600" />
                     </div>
-                    
+
                     {/* List each surplus amount */}
                     <div className="space-y-2 bg-white rounded-lg p-4">
                       {availableSurpluses.map((surplus) => (
@@ -350,7 +339,7 @@ function ClaimPage() {
           </Card>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

@@ -1,5 +1,5 @@
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Card, CardContent } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Label } from "~/components/ui/label";
@@ -13,7 +13,6 @@ import {
 } from "~/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
-import { TokenInput } from "~/components/token-input";
 import { useEffect, useCallback, useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useAccount, useBalance } from "@starknet-react/core";
@@ -31,22 +30,8 @@ import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { validators } from "~/lib/validators";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
 import { StabilityPoolsTable } from "~/components/earn/stability-pools-table";
-import * as dn from "dnum";
-import {
-  useQueryState,
-  parseAsString,
-  parseAsBoolean,
-} from "nuqs";
-import {
-  Gift,
-  ArrowDownToLine,
-  ArrowUpFromLine,
-  Plus,
-  Minus,
-  RefreshCw,
-  DollarSign,
-  Coins,
-} from "lucide-react";
+import { useQueryState, parseAsString, parseAsBoolean } from "nuqs";
+import { Gift, Plus, Minus, RefreshCw } from "lucide-react";
 import { DepositSection } from "~/components/earn/deposit-section";
 import { WithdrawSection } from "~/components/earn/withdraw-section";
 import { ClaimRewardsSection } from "~/components/earn/claim-rewards-section";
@@ -103,7 +88,6 @@ function StabilityPool() {
   const amount = form.state.values.amount;
 
   const allPositions = useAllStabilityPoolPositions();
-  const { usdu } = useFetchPrices({ fetchBitcoin: false, fetchUsdu: true });
   const selectedPosition = allPositions[selectedCollateral];
 
   const {
@@ -229,9 +213,7 @@ function StabilityPool() {
                                   <div>
                                     <NumericFormat
                                       displayType="text"
-                                      value={
-                                        formData.rewardsClaimed.collateral
-                                      }
+                                      value={formData.rewardsClaimed.collateral}
                                       thousandSeparator=","
                                       decimalScale={6}
                                       fixedDecimalScale
@@ -268,8 +250,9 @@ function StabilityPool() {
                   isSending || isPending ? "opacity-75" : ""
                 }`}
               >
-                <CardContent className="pt-6 space-y-6">
-                  {/* Action Tabs */}
+                // Interface improvement: stabilize card height and prevent
+                width jump
+                <CardContent className="pt-6 space-y-6 min-h-[520px] flex flex-col">
                   <Tabs
                     value={action}
                     onValueChange={(value) => setAction(value as ActionType)}
@@ -374,12 +357,20 @@ function StabilityPool() {
                           balance={usduBalance}
                           selectedCollateral={selectedCollateral}
                           claimRewards={claimRewards}
-                          selectedPosition={{
-                            ...selectedPosition,
-                            totalDeposits:
-                              allPositions[selectedCollateral]?.totalDeposits ||
-                              0,
-                          }}
+                          selectedPosition={
+                            selectedPosition
+                              ? {
+                                  ...selectedPosition,
+                                  totalDeposits:
+                                    allPositions[selectedCollateral]
+                                      ?.totalDeposits || 0,
+                                  pendingUsduGain:
+                                    selectedPosition.rewards?.usdu || 0,
+                                  pendingCollGain:
+                                    selectedPosition.rewards?.collateral || 0,
+                                }
+                              : null
+                          }
                         />
                       )}
                     </form.Field>
@@ -409,7 +400,17 @@ function StabilityPool() {
                           onBlur={field.handleBlur}
                           error={field.state.meta.errors?.[0]}
                           selectedCollateral={selectedCollateral}
-                          selectedPosition={selectedPosition}
+                          selectedPosition={
+                            selectedPosition
+                              ? {
+                                  ...selectedPosition,
+                                  pendingUsduGain:
+                                    selectedPosition.rewards?.usdu || 0,
+                                  pendingCollGain:
+                                    selectedPosition.rewards?.collateral || 0,
+                                }
+                              : null
+                          }
                           claimRewards={claimRewards}
                           onPercentageClick={(percentage) => {
                             const userDeposit =
@@ -487,7 +488,8 @@ function StabilityPool() {
                               <span className="font-medium text-blue-700">
                                 ☐ Unchecked:
                               </span>{" "}
-                              Rewards are re-deposited to the stability pool (compounding)
+                              Rewards are re-deposited to the stability pool
+                              (compounding)
                             </p>
                             {action === "withdraw" &&
                               selectedPosition?.userDeposit && (
@@ -496,8 +498,8 @@ function StabilityPool() {
                                     <span className="font-medium">
                                       ⚠️ Note:
                                     </span>{" "}
-                                    To fully withdraw from the Stability
-                                    Pool, this must be checked
+                                    To fully withdraw from the Stability Pool,
+                                    this must be checked
                                   </p>
                                 </div>
                               )}
