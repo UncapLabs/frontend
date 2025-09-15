@@ -107,128 +107,129 @@ export const TokenInput = memo(function TokenInput({
         )}
       </div>
 
-      <div className="flex items-start justify-between space-x-4">
-        <div className="flex-grow">
-          <NumericFormat
-            id={`${token.symbol}-input`}
-            customInput={Input}
-            thousandSeparator=","
-            placeholder={placeholder}
-            inputMode="decimal"
-            allowNegative={false}
-            decimalScale={decimals}
-            value={value}
-            onValueChange={disabled ? undefined : handleValueChange}
-            onBlur={onBlur}
-            disabled={disabled}
-            isAllowed={(values) => {
-              const { floatValue } = values;
-              if (floatValue === undefined) return true;
-              return floatValue < maxValue;
+      {/* Row 1: Input field and Token selector */}
+      <div className="flex items-start justify-between gap-4">
+        <NumericFormat
+          id={`${token.symbol}-input`}
+          customInput={Input}
+          thousandSeparator=","
+          placeholder={placeholder}
+          inputMode="decimal"
+          allowNegative={false}
+          decimalScale={decimals}
+          value={value}
+          onValueChange={disabled ? undefined : handleValueChange}
+          onBlur={onBlur}
+          disabled={disabled}
+          isAllowed={(values) => {
+            const { floatValue } = values;
+            if (floatValue === undefined) return true;
+            return floatValue < maxValue;
+          }}
+          className="text-2xl sm:text-3xl md:text-4xl font-semibold h-auto p-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none outline-none shadow-none tracking-tight text-slate-800 flex-1"
+        />
+
+        {tokens && tokens.length > 1 && onTokenChange ? (
+          <Select
+            value={token.address}
+            onValueChange={(address) => {
+              const selectedToken = tokens.find((t) => t.address === address);
+              if (selectedToken) onTokenChange(selectedToken);
             }}
-            className="text-2xl sm:text-3xl md:text-4xl font-semibold h-auto p-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none outline-none shadow-none tracking-tight text-slate-800"
-          />
-
-          <NumericFormat
-            className="text-sm text-slate-500 mt-1"
-            displayType="text"
-            value={usdValue}
-            prefix="≈ $"
-            thousandSeparator=","
-            decimalScale={2}
-            fixedDecimalScale
-          />
-
-          {error && (
-            <div className="flex items-start gap-1 mt-2">
-              <svg
-                className="w-3 h-3 text-red-500 mt-0.5 flex-shrink-0"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          >
+            <SelectTrigger className="w-[120px] rounded-full h-10 pl-2 pr-3 border border-slate-200 bg-white shadow-sm hover:border-slate-300 transition-colors flex items-center">
+              <SelectValue placeholder="Token" />
+            </SelectTrigger>
+            <SelectContent className="border border-slate-200 shadow-md">
+              {tokens.map((t) => (
+                <SelectItem key={t.address} value={t.address}>
+                  <div className="flex items-center">
+                    {t.icon && (
+                      <div className="bg-blue-100 p-1 rounded-full mr-2">
+                        <img
+                          src={t.icon}
+                          alt={t.symbol}
+                          className="h-5 w-5 object-cover"
+                        />
+                      </div>
+                    )}
+                    <span className="font-medium">{t.symbol}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <div className="w-[120px] rounded-full h-10 pl-2 pr-3 border border-slate-200 bg-white shadow-sm flex items-center justify-start">
+            {token.icon && (
+              <div className="bg-blue-100 p-1 rounded-full mr-2">
+                <img
+                  src={token.icon}
+                  alt={token.symbol}
+                  className="h-5 w-5 object-cover"
                 />
-              </svg>
-              <p className="text-xs text-red-600 font-medium">{error}</p>
-            </div>
-          )}
-
-          {helperText && !error && (
-            <p className="text-xs text-slate-600 mt-2">{helperText}</p>
-          )}
-        </div>
-
-        <div className="text-right">
-          {tokens && tokens.length > 1 && onTokenChange ? (
-            <Select
-              value={token.address}
-              onValueChange={(address) => {
-                const selectedToken = tokens.find((t) => t.address === address);
-                if (selectedToken) onTokenChange(selectedToken);
-              }}
-            >
-              <SelectTrigger className="w-auto min-w-[120px] rounded-full h-10 pl-2 pr-3 border border-slate-200 bg-white shadow-sm hover:border-slate-300 transition-colors flex items-center">
-                <SelectValue placeholder="Token" />
-              </SelectTrigger>
-              <SelectContent className="border border-slate-200 shadow-md">
-                {tokens.map((t) => (
-                  <SelectItem key={t.address} value={t.address}>
-                    <div className="flex items-center">
-                      {t.icon && (
-                        <div className="bg-blue-100 p-1 rounded-full mr-2">
-                          <img
-                            src={t.icon}
-                            alt={t.symbol}
-                            className="h-5 w-5 object-cover"
-                          />
-                        </div>
-                      )}
-                      <span className="font-medium">{t.symbol}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          ) : (
-            <div className="w-auto min-w-[120px] rounded-full h-10 pl-2 pr-3 border border-slate-200 bg-white shadow-sm flex items-center justify-start">
-              {token.icon && (
-                <div className="bg-blue-100 p-1 rounded-full mr-2">
-                  <img
-                    src={token.icon}
-                    alt={token.symbol}
-                    className="h-5 w-5 object-cover"
-                  />
-                </div>
-              )}
-              <span className="font-medium">{token.symbol}</span>
-            </div>
-          )}
-
-          {showBalance && balance && (
-            <div className="text-xs text-slate-500 mt-1">
-              Balance:{" "}
-              <NumericFormat
-                displayType="text"
-                value={
-                  balance.formatted ??
-                  (balance.value
-                    ? Number(balance.value) / 10 ** token.decimals
-                    : 0)
-                }
-                thousandSeparator=","
-                decimalScale={3}
-                fixedDecimalScale
-              />{" "}
-              {token.symbol}
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+            <span className="font-medium">{token.symbol}</span>
+          </div>
+        )}
       </div>
+
+      {/* Row 2: USD value and Balance */}
+      <div className="flex items-center justify-between mt-1">
+        <NumericFormat
+          className="text-sm text-slate-500"
+          displayType="text"
+          value={usdValue}
+          prefix="≈ $"
+          thousandSeparator=","
+          decimalScale={2}
+          fixedDecimalScale
+        />
+
+        {showBalance && balance && (
+          <div className="text-xs text-slate-500">
+            Balance:{" "}
+            <NumericFormat
+              displayType="text"
+              value={
+                balance.formatted ??
+                (balance.value
+                  ? Number(balance.value) / 10 ** token.decimals
+                  : 0)
+              }
+              thousandSeparator=","
+              decimalScale={3}
+              fixedDecimalScale
+            />{" "}
+            {token.symbol}
+          </div>
+        )}
+      </div>
+
+      {/* Row 3: Error or Helper text */}
+      {error && (
+        <div className="flex items-start gap-1 mt-2">
+          <svg
+            className="w-3 h-3 text-red-500 mt-0.5 flex-shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <p className="text-xs text-red-600 font-medium">{error}</p>
+        </div>
+      )}
+
+      {helperText && !error && (
+        <p className="text-xs text-slate-600 mt-2">{helperText}</p>
+      )}
     </div>
   );
 });

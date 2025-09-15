@@ -1,12 +1,12 @@
 import { TokenInput } from "~/components/token-input";
 import { USDU_TOKEN, type CollateralType } from "~/lib/contracts/constants";
-import { RewardsDisplay } from "./rewards-display";
 
 interface WithdrawSectionProps {
   value: number | undefined;
   onChange: (value: number | undefined) => void;
   onBlur: () => void;
   error?: string;
+  price?: { price: number };
   selectedCollateral: CollateralType;
   selectedPosition: {
     userDeposit: number;
@@ -27,6 +27,7 @@ export function WithdrawSection({
   onChange,
   onBlur,
   error,
+  price,
   selectedCollateral,
   selectedPosition,
   onPercentageClick,
@@ -38,7 +39,7 @@ export function WithdrawSection({
   return (
     <div className="space-y-6">
       <TokenInput
-        label="Amount to Withdraw"
+        label="Withdraw"
         value={value}
         onChange={onChange}
         token={USDU_TOKEN}
@@ -52,21 +53,41 @@ export function WithdrawSection({
               }
             : undefined
         }
+        price={price}
         onBlur={onBlur}
         error={error}
         disabled={userDeposit === 0}
-        placeholder={"Enter withdrawal amount"}
         decimals={18}
         percentageButtons
         onPercentageClick={onPercentageClick}
         includeMax={true}
       />
-
-      <RewardsDisplay
-        selectedPosition={selectedPosition}
-        selectedCollateral={selectedCollateral}
-        claimRewards={claimRewards}
-      />
+      
+      {/* Show projected pool share for withdrawals */}
+      {value && Number(value) > 0 && selectedPosition && selectedPosition.userDeposit > 0 && (
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-slate-600">
+            Projected pool share after withdrawal:
+          </span>
+          <span className="font-medium text-slate-900">
+            {(() => {
+              const withdrawAmount = Number(value);
+              const currentDeposit = selectedPosition?.userDeposit || 0;
+              const totalDeposit = selectedPosition?.totalDeposits || 0;
+              const newTotalDeposit = totalDeposit - withdrawAmount;
+              const newUserDeposit = currentDeposit - withdrawAmount;
+              
+              // If withdrawing everything, share will be 0
+              if (newUserDeposit <= 0 || newTotalDeposit <= 0) {
+                return "0.0000%";
+              }
+              
+              const share = (newUserDeposit / newTotalDeposit) * 100;
+              return `${share.toFixed(4)}%`;
+            })()}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
