@@ -4,7 +4,6 @@ import { CollateralSurplusCard } from "~/components/claim/collateral-surplus-car
 import { STRKRewardsCard } from "~/components/claim/strk-rewards-card";
 
 function ClaimPage() {
-
   return (
     <div className="mx-auto max-w-6xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
       <div className="mb-6">
@@ -19,11 +18,10 @@ function ClaimPage() {
 
       {/* Always show rewards sections */}
       <div className="space-y-12">
-        {/* Collateral Surplus Section - only shows if surplus available */}
-        <CollateralSurplusCard />
-
         {/* STRK Rewards Section - always shows */}
         <STRKRewardsCard />
+        {/* Collateral Surplus Section - only shows if surplus available */}
+        <CollateralSurplusCard />
       </div>
     </div>
   );

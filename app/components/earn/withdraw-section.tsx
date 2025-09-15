@@ -55,11 +55,7 @@ export function WithdrawSection({
         onBlur={onBlur}
         error={error}
         disabled={userDeposit === 0}
-        placeholder={
-          userDeposit === 0
-            ? "No deposits available"
-            : "Enter withdrawal amount"
-        }
+        placeholder={"Enter withdrawal amount"}
         decimals={18}
         percentageButtons
         onPercentageClick={onPercentageClick}

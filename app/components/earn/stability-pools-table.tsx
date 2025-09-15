@@ -7,6 +7,12 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "~/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
 import { NumericFormat } from "react-number-format";
 import {
   UBTC_TOKEN,
@@ -54,50 +60,211 @@ export function StabilityPoolsTable({
   ];
 
   return (
-    <Card className="border border-slate-200">
-      <CardContent className="pt-6">
-        <div className="space-y-4">
-          <div>
-            <h2 className="text-lg font-semibold">Stability Pools Overview</h2>
-            <p className="text-sm text-slate-500 mt-1">
-              Earn liquidation rewards by depositing USDU into stability pools
-            </p>
-          </div>
-
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Pool</TableHead>
-                <TableHead className="text-right">Total Deposits</TableHead>
-                <TableHead className="text-right">Supply APR</TableHead>
-                <TableHead className="text-right">Your Deposit</TableHead>
-                <TableHead className="text-right">
-                  Claimable Rewards
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {poolsData.map((pool) => (
-                <TableRow
-                  key={pool.collateralType}
-                  className={
-                    pool.collateralType === selectedCollateral
-                      ? "bg-slate-50"
-                      : ""
-                  }
+    <div className="w-full">
+      <Card className="border border-slate-200">
+        <CardContent className="pt-6">
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-lg font-semibold">
+                Stability Pools Overview
+              </h2>
+              <p className="text-sm text-slate-500 mt-1">
+                Earn rewards from loan fees and liquidations while helping maintain system stability.{" "}
+                <a
+                  href="https://docs.bitusd.org/stability-pool"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-700 underline"
                 >
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <img
-                        src={pool.token.icon}
-                        alt={pool.token.symbol}
-                        className="w-5 h-5"
-                      />
-                      <span className="font-medium">{pool.token.symbol}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div>
+                  Learn more
+                </a>
+              </p>
+            </div>
+
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead colSpan={2} className="md:hidden">
+                    Pool
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell">Pool</TableHead>
+                  <TableHead className="hidden md:table-cell text-right">
+                    Total Value Locked
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell text-right">
+                    Supply APR
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell text-right">
+                    Your Deposit
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell text-right">
+                    Claimable Rewards
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {poolsData.map((pool) => (
+                  <TableRow
+                    key={pool.collateralType}
+                    className={
+                      pool.collateralType === selectedCollateral
+                        ? "bg-slate-50"
+                        : ""
+                    }
+                  >
+                    <TableCell colSpan={2} className="py-4 md:py-2 md:hidden">
+                      <Collapsible defaultOpen={true}>
+                        <CollapsibleTrigger className="w-full">
+                          <div className="flex items-center justify-between">
+                            {/* Pool info - always visible */}
+                            <div className="flex items-center gap-2 min-w-0">
+                              <img
+                                src={pool.token.icon}
+                                alt={pool.token.symbol}
+                                className="w-5 h-5 flex-shrink-0"
+                              />
+                              <div className="flex flex-col min-w-0 text-left">
+                                <span className="font-medium">
+                                  {pool.token.symbol}
+                                </span>
+                                {/* Mobile: Show total deposits and APR */}
+                                <div className="text-xs text-slate-600">
+                                  <span className="text-slate-500">TVL: </span>
+                                  <NumericFormat
+                                    displayType="text"
+                                    value={pool.totalDeposits}
+                                    thousandSeparator=","
+                                    decimalScale={0}
+                                    suffix=" USDU"
+                                  />
+                                </div>
+                                <div className="text-xs font-semibold text-green-600">
+                                  <NumericFormat
+                                    displayType="text"
+                                    value={pool.apr}
+                                    decimalScale={2}
+                                  />
+                                  % APR
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Mobile: Chevron indicator */}
+                            <ChevronDown className="h-4 w-4 text-slate-400 transition-transform duration-200 data-[state=open]:rotate-180 flex-shrink-0" />
+                          </div>
+                        </CollapsibleTrigger>
+
+                        {/* Collapsible content for mobile only */}
+                        <CollapsibleContent>
+                          <div className="mt-3 space-y-2 text-xs">
+                            <div className="flex justify-between items-center gap-2">
+                              <span className="text-slate-500 flex-shrink-0">
+                                Total Value Locked
+                              </span>
+                              <div className="text-right min-w-0">
+                                <div className="truncate">
+                                  <NumericFormat
+                                    displayType="text"
+                                    value={pool.totalDeposits}
+                                    thousandSeparator=","
+                                    decimalScale={0}
+                                    suffix=" USDU"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex justify-between items-center gap-2">
+                              <span className="text-slate-500 flex-shrink-0">
+                                Supply APR
+                              </span>
+                              <span className="font-semibold text-green-600">
+                                <NumericFormat
+                                  displayType="text"
+                                  value={pool.apr}
+                                  decimalScale={2}
+                                />
+                                %
+                              </span>
+                            </div>
+
+                            <div className="flex justify-between items-center gap-2">
+                              <span className="text-slate-500 flex-shrink-0">
+                                Your Deposit
+                              </span>
+                              <div className="text-right min-w-0">
+                                {address &&
+                                pool.position &&
+                                pool.position.userDeposit > 0 ? (
+                                  <div>
+                                    <div className="truncate">
+                                      <NumericFormat
+                                        displayType="text"
+                                        value={pool.position.userDeposit}
+                                        thousandSeparator=","
+                                        suffix=" USDU"
+                                        decimalScale={0}
+                                      />
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <span className="text-slate-400">—</span>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex justify-between items-start gap-2">
+                              <span className="text-slate-500 flex-shrink-0">
+                                Rewards
+                              </span>
+                              <div className="text-right min-w-0">
+                                {address && pool.position?.rewards ? (
+                                  <div>
+                                    <div className="truncate">
+                                      <NumericFormat
+                                        displayType="text"
+                                        value={pool.position.rewards.usdu}
+                                        thousandSeparator=","
+                                        decimalScale={2}
+                                        fixedDecimalScale
+                                      />{" "}
+                                      USDU
+                                    </div>
+                                    <div className="text-slate-500 truncate">
+                                      <NumericFormat
+                                        displayType="text"
+                                        value={pool.position.rewards.collateral}
+                                        thousandSeparator=","
+                                        decimalScale={6}
+                                        fixedDecimalScale
+                                      />{" "}
+                                      {pool.token.symbol}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <span className="text-slate-400">—</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    </TableCell>
+
+                    {/* Desktop: First column */}
+                    <TableCell className="hidden md:table-cell py-2">
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={pool.token.icon}
+                          alt={pool.token.symbol}
+                          className="w-5 h-5"
+                        />
+                        <span className="font-medium">{pool.token.symbol}</span>
+                      </div>
+                    </TableCell>
+
+                    {/* Desktop columns - hidden on mobile */}
+                    <TableCell className="hidden md:table-cell text-right">
                       <NumericFormat
                         displayType="text"
                         value={pool.totalDeposits}
@@ -105,34 +272,21 @@ export function StabilityPoolsTable({
                         decimalScale={0}
                         suffix=" USDU"
                       />
-                      {usdu?.price && (
-                        <div className="text-xs text-slate-500">
-                          $
-                          <NumericFormat
-                            displayType="text"
-                            value={pool.totalDeposits * usdu.price}
-                            thousandSeparator=","
-                            decimalScale={0}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <span className="font-semibold text-green-600">
-                      <NumericFormat
-                        displayType="text"
-                        value={pool.apr}
-                        decimalScale={2}
-                      />
-                      %
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {address &&
-                    pool.position &&
-                    pool.position.userDeposit > 0 ? (
-                      <div>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell text-right">
+                      <span className="font-semibold text-green-600">
+                        <NumericFormat
+                          displayType="text"
+                          value={pool.apr}
+                          decimalScale={2}
+                        />
+                        %
+                      </span>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell text-right">
+                      {address &&
+                      pool.position &&
+                      pool.position.userDeposit > 0 ? (
                         <NumericFormat
                           displayType="text"
                           value={pool.position.userDeposit}
@@ -140,56 +294,45 @@ export function StabilityPoolsTable({
                           suffix=" USDU"
                           decimalScale={0}
                         />
-                        {usdu?.price && (
-                          <div className="text-xs text-slate-500">
-                            $
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell text-right">
+                      {address && pool.position?.rewards ? (
+                        <div className="text-sm">
+                          <div>
                             <NumericFormat
                               displayType="text"
-                              value={pool.position.userDeposit * usdu.price}
+                              value={pool.position.rewards.usdu}
                               thousandSeparator=","
-                              decimalScale={0}
-                            />
+                              decimalScale={2}
+                              fixedDecimalScale
+                            />{" "}
+                            USDU
                           </div>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-slate-400">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {address && pool.position?.rewards ? (
-                      <div className="text-sm">
-                        <div>
-                          <NumericFormat
-                            displayType="text"
-                            value={pool.position.rewards.usdu}
-                            thousandSeparator=","
-                            decimalScale={2}
-                            fixedDecimalScale
-                          />{" "}
-                          USDU
+                          <div className="text-slate-500">
+                            <NumericFormat
+                              displayType="text"
+                              value={pool.position.rewards.collateral}
+                              thousandSeparator=","
+                              decimalScale={6}
+                              fixedDecimalScale
+                            />{" "}
+                            {pool.token.symbol}
+                          </div>
                         </div>
-                        <div className="text-slate-500">
-                          <NumericFormat
-                            displayType="text"
-                            value={pool.position.rewards.collateral}
-                            thousandSeparator=","
-                            decimalScale={6}
-                            fixedDecimalScale
-                          />{" "}
-                          {pool.token.symbol}
-                        </div>
-                      </div>
-                    ) : (
-                      <span className="text-slate-400">—</span>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

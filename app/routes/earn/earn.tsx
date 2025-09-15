@@ -130,27 +130,6 @@ function StabilityPool() {
       <Separator className="mb-8 bg-slate-200" />
 
       <div className="space-y-6">
-        {/* Info box explaining stability pool mechanism */}
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <div className="flex gap-3">
-            <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-            <div className="space-y-2 flex-1 min-w-0">
-              <p className="text-sm font-medium text-blue-900">
-                How Stability Pool Works
-              </p>
-              <p className="text-xs text-blue-700 break-words">
-                Earn rewards from loan fees and participate in liquidations. Deposit USDU to earn yields and help maintain system stability.
-              </p>
-              <a 
-                href="#" 
-                className="text-xs text-blue-600 hover:text-blue-700 underline inline-block"
-              >
-                Learn more
-              </a>
-            </div>
-          </div>
-        </div>
-
         <StabilityPoolsTable selectedCollateral={selectedCollateral} />
 
         {["pending", "success", "error"].includes(currentState) ? (
