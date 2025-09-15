@@ -69,7 +69,8 @@ export function StabilityPoolsTable({
                 Stability Pools Overview
               </h2>
               <p className="text-sm text-slate-500 mt-1">
-                Earn rewards from loan fees and liquidations while helping maintain system stability.{" "}
+                Earn rewards from loan fees and liquidations while helping
+                maintain system stability.{" "}
                 <a
                   href="https://docs.bitusd.org/stability-pool"
                   target="_blank"
@@ -98,7 +99,10 @@ export function StabilityPoolsTable({
                     Your Deposit
                   </TableHead>
                   <TableHead className="hidden md:table-cell text-right">
-                    Claimable Rewards
+                    USDU Rewards
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell text-right">
+                    Collateral Rewards
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -213,33 +217,47 @@ export function StabilityPoolsTable({
                               </div>
                             </div>
 
-                            <div className="flex justify-between items-start gap-2">
+                            <div className="flex justify-between items-center gap-2">
                               <span className="text-slate-500 flex-shrink-0">
-                                Rewards
+                                USDU Rewards
                               </span>
                               <div className="text-right min-w-0">
-                                {address && pool.position?.rewards ? (
-                                  <div>
-                                    <div className="truncate">
-                                      <NumericFormat
-                                        displayType="text"
-                                        value={pool.position.rewards.usdu}
-                                        thousandSeparator=","
-                                        decimalScale={2}
-                                        fixedDecimalScale
-                                      />{" "}
-                                      USDU
-                                    </div>
-                                    <div className="text-slate-500 truncate">
-                                      <NumericFormat
-                                        displayType="text"
-                                        value={pool.position.rewards.collateral}
-                                        thousandSeparator=","
-                                        decimalScale={6}
-                                        fixedDecimalScale
-                                      />{" "}
-                                      {pool.token.symbol}
-                                    </div>
+                                {address &&
+                                pool.position?.rewards &&
+                                pool.position.rewards.usdu > 0 ? (
+                                  <div className="truncate">
+                                    <NumericFormat
+                                      displayType="text"
+                                      value={pool.position.rewards.usdu}
+                                      thousandSeparator=","
+                                      decimalScale={2}
+                                      fixedDecimalScale
+                                      suffix=" USDU"
+                                    />
+                                  </div>
+                                ) : (
+                                  <span className="text-slate-400">—</span>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex justify-between items-center gap-2">
+                              <span className="text-slate-500 flex-shrink-0">
+                                Collateral Rewards
+                              </span>
+                              <div className="text-right min-w-0">
+                                {address &&
+                                pool.position?.rewards &&
+                                pool.position.rewards.collateral > 0 ? (
+                                  <div className="truncate">
+                                    <NumericFormat
+                                      displayType="text"
+                                      value={pool.position.rewards.collateral}
+                                      thousandSeparator=","
+                                      decimalScale={6}
+                                      fixedDecimalScale
+                                      suffix={` ${pool.token.symbol}`}
+                                    />
                                   </div>
                                 ) : (
                                   <span className="text-slate-400">—</span>
@@ -298,29 +316,39 @@ export function StabilityPoolsTable({
                         <span className="text-slate-400">—</span>
                       )}
                     </TableCell>
+                    {/* USDU Rewards column */}
                     <TableCell className="hidden md:table-cell text-right">
-                      {address && pool.position?.rewards ? (
+                      {address &&
+                      pool.position?.rewards &&
+                      pool.position.rewards.usdu > 0 ? (
                         <div className="text-sm">
-                          <div>
-                            <NumericFormat
-                              displayType="text"
-                              value={pool.position.rewards.usdu}
-                              thousandSeparator=","
-                              decimalScale={2}
-                              fixedDecimalScale
-                            />{" "}
-                            USDU
-                          </div>
-                          <div className="text-slate-500">
-                            <NumericFormat
-                              displayType="text"
-                              value={pool.position.rewards.collateral}
-                              thousandSeparator=","
-                              decimalScale={6}
-                              fixedDecimalScale
-                            />{" "}
-                            {pool.token.symbol}
-                          </div>
+                          <NumericFormat
+                            displayType="text"
+                            value={pool.position.rewards.usdu}
+                            thousandSeparator=","
+                            decimalScale={2}
+                            fixedDecimalScale
+                            suffix=" USDU"
+                          />
+                        </div>
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
+                    </TableCell>
+                    {/* Collateral Rewards column */}
+                    <TableCell className="hidden md:table-cell text-right">
+                      {address &&
+                      pool.position?.rewards &&
+                      pool.position.rewards.collateral > 0 ? (
+                        <div className="text-sm">
+                          <NumericFormat
+                            displayType="text"
+                            value={pool.position.rewards.collateral}
+                            thousandSeparator=","
+                            decimalScale={6}
+                            fixedDecimalScale
+                            suffix={` ${pool.token.symbol}`}
+                          />
                         </div>
                       ) : (
                         <span className="text-slate-400">—</span>
