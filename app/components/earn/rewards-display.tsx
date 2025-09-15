@@ -1,8 +1,5 @@
-import { Card, CardContent } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
 import { Gift } from "lucide-react";
-import { dnumOrNull } from "~/lib/decimal";
-import * as dn from "dnum";
+import { NumericFormat } from "react-number-format";
 import type { CollateralType } from "~/lib/contracts/constants";
 
 interface RewardsDisplayProps {
@@ -23,91 +20,73 @@ interface RewardsDisplayProps {
   claimRewards?: boolean;
 }
 
-function formatTokenAmount(
-  amount: string | bigint,
-  decimals: number = 18
-): string {
-  const dnum = dnumOrNull(amount, decimals);
-  if (!dnum) return "0";
-  return dn.format(dnum, { digits: 7 });
-}
-
-function hasRewards(position: RewardsDisplayProps['selectedPosition']): boolean {
-  if (!position) return false;
-  return (
-    Number(position.pendingUsduGain) > 0 || Number(position.pendingCollGain) > 0
-  );
-}
-
 export function RewardsDisplay({
   selectedPosition,
   selectedCollateral,
   claimRewards = true,
 }: RewardsDisplayProps) {
-  if (!hasRewards(selectedPosition)) {
+  // Check if there are any rewards to display
+  if (!selectedPosition || 
+      (!selectedPosition.rewards?.usdu && !selectedPosition.rewards?.collateral)) {
     return null;
   }
 
-  const toWallet = claimRewards;
-  const cardClass = toWallet ? "bg-green-50 border-green-200" : "bg-blue-50 border-blue-200";
-  const iconClass = toWallet ? "text-green-600" : "text-blue-600";
-  const titleClass = toWallet ? "text-green-900" : "text-blue-900";
-  const textClass = toWallet ? "text-green-700" : "text-blue-700";
-  const badgeClass = toWallet ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800";
-  const borderClass = toWallet ? "border-green-200" : "border-blue-200";
-
   return (
-    <Card className={cardClass}>
-      <CardContent className="pt-4 pb-4">
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Gift className={`h-4 w-4 ${iconClass}`} />
-            <span className={`text-sm font-medium ${titleClass}`}>
-              {toWallet ? "Rewards will be sent to your wallet" : "Rewards will be re-deposited to pool"}
-            </span>
-          </div>
-
-          <div className="space-y-2">
-            {selectedPosition && Number(selectedPosition.pendingUsduGain) > 0 && (
-              <div className="flex justify-between items-center">
-                <span className={`text-sm ${textClass}`}>
-                  USDU Interest
-                </span>
-                <Badge variant="secondary" className={badgeClass}>
-                  {formatTokenAmount(
-                    selectedPosition.pendingUsduGain.toString(),
-                    18
-                  )}{" "}
-                  USDU
-                </Badge>
-              </div>
-            )}
-
-            {selectedPosition && Number(selectedPosition.pendingCollGain) > 0 && (
-              <div className="flex justify-between items-center">
-                <span className={`text-sm ${textClass}`}>
-                  Collateral Gains
-                </span>
-                <Badge variant="secondary" className={badgeClass}>
-                  {formatTokenAmount(
-                    selectedPosition.pendingCollGain.toString(),
-                    typeof selectedCollateral === 'object' ? selectedCollateral.decimals : 18
-                  )}{" "}
-                  {typeof selectedCollateral === 'object' ? selectedCollateral.symbol : selectedCollateral}
-                </Badge>
-              </div>
-            )}
-          </div>
-
-          <div className={`pt-2 border-t ${borderClass}`}>
-            <p className={`text-xs ${textClass}`}>
-              {toWallet 
-                ? "✓ Rewards will be claimed and sent to your wallet" 
-                : "↻ Rewards will be claimed and re-deposited to the stability pool"}
-            </p>
-          </div>
+    <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Gift className="h-4 w-4 text-slate-600" />
+          <span className="text-sm font-medium text-slate-700">
+            Available Rewards
+          </span>
         </div>
-      </CardContent>
-    </Card>
+
+        <div className="space-y-2">
+          {selectedPosition.rewards.usdu > 0 && (
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-slate-600">
+                USDU Interest
+              </span>
+              <span className="text-sm font-medium text-slate-800">
+                <NumericFormat
+                  displayType="text"
+                  value={selectedPosition.rewards.usdu}
+                  thousandSeparator=","
+                  decimalScale={2}
+                  fixedDecimalScale
+                />{" "}
+                USDU
+              </span>
+            </div>
+          )}
+
+          {selectedPosition.rewards.collateral > 0 && (
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-slate-600">
+                Collateral Gains
+              </span>
+              <span className="text-sm font-medium text-slate-800">
+                <NumericFormat
+                  displayType="text"
+                  value={selectedPosition.rewards.collateral}
+                  thousandSeparator=","
+                  decimalScale={6}
+                  fixedDecimalScale
+                />{" "}
+                {typeof selectedCollateral === 'string' ? selectedCollateral : (selectedCollateral?.symbol || 'COLL')}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className="pt-2 border-t border-slate-200">
+          <p className="text-xs text-slate-600">
+            {claimRewards 
+              ? "Rewards will be sent to your wallet" 
+              : "Rewards will be re-deposited to the pool"}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -15,8 +15,9 @@ export function ClaimRewardsSection({
     (selectedPosition.rewards.usdu > 0 || selectedPosition.rewards.collateral > 0);
 
   return (
-    <div className="space-y-4">
-      <h3 className="font-semibold text-slate-800">Available Rewards</h3>
+    <div className="space-y-6">
+      <div className="space-y-4">
+        <h3 className="font-semibold text-slate-800">Available Rewards</h3>
 
       {hasRewards ? (
         <>
@@ -83,6 +84,7 @@ export function ClaimRewardsSection({
           </p>
         </div>
       )}
+      </div>
     </div>
   );
 }

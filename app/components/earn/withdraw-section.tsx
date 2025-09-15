@@ -1,4 +1,3 @@
-import { Card, CardContent } from "~/components/ui/card";
 import { TokenInput } from "~/components/token-input";
 import { USDU_TOKEN, type CollateralType } from "~/lib/contracts/constants";
 import { RewardsDisplay } from "./rewards-display";
@@ -37,39 +36,41 @@ export function WithdrawSection({
   const userDeposit = selectedPosition?.userDeposit || 0;
 
   return (
-    <Card className="border-2 border-slate-200">
-      <CardContent className="pt-6 space-y-6">
-        <TokenInput
-          label="Amount to Withdraw"
-          value={value}
-          onChange={onChange}
-          token={USDU_TOKEN}
-          balance={undefined} // Don't pass balance since we'll show it in helperText
-          onBlur={onBlur}
-          error={error}
-          disabled={userDeposit === 0}
-          placeholder={
-            userDeposit === 0
-              ? "No deposits available"
-              : "Enter withdrawal amount"
-          }
-          decimals={18}
-          percentageButtons
-          onPercentageClick={onPercentageClick}
-          includeMax={true}
-          helperText={
-            userDeposit === 0
-              ? "No deposits to withdraw"
-              : `Deposited: ${userDeposit.toLocaleString()} USDU`
-          }
-        />
+    <div className="space-y-6">
+      <TokenInput
+        label="Amount to Withdraw"
+        value={value}
+        onChange={onChange}
+        token={USDU_TOKEN}
+        balance={
+          userDeposit > 0
+            ? {
+                value: BigInt(
+                  Math.floor(userDeposit * 10 ** USDU_TOKEN.decimals)
+                ),
+                formatted: userDeposit.toString(),
+              }
+            : undefined
+        }
+        onBlur={onBlur}
+        error={error}
+        disabled={userDeposit === 0}
+        placeholder={
+          userDeposit === 0
+            ? "No deposits available"
+            : "Enter withdrawal amount"
+        }
+        decimals={18}
+        percentageButtons
+        onPercentageClick={onPercentageClick}
+        includeMax={true}
+      />
 
-        <RewardsDisplay
-          selectedPosition={selectedPosition}
-          selectedCollateral={selectedCollateral}
-          claimRewards={claimRewards}
-        />
-      </CardContent>
-    </Card>
+      <RewardsDisplay
+        selectedPosition={selectedPosition}
+        selectedCollateral={selectedCollateral}
+        claimRewards={claimRewards}
+      />
+    </div>
   );
 }

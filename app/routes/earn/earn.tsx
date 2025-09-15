@@ -31,7 +31,7 @@ import { validators } from "~/lib/validators";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
 import { StabilityPoolsTable } from "~/components/earn/stability-pools-table";
 import { useQueryState, parseAsString, parseAsBoolean } from "nuqs";
-import { Gift, Plus, Minus, RefreshCw } from "lucide-react";
+import { Gift, Plus, Minus, RefreshCw, Info } from "lucide-react";
 import { DepositSection } from "~/components/earn/deposit-section";
 import { WithdrawSection } from "~/components/earn/withdraw-section";
 import { ClaimRewardsSection } from "~/components/earn/claim-rewards-section";
@@ -130,6 +130,27 @@ function StabilityPool() {
       <Separator className="mb-8 bg-slate-200" />
 
       <div className="space-y-6">
+        {/* Info box explaining stability pool mechanism */}
+        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex gap-3">
+            <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="space-y-2 flex-1 min-w-0">
+              <p className="text-sm font-medium text-blue-900">
+                How Stability Pool Works
+              </p>
+              <p className="text-xs text-blue-700 break-words">
+                Earn rewards from loan fees and participate in liquidations. Deposit USDU to earn yields and help maintain system stability.
+              </p>
+              <a 
+                href="#" 
+                className="text-xs text-blue-600 hover:text-blue-700 underline inline-block"
+              >
+                Learn more
+              </a>
+            </div>
+          </div>
+        </div>
+
         <StabilityPoolsTable selectedCollateral={selectedCollateral} />
 
         {["pending", "success", "error"].includes(currentState) ? (
@@ -250,8 +271,7 @@ function StabilityPool() {
                   isSending || isPending ? "opacity-75" : ""
                 }`}
               >
-                // Interface improvement: stabilize card height and prevent
-                width jump
+                {/* Interface improvement: stabilize card height and prevent width jump */}
                 <CardContent className="pt-6 space-y-6 min-h-[520px] flex flex-col">
                   <Tabs
                     value={action}
@@ -323,139 +343,144 @@ function StabilityPool() {
                     </Select>
                   </div>
 
-                  {action === "claim" ? (
-                    <ClaimRewardsSection
-                      selectedPosition={selectedPosition}
-                      selectedCollateral={selectedCollateral}
-                    />
-                  ) : action === "deposit" ? (
-                    <form.Field
-                      name="amount"
-                      asyncDebounceMs={300}
-                      validators={{
-                        onChangeAsync: async ({ value }) => {
-                          if (!address || !value) return undefined;
-                          if (!usduBalance) return undefined;
-                          const balance =
-                            Number(usduBalance.value) /
-                            10 ** USDU_TOKEN.decimals;
-                          return validators.compose(
-                            validators.insufficientBalance(value, balance)
-                          );
-                        },
-                      }}
-                    >
-                      {(field) => (
-                        <DepositSection
-                          value={field.state.value}
-                          onChange={(value) => {
-                            field.handleChange(value);
-                            setAmountState(value || undefined);
-                          }}
-                          onBlur={field.handleBlur}
-                          error={field.state.meta.errors?.[0]}
-                          balance={usduBalance}
-                          selectedCollateral={selectedCollateral}
-                          claimRewards={claimRewards}
-                          selectedPosition={
-                            selectedPosition
-                              ? {
-                                  ...selectedPosition,
-                                  totalDeposits:
-                                    allPositions[selectedCollateral]
-                                      ?.totalDeposits || 0,
-                                  pendingUsduGain:
-                                    selectedPosition.rewards?.usdu || 0,
-                                  pendingCollGain:
-                                    selectedPosition.rewards?.collateral || 0,
-                                }
-                              : null
-                          }
-                        />
-                      )}
-                    </form.Field>
-                  ) : (
-                    <form.Field
-                      name="amount"
-                      asyncDebounceMs={300}
-                      validators={{
-                        onChangeAsync: async ({ value }) => {
-                          if (!address || !value) return undefined;
-                          // Don't validate if position data hasn't loaded yet
-                          if (!selectedPosition) return undefined;
-                          const userDeposit = selectedPosition.userDeposit || 0;
-                          return validators.compose(
-                            validators.insufficientBalance(value, userDeposit)
-                          );
-                        },
-                      }}
-                    >
-                      {(field) => (
-                        <WithdrawSection
-                          value={field.state.value}
-                          onChange={(value) => {
-                            field.handleChange(value);
-                            setAmountState(value || undefined);
-                          }}
-                          onBlur={field.handleBlur}
-                          error={field.state.meta.errors?.[0]}
-                          selectedCollateral={selectedCollateral}
-                          selectedPosition={
-                            selectedPosition
-                              ? {
-                                  ...selectedPosition,
-                                  pendingUsduGain:
-                                    selectedPosition.rewards?.usdu || 0,
-                                  pendingCollGain:
-                                    selectedPosition.rewards?.collateral || 0,
-                                }
-                              : null
-                          }
-                          claimRewards={claimRewards}
-                          onPercentageClick={(percentage) => {
+                  <div className="flex-1">
+                    {action === "claim" ? (
+                      <ClaimRewardsSection
+                        selectedPosition={selectedPosition}
+                        selectedCollateral={selectedCollateral}
+                      />
+                    ) : action === "deposit" ? (
+                      <form.Field
+                        name="amount"
+                        asyncDebounceMs={300}
+                        validators={{
+                          onChangeAsync: async ({ value }) => {
+                            if (!address || !value) return undefined;
+                            if (!usduBalance) return undefined;
+                            const balance =
+                              Number(usduBalance.value) /
+                              10 ** USDU_TOKEN.decimals;
+                            return validators.compose(
+                              validators.insufficientBalance(value, balance)
+                            );
+                          },
+                        }}
+                      >
+                        {(field) => (
+                          <DepositSection
+                            value={field.state.value}
+                            onChange={(value) => {
+                              field.handleChange(value);
+                              setAmountState(value || undefined);
+                            }}
+                            onBlur={field.handleBlur}
+                            error={field.state.meta.errors?.[0]}
+                            balance={usduBalance}
+                            selectedCollateral={selectedCollateral}
+                            claimRewards={claimRewards}
+                            selectedPosition={
+                              selectedPosition
+                                ? {
+                                    ...selectedPosition,
+                                    totalDeposits:
+                                      allPositions[selectedCollateral]
+                                        ?.totalDeposits || 0,
+                                    pendingUsduGain:
+                                      selectedPosition.rewards?.usdu || 0,
+                                    pendingCollGain:
+                                      selectedPosition.rewards?.collateral || 0,
+                                  }
+                                : null
+                            }
+                          />
+                        )}
+                      </form.Field>
+                    ) : (
+                      <form.Field
+                        name="amount"
+                        asyncDebounceMs={300}
+                        validators={{
+                          onChangeAsync: async ({ value }) => {
+                            if (!address || !value) return undefined;
+                            // Don't validate if position data hasn't loaded yet
+                            if (!selectedPosition) return undefined;
                             const userDeposit =
-                              selectedPosition?.userDeposit || 0;
-                            // For MAX (percentage === 1), use exact value to avoid floating-point precision issues
-                            const newValue =
-                              percentage === 1
-                                ? userDeposit
-                                : userDeposit * percentage;
-                            field.handleChange(newValue);
-                            setAmountState(newValue || undefined);
-                          }}
-                        />
-                      )}
-                    </form.Field>
-                  )}
+                              selectedPosition.userDeposit || 0;
+                            return validators.compose(
+                              validators.insufficientBalance(value, userDeposit)
+                            );
+                          },
+                        }}
+                      >
+                        {(field) => (
+                          <WithdrawSection
+                            value={field.state.value}
+                            onChange={(value) => {
+                              field.handleChange(value);
+                              setAmountState(value || undefined);
+                            }}
+                            onBlur={field.handleBlur}
+                            error={field.state.meta.errors?.[0]}
+                            selectedCollateral={selectedCollateral}
+                            selectedPosition={
+                              selectedPosition
+                                ? {
+                                    ...selectedPosition,
+                                    pendingUsduGain:
+                                      selectedPosition.rewards?.usdu || 0,
+                                    pendingCollGain:
+                                      selectedPosition.rewards?.collateral || 0,
+                                  }
+                                : null
+                            }
+                            claimRewards={claimRewards}
+                            onPercentageClick={(percentage) => {
+                              const userDeposit =
+                                selectedPosition?.userDeposit || 0;
+                              // For MAX (percentage === 1), use exact value to avoid floating-point precision issues
+                              const newValue =
+                                percentage === 1
+                                  ? userDeposit
+                                  : userDeposit * percentage;
+                              field.handleChange(newValue);
+                              setAmountState(newValue || undefined);
+                            }}
+                          />
+                        )}
+                      </form.Field>
+                    )}
+                  </div>
 
                   {action === "claim" ? (
                     // Compound Option for Claim
-                    <div className="p-4 bg-slate-50 rounded-lg">
-                      <label className="flex items-start gap-3 cursor-pointer">
-                        <Checkbox
-                          checked={!claimRewards} // Note: inverted because claimRewards=false means compound
-                          onCheckedChange={(checked) =>
-                            setClaimRewards(!checked)
-                          }
-                          className="mt-0.5"
-                          disabled={isSending || isPending}
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium text-slate-700">
-                              Auto-compound USDU rewards
-                            </span>
-                            <Badge variant="secondary" className="text-xs">
-                              <RefreshCw className="h-3 w-3 mr-1" />
-                              Compound
-                            </Badge>
+                    <div className="space-y-3">
+                      <div className="p-4 bg-slate-50 rounded-lg">
+                        <label className="flex items-start gap-3 cursor-pointer">
+                          <Checkbox
+                            checked={!claimRewards} // Note: inverted because claimRewards=false means compound
+                            onCheckedChange={(checked) =>
+                              setClaimRewards(!checked)
+                            }
+                            className="mt-0.5"
+                            disabled={isSending || isPending}
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-medium text-slate-700">
+                                Auto-compound USDU rewards
+                              </span>
+                              <Badge variant="secondary" className="text-xs">
+                                <RefreshCw className="h-3 w-3 mr-1" />
+                                Compound
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-slate-600">
+                              Keep your USDU rewards in the pool to earn more
+                              instead of withdrawing them to your wallet
+                            </p>
                           </div>
-                          <p className="text-xs text-slate-600">
-                            Keep your USDU rewards in the pool to earn more
-                            instead of withdrawing them to your wallet
-                          </p>
-                        </div>
-                      </label>
+                        </label>
+                      </div>
                     </div>
                   ) : (
                     // Claim Option for Deposit/Withdraw
