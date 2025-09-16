@@ -3,7 +3,7 @@ import {
   useDisconnect,
   useStarkProfile,
 } from "@starknet-react/core";
-import { AvatarIcon } from "./avatar-icon";
+import { AvatarIcon } from "./icons/avatar-icon";
 import { toHexChainid, isMainnet } from "../lib/utils/chain-id";
 import { formatTruncatedAddress } from "../lib/utils/format-address";
 import { useState } from "react";
