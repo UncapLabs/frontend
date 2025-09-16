@@ -112,7 +112,7 @@ export function ManualRateControls({
           }}
           disabled={disabled}
           style={{ width: `${(interestRate.toFixed(2).length + 1) * 0.65}em` }}
-          className="text-5xl font-normal font-sora leading-10 text-neutral-800 bg-transparent border-none focus:outline-none text-left p-0"
+          className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal font-sora leading-10 text-neutral-800 bg-transparent border-none focus:outline-none text-left p-0"
           placeholder="0.50"
           decimalScale={2}
           fixedDecimalScale={true}

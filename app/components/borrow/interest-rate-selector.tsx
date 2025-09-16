@@ -142,27 +142,41 @@ export function InterestRateSelector({
                   </div>
 
                   {/* Combined Redemption Risk and Redeemable Before You */}
-                  <div className="flex items-center justify-between py-3 px-4 bg-neutral-50 rounded-xl">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-neutral-600 font-sora">
+                      <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
                         Redemption Risk:
                       </span>
-                      <span
-                        className={`text-xs font-medium font-sora ${
-                          redemptionRisk.data === "Low"
-                            ? "text-green-600"
-                            : redemptionRisk.data === "Medium"
-                            ? "text-amber-600"
-                            : redemptionRisk.data === "High"
-                            ? "text-red-600"
-                            : "text-neutral-400"
-                        }`}
-                      >
-                        {redemptionRisk.data || "—"}
-                      </span>
+                      {redemptionRisk.data && (
+                        <div
+                          className={`px-2 py-3 h-6 flex items-center justify-center rounded-md border ${
+                            redemptionRisk.data === "Low"
+                              ? "bg-green-500/10 border-green-500/20"
+                              : redemptionRisk.data === "Medium"
+                              ? "bg-amber-500/10 border-amber-500/20"
+                              : redemptionRisk.data === "High"
+                              ? "bg-red-500/10 border-red-500/20"
+                              : "bg-neutral-100 border-neutral-200"
+                          }`}
+                        >
+                          <span
+                            className={`text-xs font-normal font-sora ${
+                              redemptionRisk.data === "Low"
+                                ? "text-green-700"
+                                : redemptionRisk.data === "Medium"
+                                ? "text-amber-700"
+                                : redemptionRisk.data === "High"
+                                ? "text-red-700"
+                                : "text-neutral-500"
+                            }`}
+                          >
+                            {redemptionRisk.data}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-neutral-600 font-sora">
+                      <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
                         Redeemable before you:
                       </span>
                       <span className="text-xs font-medium text-neutral-800 font-sora">
