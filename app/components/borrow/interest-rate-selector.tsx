@@ -200,12 +200,6 @@ export function InterestRateSelector({
                         </div>
                       )}
                     </div>
-
-                    <p className="text-xs text-slate-500 text-center mt-2">
-                      {hasError
-                        ? "Unable to load distribution data"
-                        : "No distribution data available yet"}
-                    </p>
                   </div>
                 </>
               )}

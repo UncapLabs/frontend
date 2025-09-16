@@ -31,8 +31,8 @@ export const THUMB_COLOR_CLASSES = {
 // Chart rendering constants
 export const CHART_CONSTANTS = {
   BAR_HEIGHT: 4,
-  HANDLE_SIZE: 26,
-  MIN_WIDTH: 26 * 2,
+  HANDLE_SIZE: 20,
+  MIN_WIDTH: 20 * 2,
   CHART_MAX_HEIGHT: 30,
   HEIGHT: 60,
   GRADIENT_TRANSITION_BLUR: 4,
@@ -49,16 +49,6 @@ export function getGradientColors(mode: GradientMode = "high-to-low") {
     RISK_COLORS.medium,
     RISK_COLORS.mediumLow,
     RISK_COLORS.low,
-  ];
-  return mode === "low-to-high" ? colors : colors.reverse();
-}
-
-// Get dimmed gradient colors for backgrounds
-export function getGradientColorsDimmed(mode: GradientMode = "high-to-low") {
-  const colors = [
-    RISK_COLORS_DIMMED.high,
-    RISK_COLORS_DIMMED.medium,
-    RISK_COLORS_DIMMED.low,
   ];
   return mode === "low-to-high" ? colors : colors.reverse();
 }
@@ -113,27 +103,6 @@ export function getRiskLevelFromPosition(
   if (position <= riskZones.highRiskThreshold) return "low";
   if (position <= riskZones.mediumRiskThreshold) return "medium";
   return "high";
-}
-
-// Calculate gradient geometry for visual zones (UI rendering only)
-export function calculateGradientGeometry(riskZones: {
-  highRiskThreshold: number;
-  mediumRiskThreshold: number;
-}) {
-  return [
-    { x: 0, width: riskZones.highRiskThreshold * 100, index: 0 },
-    {
-      x: riskZones.highRiskThreshold * 100,
-      width:
-        (riskZones.mediumRiskThreshold - riskZones.highRiskThreshold) * 100,
-      index: 1,
-    },
-    {
-      x: riskZones.mediumRiskThreshold * 100,
-      width: (1 - riskZones.mediumRiskThreshold) * 100,
-      index: 2,
-    },
-  ];
 }
 
 // Find closest position in chart data (for slider interaction)
