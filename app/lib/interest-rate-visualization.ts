@@ -7,11 +7,11 @@ export type RiskLevel = "low" | "medium" | "high";
 
 // Risk color mappings - single source of truth for visual colors
 export const RISK_COLORS = {
-  high: "#dc2626", // red-600 - high risk (low debt in front)
-  mediumHigh: "#ea580c", // orange-600
-  medium: "#f59e0b", // amber-500 - medium risk
-  mediumLow: "#84cc16", // lime-500
-  low: "#22c55e", // green-500 - low risk (high debt in front)
+  high: "#FF0000", // red - high risk (low debt in front)
+  mediumHigh: "#FFC562", // orange
+  medium: "#FFC562", // yellow/orange - medium risk
+  mediumLow: "#59D4A9", // light green
+  low: "#59D4A9", // green - low risk (high debt in front)
 } as const;
 
 // Dimmed colors for background gradients

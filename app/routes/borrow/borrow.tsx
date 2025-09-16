@@ -194,14 +194,14 @@ function Borrow() {
   }, [form, reset, setBorrowAmount, setCollateralAmount, setInterestRate]);
 
   return (
-    <div className="mx-auto max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
+    <div className="mx-auto max-w-2xl md:max-w-4xl lg:max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
       <div className="flex justify-between items-baseline">
         <h1 className="text-3xl font-medium leading-none mb-4 font-sora text-neutral-800">
           Borrow
         </h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 max-w-5xl gap-8">
         {/* Left Panel */}
         <div className="md:col-span-2">
           {["pending", "success", "error"].includes(currentState) ? (
@@ -451,7 +451,6 @@ function Borrow() {
                       collateralAmount,
                       borrowAmount,
                     }) => {
-                      // Button text logic localized to Subscribe
                       let buttonText = "Borrow";
 
                       if (!address) {
@@ -479,7 +478,7 @@ function Borrow() {
                               isPending ||
                               !canSubmit)
                           }
-                          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2 px-6 rounded-xl shadow-sm hover:shadow transition-all whitespace-nowrap"
+                          className="w-full h-12 bg-token-bg-blue hover:bg-blue-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all whitespace-nowrap"
                         >
                           {isSending
                             ? "Confirm in wallet..."

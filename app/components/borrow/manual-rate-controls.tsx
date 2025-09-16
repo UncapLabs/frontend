@@ -10,6 +10,7 @@ import {
 interface ManualRateControlsProps {
   interestRate: number;
   onInterestRateChange: (rate: number) => void;
+  borrowAmount?: number;
   disabled?: boolean;
   visualizationData?: any;
 }
@@ -17,6 +18,7 @@ interface ManualRateControlsProps {
 export function ManualRateControls({
   interestRate,
   onInterestRateChange,
+  borrowAmount,
   disabled = false,
   visualizationData,
 }: ManualRateControlsProps) {
@@ -94,52 +96,63 @@ export function ManualRateControls({
   );
 
   return (
-    <div>
-      <div className="flex items-center gap-3">
-        {/* Input field on the left with yearly interest below */}
-        <div>
-          <div className="flex items-center gap-1 bg-white rounded-md border border-slate-200 px-3 py-2">
-            <NumericFormat
-              value={interestRate}
-              onValueChange={(values) => {
-                const numericValue = values.floatValue;
-                if (
-                  numericValue !== undefined &&
-                  numericValue >= 0.5 &&
-                  numericValue <= 20
-                ) {
-                  onInterestRateChange(numericValue);
-                }
-              }}
-              disabled={disabled}
-              className="w-20 text-sm font-semibold bg-transparent border-none focus:outline-none text-right p-0"
-              placeholder="0.50"
-              decimalScale={2}
-              fixedDecimalScale={true}
-              allowNegative={false}
-              thousandSeparator={false}
-              isAllowed={(values) => {
-                const { floatValue } = values;
-                return (
-                  floatValue === undefined ||
-                  (floatValue >= 0.5 && floatValue <= 20)
-                );
-              }}
-            />
-            <span className="text-sm font-semibold text-slate-600">%</span>
+    <div className="w-full flex flex-col gap-3">
+      <div className="flex items-baseline gap-3">
+        <NumericFormat
+          value={interestRate}
+          onValueChange={(values) => {
+            const numericValue = values.floatValue;
+            if (
+              numericValue !== undefined &&
+              numericValue >= 0.5 &&
+              numericValue <= 20
+            ) {
+              onInterestRateChange(numericValue);
+            }
+          }}
+          disabled={disabled}
+          style={{ width: `${(interestRate.toFixed(2).length + 1) * 0.6}em` }}
+          className="text-5xl font-normal font-sora leading-10 text-neutral-800 bg-transparent border-none focus:outline-none text-left p-0"
+          placeholder="0.50"
+          decimalScale={2}
+          fixedDecimalScale={true}
+          allowNegative={false}
+          suffix={"%"}
+          thousandSeparator={false}
+          isAllowed={(values) => {
+            const { floatValue } = values;
+            return (
+              floatValue === undefined ||
+              (floatValue >= 0.5 && floatValue <= 20)
+            );
+          }}
+        />
+        {/* Yearly Interest Cost - Display on the right */}
+        {borrowAmount && borrowAmount > 0 && (
+          <div className="flex items-baseline">
+            <span className="text-sm text-neutral-800 font-medium font-sora">
+              {((borrowAmount * interestRate) / 100).toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </span>
+            <span className="text-xs text-neutral-500 block ml-1">
+              {" "}
+              USDU / year
+            </span>
           </div>
-        </div>
+        )}
+      </div>
 
-        <div className="flex-1 max-w-md">
-          <InterestSlider
-            value={sliderValue}
-            onChange={handleSliderChange}
-            chart={chartSizes}
-            riskZones={riskZones}
-            gradientMode="high-to-low"
-            disabled={disabled}
-          />
-        </div>
+      <div className="w-full">
+        <InterestSlider
+          value={sliderValue}
+          onChange={handleSliderChange}
+          chart={chartSizes}
+          riskZones={riskZones}
+          gradientMode="high-to-low"
+          disabled={disabled}
+        />
       </div>
     </div>
   );

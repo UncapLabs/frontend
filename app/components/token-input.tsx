@@ -84,7 +84,7 @@ export const TokenInput = memo(function TokenInput({
       <div className="flex justify-between items-start">
         <Label
           htmlFor={`${token.symbol}-input`}
-          className="text-neutral-800 text-xs font-medium font-sora uppercase tracking-wider"
+          className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight"
         >
           {label}
         </Label>

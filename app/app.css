@@ -18,9 +18,11 @@
 
   /* Custom Application Colors - Only truly custom colors not in Tailwind */
   --color-token-bg: #fff4e5;
-  --color-token-bg-green: #edf7ed;
   --color-token-orange: #ff9300;
+  --color-button-border: #f5f3ee;
+  --color-token-bg-green: #edf7ed;
   --color-token-green: #4caf50;
+  --color-token-bg-blue: #3b82f6;
   --color-button-border: #f5f3ee;
 }
 
