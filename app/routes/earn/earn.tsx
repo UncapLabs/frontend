@@ -497,11 +497,15 @@ function Earn() {
                             onCheckedChange={(checked) =>
                               setClaimRewards(!checked)
                             }
-                            disabled={isSending || isPending}
+                            disabled={isSending || isPending || !selectedPosition?.rewards?.usdu || selectedPosition.rewards.usdu === 0}
                           />
                           <Label
                             htmlFor="compound-rewards"
-                            className="text-sm font-medium cursor-pointer select-none flex items-center gap-2 text-neutral-700"
+                            className={`text-sm font-medium select-none flex items-center gap-2 ${
+                              !selectedPosition?.rewards?.usdu || selectedPosition.rewards.usdu === 0
+                                ? "text-neutral-400"
+                                : "text-neutral-700 cursor-pointer"
+                            }`}
                           >
                             Auto-compound USDU rewards
                             <Tooltip>
@@ -528,7 +532,9 @@ function Earn() {
                           </Label>
                         </div>
                         <p className="text-xs text-neutral-500 mt-1 ml-7">
-                          {!claimRewards
+                          {!selectedPosition?.rewards?.usdu || selectedPosition.rewards.usdu === 0
+                            ? "No USDU rewards available to compound"
+                            : !claimRewards
                             ? "USDU rewards will be re-deposited to the pool"
                             : "All rewards will be sent to your wallet"}
                         </p>
@@ -639,8 +645,48 @@ function Earn() {
                     {(!selectedPosition?.rewards ||
                       (selectedPosition.rewards.usdu === 0 &&
                         selectedPosition.rewards.collateral === 0)) && (
-                      <div className="text-sm text-neutral-500 text-center">
-                        No rewards available to claim
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3">
+                            <Checkbox
+                              id="claim-rewards"
+                              checked={false}
+                              disabled={true}
+                            />
+                            <Label
+                              htmlFor="claim-rewards"
+                              className="text-sm font-medium select-none flex items-center gap-2 text-neutral-400"
+                            >
+                              Claim rewards
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <HelpCircle className="h-3.5 w-3.5 text-neutral-300" />
+                                </TooltipTrigger>
+                                <TooltipContent
+                                  side="top"
+                                  className="max-w-xs bg-slate-900 text-white"
+                                >
+                                  <p className="text-xs">
+                                    No rewards available. Rewards accrue when
+                                    you have deposits in the stability pool.
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </Label>
+                          </div>
+                          <p className="text-xs text-neutral-400 mt-1 ml-7">
+                            No rewards available to claim
+                          </p>
+                        </div>
+
+                        <div className="text-right space-y-1">
+                          <div className="text-sm font-medium text-neutral-400">
+                            0.00 USDU
+                          </div>
+                          <div className="text-sm font-medium text-neutral-400">
+                            0.000000 {selectedCollateral}
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
