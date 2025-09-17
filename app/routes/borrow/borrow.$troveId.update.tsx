@@ -30,10 +30,7 @@ import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { getInterestRatePercentage } from "~/lib/utils/position-helpers";
 import { extractTroveId } from "~/lib/utils/trove-id";
 import { TransactionSummary } from "~/components/transaction-summary";
-import {
-  usePositionMetrics,
-  getRedemptionRisk,
-} from "~/hooks/use-position-metrics";
+import { usePositionMetrics } from "~/hooks/use-position-metrics";
 import { getMinCollateralizationRatio } from "~/lib/contracts/collateral-config";
 import type { CollateralType } from "~/lib/contracts/constants";
 
@@ -919,7 +916,6 @@ function UpdatePosition() {
             }}
             liquidationPrice={metrics.liquidationPrice}
             liquidationRisk={metrics.liquidationRisk}
-            redemptionRisk={getRedemptionRisk(interestRate)}
             warnings={
               borrowAmount && borrowAmount < 2000
                 ? ["Minimum debt requirement is $2,000 USDU"]

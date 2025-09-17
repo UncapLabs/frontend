@@ -142,14 +142,15 @@ export function InterestRateSelector({
                   </div>
 
                   {/* Combined Redemption Risk and Redeemable Before You */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 sm:gap-2">
                       <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
-                        Redemption Risk:
+                        <span className="hidden sm:inline">Redemption Risk:</span>
+                        <span className="sm:hidden">Risk:</span>
                       </span>
                       {redemptionRisk.data && (
                         <div
-                          className={`px-2 py-3 h-6 flex items-center justify-center rounded-md border ${
+                          className={`px-1.5 sm:px-2 py-3 h-6 flex items-center justify-center rounded-md border ${
                             redemptionRisk.data === "Low"
                               ? "bg-green-500/10 border-green-500/20"
                               : redemptionRisk.data === "Medium"
@@ -175,9 +176,10 @@ export function InterestRateSelector({
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
-                        Redeemable before you:
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <span className="text-neutral-800 text-xs font-medium font-sora leading-3 whitespace-nowrap">
+                        <span className="hidden sm:inline">Redeemable before you:</span>
+                        <span className="sm:hidden">Ahead:</span>
                       </span>
                       <span className="text-xs font-medium text-neutral-800 font-sora">
                         {debtInFront > 0

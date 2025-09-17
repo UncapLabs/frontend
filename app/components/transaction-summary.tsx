@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { NumericFormat } from "react-number-format";
 import { AlertCircle, Info, Sparkles } from "lucide-react";
 import { cn } from "~/lib/utils";
@@ -41,7 +40,6 @@ interface TransactionSummaryProps {
   className?: string;
   isValid?: boolean;
   warnings?: string[];
-  redemptionRisk?: "High" | "Medium" | "Low";
   // For fee calculation
   collateralType?: CollateralType;
   troveId?: bigint; // For update operations
@@ -54,7 +52,6 @@ export function TransactionSummary({
   liquidationRisk,
   className,
   warnings = [],
-  redemptionRisk,
   collateralType,
   troveId,
 }: TransactionSummaryProps) {
@@ -66,107 +63,77 @@ export function TransactionSummary({
       : "Close Position";
 
   // Calculate annual interest cost
-  const annualInterestCost = changes.debt?.to && changes.interestRate?.to 
-    ? (changes.debt.to * changes.interestRate.to) / 100
-    : 0;
+  const annualInterestCost =
+    changes.debt?.to && changes.interestRate?.to
+      ? (changes.debt.to * changes.interestRate.to) / 100
+      : 0;
 
   // Calculate STRK rebate (30% of yearly interest)
-  const REBATE_PERCENTAGE = 30;
-  const yearlyRebate = annualInterestCost > 0 
-    ? (annualInterestCost * REBATE_PERCENTAGE) / 100
-    : 0;
+  // const REBATE_PERCENTAGE = 30;
+  // const yearlyRebate = annualInterestCost > 0 ? (annualInterestCost * REBATE_PERCENTAGE) / 100 : 0;
 
   // Determine if we're increasing debt (for updates)
-  const isDebtIncrease = type === "update" && 
-    changes.debt?.from !== undefined && 
-    changes.debt?.to !== undefined && 
+  const isDebtIncrease =
+    type === "update" &&
+    changes.debt?.from !== undefined &&
+    changes.debt?.to !== undefined &&
     changes.debt.to > changes.debt.from;
 
   // Calculate upfront fee using the unified hook
   const { upfrontFee, isLoading: isFeeLoading } = usePredictUpfrontFee(
-    type === "open" 
+    type === "open"
       ? {
           type: "open",
           collateralType: collateralType || "UBTC",
-          borrowedAmount: changes.debt?.to 
+          borrowedAmount: changes.debt?.to
             ? decimalToBigint(changes.debt.to, 18)
             : undefined,
-          interestRate: changes.interestRate?.to 
+          interestRate: changes.interestRate?.to
             ? decimalToBigint(changes.interestRate.to / 100, 18)
             : undefined,
-          enabled: !!collateralType && !!changes.debt?.to && !!changes.interestRate?.to,
+          enabled:
+            !!collateralType &&
+            !!changes.debt?.to &&
+            !!changes.interestRate?.to,
         }
       : {
           type: "adjust",
           collateralType: collateralType || "UBTC",
           troveId: troveId,
-          debtIncrease: isDebtIncrease && changes.debt?.from !== undefined && changes.debt?.to !== undefined
-            ? decimalToBigint(changes.debt.to - changes.debt.from, 18)
-            : undefined,
+          debtIncrease:
+            isDebtIncrease &&
+            changes.debt?.from !== undefined &&
+            changes.debt?.to !== undefined
+              ? decimalToBigint(changes.debt.to - changes.debt.from, 18)
+              : undefined,
           enabled: !!collateralType && !!troveId && isDebtIncrease,
         }
   );
 
-  const getRiskBadgeVariant = (
-    risk?: "High" | "Medium" | "Low"
-  ): "destructive" | "warning" | "success" | "secondary" => {
-    switch (risk) {
-      case "High":
-        return "destructive";
-      case "Medium":
-        return "warning";
-      case "Low":
-        return "success";
-      default:
-        return "secondary";
-    }
-  };
-
-  // Calculate redemption risk based on interest rate
-  const calculatedRedemptionRisk =
-    redemptionRisk ||
-    (changes.interestRate?.to !== undefined
-      ? changes.interestRate.to < 5
-        ? "High"
-        : changes.interestRate.to < 10
-        ? "Medium"
-        : "Low"
-      : undefined);
-
   return (
-    <Card
-      className={cn(
-        "border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300",
-        className
-      )}
-    >
-      <CardHeader className="pb-4 bg-gradient-to-r from-slate-50 to-slate-100/50 border-b border-slate-100">
-        <CardTitle className="text-base font-semibold text-slate-800">
+    <div className={cn("bg-white rounded-2xl p-6 space-y-6", className)}>
+      {/* Title */}
+      <div className="flex items-center">
+        <h3 className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight">
           {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-5 space-y-4">
+        </h3>
+      </div>
+
+      {/* Content */}
+      <div className="space-y-4">
         {/* Collateral with value */}
         <div className="flex justify-between items-start">
-          <div className="flex items-center gap-1.5">
-            <span className="text-sm text-slate-700 font-medium">
+          <div className="flex items-center gap-2">
+            <span className="text-neutral-800 text-sm font-normal font-sora">
               Collateral
             </span>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info className="h-3 w-3 text-slate-400 cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>The amount and value of your collateral</p>
-              </TooltipContent>
-            </Tooltip>
           </div>
           <div className="text-right">
             {type === "update" &&
             changes.collateral?.from !== changes.collateral?.to ? (
               <div className="space-y-1">
                 <div className="flex items-center gap-2 justify-end">
-                  <span className="text-sm text-slate-400 line-through">
+                  <span className="text-neutral-800/50 text-base font-medium font-sora line-through">
                     <NumericFormat
                       displayType="text"
                       value={changes.collateral?.from || 0}
@@ -176,8 +143,8 @@ export function TransactionSummary({
                     />{" "}
                     {changes.collateral?.token || "BTC"}
                   </span>
-                  <span className="text-xs text-slate-400">→</span>
-                  <span className="text-sm font-semibold text-slate-900">
+                  <span className="text-xs text-neutral-800/50">→</span>
+                  <span className="text-neutral-800 text-base font-medium font-sora">
                     <NumericFormat
                       displayType="text"
                       value={changes.collateral?.to || 0}
@@ -188,7 +155,7 @@ export function TransactionSummary({
                     {changes.collateral?.token || "BTC"}
                   </span>
                 </div>
-                <div className="text-xs text-slate-500">
+                <div className="text-xs text-neutral-800/70 font-sora">
                   <NumericFormat
                     displayType="text"
                     value={changes.collateralValueUSD?.to || 0}
@@ -201,7 +168,7 @@ export function TransactionSummary({
               </div>
             ) : (
               <div className="space-y-0.5">
-                <div className="text-sm font-semibold text-slate-900">
+                <div className="text-neutral-800 text-base font-medium font-sora">
                   <NumericFormat
                     displayType="text"
                     value={changes.collateral?.to || 0}
@@ -211,7 +178,7 @@ export function TransactionSummary({
                   />{" "}
                   {changes.collateral?.token || "BTC"}
                 </div>
-                <div className="text-xs text-slate-500">
+                <div className="text-xs text-neutral-800/70 font-sora">
                   <NumericFormat
                     displayType="text"
                     value={changes.collateralValueUSD?.to || 0}
@@ -228,11 +195,13 @@ export function TransactionSummary({
 
         {/* Loan */}
         <div className="flex justify-between items-start">
-          <div className="flex items-center gap-1.5">
-            <span className="text-sm text-slate-700 font-medium">Loan</span>
+          <div className="flex items-center gap-2">
+            <span className="text-neutral-800 text-sm font-normal font-sora">
+              Loan
+            </span>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Info className="h-3 w-3 text-slate-400 cursor-help" />
+                <Info className="h-3 w-3 text-neutral-400 cursor-help" />
               </TooltipTrigger>
               <TooltipContent>
                 <p>Amount of USDU you are borrowing</p>
@@ -243,7 +212,7 @@ export function TransactionSummary({
             {type === "update" && changes.debt?.from !== changes.debt?.to ? (
               <div className="space-y-1">
                 <div className="flex items-center gap-2 justify-end">
-                  <span className="text-sm text-slate-400 line-through">
+                  <span className="text-neutral-800/50 text-base font-medium font-sora line-through">
                     <NumericFormat
                       displayType="text"
                       value={changes.debt?.from || 0}
@@ -253,8 +222,8 @@ export function TransactionSummary({
                     />{" "}
                     USDU
                   </span>
-                  <span className="text-xs text-slate-400">→</span>
-                  <span className="text-sm font-semibold text-slate-900">
+                  <span className="text-xs text-neutral-800/50">→</span>
+                  <span className="text-neutral-800 text-base font-medium font-sora">
                     <NumericFormat
                       displayType="text"
                       value={changes.debt?.to || 0}
@@ -267,7 +236,7 @@ export function TransactionSummary({
                 </div>
                 {/* Show fee for debt increase */}
                 {isDebtIncrease && (
-                  <div className="text-xs text-slate-500">
+                  <div className="text-xs text-neutral-800/70 font-sora">
                     {isFeeLoading ? (
                       <Skeleton className="h-3 w-24 ml-auto" />
                     ) : upfrontFee ? (
@@ -288,7 +257,7 @@ export function TransactionSummary({
               </div>
             ) : (
               <div className="space-y-0.5">
-                <span className="text-sm font-semibold text-slate-900">
+                <span className="text-neutral-800 text-base font-medium font-sora">
                   <NumericFormat
                     displayType="text"
                     value={changes.debt?.to || 0}
@@ -300,7 +269,7 @@ export function TransactionSummary({
                 </span>
                 {/* Show fee for new loan */}
                 {type === "open" && (
-                  <div className="text-xs text-slate-500">
+                  <div className="text-xs text-neutral-800/70 font-sora">
                     {isFeeLoading ? (
                       <Skeleton className="h-3 w-24 ml-auto" />
                     ) : upfrontFee ? (
@@ -323,60 +292,15 @@ export function TransactionSummary({
           </div>
         </div>
 
-        {/* LTV Ratio */}
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-1.5">
-            <span className="text-sm text-slate-700 font-medium">LTV</span>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info className="h-3 w-3 text-slate-400 cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Loan-to-Value ratio. Shows how much you're borrowing against your collateral value.</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <div className="text-right">
-            {(() => {
-              const currentLTV = changes.collateralValueUSD?.to && changes.debt?.to
-                ? (changes.debt.to / changes.collateralValueUSD.to) * 100
-                : 0;
-              const previousLTV = type === "update" && changes.collateralValueUSD?.from && changes.debt?.from
-                ? (changes.debt.from / changes.collateralValueUSD.from) * 100
-                : undefined;
-              
-              if (type === "update" && previousLTV !== undefined && Math.abs(currentLTV - previousLTV) > 0.01) {
-                return (
-                  <div className="flex items-center gap-2 justify-end">
-                    <span className="text-sm text-slate-400 line-through">
-                      {previousLTV.toFixed(1)}%
-                    </span>
-                    <span className="text-xs text-slate-400">→</span>
-                    <span className="text-sm font-semibold text-slate-900">
-                      {currentLTV.toFixed(1)}%
-                    </span>
-                  </div>
-                );
-              } else {
-                return (
-                  <span className="text-sm font-semibold text-slate-900">
-                    {currentLTV > 0 ? `${currentLTV.toFixed(1)}%` : <span className="text-slate-400">—</span>}
-                  </span>
-                );
-              }
-            })()}
-          </div>
-        </div>
-
         {/* Interest Rate with annual cost */}
         <div className="flex justify-between items-start">
-          <div className="flex items-center gap-1.5">
-            <span className="text-sm text-slate-700 font-medium">
+          <div className="flex items-center gap-2">
+            <span className="text-neutral-800 text-sm font-normal font-sora">
               Interest rate
             </span>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Info className="h-3 w-3 text-slate-400 cursor-help" />
+                <Info className="h-3 w-3 text-neutral-400 cursor-help" />
               </TooltipTrigger>
               <TooltipContent>
                 <p>
@@ -391,16 +315,16 @@ export function TransactionSummary({
             changes.interestRate?.from !== changes.interestRate?.to ? (
               <div className="space-y-1">
                 <div className="flex items-center gap-2 justify-end">
-                  <span className="text-sm text-slate-400 line-through">
+                  <span className="text-neutral-800/50 text-base font-medium font-sora line-through">
                     {changes.interestRate?.from?.toFixed(2)}%
                   </span>
-                  <span className="text-xs text-slate-400">→</span>
-                  <span className="text-sm font-semibold text-slate-900">
+                  <span className="text-xs text-neutral-800/50">→</span>
+                  <span className="text-neutral-800 text-base font-medium font-sora">
                     {changes.interestRate?.to?.toFixed(2)}%
                   </span>
                 </div>
                 {annualInterestCost > 0 && (
-                  <div className="text-xs text-slate-500">
+                  <div className="text-xs text-neutral-800/70 font-sora">
                     <NumericFormat
                       displayType="text"
                       value={annualInterestCost}
@@ -414,11 +338,11 @@ export function TransactionSummary({
               </div>
             ) : (
               <div className="space-y-0.5">
-                <div className="text-sm font-semibold text-slate-900">
+                <div className="text-neutral-800 text-base font-medium font-sora">
                   {(changes.interestRate?.to || 5).toFixed(2)}%
                 </div>
                 {annualInterestCost > 0 && (
-                  <div className="text-xs text-slate-500">
+                  <div className="text-xs text-neutral-800/70 font-sora">
                     <NumericFormat
                       displayType="text"
                       value={annualInterestCost}
@@ -434,26 +358,89 @@ export function TransactionSummary({
           </div>
         </div>
 
+        {/* LTV Ratio */}
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <span className="text-neutral-800 text-sm font-normal font-sora">
+              LTV
+            </span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-3 w-3 text-neutral-400 cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>
+                  Loan-to-Value ratio. Shows how much you're borrowing against
+                  your collateral value.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <div className="text-right">
+            {(() => {
+              const currentLTV =
+                changes.collateralValueUSD?.to && changes.debt?.to
+                  ? (changes.debt.to / changes.collateralValueUSD.to) * 100
+                  : 0;
+              const previousLTV =
+                type === "update" &&
+                changes.collateralValueUSD?.from &&
+                changes.debt?.from
+                  ? (changes.debt.from / changes.collateralValueUSD.from) * 100
+                  : undefined;
+
+              if (
+                type === "update" &&
+                previousLTV !== undefined &&
+                Math.abs(currentLTV - previousLTV) > 0.01
+              ) {
+                return (
+                  <div className="flex items-center gap-2 justify-end">
+                    <span className="text-neutral-800/50 text-base font-medium font-sora line-through">
+                      {previousLTV.toFixed(1)}%
+                    </span>
+                    <span className="text-xs text-neutral-800/50">→</span>
+                    <span className="text-neutral-800 text-base font-medium font-sora">
+                      {currentLTV.toFixed(1)}%
+                    </span>
+                  </div>
+                );
+              } else {
+                return (
+                  <span className="text-neutral-800 text-base font-medium font-sora">
+                    {currentLTV > 0 ? (
+                      `${currentLTV.toFixed(1)}%`
+                    ) : (
+                      <span className="text-neutral-800/50">—</span>
+                    )}
+                  </span>
+                );
+              }
+            })()}
+          </div>
+        </div>
+
         {/* STRK Rebate - Only show if there's a yearly rebate */}
-        {yearlyRebate > 0 && (
+        {/* {yearlyRebate > 0 && (
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <Sparkles className="h-3.5 w-3.5 text-purple-500" />
-              <span className="text-sm text-slate-700 font-medium">
+              <span className="text-neutral-800 text-sm font-normal font-sora">
                 STRK Rebate
               </span>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Info className="h-3 w-3 text-slate-400 cursor-help" />
+                  <Info className="h-3 w-3 text-neutral-400 cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>
-                    You earn a 30% rebate on interest payments through the STRK rebate program
+                    You earn a 30% rebate on interest payments through the STRK
+                    rebate program
                   </p>
                 </TooltipContent>
               </Tooltip>
             </div>
-            <span className="text-sm font-semibold text-green-600">
+            <span className="text-green-600 text-base font-medium font-sora">
               +$
               <NumericFormat
                 displayType="text"
@@ -461,21 +448,21 @@ export function TransactionSummary({
                 thousandSeparator=","
                 decimalScale={0}
                 fixedDecimalScale={false}
-              />
-              {" "}/year
+              />{" "}
+              /year
             </span>
           </div>
-        )}
+        )} */}
 
         {/* Liquidation Price */}
         <div className="flex justify-between items-center">
-          <div className="flex items-center gap-1.5">
-            <span className="text-sm text-slate-700 font-medium">
+          <div className="flex items-center gap-2">
+            <span className="text-neutral-800 text-sm font-normal font-sora">
               Liquidation Price
             </span>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Info className="h-3 w-3 text-slate-400 cursor-help" />
+                <Info className="h-3 w-3 text-neutral-400 cursor-help" />
               </TooltipTrigger>
               <TooltipContent>
                 <p>
@@ -485,7 +472,7 @@ export function TransactionSummary({
               </TooltipContent>
             </Tooltip>
           </div>
-          <span className="text-sm font-semibold text-slate-900">
+          <span className="text-neutral-800 text-base font-medium font-sora">
             {liquidationPrice && liquidationPrice > 0 ? (
               <NumericFormat
                 displayType="text"
@@ -496,42 +483,14 @@ export function TransactionSummary({
                 fixedDecimalScale
               />
             ) : (
-              <span className="text-slate-400">—</span>
+              <span className="text-neutral-800/50">—</span>
             )}
           </span>
         </div>
 
-        {/* Redemption Risk */}
-        {calculatedRedemptionRisk && (
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-1.5">
-              <span className="text-sm text-slate-700 font-medium">
-                Redemption Risk
-              </span>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="h-3 w-3 text-slate-400 cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>
-                    Risk of your position being redeemed. Lower interest rates
-                    have higher redemption risk.
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-            <Badge
-              variant={getRiskBadgeVariant(calculatedRedemptionRisk)}
-              className="text-xs"
-            >
-              {calculatedRedemptionRisk}
-            </Badge>
-          </div>
-        )}
-
         {/* Warnings */}
         {warnings.length > 0 && (
-          <div className="pt-2 space-y-2 border-t border-slate-100">
+          <div className="pt-2 space-y-2 border-t border-neutral-100">
             {warnings.map((warning, index) => (
               <div
                 key={index}
@@ -543,7 +502,7 @@ export function TransactionSummary({
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -25,10 +25,7 @@ import { useBorrow } from "~/hooks/use-borrow";
 import { useQueryState, parseAsFloat, parseAsInteger } from "nuqs";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { useCollateralToken } from "~/hooks/use-collateral-token";
-import {
-  usePositionMetrics,
-  getRedemptionRisk,
-} from "~/hooks/use-position-metrics";
+import { usePositionMetrics } from "~/hooks/use-position-metrics";
 import { getMinCollateralizationRatio } from "~/lib/contracts/collateral-config";
 import type { CollateralType } from "~/lib/contracts/constants";
 
@@ -495,7 +492,7 @@ function Borrow() {
           )}
         </div>
 
-        {/* Right Panel - Transaction Summary */}
+        {/* Right Panel - Transaction Summary and Redemption Info */}
         <div className="lg:col-span-1 space-y-4">
           <TransactionSummary
             type="open"
@@ -516,19 +513,14 @@ function Borrow() {
             }}
             liquidationPrice={metrics.liquidationPrice}
             liquidationRisk={metrics.liquidationRisk}
-            redemptionRisk={getRedemptionRisk(interestRate)}
             warnings={
               borrowAmount && borrowAmount < 2000
                 ? ["Minimum debt requirement is $2,000 USDU"]
                 : []
             }
             collateralType={selectedCollateralToken.collateralType}
-            className="sticky top-8"
           />
-          <RedemptionInfo
-            variant="inline"
-            className="sticky top-[calc(8rem+350px)]"
-          />
+          <RedemptionInfo variant="inline" />
         </div>
       </div>
     </div>

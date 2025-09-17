@@ -31,7 +31,7 @@ export const THUMB_COLOR_CLASSES = {
 // Chart rendering constants
 export const CHART_CONSTANTS = {
   BAR_HEIGHT: 4,
-  HANDLE_SIZE: 20,
+  HANDLE_SIZE: 16,
   MIN_WIDTH: 20 * 2,
   CHART_MAX_HEIGHT: 30,
   HEIGHT: 60,
