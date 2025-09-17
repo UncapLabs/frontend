@@ -166,9 +166,12 @@ export function WalletConnector() {
 
   if (!address) {
     return (
-      <Button onClick={connectWallet} variant="secondary">
+      <button
+        onClick={connectWallet}
+        className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-xs font-medium h-10 px-4 transition-all text-[#242424] dark:text-white bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
         Connect Wallet
-      </Button>
+      </button>
     );
   }
 
@@ -184,25 +187,31 @@ export function WalletConnector() {
 
   const TriggerButton = (
     <button
-      className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium h-9 px-4 py-2 shadow-xs transition-all text-gray-900 dark:text-white bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600"
+      className="inline-flex items-center justify-start gap-2 whitespace-nowrap rounded-xl text-xs font-medium h-10 px-2 transition-all text-[#242424] dark:text-white bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
       title={`Connected as ${
         starkProfile?.name || formatTruncatedAddress(address || "")
       }. Click for details.`}
     >
-      {starkProfile?.profilePicture ? (
-        <img
-          src={starkProfile.profilePicture}
-          alt={starkProfile.name || "Profile picture"}
-          className="w-6 h-6 rounded-full object-cover shrink-0"
-        />
-      ) : (
-        <div className="w-6 h-6 shrink-0">
-          <AvatarIcon />
-        </div>
-      )}
-      <span className="truncate">
+      <div className="flex items-center justify-center w-[30px] h-[30px] bg-[#FC8702] rounded-lg shrink-0">
+        {starkProfile?.profilePicture ? (
+          <img
+            src={starkProfile.profilePicture}
+            alt={starkProfile.name || "Profile picture"}
+            className="w-[30px] h-[30px] rounded-lg object-cover"
+          />
+        ) : (
+          <div className="w-[30px] h-[30px] rounded-lg bg-[#FC8702] flex items-center justify-center">
+            <div className="w-[15px] h-[15px] rounded-full bg-white" />
+          </div>
+        )}
+      </div>
+      <span className="truncate pr-1">
         {starkProfile?.name || formatTruncatedAddress(address || "")}
       </span>
+      {/* Dropdown arrow */}
+      <svg width="8" height="5" viewBox="0 0 8 5" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
+        <path d="M1 1L4 4L7 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
     </button>
   );
 

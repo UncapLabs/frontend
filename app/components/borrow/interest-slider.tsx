@@ -18,7 +18,6 @@ interface InterestSliderProps {
   onChange: (value: number) => void;
   chart?: number[]; // Pre-normalized heights from server (0-1)
   riskZones?: { highRiskThreshold: number; mediumRiskThreshold: number }; // From server
-  gradientMode?: GradientMode;
   disabled?: boolean;
   onDragStart?: () => void;
   onDragEnd?: () => void;
@@ -30,7 +29,6 @@ export function InterestSlider({
   onChange,
   chart,
   riskZones = { highRiskThreshold: 0.1, mediumRiskThreshold: 0.25 }, // Default zones
-  gradientMode = "high-to-low",
   disabled = false,
   onDragStart,
   onDragEnd,
@@ -40,11 +38,6 @@ export function InterestSlider({
   const sliderRef = useRef<HTMLDivElement>(null);
 
   value = Math.max(0, Math.min(1, value));
-
-  const gradientColors = useMemo(
-    () => getGradientColors(gradientMode),
-    [gradientMode]
-  );
 
   const currentHandleColor = useMemo(
     () =>
@@ -138,7 +131,7 @@ export function InterestSlider({
       tabIndex={disabled ? -1 : 0}
       onKeyDown={handleKeyDown}
       className={cn(
-        "relative select-none rounded",
+        "relative overflow-hidden select-none rounded",
         disabled && "opacity-50",
         className
       )}
@@ -224,9 +217,7 @@ export function InterestSlider({
           className="absolute left-0 right-0 top-1/2 -translate-y-1/2"
           style={{ height: 4 }}
         >
-          <div
-            className="absolute inset-0 rounded-full bg-neutral-200"
-          />
+          <div className="absolute inset-0 rounded-full bg-neutral-200" />
           {/* Active portion of the track */}
           <div
             className="absolute left-0 h-full rounded-full"

@@ -26,57 +26,54 @@ export function ManualRateControls({
   const interestRateDnum = dn.from(interestRate / 100, 18);
 
   // Process chart data and calculate debt statistics
-  const { chartSizes, riskZones, sliderValue, debtInFront, totalDebt } =
-    useMemo(() => {
-      if (!visualizationData) {
-        return {
-          chartSizes: undefined,
-          riskZones: { highRiskThreshold: 0.1, mediumRiskThreshold: 0.25 },
-          sliderValue: (interestRate - 0.5) / 19.5, // Convert percentage to 0-1 range when no data
-          debtInFront: 0,
-          totalDebt: 0,
-        };
-      }
-
-      // Data is already normalized from the server!
-      const sizes = visualizationData.chartBars.map(
-        (bar: any) => bar.normalized
-      );
-
-      // Find current position in the chart
-      const currentRateDecimal = dn.toNumber(interestRateDnum); // Convert to decimal
-      const sliderPos = findPositionInChart(
-        currentRateDecimal,
-        visualizationData.chartBars
-      );
-
-      // Calculate debt in front based on current interest rate
-      // Find the bar that contains our current rate
-      const currentBar = visualizationData.chartBars.find(
-        (bar: any, index: number) => {
-          const nextBar = visualizationData.chartBars[index + 1];
-          if (!nextBar) {
-            // Last bar - check if rate is >= this bar's rate
-            return currentRateDecimal >= bar.rate;
-          }
-          // Check if rate falls between this bar and next
-          return (
-            currentRateDecimal >= bar.rate && currentRateDecimal < nextBar.rate
-          );
-        }
-      );
-
-      const debtInFrontValue = currentBar ? currentBar.debtInFront : 0;
-      const totalDebtValue = visualizationData.totalDebt;
-
+  const { chartSizes, riskZones, sliderValue } = useMemo(() => {
+    if (!visualizationData) {
       return {
-        chartSizes: sizes,
-        riskZones: visualizationData.riskZones,
-        sliderValue: sliderPos,
-        debtInFront: debtInFrontValue,
-        totalDebt: totalDebtValue,
+        chartSizes: undefined,
+        riskZones: { highRiskThreshold: 0.1, mediumRiskThreshold: 0.25 },
+        sliderValue: (interestRate - 0.5) / 19.5, // Convert percentage to 0-1 range when no data
+        debtInFront: 0,
+        totalDebt: 0,
       };
-    }, [visualizationData, interestRateDnum, interestRate]);
+    }
+
+    // Data is already normalized from the server!
+    const sizes = visualizationData.chartBars.map((bar: any) => bar.normalized);
+
+    // Find current position in the chart
+    const currentRateDecimal = dn.toNumber(interestRateDnum); // Convert to decimal
+    const sliderPos = findPositionInChart(
+      currentRateDecimal,
+      visualizationData.chartBars
+    );
+
+    // Calculate debt in front based on current interest rate
+    // Find the bar that contains our current rate
+    const currentBar = visualizationData.chartBars.find(
+      (bar: any, index: number) => {
+        const nextBar = visualizationData.chartBars[index + 1];
+        if (!nextBar) {
+          // Last bar - check if rate is >= this bar's rate
+          return currentRateDecimal >= bar.rate;
+        }
+        // Check if rate falls between this bar and next
+        return (
+          currentRateDecimal >= bar.rate && currentRateDecimal < nextBar.rate
+        );
+      }
+    );
+
+    const debtInFrontValue = currentBar ? currentBar.debtInFront : 0;
+    const totalDebtValue = visualizationData.totalDebt;
+
+    return {
+      chartSizes: sizes,
+      riskZones: visualizationData.riskZones,
+      sliderValue: sliderPos,
+      debtInFront: debtInFrontValue,
+      totalDebt: totalDebtValue,
+    };
+  }, [visualizationData, interestRateDnum, interestRate]);
 
   const handleSliderChange = useCallback(
     (value: number) => {
@@ -150,7 +147,6 @@ export function ManualRateControls({
           onChange={handleSliderChange}
           chart={chartSizes}
           riskZones={riskZones}
-          gradientMode="high-to-low"
           disabled={disabled}
         />
       </div>

@@ -145,7 +145,9 @@ export function InterestRateSelector({
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5 sm:gap-2">
                       <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
-                        <span className="hidden sm:inline">Redemption Risk:</span>
+                        <span className="hidden sm:inline">
+                          Redemption Risk:
+                        </span>
                         <span className="sm:hidden">Risk:</span>
                       </span>
                       {redemptionRisk.data && (
@@ -178,7 +180,9 @@ export function InterestRateSelector({
                     </div>
                     <div className="flex items-center gap-1.5 sm:gap-2">
                       <span className="text-neutral-800 text-xs font-medium font-sora leading-3 whitespace-nowrap">
-                        <span className="hidden sm:inline">Redeemable before you:</span>
+                        <span className="hidden sm:inline">
+                          Redeemable before you:
+                        </span>
                         <span className="sm:hidden">Ahead:</span>
                       </span>
                       <span className="text-xs font-medium text-neutral-800 font-sora">
