@@ -5,7 +5,7 @@ import { contractRead } from "~/lib/contracts/calls";
 import { getBitcoinprice } from "../services/utils";
 import type { CollateralType } from "~/lib/contracts/constants";
 import * as dn from "dnum";
-import { dnum18, bigintToDecimal } from "~/lib/decimal";
+import { dnum18 } from "~/lib/decimal";
 
 export const branchRouter = router({
   getTCR: publicProcedure

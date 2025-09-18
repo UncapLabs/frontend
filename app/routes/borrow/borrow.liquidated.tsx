@@ -3,31 +3,36 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Separator } from "~/components/ui/separator";
 import { AlertTriangle, DollarSign, Info } from "lucide-react";
-import { useNavigate, useParams } from "react-router";
-import type { Route } from "./+types/borrow.$troveId.liquidated";
+import { useNavigate } from "react-router";
+import type { Route } from "./+types/borrow.liquidated";
+import { CollateralSurplusCard } from "~/components/claim/collateral-surplus-card";
+import { useAccount } from "@starknet-react/core";
+import { useCollateralSurplus } from "~/hooks/use-collateral-surplus";
 
-function LiquidatedTrovePage() {
+function LiquidatedPositionsPage() {
   const navigate = useNavigate();
-  const { troveId } = useParams<{ troveId: string }>();
+  const { address } = useAccount();
+  const { totalSurplusesCount, isLoading } = useCollateralSurplus(address);
 
   return (
     <>
       <h2 className="text-2xl font-semibold text-slate-800 mb-6">
-        Position Liquidated
+        Liquidated Positions
       </h2>
 
       <Alert className="mb-6 border-orange-200 bg-orange-50">
         <AlertTriangle className="h-4 w-4 text-orange-600" />
         <AlertDescription className="text-orange-800">
-          <strong>Your position was liquidated</strong>
+          <strong>Your positions were liquidated</strong>
           <p className="mt-1">
-            This position's health factor fell below 110%, triggering an
+            One or more of your positions' health factor fell below 110%, triggering 
             automatic liquidation to protect the protocol's stability.
           </p>
         </AlertDescription>
       </Alert>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {/* Info cards about liquidation */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
         {/* What Happened Card */}
         <Card className="border border-slate-200">
           <CardHeader>
@@ -51,34 +56,50 @@ function LiquidatedTrovePage() {
           </CardContent>
         </Card>
 
-        {/* Collateral Surplus Card */}
-        <Card className="border border-green-200 bg-green-50/50">
+        {/* Surplus Status Card */}
+        <Card className={`border ${totalSurplusesCount > 0 && !isLoading ? 'border-green-200 bg-green-50/50' : 'border-slate-200'}`}>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-green-600" />
-              Possible Collateral Surplus
+              <DollarSign className={`h-5 w-5 ${totalSurplusesCount > 0 && !isLoading ? 'text-green-600' : 'text-slate-600'}`} />
+              Collateral Surplus Status
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2 text-sm text-slate-600">
-              <p>
-                If your collateral was worth more than your debt plus the
-                liquidation penalty, you may have a surplus to claim.
-              </p>
-              <p className="font-medium text-slate-800">
-                Check the claim page to see if you have any collateral surplus
-                available.
-              </p>
+              {isLoading ? (
+                <p>Checking for collateral surplus...</p>
+              ) : totalSurplusesCount > 0 ? (
+                <>
+                  <p className="font-medium text-green-800">
+                    You have collateral surplus available!
+                  </p>
+                  <p>
+                    Your collateral value exceeded the debt plus liquidation penalty.
+                    You can claim the surplus below.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-medium text-slate-800">
+                    No collateral surplus available.
+                  </p>
+                  <p>
+                    The liquidation penalty and debt repayment consumed
+                    all of your collateral value.
+                  </p>
+                </>
+              )}
             </div>
-            <Button
-              onClick={() => navigate("/claim")}
-              className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white"
-            >
-              Check for Surplus
-            </Button>
           </CardContent>
         </Card>
       </div>
+
+      {/* Collateral Surplus Section - shows if surplus available */}
+      {!isLoading && totalSurplusesCount > 0 && (
+        <div className="mb-8">
+          <CollateralSurplusCard />
+        </div>
+      )}
 
       {/* Additional Information */}
       <Card className="mt-6 border border-slate-200">
@@ -151,15 +172,15 @@ function LiquidatedTrovePage() {
   );
 }
 
-export default LiquidatedTrovePage;
+export default LiquidatedPositionsPage;
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Liquidated Position - USDU" },
+    { title: "Liquidated Positions - USDU" },
     {
       name: "description",
       content:
-        "Information about your liquidated position and possible collateral surplus",
+        "Information about your liquidated positions and possible collateral surplus",
     },
   ];
 }

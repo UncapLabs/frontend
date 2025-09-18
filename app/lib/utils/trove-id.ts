@@ -51,7 +51,7 @@ export function getPrefixedTroveId(branchId: number, troveId: string): string {
 export function truncateTroveId(fullId: string): string {
   const id = fullId.split(":")[1] || fullId;
   if (id.length > 10) {
-    return `${id.slice(0, 6)}...${id.slice(-4)}`;
+    return `${id.slice(0, 4)}...${id.slice(-4)}`;
   }
   return id;
 }
@@ -61,12 +61,14 @@ export function truncateTroveId(fullId: string): string {
  * @param prefixedId The prefixed trove ID in format "branchId:troveId"
  * @returns The extracted trove ID as a bigint, or undefined if invalid
  */
-export function extractTroveId(prefixedId: string | undefined): bigint | undefined {
+export function extractTroveId(
+  prefixedId: string | undefined
+): bigint | undefined {
   if (!prefixedId) return undefined;
-  
-  const parts = prefixedId.split(':');
+
+  const parts = prefixedId.split(":");
   const troveId = parts.length > 1 ? parts[1] : prefixedId;
-  
+
   try {
     return BigInt(troveId);
   } catch {

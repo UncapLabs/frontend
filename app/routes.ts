@@ -13,10 +13,10 @@ export default [
   layout("routes/app.tsx", [
     route("/unanim/dashboard", "routes/dashboard/dashboard.tsx"),
     route("/unanim/borrow", "routes/borrow/borrow.tsx"),
+    route("unanim/borrow/liquidated", "routes/borrow/borrow.liquidated.tsx"),
     route("unanim/borrow/:troveId", "routes/borrow/borrow.$troveId.tsx", [
       route("update", "routes/borrow/borrow.$troveId.update.tsx"),
       route("close", "routes/borrow/borrow.$troveId.close.tsx"),
-      route("liquidated", "routes/borrow/borrow.$troveId.liquidated.tsx"),
     ]),
     route("unanim/earn", "routes/earn/earn.tsx"),
     route("unanim/claim", "routes/claim/claim.tsx"),
