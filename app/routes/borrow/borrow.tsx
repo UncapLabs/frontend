@@ -198,9 +198,9 @@ function Borrow() {
         </h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 max-w-5xl gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-7 md:max-w-3xl lg:max-w-5xl gap-4">
         {/* Left Panel */}
-        <div className="md:col-span-2">
+        <div className="md:col-span-4">
           {["pending", "success", "error"].includes(currentState) ? (
             <TransactionStatus
               transactionHash={transactionHash}
@@ -408,8 +408,8 @@ function Borrow() {
                       onPercentageClick={handleBorrowPercentageClick}
                       disabled={isSending || isPending}
                       showBalance={false}
-                      tokenSelectorBgColor="bg-token-bg-green"
-                      tokenSelectorTextColor="text-token-green"
+                      tokenSelectorBgColor="bg-token-bg-red/10"
+                      tokenSelectorTextColor="text-token-bg-red"
                     />
                   )}
                 </form.Field>
@@ -493,7 +493,7 @@ function Borrow() {
         </div>
 
         {/* Right Panel - Transaction Summary and Redemption Info */}
-        <div className="lg:col-span-1 space-y-4">
+        <div className="md:col-span-3 space-y-4">
           <TransactionSummary
             type="open"
             changes={{

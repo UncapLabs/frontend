@@ -24,20 +24,20 @@ export function STRKRebateInfo({
     <Collapsible
       open={isOpen}
       onOpenChange={setIsOpen}
-      className="bg-white rounded-lg border border-slate-200 mt-4"
+      className="bg-white rounded-lg border border-neutral-200 mt-4"
     >
-      <CollapsibleTrigger className="w-full p-3 flex items-center justify-between hover:bg-slate-50 transition-colors">
+      <CollapsibleTrigger className="w-full p-3 flex items-center justify-between hover:border-neutral-200/80 transition-opacity">
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-full bg-purple-100 flex items-center justify-center">
-            <Sparkles className="h-3 w-3 text-purple-600" />
+          <div className="w-5 h-5 rounded-full bg-neutral-100 flex items-center justify-center">
+            <Sparkles className="h-3 w-3 text-neutral-800" />
           </div>
-          <span className="text-sm font-semibold text-slate-700">
+          <span className="text-xs font-medium text-neutral-800 font-sora">
             STRK Rebate Program
           </span>
         </div>
         
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-purple-600">
+          <span className="text-xs font-medium text-green-600 font-sora">
             +$
             <NumericFormat
               displayType="text"
@@ -49,26 +49,26 @@ export function STRKRebateInfo({
             /year
           </span>
           {isOpen ? (
-            <ChevronUp className="h-4 w-4 text-slate-400" />
+            <ChevronUp className="h-4 w-4 text-neutral-500" />
           ) : (
-            <ChevronDown className="h-4 w-4 text-slate-400" />
+            <ChevronDown className="h-4 w-4 text-neutral-500" />
           )}
         </div>
       </CollapsibleTrigger>
 
       <CollapsibleContent>
-        <div className="px-3 pb-3 border-t border-slate-100">
-          <p className="text-xs text-slate-600 mt-3 mb-3">
+        <div className="px-3 pb-3 border-t border-neutral-100">
+          <p className="text-xs text-neutral-600 font-sora mt-3 mb-3">
             You get a 30% discount on your interest rate, paid as STRK tokens
             claimable weekly.
           </p>
 
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-neutral-600 font-sora">
                 Original Annual Interest
               </span>
-              <span className="text-xs text-slate-400 line-through">
+              <span className="text-xs text-neutral-500 line-through font-sora">
                 $
                 <NumericFormat
                   displayType="text"
@@ -81,10 +81,10 @@ export function STRKRebateInfo({
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-neutral-600 font-sora">
                 Effective Annual Interest
               </span>
-              <span className="text-xs font-semibold text-green-600">
+              <span className="text-xs font-medium text-green-600 font-sora">
                 $
                 <NumericFormat
                   displayType="text"
@@ -93,23 +93,6 @@ export function STRKRebateInfo({
                   decimalScale={2}
                   fixedDecimalScale
                 />
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center pt-2 border-t border-slate-100">
-              <span className="text-xs font-medium text-slate-600">
-                Annual Savings (paid in STRK)
-              </span>
-              <span className="text-sm font-bold text-purple-600">
-                $
-                <NumericFormat
-                  displayType="text"
-                  value={yearlyRebateUSD}
-                  thousandSeparator=","
-                  decimalScale={2}
-                  fixedDecimalScale
-                />{" "}
-                worth
               </span>
             </div>
           </div>

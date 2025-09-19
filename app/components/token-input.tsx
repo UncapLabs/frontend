@@ -135,7 +135,7 @@ export const TokenInput = memo(function TokenInput({
                     />
                   )}
                   <span
-                    className={`${tokenSelectorTextColor} text-sm font-medium font-sora leading-tight`}
+                    className={`${tokenSelectorTextColor} text-xs font-medium font-sora`}
                   >
                     {token.symbol}
                   </span>
@@ -152,7 +152,7 @@ export const TokenInput = memo(function TokenInput({
                           className="w-5 h-5 object-contain"
                         />
                       )}
-                      <span className="text-sm font-medium font-sora">
+                      <span className="text-xs font-medium font-sora">
                         {t.symbol}
                       </span>
                     </div>
@@ -172,7 +172,7 @@ export const TokenInput = memo(function TokenInput({
                 />
               )}
               <span
-                className={`${tokenSelectorTextColor} text-sm font-medium font-sora leading-tight`}
+                className={`${tokenSelectorTextColor} text-xs font-medium font-sora`}
               >
                 {token.symbol}
               </span>

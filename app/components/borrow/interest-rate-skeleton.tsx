@@ -107,6 +107,26 @@ export function InterestRateSkeleton() {
           </div>
         </div>
       </div>
+
+      {/* Redemption Risk and Redeemable before you skeleton */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
+            <span className="hidden sm:inline">Redemption Risk:</span>
+            <span className="sm:hidden">Risk:</span>
+          </span>
+          <div className="px-1.5 sm:px-2 py-3 h-6 flex items-center justify-center rounded-md border bg-neutral-100 border-neutral-200">
+            <Skeleton className="h-3 w-12 animate-none bg-neutral-200" />
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <span className="text-neutral-800 text-xs font-medium font-sora leading-3 whitespace-nowrap">
+            <span className="hidden sm:inline">Redeemable before you:</span>
+            <span className="sm:hidden">Ahead:</span>
+          </span>
+          <Skeleton className="h-3 w-16 animate-none bg-neutral-200 rounded" />
+        </div>
+      </div>
     </div>
   );
 }

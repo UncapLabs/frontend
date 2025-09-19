@@ -33,7 +33,7 @@ export function RateModeSelector({
           className="text-xs text-neutral-800 font-medium font-sora leading-3"
           value="manual"
         >
-          Manual
+          Advanced
         </SelectItem>
         <SelectItem
           className="text-xs text-neutral-800 font-medium font-sora leading-3"
