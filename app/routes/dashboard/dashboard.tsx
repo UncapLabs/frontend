@@ -12,17 +12,17 @@ import {
   AlertCircle,
   RefreshCw,
   Edit3,
-  X,
   Info,
 } from "lucide-react";
 import { UBTC_TOKEN, GBTC_TOKEN } from "~/lib/contracts/constants";
 import { useAllStabilityPoolPositions } from "~/hooks/use-stability-pool";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
 import BorrowCard from "~/components/dashboard/borrow-card";
+import { RatesExample } from "~/components/dashboard/rates";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { address, status } = useAccount();
+  const { address } = useAccount();
   const {
     troves,
     isLoading,
@@ -46,6 +46,7 @@ export default function Dashboard() {
 
   // Fetch stability pool positions
   const allStabilityPoolPositions = useAllStabilityPoolPositions();
+
   // Check if user has any stability pool positions
   const hasStabilityPoolPositions =
     (allStabilityPoolPositions.UBTC?.userDeposit ?? 0) > 0 ||
@@ -211,8 +212,9 @@ export default function Dashboard() {
             </Card>
           </>
         ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="flex flex-col-reverse lg:flex-row gap-5">
+            {/* Cards section - takes more space for 3 cards layout */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:flex-[2] lg:min-w-0">
               {activeTroves.map((trove) => (
                 <BorrowCard
                   key={trove.id}
@@ -225,7 +227,11 @@ export default function Dashboard() {
                 />
               ))}
             </div>
-          </>
+            {/* Rates section - takes less space, easily squashable */}
+            <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px]">
+              <RatesExample />
+            </div>
+          </div>
         )}
 
         {/* Liquidation Notice */}

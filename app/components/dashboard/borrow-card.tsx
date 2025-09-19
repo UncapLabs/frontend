@@ -1,4 +1,9 @@
-import { Card, CardContent, CardHeader, CardFooter } from "~/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardFooter,
+} from "~/components/ui/card";
 import { NumericFormat } from "react-number-format";
 import { truncateTroveId } from "~/lib/utils/trove-id";
 import { Edit3, X } from "lucide-react";
@@ -29,16 +34,19 @@ type Props = BorrowCardProps | BorrowCardSkeletonProps;
 
 export default function BorrowCard(props: Props) {
   // Check if this is a loading skeleton
-  if ('isLoading' in props && props.isLoading) {
+  if ("isLoading" in props && props.isLoading) {
     return <BorrowCardSkeleton />;
   }
 
   // Otherwise, render the actual card
-  const { trove, collateralPrice, onUpdatePosition, onClosePosition } = props as BorrowCardProps;
-  
+  const { trove, collateralPrice, onUpdatePosition, onClosePosition } =
+    props as BorrowCardProps;
+
   // Zombie = redeemed trove with debt < MIN_DEBT
-  const isZombie = trove.status === "redeemed" && trove.borrowedAmount < MIN_DEBT;
-  const isFullyRedeemed = trove.status === "redeemed" && trove.borrowedAmount === 0;
+  const isZombie =
+    trove.status === "redeemed" && trove.borrowedAmount < MIN_DEBT;
+  const isFullyRedeemed =
+    trove.status === "redeemed" && trove.borrowedAmount === 0;
 
   return (
     <Card
@@ -89,20 +97,16 @@ export default function BorrowCard(props: Props) {
             {/* Position ID */}
             <span
               className={`text-sm font-medium font-sora leading-none ${
-                isZombie || isFullyRedeemed
-                  ? "text-white"
-                  : "text-neutral-800"
+                isZombie || isFullyRedeemed ? "text-white" : "text-neutral-800"
               }`}
             >
-              Position #{truncateTroveId(trove.id)}
+              #{truncateTroveId(trove.id)}
             </span>
           </div>
           {/* Edit/Close Icons */}
           <div className="flex items-center gap-1">
             <button
-              onClick={() =>
-                onClosePosition(trove.id, trove.collateralAsset)
-              }
+              onClick={() => onClosePosition(trove.id, trove.collateralAsset)}
               className={`w-8 h-8 rounded-lg border transition-all flex items-center justify-center ${
                 isZombie || isFullyRedeemed
                   ? "border-white/20 hover:bg-white/20"
@@ -118,9 +122,7 @@ export default function BorrowCard(props: Props) {
               />
             </button>
             <button
-              onClick={() =>
-                onUpdatePosition(trove.id, trove.collateralAsset)
-              }
+              onClick={() => onUpdatePosition(trove.id, trove.collateralAsset)}
               disabled={isFullyRedeemed}
               className={`w-8 h-8 rounded-lg border transition-all flex items-center justify-center ${
                 isZombie || isFullyRedeemed
@@ -173,14 +175,14 @@ export default function BorrowCard(props: Props) {
               </span>
               <div
                 className={`h-3 w-px ${
-                  isZombie || isFullyRedeemed
-                    ? "bg-white/20"
-                    : "bg-[#F5F3EE]"
+                  isZombie || isFullyRedeemed ? "bg-white/20" : "bg-[#F5F3EE]"
                 }`}
               />
               <span
                 className={`text-xs font-medium font-sora leading-3 ${
-                  isZombie || isFullyRedeemed ? "text-white" : "text-neutral-800"
+                  isZombie || isFullyRedeemed
+                    ? "text-white"
+                    : "text-neutral-800"
                 }`}
               >
                 {trove.interestRate}%
@@ -210,9 +212,7 @@ export default function BorrowCard(props: Props) {
                 {/* Token display inline like in token-input */}
                 <div
                   className={`p-2.5 rounded-lg inline-flex justify-start items-center gap-2 ${
-                    isZombie || isFullyRedeemed
-                      ? "bg-white/10"
-                      : "bg-token-bg"
+                    isZombie || isFullyRedeemed ? "bg-white/10" : "bg-token-bg"
                   }`}
                 >
                   <img
@@ -336,7 +336,7 @@ function BorrowCardSkeleton() {
   return (
     <Card className="rounded-2xl border-0 shadow-none bg-white">
       <CardHeader
-        className="border-b border-[#F5F3EE]"
+        className="border-b border-[#F5F3EE] px-2"
         style={{ paddingBottom: "0.75rem" }}
       >
         <div className="flex items-center justify-between">
