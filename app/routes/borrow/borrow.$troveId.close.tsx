@@ -1,10 +1,9 @@
 import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
-import { Separator } from "~/components/ui/separator";
-import { AlertTriangle, Info } from "lucide-react";
+import { AlertTriangle, Info, ArrowLeft } from "lucide-react";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
+import { InfoBox } from "~/components/ui/info-box";
 import type { Route } from "./+types/borrow.$troveId.close";
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, Link } from "react-router";
 import { useAccount, useBalance } from "@starknet-react/core";
 import {
   UBTC_TOKEN,
@@ -17,11 +16,12 @@ import { NumericFormat } from "react-number-format";
 import { useTroveData } from "~/hooks/use-trove-data";
 import { useCloseTrove } from "~/hooks/use-close-trove";
 import { useQueryState } from "nuqs";
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { BorrowingRestrictionsAlert } from "~/components/borrow/borrowing-restrictions-alert";
+import { useFetchPrices } from "~/hooks/use-fetch-prices";
 
 function ClosePosition() {
   const { address } = useAccount();
@@ -29,8 +29,6 @@ function ClosePosition() {
   const navigate = useNavigate();
   const { connectWallet } = useWalletConnect();
 
-  // State for confirmation
-  const [isConfirmed, setIsConfirmed] = useState(false);
 
   // Get collateral type from URL or default to UBTC
   const [troveCollateralType] = useQueryState("type", {
@@ -50,6 +48,12 @@ function ClosePosition() {
     token: USDU_TOKEN.address,
     address: address,
     refetchInterval: 30000,
+  });
+
+  // Fetch prices for display
+  const { bitcoin, usdu } = useFetchPrices({
+    collateralType,
+    enabled: !!position,
   });
 
   const {
@@ -88,11 +92,6 @@ function ClosePosition() {
       return;
     }
 
-    if (!isConfirmed) {
-      toast.error("Please confirm that you want to close this position");
-      return;
-    }
-
     if (!hasEnoughBalance) {
       toast.error("Insufficient USDU balance to repay debt");
       return;
@@ -109,7 +108,6 @@ function ClosePosition() {
     if (currentState === "error") {
       // Reset for retry
       reset();
-      setIsConfirmed(false);
     } else {
       // Navigate on success
       navigate("/");
@@ -118,26 +116,30 @@ function ClosePosition() {
 
   if (isTroveLoading || !position) {
     return (
-      <>
-        <h2 className="text-2xl font-semibold text-slate-800 mb-6">
-          Close Position
-        </h2>
-        <div className="flex justify-center items-center h-64">
-          <p className="text-slate-600">Loading position data...</p>
+      <div className="mx-auto max-w-2xl md:max-w-4xl lg:max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
+        <div className="flex justify-between items-baseline">
+          <h1 className="text-3xl font-medium leading-none mb-4 font-sora text-neutral-800">
+            Close Position
+          </h1>
         </div>
-      </>
+        <div className="flex justify-center items-center h-64">
+          <p className="text-neutral-600">Loading position data...</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <>
-      <h2 className="text-2xl font-semibold text-slate-800 mb-6">
-        {isLiquidated ? "Liquidated Position" : "Close Position"}
-      </h2>
+    <div className="mx-auto max-w-2xl md:max-w-4xl lg:max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
+      <div className="flex justify-between items-baseline">
+        <h1 className="text-3xl font-medium leading-none mb-4 font-sora text-neutral-800">
+          {isLiquidated ? "Liquidated Position" : "Close Position"}
+        </h1>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-7 md:max-w-3xl lg:max-w-5xl gap-4">
         {/* Left Panel */}
-        <div className="md:col-span-2">
+        <div className="md:col-span-4">
           {["pending", "success", "error"].includes(currentState) ? (
             <TransactionStatus
               transactionHash={transactionHash}
@@ -194,7 +196,7 @@ function ClosePosition() {
           ) : isLiquidated ? (
             // Liquidated Position UI
             <div className="space-y-6">
-              <Alert className="border-orange-200 bg-orange-50">
+              <Alert className="border-orange-200 bg-orange-50 rounded-xl">
                 <AlertTriangle className="h-4 w-4 text-orange-600" />
                 <AlertDescription className="text-orange-800">
                   <div className="space-y-2">
@@ -210,126 +212,127 @@ function ClosePosition() {
                 </AlertDescription>
               </Alert>
 
-              <Card className="border border-slate-200 shadow-sm">
-                <CardContent className="pt-6">
-                  <div className="text-center space-y-4">
-                    <Info className="h-12 w-12 text-slate-400 mx-auto" />
-                    <h3 className="font-semibold text-lg text-slate-800">
-                      Check for Collateral Surplus
-                    </h3>
-                    <p className="text-sm text-slate-600 max-w-md mx-auto">
-                      If there was excess collateral after liquidation, you can
-                      claim it along with surplus from any other liquidated
-                      positions.
-                    </p>
-                    <div className="flex gap-3 justify-center pt-2">
-                      <Button
-                        onClick={() => navigate("/claim")}
-                        className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white"
-                      >
-                        Go to Claim Page
-                      </Button>
-                      <Button onClick={() => navigate("/")} variant="outline">
-                        Back to Dashboard
-                      </Button>
-                    </div>
+              <div className="bg-white rounded-2xl p-6 border border-neutral-200">
+                <div className="text-center space-y-4">
+                  <div className="inline-flex p-3 rounded-full bg-neutral-100">
+                    <Info className="h-8 w-8 text-neutral-600" />
                   </div>
-                </CardContent>
-              </Card>
+                  <h3 className="font-semibold text-lg text-neutral-800 font-sora">
+                    Check for Collateral Surplus
+                  </h3>
+                  <p className="text-sm text-neutral-600 max-w-md mx-auto">
+                    If there was excess collateral after liquidation, you can
+                    claim it along with surplus from any other liquidated
+                    positions.
+                  </p>
+                  <div className="flex gap-3 justify-center pt-2">
+                    <Button
+                      onClick={() => navigate("/claim")}
+                      className="bg-token-bg-blue hover:bg-blue-600 text-white font-sora"
+                    >
+                      Go to Claim Page
+                    </Button>
+                    <Button
+                      onClick={() => navigate("/")}
+                      variant="outline"
+                      className="font-sora"
+                    >
+                      Back to Dashboard
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
             // Normal close position UI
-            <div className="space-y-6">
+            <div className="space-y-1">
               {/* Borrowing Restrictions Alert */}
               <BorrowingRestrictionsAlert collateralType={collateralType} />
 
-              {/* Warning Card */}
-              <Card className="border border-red-200 bg-red-50">
-                <CardContent className="pt-6">
-                  <div className="flex gap-3">
-                    <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-                    <div className="space-y-2">
-                      <h3 className="font-semibold text-red-800">
-                        Are you sure you want to close this position?
-                      </h3>
-                      <p className="text-sm text-red-700">
-                        This action will repay your entire debt and return your
-                        collateral. This cannot be undone.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Special Status Warnings */}
+              {/* Special Status Alert */}
               {(isZombie || isRedeemed) && (
-                <Card className="border border-amber-200 bg-amber-50">
-                  <CardContent className="pt-6">
-                    <div className="flex gap-3">
-                      <Info className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                      <div className="space-y-2">
-                        <h3 className="font-semibold text-amber-800">
-                          {isZombie ? "Zombie Position" : "Redeemed Position"}
-                        </h3>
-                        <p className="text-sm text-amber-700">
-                          {isZombie
-                            ? "This position has fallen below the minimum debt threshold. Closing it will return any remaining collateral."
-                            : "This position has been partially redeemed."}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <Alert className="border-amber-200 bg-amber-50 rounded-xl">
+                  <Info className="h-4 w-4 text-amber-600" />
+                  <AlertDescription className="text-amber-700">
+                    <p className="font-medium">
+                      {isZombie ? "Zombie Position" : "Redeemed Position"}
+                    </p>
+                    <p className="text-sm mt-1">
+                      {isZombie
+                        ? "This position has fallen below the minimum debt threshold. Closing it will return any remaining collateral."
+                        : "This position has been partially redeemed."}
+                    </p>
+                  </AlertDescription>
+                </Alert>
               )}
 
-              {/* Position Details */}
-              <Card className="border border-slate-200 shadow-sm">
-                <CardContent className="pt-6">
-                  <h3 className="font-semibold text-lg text-slate-800 mb-4">
-                    Position Details
-                  </h3>
+              {/* Debt Repayment Section */}
+              <div className="bg-white rounded-2xl p-6 border border-neutral-200">
+                <h3 className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight mb-4">
+                  DEBT TO REPAY
+                </h3>
 
-                  <div className="space-y-4">
-                    <div className="bg-slate-50 rounded-lg p-4 space-y-3">
-                      <div className="flex justify-between items-baseline">
-                        <span className="text-sm text-slate-600">
-                          Total Debt to Repay
-                        </span>
-                        <span className="font-semibold text-lg">
-                          <NumericFormat
-                            displayType="text"
-                            value={position.borrowedAmount}
-                            thousandSeparator=","
-                            decimalScale={2}
-                            fixedDecimalScale
-                          />{" "}
-                          USDU
-                        </span>
+                {/* USDU Token Display */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex items-center gap-2 px-3 py-2 bg-token-bg-red/10 rounded-lg">
+                    <img
+                      src={USDU_TOKEN.icon}
+                      alt="USDU"
+                      className="w-6 h-6 object-contain"
+                    />
+                    <span className="text-sm font-medium text-token-bg-red font-sora">
+                      USDU
+                    </span>
+                  </div>
+                  <div className="text-right flex-1">
+                    <div className="text-xl font-semibold text-neutral-800 font-sora">
+                      <NumericFormat
+                        displayType="text"
+                        value={position.borrowedAmount}
+                        thousandSeparator=","
+                        decimalScale={2}
+                        fixedDecimalScale
+                      />
+                    </div>
+                    {usdu?.price && (
+                      <div className="text-xs text-neutral-500">
+                        ≈ $
+                        <NumericFormat
+                          displayType="text"
+                          value={position.borrowedAmount * usdu.price}
+                          thousandSeparator=","
+                          decimalScale={2}
+                          fixedDecimalScale
+                        />
                       </div>
+                    )}
+                  </div>
+                </div>
 
-                      <div className="flex justify-between items-baseline">
-                        <span className="text-sm text-slate-600">
-                          Your USDU Balance
-                        </span>
-                        <span
-                          className={`font-medium ${
-                            hasEnoughBalance ? "text-green-600" : "text-red-600"
-                          }`}
-                        >
-                          <NumericFormat
-                            displayType="text"
-                            value={usduBal}
-                            thousandSeparator=","
-                            decimalScale={2}
-                            fixedDecimalScale
-                          />{" "}
-                          USDU
-                        </span>
-                      </div>
-
+                {/* Balance Check */}
+                <div className="bg-neutral-50 rounded-lg p-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-neutral-600">
+                      Your Balance
+                    </span>
+                    <div className="text-right">
+                      <span
+                        className={`text-sm font-medium ${
+                          hasEnoughBalance ? "text-green-600" : "text-red-600"
+                        }`}
+                      >
+                        <NumericFormat
+                          displayType="text"
+                          value={usduBal}
+                          thousandSeparator=","
+                          decimalScale={2}
+                          fixedDecimalScale
+                        />{" "}
+                        USDU
+                      </span>
                       {!hasEnoughBalance && (
-                        <div className="text-sm text-red-600 mt-2">
-                          ⚠️ Insufficient USDU balance. You need{" "}
+                        <div className="text-xs text-red-600 mt-1">
+                          Need{" "}
                           <NumericFormat
                             displayType="text"
                             value={position.borrowedAmount - usduBal}
@@ -337,175 +340,156 @@ function ClosePosition() {
                             decimalScale={2}
                             fixedDecimalScale
                           />{" "}
-                          more USDU to close this position.
+                          more
                         </div>
                       )}
                     </div>
-
-                    <Separator className="bg-slate-200" />
-
-                    <div className="bg-slate-50 rounded-lg p-4">
-                      <div className="flex justify-between items-baseline">
-                        <span className="text-sm text-slate-600">
-                          Collateral to Return
-                        </span>
-                        <span className="font-semibold text-lg">
-                          <NumericFormat
-                            displayType="text"
-                            value={position.collateralAmount}
-                            thousandSeparator=","
-                            decimalScale={7}
-                            fixedDecimalScale={false}
-                          />{" "}
-                          {selectedCollateralToken.symbol}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Confirmation Checkbox */}
-                    <div className="flex items-start gap-3 mt-6">
-                      <input
-                        type="checkbox"
-                        id="confirm-close"
-                        checked={isConfirmed}
-                        onChange={(e) => setIsConfirmed(e.target.checked)}
-                        className="mt-1 h-4 w-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
-                        disabled={!hasEnoughBalance || isSending || isPending}
-                      />
-                      <label
-                        htmlFor="confirm-close"
-                        className="text-sm text-slate-700 cursor-pointer"
-                      >
-                        I understand that closing this position will repay{" "}
-                        <span className="font-medium">
-                          <NumericFormat
-                            displayType="text"
-                            value={position.borrowedAmount}
-                            thousandSeparator=","
-                            decimalScale={2}
-                            fixedDecimalScale
-                          />{" "}
-                          USDU
-                        </span>{" "}
-                        and return my collateral.
-                      </label>
-                    </div>
-
-                    {/* Action Button */}
-                    <Button
-                      onClick={handleClosePosition}
-                      disabled={
-                        (address && (!hasEnoughBalance || !isConfirmed)) ||
-                        isSending ||
-                        isPending
-                      }
-                      variant="destructive"
-                      className="w-full"
-                    >
-                      {!address
-                        ? "Connect Wallet"
-                        : isSending
-                        ? "Confirm in wallet..."
-                        : isPending
-                        ? "Transaction pending..."
-                        : !hasEnoughBalance
-                        ? "Insufficient USDU Balance"
-                        : !isConfirmed
-                        ? "Please confirm to proceed"
-                        : "Close Position"}
-                    </Button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
+
+              {/* Collateral Return Section */}
+              <div className="bg-white rounded-2xl p-6 border border-neutral-200 mt-6">
+                <h3 className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight mb-4">
+                  COLLATERAL TO RECEIVE
+                </h3>
+
+                {/* Collateral Token Display */}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 px-3 py-2 bg-token-bg rounded-lg">
+                    <img
+                      src={selectedCollateralToken.icon}
+                      alt={selectedCollateralToken.symbol}
+                      className="w-6 h-6 object-contain"
+                    />
+                    <span className="text-sm font-medium text-token-orange font-sora">
+                      {selectedCollateralToken.symbol}
+                    </span>
+                  </div>
+                  <div className="text-right flex-1">
+                    <div className="text-xl font-semibold text-neutral-800 font-sora">
+                      <NumericFormat
+                        displayType="text"
+                        value={position.collateralAmount}
+                        thousandSeparator=","
+                        decimalScale={7}
+                        fixedDecimalScale={false}
+                      />
+                    </div>
+                    {bitcoin?.price && (
+                      <div className="text-xs text-neutral-500">
+                        ≈ $
+                        <NumericFormat
+                          displayType="text"
+                          value={position.collateralAmount * bitcoin.price}
+                          thousandSeparator=","
+                          decimalScale={2}
+                          fixedDecimalScale
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <Button
+                onClick={handleClosePosition}
+                disabled={
+                  (address && !hasEnoughBalance) ||
+                  isSending ||
+                  isPending
+                }
+                className="w-full h-12 bg-red-500 hover:bg-red-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all whitespace-nowrap mt-6"
+              >
+                {!address
+                  ? "Connect Wallet"
+                  : isSending
+                  ? "Confirm in wallet..."
+                  : isPending
+                  ? "Transaction pending..."
+                  : !hasEnoughBalance
+                  ? "Insufficient USDU Balance"
+                  : "Close Position"}
+              </Button>
             </div>
           )}
         </div>
 
-        {/* Right Panel - Summary */}
-        <div className="md:col-span-1">
-          <Card className="border border-slate-200 shadow-sm sticky top-8">
-            <CardContent className="pt-6 space-y-4">
-              <h3 className="font-semibold text-lg text-slate-800">
-                {isLiquidated ? "Liquidation Summary" : "Closing Summary"}
-              </h3>
-
-              <div className="space-y-3 text-sm">
-                {isLiquidated ? (
-                  <>
-                    <div>
-                      <h4 className="font-medium text-slate-700 mb-1">
-                        What is liquidation?
-                      </h4>
-                      <ul className="space-y-1 text-slate-600">
-                        <li>• Your collateral was sold to cover debt</li>
-                        <li>• The position is now closed</li>
-                        <li>• Excess collateral can be claimed</li>
-                        <li>• No debt remains to repay</li>
-                      </ul>
-                    </div>
-
-                    <Separator className="bg-slate-100" />
-
-                    <div>
-                      <h4 className="font-medium text-slate-700 mb-1">
-                        Next Steps
-                      </h4>
-                      <ul className="space-y-1 text-slate-600">
-                        <li>• Visit the claim page to check for surplus</li>
-                        <li>• Claim surplus from all liquidated positions</li>
-                        <li>• Open a new position if desired</li>
-                      </ul>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div>
-                      <h4 className="font-medium text-slate-700 mb-1">
-                        What happens when you close?
-                      </h4>
-                      <ul className="space-y-1 text-slate-600">
-                        <li>• Your entire debt is repaid</li>
-                        <li>• All collateral is returned to you</li>
-                        <li>• The position is permanently closed</li>
-                        <li>• No further fees or interest accrue</li>
-                      </ul>
-                    </div>
-
-                    <Separator className="bg-slate-100" />
-
-                    <div>
-                      <h4 className="font-medium text-slate-700 mb-1">
-                        Requirements
-                      </h4>
-                      <ul className="space-y-1 text-slate-600">
-                        <li>• Sufficient USDU to repay debt</li>
-                        <li>• Gas fees for transaction</li>
-                      </ul>
-                    </div>
-                  </>
-                )}
-
-                {(isZombie || isRedeemed) && (
-                  <>
-                    <Separator className="bg-slate-100" />
-                    <div>
-                      <h4 className="font-medium text-amber-700 mb-1">
-                        Special Status
-                      </h4>
-                      <p className="text-sm text-amber-600">
-                        {isZombie
-                          ? "Zombie positions should be closed to recover collateral."
-                          : "Check for surplus collateral after closing."}
-                      </p>
-                    </div>
-                  </>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+        {/* Right Panel - Info Box */}
+        <div className="md:col-span-3 space-y-4">
+          <InfoBox
+            title={isLiquidated ? "About Liquidation" : "About Closing"}
+            variant="blue"
+          >
+            {isLiquidated ? (
+              <>
+                <div className="space-y-3">
+                  <p className="text-sm font-normal leading-relaxed">
+                    Your position has been liquidated because the collateral
+                    value fell below the required threshold.
+                  </p>
+                  <ul className="space-y-2 list-disc list-inside">
+                    <li className="text-sm font-normal leading-relaxed">
+                      Your collateral was sold to cover the debt
+                    </li>
+                    <li className="text-sm font-normal leading-relaxed">
+                      The position is now permanently closed
+                    </li>
+                    <li className="text-sm font-normal leading-relaxed">
+                      Any excess collateral can be claimed from the surplus page
+                    </li>
+                  </ul>
+                  <p className="text-sm font-medium">
+                    Next Steps: Visit the claim page to check for and claim any
+                    collateral surplus.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="space-y-3">
+                  <p className="text-sm font-normal leading-relaxed">
+                    Closing your position will repay your entire debt and return
+                    all your collateral.
+                  </p>
+                  <ul className="space-y-2 list-disc list-inside">
+                    <li className="text-sm font-normal leading-relaxed">
+                      You need{" "}
+                      <strong>
+                        {position?.borrowedAmount.toFixed(2)} USDU
+                      </strong>{" "}
+                      to repay your debt
+                    </li>
+                    <li className="text-sm font-normal leading-relaxed">
+                      You will receive back{" "}
+                      <strong>
+                        {position?.collateralAmount.toFixed(7)}{" "}
+                        {selectedCollateralToken.symbol}
+                      </strong>
+                    </li>
+                    <li className="text-sm font-normal leading-relaxed">
+                      The position will be permanently closed
+                    </li>
+                    <li className="text-sm font-normal leading-relaxed">
+                      No further interest or fees will accrue
+                    </li>
+                  </ul>
+                  {(isZombie || isRedeemed) && (
+                    <p className="text-sm font-medium">
+                      ⚠️{" "}
+                      {isZombie
+                        ? "This is a zombie position - closing it will recover your remaining collateral"
+                        : "This position has been partially redeemed - check for surplus after closing"}
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
+          </InfoBox>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
