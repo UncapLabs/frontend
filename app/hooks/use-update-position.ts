@@ -6,10 +6,10 @@ import type { Token } from "~/components/token-input";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
 import { UBTC_TOKEN, MIN_DEBT } from "~/lib/contracts/constants";
-import { 
-  getAnnualInterestRateAsBigInt, 
+import {
+  getAnnualInterestRateAsBigInt,
   extractTroveId,
-  getInterestRatePercentage 
+  getInterestRatePercentage,
 } from "~/lib/utils/position-helpers";
 import { getAnnualInterestRate } from "~/lib/utils/calc";
 import { bigintToDecimal } from "~/lib/decimal";
@@ -67,13 +67,20 @@ export function useUpdatePosition({
     troveId: position ? extractTroveId(position.id) : undefined,
     currentCollateral: position?.collateralAmount,
     currentDebt: position?.borrowedAmount,
-    currentInterestRate: position ? getAnnualInterestRateAsBigInt(position) : undefined,
+    currentInterestRate: position
+      ? getAnnualInterestRateAsBigInt(position)
+      : undefined,
     newCollateral: collateralAmount,
     newDebt: borrowAmount,
-    newInterestRate: interestRate ? getAnnualInterestRate(interestRate) : undefined,
+    newInterestRate: interestRate
+      ? getAnnualInterestRate(interestRate)
+      : undefined,
     collateralToken: collateralToken || UBTC_TOKEN,
-    isZombie: position && position.status === "redeemed" && 
-      position.borrowedAmount > 0 && position.borrowedAmount < MIN_DEBT,
+    isZombie:
+      position &&
+      position.status === "redeemed" &&
+      position.borrowedAmount > 0 &&
+      position.borrowedAmount < MIN_DEBT,
   });
 
   // Create a wrapped send function that manages state transitions
@@ -95,10 +102,14 @@ export function useUpdatePosition({
         const description = createTransactionDescription("adjust", {
           hasCollateralChange: changes?.hasCollateralChange || false,
           isCollIncrease: changes?.isCollIncrease || false,
-          collateralChange: changes?.collateralChange ? bigintToDecimal(changes.collateralChange, 18) : 0,
+          collateralChange: changes?.collateralChange
+            ? bigintToDecimal(changes.collateralChange, 18)
+            : 0,
           hasDebtChange: changes?.hasDebtChange || false,
           isDebtIncrease: changes?.isDebtIncrease || false,
-          debtChange: changes?.debtChange ? bigintToDecimal(changes.debtChange, 18) : 0,
+          debtChange: changes?.debtChange
+            ? bigintToDecimal(changes.debtChange, 18)
+            : 0,
           hasInterestRateChange: changes?.hasInterestRateChange || false,
           newInterestRate: interestRate,
           collateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
@@ -114,7 +125,8 @@ export function useUpdatePosition({
             previousDebt: position.borrowedAmount,
             newCollateral: collateralAmount,
             newDebt: borrowAmount,
-            interestRate: interestRate || getInterestRatePercentage(position),
+            previousInterestRate: getInterestRatePercentage(position),
+            newInterestRate: interestRate,
             collateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
           },
         };

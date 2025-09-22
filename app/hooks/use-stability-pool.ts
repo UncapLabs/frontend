@@ -2,10 +2,10 @@ import { useMemo, useCallback } from "react";
 import { useAccount } from "@starknet-react/core";
 import { useQuery } from "@tanstack/react-query";
 import { contractCall } from "~/lib/contracts/calls";
-import { 
+import {
   type CollateralType,
   USDU_TOKEN,
-  getCollateralAddresses 
+  getCollateralAddresses,
 } from "~/lib/contracts/constants";
 import { useTransaction } from "~/hooks/use-transaction";
 import { useTransactionState } from "./use-transaction-state";
@@ -24,7 +24,7 @@ export interface DepositFormData {
   };
 }
 
-// Withdraw form data structure  
+// Withdraw form data structure
 export interface WithdrawFormData {
   withdrawAmount?: number;
   collateralType: CollateralType;
@@ -74,7 +74,7 @@ export function useDepositToStabilityPool({
 
     const amountBigInt = decimalToBigint(amount, 18);
     const addresses = getCollateralAddresses(collateralType);
-    
+
     return [
       // 1. Approve USDU spending to Stability Pool
       contractCall.token.approve(
@@ -83,7 +83,7 @@ export function useDepositToStabilityPool({
         amountBigInt
       ),
       // 2. Deposit to Stability Pool
-      contractCall.stabilityPool.deposit(amountBigInt, doClaim, collateralType)
+      contractCall.stabilityPool.deposit(amountBigInt, doClaim, collateralType),
     ];
   }, [address, amount, doClaim, collateralType]);
 
@@ -93,7 +93,7 @@ export function useDepositToStabilityPool({
   // Create a wrapped send function that manages state transitions
   const deposit = useCallback(async () => {
     if (!calls) return;
-    
+
     const hash = await transaction.send();
 
     if (hash) {
@@ -115,8 +115,8 @@ export function useDepositToStabilityPool({
             token: "USDU",
           }),
           details: {
-            depositAmount: amount,
-            collateralType,
+            amount,
+            pool: collateralType,
           },
         };
 
@@ -194,7 +194,13 @@ export function useWithdrawFromStabilityPool({
     }
 
     const amountBigInt = decimalToBigint(amount, 18);
-    return [contractCall.stabilityPool.withdraw(amountBigInt, doClaim, collateralType)];
+    return [
+      contractCall.stabilityPool.withdraw(
+        amountBigInt,
+        doClaim,
+        collateralType
+      ),
+    ];
   }, [address, amount, doClaim, collateralType]);
 
   // Use the generic transaction hook
@@ -203,7 +209,7 @@ export function useWithdrawFromStabilityPool({
   // Create a wrapped send function that manages state transitions
   const withdraw = useCallback(async () => {
     if (!calls) return;
-    
+
     const hash = await transaction.send();
 
     if (hash) {
@@ -225,8 +231,8 @@ export function useWithdrawFromStabilityPool({
             token: "USDU",
           }),
           details: {
-            withdrawAmount: amount,
-            collateralType,
+            amount,
+            pool: collateralType,
           },
         };
 
@@ -270,15 +276,15 @@ export function useWithdrawFromStabilityPool({
 export function useAllStabilityPoolPositions() {
   const { address } = useAccount();
   const trpc = useTRPC();
-  
+
   const { data } = useQuery({
-    ...trpc.stabilityPoolRouter.getAllPositions.queryOptions({ 
-      userAddress: address! 
+    ...trpc.stabilityPoolRouter.getAllPositions.queryOptions({
+      userAddress: address!,
     }),
     enabled: !!address,
     refetchInterval: 30000,
   });
-  
+
   // Return default structure if no data
   if (!data) {
     return {
@@ -286,6 +292,6 @@ export function useAllStabilityPoolPositions() {
       GBTC: null,
     };
   }
-  
+
   return data;
 }

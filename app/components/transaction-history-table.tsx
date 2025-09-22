@@ -35,14 +35,14 @@ function StatusBadge({ status }: { status: StarknetTransaction["status"] }) {
   switch (status) {
     case "pending":
       return (
-        <Badge variant="secondary" className="gap-1">
+        <Badge variant="pending" className="gap-1">
           <Loader2 className="h-3 w-3 animate-spin" />
           Pending
         </Badge>
       );
     case "success":
       return (
-        <Badge variant="default" className="gap-1 bg-green-100 text-green-800">
+        <Badge variant="success" className="gap-1">
           <CheckCircle2 className="h-3 w-3" />
           Success
         </Badge>
@@ -69,22 +69,14 @@ function formatTransactionDetails(
     case "borrow":
       return (
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-green-600">
-              +{details.collateralAmount} {details.collateralToken}
-            </span>
-            <ArrowRight className="h-3 w-3 text-gray-400" />
-            <span className="font-medium text-blue-600">
-              +{details.borrowAmount} USDU
-            </span>
+          <div className="text-xs font-sora text-neutral-500">
+            Deposited: {details.collateralAmount} {details.collateralToken}
           </div>
-          <div className="text-xs text-gray-500">
-            Interest Rate: {details.interestRate}% APR
-            {details.troveId && (
-              <span className="ml-2">
-                • Trove: {truncateTroveId(details.troveId)}
-              </span>
-            )}
+          <div className="text-xs font-sora text-neutral-500">
+            Borrowed: {details.borrowAmount} USDU
+          </div>
+          <div className="text-xs font-sora text-neutral-500">
+            Rate: {details.interestRate}% APR
           </div>
         </div>
       );
@@ -121,66 +113,60 @@ function formatTransactionDetails(
           ? details.isDebtIncrease
           : debtChange > 0;
 
+      // Check if we have interest rate changes
+      const hasInterestRateChange = 
+        details.hasInterestRateChange ||
+        (details.newInterestRate !== undefined && 
+         details.previousInterestRate !== undefined &&
+         Math.abs((details.newInterestRate || 0) - (details.previousInterestRate || 0)) > 0.001);
+
       return (
         <div className="space-y-1">
           {/* Show collateral changes if any */}
           {hasCollateralChange && collateralChange !== undefined && (
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-gray-600">Collateral:</span>
-              <span
-                className={`font-medium flex items-center gap-1 ${
-                  isCollateralIncrease ? "text-green-600" : "text-orange-600"
-                }`}
-              >
-                {isCollateralIncrease ? (
-                  <TrendingUp className="h-3 w-3" />
-                ) : (
-                  <TrendingDown className="h-3 w-3" />
-                )}
-                {isCollateralIncrease ? "+" : "-"}
-                {Math.abs(collateralChange).toFixed(7)}{" "}
-                {details.collateralToken || "BTC"}
-              </span>
+            <div className="text-xs font-sora text-neutral-500">
+              {isCollateralIncrease ? "Added collateral" : "Removed collateral"}: {isCollateralIncrease ? "+" : ""}
+              {Math.abs(collateralChange).toFixed(7)} {details.collateralToken || "BTC"}
             </div>
           )}
 
           {/* Show debt changes if any */}
           {hasDebtChange && debtChange !== undefined && (
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-gray-600">Debt:</span>
-              <span
-                className={`font-medium flex items-center gap-1 ${
-                  isDebtIncrease ? "text-blue-600" : "text-green-600"
-                }`}
-              >
-                {isDebtIncrease ? (
-                  <TrendingUp className="h-3 w-3" />
-                ) : (
-                  <TrendingDown className="h-3 w-3" />
-                )}
-                {isDebtIncrease ? "+" : "-"}
-                {Math.abs(debtChange).toFixed(2)} USDU
-              </span>
+            <div className="text-xs font-sora text-neutral-500">
+              {isDebtIncrease ? "Borrowed more" : "Repaid debt"}: {isDebtIncrease ? "+" : "-"}
+              {Math.abs(debtChange).toFixed(2)} USDU
             </div>
           )}
 
           {/* Show interest rate changes if any */}
-          {(details.hasInterestRateChange ||
-            details.newInterestRate !== undefined) && (
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-gray-600">Interest Rate:</span>
-              <span className="font-medium text-purple-600 flex items-center gap-1">
-                <ArrowRight className="h-3 w-3" />
-                {details.newInterestRate || details.interestRate}% APR
-              </span>
+          {hasInterestRateChange && (
+            <div className="text-xs font-sora text-neutral-500">
+              {(details.newInterestRate || details.interestRate || 0) > 
+               (details.previousInterestRate || details.interestRate || 0) 
+                ? "Increased rate" 
+                : "Decreased rate"}: {details.previousInterestRate || details.interestRate || "—"}% → {details.newInterestRate || details.interestRate || "—"}% APR
             </div>
           )}
 
-          {/* Show trove ID if present */}
-          {details.troveId && (
-            <div className="text-xs text-gray-500">
-              Trove: {truncateTroveId(details.troveId)}
-            </div>
+          {/* If none of the above changes, show current state */}
+          {!hasCollateralChange && !hasDebtChange && !hasInterestRateChange && (
+            <>
+              {details.newCollateral !== undefined && (
+                <div className="text-xs font-sora text-neutral-500">
+                  Collateral: {details.newCollateral} {details.collateralToken || "BTC"}
+                </div>
+              )}
+              {details.newDebt !== undefined && (
+                <div className="text-xs font-sora text-neutral-500">
+                  Debt: {details.newDebt} USDU
+                </div>
+              )}
+              {details.newInterestRate !== undefined && (
+                <div className="text-xs font-sora text-neutral-500">
+                  Rate: {details.newInterestRate}% APR
+                </div>
+              )}
+            </>
           )}
         </div>
       );
@@ -188,40 +174,70 @@ function formatTransactionDetails(
     case "close":
       return (
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-orange-600">
-              -{details.debt} USDU
-            </span>
-            <ArrowRight className="h-3 w-3 text-gray-400" />
-            <span className="font-medium text-green-600">
-              +{details.collateral} {details.collateralType || "BTC"}
-            </span>
+          <div className="text-xs font-sora text-neutral-500">
+            Repaid: {details.debt} USDU
           </div>
-          {details.troveId && (
-            <div className="text-xs text-gray-500">
-              Closed Trove: {truncateTroveId(details.troveId)}
-            </div>
-          )}
+          <div className="text-xs font-sora text-neutral-500">
+            Recovered: {details.collateral} {details.collateralType || "BTC"}
+          </div>
         </div>
       );
 
     case "claim":
       return (
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-green-600">
-            +{details.amount} {details.token}
-          </span>
+        <div className="space-y-1">
+          <div className="text-xs font-sora text-neutral-500">
+            Claimed: {details.amount} {details.token}
+          </div>
+        </div>
+      );
+
+    case "claim_surplus":
+      return (
+        <div className="space-y-1">
+          <div className="text-xs font-sora text-neutral-500">
+            Recovered: {details.amount} {details.token || "BTC"}
+          </div>
         </div>
       );
 
     case "adjust_rate":
       return (
-        <div className="flex items-center gap-2">
-          <span className="text-gray-600">{details.oldRate}%</span>
-          <ArrowRight className="h-3 w-3 text-gray-400" />
-          <span className="font-medium text-purple-600">
-            {details.newRate}% APR
-          </span>
+        <div className="space-y-1">
+          <div className="text-xs font-sora text-neutral-500">
+            Previous rate: {details.oldRate}% APR
+          </div>
+          <div className="text-xs font-sora text-neutral-500">
+            New rate: {details.newRate}% APR
+          </div>
+        </div>
+      );
+
+    case "deposit":
+      return (
+        <div className="space-y-1">
+          <div className="text-xs font-sora text-neutral-500">
+            Deposited: {details.amount} USDU
+          </div>
+          {details.pool && (
+            <div className="text-xs font-sora text-neutral-500">
+              Pool: {details.pool}
+            </div>
+          )}
+        </div>
+      );
+
+    case "withdraw":
+      return (
+        <div className="space-y-1">
+          <div className="text-xs font-sora text-neutral-500">
+            Withdrawn: {details.amount} USDU
+          </div>
+          {details.pool && (
+            <div className="text-xs font-sora text-neutral-500">
+              Pool: {details.pool}
+            </div>
+          )}
         </div>
       );
 
@@ -240,47 +256,42 @@ function TransactionCard({
 
   return (
     <Card className="p-4 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 space-y-2">
-          {/* Header: Type and Status */}
-          <div className="flex items-center gap-2">
-            <h4 className="font-medium text-sm">
-              {TRANSACTION_TYPE_LABELS[transaction.type]}
-            </h4>
-            <StatusBadge status={transaction.status} />
-          </div>
-
-          {/* Transaction Details */}
-          {details && <div className="text-sm text-gray-600">{details}</div>}
-
-          {/* Time and Hash */}
-          <div className="flex items-center gap-4 text-xs text-gray-500">
-            <span>
-              {formatDistance(transaction.timestamp, new Date(), {
-                addSuffix: true,
-              })}
-            </span>
-            <span className="font-mono truncate max-w-[200px]">
-              {transaction.hash.slice(0, 10)}...{transaction.hash.slice(-8)}
-            </span>
-          </div>
+      <div className="space-y-2">
+        {/* Header row: Type and Status Badge */}
+        <div className="flex items-start justify-between">
+          <h4 className="font-medium text-sm font-sora text-neutral-800">
+            {TRANSACTION_TYPE_LABELS[transaction.type]}
+          </h4>
+          <StatusBadge status={transaction.status} />
         </div>
 
-        {/* View on Explorer */}
-        <Button
-          variant="ghost"
-          size="icon"
-          asChild
-          className="h-8 w-8 flex-shrink-0"
-        >
-          <a
-            href={`https://voyager.online/tx/${transaction.hash}`}
-            target="_blank"
-            rel="noopener noreferrer"
+        {/* Transaction Details */}
+        {details && <div className="text-sm text-neutral-600">{details}</div>}
+
+        {/* Bottom row: Time and Explorer link */}
+        <div className="flex items-center justify-between">
+          <div className="text-xs font-sora text-neutral-500">
+            {formatDistance(transaction.timestamp, new Date(), {
+              addSuffix: true,
+            })}
+          </div>
+          
+          {/* View on Explorer */}
+          <Button
+            variant="ghost"
+            size="icon"
+            asChild
+            className="h-6 w-6 flex-shrink-0"
           >
-            <ExternalLink className="h-4 w-4" />
-          </a>
-        </Button>
+            <a
+              href={`https://voyager.online/tx/${transaction.hash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          </Button>
+        </div>
       </div>
     </Card>
   );
@@ -299,9 +310,9 @@ export function TransactionHistoryTable() {
 
   if (transactions.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
-        <p className="text-sm">No transactions yet</p>
-        <p className="text-xs mt-1">
+      <div className="text-center py-12 text-neutral-500">
+        <p className="text-sm font-sora">No transactions yet</p>
+        <p className="text-xs font-sora mt-1">
           Your transaction history will appear here
         </p>
       </div>
@@ -312,7 +323,7 @@ export function TransactionHistoryTable() {
     <div className="space-y-4">
       {/* Header with clear button */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-600">
+        <p className="text-sm font-sora text-neutral-600">
           {transactions.length} transaction
           {transactions.length !== 1 ? "s" : ""}
         </p>
@@ -320,7 +331,7 @@ export function TransactionHistoryTable() {
           variant="ghost"
           size="sm"
           onClick={clearHistory}
-          className="text-xs hover:text-red-600"
+          className="text-xs font-sora hover:text-red-600"
         >
           Clear History
         </Button>
