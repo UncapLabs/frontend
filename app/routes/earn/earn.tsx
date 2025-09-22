@@ -122,7 +122,7 @@ function Earn() {
   }, [form, transactionReset]);
 
   return (
-    <div className="mx-auto max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
+    <div className="w-full mx-auto max-w-7xl py-8 lg:py-12 px-4 sm:px-6 lg:px-8 min-h-screen">
       <div className="flex justify-between items-baseline">
         <h1 className="text-3xl font-medium leading-none mb-6 font-sora text-neutral-800">
           Stability Pool

@@ -1,9 +1,9 @@
 import { Button } from "~/components/ui/button";
-import { AlertTriangle, Info, ArrowLeft } from "lucide-react";
+import { AlertTriangle, Info } from "lucide-react";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { InfoBox } from "~/components/ui/info-box";
 import type { Route } from "./+types/borrow.$troveId.close";
-import { useParams, useNavigate, Link } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { useAccount, useBalance } from "@starknet-react/core";
 import {
   UBTC_TOKEN,
@@ -28,7 +28,6 @@ function ClosePosition() {
   const { troveId } = useParams();
   const navigate = useNavigate();
   const { connectWallet } = useWalletConnect();
-
 
   // Get collateral type from URL or default to UBTC
   const [troveCollateralType] = useQueryState("type", {
@@ -116,7 +115,7 @@ function ClosePosition() {
 
   if (isTroveLoading || !position) {
     return (
-      <div className="mx-auto max-w-2xl md:max-w-4xl lg:max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
+      <div>
         <div className="flex justify-between items-baseline">
           <h1 className="text-3xl font-medium leading-none mb-4 font-sora text-neutral-800">
             Close Position
@@ -130,14 +129,14 @@ function ClosePosition() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl md:max-w-4xl lg:max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
+    <>
       <div className="flex justify-between items-baseline">
         <h1 className="text-3xl font-medium leading-none mb-4 font-sora text-neutral-800">
           {isLiquidated ? "Liquidated Position" : "Close Position"}
         </h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-7 md:max-w-3xl lg:max-w-5xl gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
         {/* Left Panel */}
         <div className="md:col-span-4">
           {["pending", "success", "error"].includes(currentState) ? (
@@ -396,9 +395,7 @@ function ClosePosition() {
               <Button
                 onClick={handleClosePosition}
                 disabled={
-                  (address && !hasEnoughBalance) ||
-                  isSending ||
-                  isPending
+                  (address && !hasEnoughBalance) || isSending || isPending
                 }
                 className="w-full h-12 bg-red-500 hover:bg-red-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all whitespace-nowrap mt-6"
               >
@@ -489,7 +486,7 @@ function ClosePosition() {
           </InfoBox>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

@@ -9,14 +9,14 @@ function LiquidatedPositionsPage() {
   const { totalSurplusesCount, isLoading } = useCollateralSurplus(address);
 
   return (
-    <div className="mx-auto max-w-2xl md:max-w-4xl lg:max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
+    <div className="w-full mx-auto max-w-7xl py-8 lg:py-12 px-4 sm:px-6 lg:px-8 min-h-screen">
       <div className="flex justify-between items-baseline">
         <h1 className="text-3xl font-medium leading-none mb-4 font-sora text-neutral-800">
           Liquidated Positions
         </h1>
       </div>
 
-      <div className="md:max-w-3xl lg:max-w-5xl space-y-1">
+      <div className="space-y-1">
         {/* Liquidation Details Card */}
         <div className="bg-white rounded-2xl p-6 space-y-6">
           <div className="flex justify-between items-start">
@@ -104,7 +104,7 @@ function LiquidatedPositionsPage() {
 
       {/* Collateral Surplus Section - shows if surplus available */}
       {!isLoading && totalSurplusesCount > 0 && (
-        <div className="md:max-w-3xl lg:max-w-5xl mt-6">
+        <div className="mt-6">
           <CollateralSurplusCard />
         </div>
       )}

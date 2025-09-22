@@ -5,7 +5,7 @@ import { BorrowingRestrictionsAlert } from "~/components/borrow/borrowing-restri
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { TransactionSummary } from "~/components/transaction-summary";
 import { TokenInput } from "~/components/token-input";
-import { ArrowIcon, ResponsiveArrowIcon } from "~/components/icons/arrow-icon";
+import { ArrowIcon } from "~/components/icons/arrow-icon";
 import { useEffect, useCallback } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
@@ -191,14 +191,14 @@ function Borrow() {
   }, [form, reset, setBorrowAmount, setCollateralAmount, setInterestRate]);
 
   return (
-    <div className="mx-auto max-w-2xl md:max-w-4xl lg:max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
+    <div className="w-full mx-auto max-w-7xl py-8 lg:py-12 px-4 sm:px-6 lg:px-8 min-h-screen">
       <div className="flex justify-between items-baseline">
         <h1 className="text-3xl font-medium leading-none mb-4 font-sora text-neutral-800">
           Borrow
         </h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-7 md:max-w-3xl lg:max-w-5xl gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
         {/* Left Panel */}
         <div className="md:col-span-4">
           {["pending", "success", "error"].includes(currentState) ? (

@@ -10,7 +10,7 @@ function TroveLayout() {
   const navigate = useNavigate();
 
   return (
-    <div className="w-full mx-auto max-w-7xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
+    <div className="w-full mx-auto max-w-7xl py-8 lg:py-12 px-4 sm:px-6 lg:px-8 min-h-screen">
       <div className="flex justify-between items-baseline">
         <div className="flex items-center gap-4">
           <Button

@@ -1,5 +1,5 @@
 import { Button } from "~/components/ui/button";
-import { DollarSign, Info, RefreshCw } from "lucide-react";
+import { Info, RefreshCw } from "lucide-react";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { InfoBox } from "~/components/ui/info-box";
 import { useNavigate } from "react-router";
