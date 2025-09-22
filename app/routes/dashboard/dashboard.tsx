@@ -110,7 +110,7 @@ export default function Dashboard() {
                 className="px-4 py-2.5 md:px-6 md:py-3.5 bg-[#006CFF] hover:bg-[#0056CC] rounded-xl inline-flex items-center gap-2 md:gap-2.5 transition-colors border-0 h-auto"
               >
                 <span className="text-white text-xs font-medium font-sora">
-                  Open new trove
+                  Open new position
                 </span>
                 <Plus className="h-2.5 w-2.5 md:h-3 md:w-3 text-white" />
               </Button>
@@ -182,7 +182,7 @@ export default function Dashboard() {
           ) : !address ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {/* Placeholder card for new position when not connected */}
-              <Card 
+              <Card
                 className="rounded-2xl border-2 border-dashed border-neutral-300 shadow-none bg-neutral-50/50 cursor-pointer hover:bg-neutral-100/50 hover:border-neutral-400 transition-all duration-300"
                 onClick={handleCreateNew}
               >
@@ -211,9 +211,9 @@ export default function Dashboard() {
                   onClosePosition={handleClosePosition}
                 />
               ))}
-              
+
               {/* Placeholder card for new position */}
-              <Card 
+              <Card
                 className="rounded-2xl border-2 border-dashed border-neutral-300 shadow-none bg-neutral-50/50 cursor-pointer hover:bg-neutral-100/50 hover:border-neutral-400 transition-all duration-300"
                 onClick={handleCreateNew}
               >

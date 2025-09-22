@@ -1,12 +1,11 @@
 import { NumericFormat } from "react-number-format";
-import { AlertCircle, Info, Sparkles } from "lucide-react";
+import { AlertCircle, Info } from "lucide-react";
 import { cn } from "~/lib/utils";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { Badge } from "~/components/ui/badge";
 import { usePredictUpfrontFee } from "~/hooks/use-predict-upfront-fee";
 import { decimalToBigint, bigintToDecimal } from "~/lib/decimal";
 import type { CollateralType } from "~/lib/contracts/constants";

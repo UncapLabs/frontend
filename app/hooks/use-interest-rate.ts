@@ -61,7 +61,7 @@ export function useInterestRateVisualizationData(
         : undefined,
     }),
     staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchInterval: 60 * 1000, // 1 minute
+    refetchInterval: 2 * 60 * 1000, // 2 minutes
   });
 }
 
