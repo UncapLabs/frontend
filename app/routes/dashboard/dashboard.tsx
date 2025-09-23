@@ -1,5 +1,5 @@
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Card, CardContent } from "~/components/ui/card";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { useNavigate } from "react-router";
 import { useAccount } from "@starknet-react/core";
@@ -7,11 +7,8 @@ import { useUserTroves } from "~/hooks/use-user-troves";
 import { NumericFormat } from "react-number-format";
 import {
   Plus,
-  DollarSign,
-  Percent,
   AlertCircle,
   RefreshCw,
-  Edit3,
   Info,
 } from "lucide-react";
 import { UBTC_TOKEN, GBTC_TOKEN } from "~/lib/contracts/constants";
@@ -19,6 +16,7 @@ import { useAllStabilityPoolPositions } from "~/hooks/use-stability-pool";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
 import { useIntersectionObserver } from "usehooks-ts";
 import BorrowCard from "~/components/dashboard/borrow-card";
+import StabilityPoolCard from "~/components/dashboard/stability-pool-card";
 import { RatesExample } from "~/components/dashboard/rates";
 
 export default function Dashboard() {
@@ -53,13 +51,6 @@ export default function Dashboard() {
     (allStabilityPoolPositions.UBTC?.userDeposit ?? 0) > 0 ||
     (allStabilityPoolPositions.GBTC?.userDeposit ?? 0) > 0;
 
-  // Use intersection observer for stability pool section
-  const { ref: stabilityPoolRef, isIntersecting: isEarnMode } =
-    useIntersectionObserver({
-      threshold: 0.1,
-      rootMargin: "0px",
-    });
-
   // Separate liquidated from active/zombie positions
   const liquidatedTroves = troves.filter((t) => t.status === "liquidated");
   const activeTroves = troves.filter((t) => t.status !== "liquidated");
@@ -89,28 +80,27 @@ export default function Dashboard() {
 
   return (
     <div className="w-full mx-auto max-w-7xl py-8 lg:py-12 px-4 sm:px-6 lg:px-8 min-h-screen">
+      {/* Header with title and dynamic button */}
+      <div className="flex justify-between items-end pb-6">
+        <h1 className="text-2xl md:text-3xl font-medium leading-none font-sora text-neutral-800">
+          Dashboard
+        </h1>
+
+        <Button
+          onClick={handleCreateNew}
+          className="px-4 py-2.5 md:px-6 md:py-3.5 bg-[#006CFF] hover:bg-[#0056CC] rounded-xl inline-flex items-center gap-2 md:gap-2.5 transition-colors border-0 h-auto"
+        >
+          <span className="text-white text-xs font-medium font-sora leading-none">
+            Open new position
+          </span>
+          <Plus className="h-2.5 w-2.5 md:h-3 md:w-3 text-white" />
+        </Button>
+      </div>
+
       {/* Main Layout with Sticky Rates */}
       <div className="flex flex-col-reverse lg:flex-row gap-5">
         {/* Left Section: Positions */}
         <div className="flex-1 lg:flex-[2]">
-          <div className="flex justify-between items-end py-4">
-            <h2 className="text-2xl md:text-3xl font-medium leading-none font-sora text-neutral-800">
-              Borrow Positions
-            </h2>
-
-            {address && !isEarnMode && (
-              <Button
-                onClick={handleCreateNew}
-                className="lg:hidden px-4 py-2.5 md:px-6 md:py-3.5 bg-[#006CFF] hover:bg-[#0056CC] rounded-xl inline-flex items-center gap-2 md:gap-2.5 transition-colors border-0 h-auto"
-              >
-                <span className="text-white text-xs font-medium font-sora leading-none">
-                  Borrow
-                </span>
-                <Plus className="h-2.5 w-2.5 md:h-3 md:w-3 text-white" />
-              </Button>
-            )}
-          </div>
-
           {/* Error Alert for partial data */}
           {partialDataAvailable && (
             <Alert className="mb-6 border-orange-200 bg-orange-50">
@@ -173,28 +163,10 @@ export default function Dashboard() {
                 <BorrowCard key={i} isLoading={true} />
               ))}
             </div>
-          ) : !address ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {/* Placeholder card for new position when not connected */}
-              <Card
-                className="rounded-2xl border-2 border-dashed border-neutral-300 shadow-none bg-neutral-50/50 cursor-pointer hover:bg-neutral-100/50 hover:border-neutral-400 transition-all duration-300"
-                onClick={handleCreateNew}
-              >
-                <CardContent className="flex flex-col items-center justify-center h-full min-h-[320px] p-6">
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-neutral-200 flex items-center justify-center">
-                      <Plus className="h-6 w-6 text-neutral-600" />
-                    </div>
-                    <span className="text-lg font-medium font-sora text-neutral-700">
-                      Open position
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {activeTroves.map((trove) => (
+              {/* Show active positions when wallet is connected */}
+              {address && activeTroves.map((trove) => (
                 <BorrowCard
                   key={trove.id}
                   trove={trove}
@@ -206,7 +178,7 @@ export default function Dashboard() {
                 />
               ))}
 
-              {/* Placeholder card for new position */}
+              {/* Always show the placeholder card for new position */}
               <Card
                 className="rounded-2xl border-2 border-dashed border-neutral-300 shadow-none bg-neutral-50/50 cursor-pointer hover:bg-neutral-100/50 hover:border-neutral-400 transition-all duration-300"
                 onClick={handleCreateNew}
@@ -259,234 +231,34 @@ export default function Dashboard() {
 
           {/* Stability Pool Positions Section */}
           {address && hasStabilityPoolPositions && (
-            <div className="mt-8" ref={stabilityPoolRef}>
-              <div className="flex justify-between items-end pb-4">
-                <h2 className="text-2xl md:text-3xl font-medium leading-none font-sora text-neutral-800">
-                  Stability Pool Positions
-                </h2>
-
-                {isEarnMode && (
-                  <Button
-                    onClick={handleEarn}
-                    className="lg:hidden px-4 py-2.5 md:px-6 md:py-3.5 bg-[#006CFF] hover:bg-[#0056CC] rounded-xl inline-flex items-center gap-2 md:gap-2.5 transition-colors border-0 h-auto"
-                  >
-                    <span className="text-white text-xs font-medium font-sora leading-none">
-                      Earn rewards
-                    </span>
-                    <Plus className="h-2.5 w-2.5 md:h-3 md:w-3 text-white" />
-                  </Button>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="mt-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* UBTC Pool Card */}
                 {allStabilityPoolPositions.UBTC &&
                   allStabilityPoolPositions.UBTC.userDeposit > 0 && (
-                    <Card className="border border-slate-200 hover:shadow-lg transition-all duration-300">
-                      <CardHeader className="pb-4">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-lg flex items-center gap-2">
-                            <img
-                              src={UBTC_TOKEN.icon}
-                              alt="UBTC"
-                              className="w-5 h-5"
-                            />
-                            UBTC Stability Pool
-                          </CardTitle>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {/* Deposited Amount */}
-                        <div className="space-y-1">
-                          <div className="flex items-center text-sm text-slate-600">
-                            <DollarSign className="h-3 w-3 mr-1" />
-                            Your Deposit
-                          </div>
-                          <div className="font-semibold">
-                            <NumericFormat
-                              displayType="text"
-                              value={allStabilityPoolPositions.UBTC.userDeposit}
-                              thousandSeparator=","
-                              decimalScale={2}
-                              fixedDecimalScale
-                            />{" "}
-                            USDU
-                          </div>
-                          {usdu?.price && (
-                            <div className="text-sm text-slate-600">
-                              $
-                              <NumericFormat
-                                displayType="text"
-                                value={
-                                  allStabilityPoolPositions.UBTC.userDeposit *
-                                  usdu.price
-                                }
-                                thousandSeparator=","
-                                decimalScale={2}
-                                fixedDecimalScale
-                              />
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Pool Share */}
-                        <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-100">
-                          <div className="space-y-1">
-                            <div className="flex items-center text-xs text-slate-600">
-                              <Percent className="h-3 w-3 mr-1" />
-                              Pool Share
-                            </div>
-                            <div className="text-sm font-medium">
-                              <NumericFormat
-                                displayType="text"
-                                value={allStabilityPoolPositions.UBTC.poolShare}
-                                decimalScale={3}
-                                suffix="%"
-                              />
-                            </div>
-                          </div>
-
-                          {/* Rewards */}
-                          <div className="space-y-1">
-                            <div className="text-xs text-slate-600">
-                              Claimable Rewards
-                            </div>
-                            <div className="text-sm font-medium">
-                              <div>
-                                {allStabilityPoolPositions.UBTC.rewards.usdu.toFixed(
-                                  2
-                                )}{" "}
-                                USDU
-                              </div>
-                              <div className="text-slate-500">
-                                {allStabilityPoolPositions.UBTC.rewards.collateral.toFixed(
-                                  6
-                                )}{" "}
-                                UBTC
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Action Button */}
-                        <div className="pt-2">
-                          <Button
-                            variant="outline"
-                            className="w-full hover:bg-blue-50 hover:border-blue-300"
-                            onClick={() => navigate("/unanim/earn")}
-                            size="sm"
-                          >
-                            <Edit3 className="h-3 w-3 mr-1" />
-                            Manage Position
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <StabilityPoolCard
+                      poolType="UBTC"
+                      userDeposit={allStabilityPoolPositions.UBTC.userDeposit}
+                      poolShare={allStabilityPoolPositions.UBTC.poolShare}
+                      usduRewards={allStabilityPoolPositions.UBTC.rewards.usdu}
+                      collateralRewards={allStabilityPoolPositions.UBTC.rewards.collateral}
+                      usduPrice={usdu?.price}
+                      onManagePosition={() => navigate("/unanim/earn")}
+                    />
                   )}
 
                 {/* GBTC Pool Card */}
                 {allStabilityPoolPositions.GBTC &&
                   allStabilityPoolPositions.GBTC.userDeposit > 0 && (
-                    <Card className="border border-slate-200 hover:shadow-lg transition-all duration-300">
-                      <CardHeader className="pb-4">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-lg flex items-center gap-2">
-                            <img
-                              src={GBTC_TOKEN.icon}
-                              alt="GBTC"
-                              className="w-5 h-5"
-                            />
-                            GBTC Stability Pool
-                          </CardTitle>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {/* Deposited Amount */}
-                        <div className="space-y-1">
-                          <div className="flex items-center text-sm text-slate-600">
-                            <DollarSign className="h-3 w-3 mr-1" />
-                            Your Deposit
-                          </div>
-                          <div className="font-semibold">
-                            <NumericFormat
-                              displayType="text"
-                              value={allStabilityPoolPositions.GBTC.userDeposit}
-                              thousandSeparator=","
-                              decimalScale={2}
-                              fixedDecimalScale
-                            />{" "}
-                            USDU
-                          </div>
-                          {usdu?.price && (
-                            <div className="text-sm text-slate-600">
-                              $
-                              <NumericFormat
-                                displayType="text"
-                                value={
-                                  allStabilityPoolPositions.GBTC.userDeposit *
-                                  usdu.price
-                                }
-                                thousandSeparator=","
-                                decimalScale={2}
-                                fixedDecimalScale
-                              />
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Pool Share */}
-                        <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-100">
-                          <div className="space-y-1">
-                            <div className="flex items-center text-xs text-slate-600">
-                              <Percent className="h-3 w-3 mr-1" />
-                              Pool Share
-                            </div>
-                            <div className="text-sm font-medium">
-                              <NumericFormat
-                                displayType="text"
-                                value={allStabilityPoolPositions.GBTC.poolShare}
-                                decimalScale={3}
-                                suffix="%"
-                              />
-                            </div>
-                          </div>
-
-                          {/* Rewards */}
-                          <div className="space-y-1">
-                            <div className="text-xs text-slate-600">
-                              Claimable Rewards
-                            </div>
-                            <div className="text-sm font-medium">
-                              <div>
-                                {allStabilityPoolPositions.GBTC.rewards.usdu.toFixed(
-                                  2
-                                )}{" "}
-                                USDU
-                              </div>
-                              <div className="text-slate-500">
-                                {allStabilityPoolPositions.GBTC.rewards.collateral.toFixed(
-                                  6
-                                )}{" "}
-                                GBTC
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Action Button */}
-                        <div className="pt-2">
-                          <Button
-                            variant="outline"
-                            className="w-full hover:bg-blue-50 hover:border-blue-300"
-                            onClick={() => navigate("/unanim/earn")}
-                            size="sm"
-                          >
-                            <Edit3 className="h-3 w-3 mr-1" />
-                            Manage Position
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <StabilityPoolCard
+                      poolType="GBTC"
+                      userDeposit={allStabilityPoolPositions.GBTC.userDeposit}
+                      poolShare={allStabilityPoolPositions.GBTC.poolShare}
+                      usduRewards={allStabilityPoolPositions.GBTC.rewards.usdu}
+                      collateralRewards={allStabilityPoolPositions.GBTC.rewards.collateral}
+                      usduPrice={usdu?.price}
+                      onManagePosition={() => navigate("/unanim/earn")}
+                    />
                   )}
               </div>
             </div>
@@ -496,18 +268,6 @@ export default function Dashboard() {
         {/* Right Section: Sticky Rates */}
         <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px]">
           <div className="lg:sticky lg:top-16">
-            {/* Button container with padding to match left section */}
-            <div className="hidden lg:flex justify-end items-end pb-4">
-              <Button
-                onClick={isEarnMode ? handleEarn : handleCreateNew}
-                className="px-4 py-2.5 md:px-6 md:py-3.5 bg-[#006CFF] hover:bg-[#0056CC] rounded-xl inline-flex items-center gap-2 md:gap-2.5 transition-colors border-0 h-auto"
-              >
-                <span className="text-white text-xs font-medium font-sora leading-none">
-                  {isEarnMode ? "Earn" : "Open new position"}
-                </span>
-                <Plus className="h-2.5 w-2.5 md:h-3 md:w-3 text-white" />
-              </Button>
-            </div>
             <RatesExample />
           </div>
         </div>
@@ -518,7 +278,7 @@ export default function Dashboard() {
 
 export function meta() {
   return [
-    { title: "My Positions - Uncap" },
+    { title: "Dashboard - Uncap" },
     {
       name: "description",
       content: "Manage your USDU borrowing and stability pool positions",

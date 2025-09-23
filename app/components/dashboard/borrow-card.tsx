@@ -91,7 +91,7 @@ export default function BorrowCard(props: Props) {
                     fill="#242424"
                   />
                 </svg>
-                Active
+                Borrow
               </div>
             )}
             {/* Position ID */}

@@ -105,7 +105,7 @@ export const RatesTable: React.FC<RatesTableProps> = ({
               >
                 <TableCell className="px-0 py-3">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full overflow-hidden bg-zinc-800">
+                    <div className="w-6 h-6 rounded-mg overflow-hidden bg-zinc-800">
                       <img
                         src={rate.icon}
                         alt={rate.collateral}
