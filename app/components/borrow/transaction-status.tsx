@@ -6,7 +6,6 @@ import {
   Plus,
   RefreshCw,
 } from "lucide-react";
-import { Button } from "~/components/ui/button";
 import type { ReactNode } from "react";
 
 interface TransactionDetail {
@@ -156,25 +155,23 @@ export function TransactionStatus({
             </a>
           )}
 
-          {(isSuccess || isError) &&
-            onComplete &&
-            !hideCompleteButton && (
-              <button
-                onClick={onComplete}
-                className={`flex-1 py-3 px-4 text-xs font-medium font-sora rounded-xl transition-colors flex items-center justify-center gap-2 ${
-                  isError 
-                    ? "bg-red-500 text-white hover:bg-red-600" 
-                    : "bg-[#006CFF] text-white hover:bg-[#0056CC]"
-                }`}
-              >
-                {isError ? errorButtonText : completeButtonText}
-                {isError ? (
-                  <RefreshCw className="h-3.5 w-3.5" />
-                ) : (
-                  <Plus className="h-3.5 w-3.5" />
-                )}
-              </button>
-            )}
+          {(isSuccess || isError) && onComplete && !hideCompleteButton && (
+            <button
+              onClick={onComplete}
+              className={`flex-1 py-3 px-4 text-xs font-medium font-sora rounded-xl transition-colors flex items-center justify-center gap-2 ${
+                isError
+                  ? "bg-red-500 text-white hover:bg-red-600"
+                  : "bg-[#006CFF] text-white hover:bg-[#0056CC]"
+              }`}
+            >
+              {isError ? errorButtonText : completeButtonText}
+              {isError ? (
+                <RefreshCw className="h-3.5 w-3.5" />
+              ) : (
+                <Plus className="h-3.5 w-3.5" />
+              )}
+            </button>
+          )}
         </div>
       </div>
     </div>

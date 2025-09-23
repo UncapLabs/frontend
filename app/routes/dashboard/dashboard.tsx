@@ -4,20 +4,12 @@ import { Alert, AlertDescription } from "~/components/ui/alert";
 import { useNavigate } from "react-router";
 import { useAccount } from "@starknet-react/core";
 import { useUserTroves } from "~/hooks/use-user-troves";
-import { NumericFormat } from "react-number-format";
-import {
-  Plus,
-  AlertCircle,
-  RefreshCw,
-  Info,
-} from "lucide-react";
-import { UBTC_TOKEN, GBTC_TOKEN } from "~/lib/contracts/constants";
+import { Plus, AlertCircle, RefreshCw, Info } from "lucide-react";
 import { useAllStabilityPoolPositions } from "~/hooks/use-stability-pool";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
-import { useIntersectionObserver } from "usehooks-ts";
 import BorrowCard from "~/components/dashboard/borrow-card";
 import StabilityPoolCard from "~/components/dashboard/stability-pool-card";
-import { RatesExample } from "~/components/dashboard/rates";
+import Stats from "~/components/dashboard/stats";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -30,7 +22,6 @@ export default function Dashboard() {
     failedTroves,
     refetch,
     error,
-    isRefetching,
   } = useUserTroves(address);
 
   const { bitcoin: ubtcPrice } = useFetchPrices({
@@ -54,14 +45,9 @@ export default function Dashboard() {
   // Separate liquidated from active/zombie positions
   const liquidatedTroves = troves.filter((t) => t.status === "liquidated");
   const activeTroves = troves.filter((t) => t.status !== "liquidated");
-  const hasNonLiquidatedTroves = activeTroves.length > 0;
 
   const handleCreateNew = () => {
     navigate("/unanim/borrow");
-  };
-
-  const handleEarn = () => {
-    navigate("/unanim/earn");
   };
 
   const handleUpdatePosition = (troveId: string, collateralAsset: string) => {
@@ -166,17 +152,18 @@ export default function Dashboard() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {/* Show active positions when wallet is connected */}
-              {address && activeTroves.map((trove) => (
-                <BorrowCard
-                  key={trove.id}
-                  trove={trove}
-                  collateralPrice={
-                    trove.collateralAsset === "GBTC" ? gbtcPrice : ubtcPrice
-                  }
-                  onUpdatePosition={handleUpdatePosition}
-                  onClosePosition={handleClosePosition}
-                />
-              ))}
+              {address &&
+                activeTroves.map((trove) => (
+                  <BorrowCard
+                    key={trove.id}
+                    trove={trove}
+                    collateralPrice={
+                      trove.collateralAsset === "GBTC" ? gbtcPrice : ubtcPrice
+                    }
+                    onUpdatePosition={handleUpdatePosition}
+                    onClosePosition={handleClosePosition}
+                  />
+                ))}
 
               {/* Always show the placeholder card for new position */}
               <Card
@@ -241,7 +228,9 @@ export default function Dashboard() {
                       userDeposit={allStabilityPoolPositions.UBTC.userDeposit}
                       poolShare={allStabilityPoolPositions.UBTC.poolShare}
                       usduRewards={allStabilityPoolPositions.UBTC.rewards.usdu}
-                      collateralRewards={allStabilityPoolPositions.UBTC.rewards.collateral}
+                      collateralRewards={
+                        allStabilityPoolPositions.UBTC.rewards.collateral
+                      }
                       usduPrice={usdu?.price}
                       onManagePosition={() => navigate("/unanim/earn")}
                     />
@@ -255,7 +244,9 @@ export default function Dashboard() {
                       userDeposit={allStabilityPoolPositions.GBTC.userDeposit}
                       poolShare={allStabilityPoolPositions.GBTC.poolShare}
                       usduRewards={allStabilityPoolPositions.GBTC.rewards.usdu}
-                      collateralRewards={allStabilityPoolPositions.GBTC.rewards.collateral}
+                      collateralRewards={
+                        allStabilityPoolPositions.GBTC.rewards.collateral
+                      }
                       usduPrice={usdu?.price}
                       onManagePosition={() => navigate("/unanim/earn")}
                     />
@@ -268,7 +259,7 @@ export default function Dashboard() {
         {/* Right Section: Sticky Rates */}
         <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px]">
           <div className="lg:sticky lg:top-16">
-            <RatesExample />
+            <Stats />
           </div>
         </div>
       </div>

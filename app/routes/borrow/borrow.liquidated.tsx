@@ -1,4 +1,4 @@
-import { AlertTriangle, TrendingDown, Shield, Clock, Info } from "lucide-react";
+import { AlertTriangle, Shield, Clock, Info } from "lucide-react";
 import type { Route } from "./+types/borrow.liquidated";
 import { CollateralSurplusCard } from "~/components/claim/collateral-surplus-card";
 import { useAccount } from "@starknet-react/core";

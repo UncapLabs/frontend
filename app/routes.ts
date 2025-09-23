@@ -22,5 +22,6 @@ export default [
     route("unanim/claim", "routes/claim/claim.tsx"),
     route("price-management", "routes/admin.price-management.tsx"),
     route("mint-btc", "routes/admin.mint-btc.tsx"),
+    route("test", "routes/test.tsx"),
   ]),
 ] satisfies RouteConfig;

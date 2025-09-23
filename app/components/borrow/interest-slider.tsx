@@ -7,8 +7,6 @@ import React, {
 } from "react";
 import { cn } from "~/lib/utils";
 import {
-  type GradientMode,
-  getGradientColors,
   getHandleColorFromPosition,
   CHART_CONSTANTS,
 } from "~/lib/interest-rate-visualization";

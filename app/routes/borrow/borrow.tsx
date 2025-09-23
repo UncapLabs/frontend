@@ -512,7 +512,6 @@ function Borrow() {
               },
             }}
             liquidationPrice={metrics.liquidationPrice}
-            liquidationRisk={metrics.liquidationRisk}
             warnings={
               borrowAmount && borrowAmount < 2000
                 ? ["Minimum debt requirement is $2,000 USDU"]

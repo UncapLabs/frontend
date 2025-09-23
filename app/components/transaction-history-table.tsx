@@ -1,12 +1,4 @@
-import {
-  CheckCircle2,
-  XCircle,
-  Loader2,
-  ExternalLink,
-  ArrowRight,
-  TrendingUp,
-  TrendingDown,
-} from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, ExternalLink } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
@@ -15,7 +7,6 @@ import { useAccount } from "@starknet-react/core";
 import type { StarknetTransaction, TransactionType } from "~/types/transaction";
 import { formatDistance } from "date-fns";
 import { useTransactionStoreData } from "~/hooks/use-transaction-store-data";
-import { truncateTroveId } from "~/lib/utils/trove-id";
 
 // Transaction type labels
 const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
@@ -114,26 +105,31 @@ function formatTransactionDetails(
           : debtChange > 0;
 
       // Check if we have interest rate changes
-      const hasInterestRateChange = 
+      const hasInterestRateChange =
         details.hasInterestRateChange ||
-        (details.newInterestRate !== undefined && 
-         details.previousInterestRate !== undefined &&
-         Math.abs((details.newInterestRate || 0) - (details.previousInterestRate || 0)) > 0.001);
+        (details.newInterestRate !== undefined &&
+          details.previousInterestRate !== undefined &&
+          Math.abs(
+            (details.newInterestRate || 0) - (details.previousInterestRate || 0)
+          ) > 0.001);
 
       return (
         <div className="space-y-1">
           {/* Show collateral changes if any */}
           {hasCollateralChange && collateralChange !== undefined && (
             <div className="text-xs font-sora text-neutral-500">
-              {isCollateralIncrease ? "Added collateral" : "Removed collateral"}: {isCollateralIncrease ? "+" : ""}
-              {Math.abs(collateralChange).toFixed(7)} {details.collateralToken || "BTC"}
+              {isCollateralIncrease ? "Added collateral" : "Removed collateral"}
+              : {isCollateralIncrease ? "+" : ""}
+              {Math.abs(collateralChange).toFixed(7)}{" "}
+              {details.collateralToken || "BTC"}
             </div>
           )}
 
           {/* Show debt changes if any */}
           {hasDebtChange && debtChange !== undefined && (
             <div className="text-xs font-sora text-neutral-500">
-              {isDebtIncrease ? "Borrowed more" : "Repaid debt"}: {isDebtIncrease ? "+" : "-"}
+              {isDebtIncrease ? "Borrowed more" : "Repaid debt"}:{" "}
+              {isDebtIncrease ? "+" : "-"}
               {Math.abs(debtChange).toFixed(2)} USDU
             </div>
           )}
@@ -141,10 +137,12 @@ function formatTransactionDetails(
           {/* Show interest rate changes if any */}
           {hasInterestRateChange && (
             <div className="text-xs font-sora text-neutral-500">
-              {(details.newInterestRate || details.interestRate || 0) > 
-               (details.previousInterestRate || details.interestRate || 0) 
-                ? "Increased rate" 
-                : "Decreased rate"}: {details.previousInterestRate || details.interestRate || "—"}% → {details.newInterestRate || details.interestRate || "—"}% APR
+              {(details.newInterestRate || details.interestRate || 0) >
+              (details.previousInterestRate || details.interestRate || 0)
+                ? "Increased rate"
+                : "Decreased rate"}
+              : {details.previousInterestRate || details.interestRate || "—"}% →{" "}
+              {details.newInterestRate || details.interestRate || "—"}% APR
             </div>
           )}
 
@@ -153,7 +151,8 @@ function formatTransactionDetails(
             <>
               {details.newCollateral !== undefined && (
                 <div className="text-xs font-sora text-neutral-500">
-                  Collateral: {details.newCollateral} {details.collateralToken || "BTC"}
+                  Collateral: {details.newCollateral}{" "}
+                  {details.collateralToken || "BTC"}
                 </div>
               )}
               {details.newDebt !== undefined && (
@@ -275,7 +274,7 @@ function TransactionCard({
               addSuffix: true,
             })}
           </div>
-          
+
           {/* View on Explorer */}
           <Button
             variant="ghost"

@@ -6,6 +6,7 @@ import { interestRouter } from "./routers/interest";
 import { feesRouter } from "./routers/fees";
 import { stabilityPoolRouter } from "./routers/stability-pool";
 import { createCallerFactory, router } from "./trpc";
+import { testRouter } from "./routers/test";
 
 // Define our app's router
 export const appRouter = router({
@@ -16,6 +17,7 @@ export const appRouter = router({
   interestRouter,
   feesRouter,
   stabilityPoolRouter,
+  testRouter,
 });
 
 // Export type of AppRouter for client-side use

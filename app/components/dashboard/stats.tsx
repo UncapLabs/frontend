@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Table,
   TableBody,
@@ -8,6 +7,17 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { useNavigate } from "react-router";
+import {
+  useAverageInterestRate,
+  useInterestRateVisualizationData,
+} from "~/hooks/use-interest-rate";
+import { useStabilityPoolData } from "~/hooks/use-stability-pool-data";
+import {
+  COLLATERAL_TOKENS,
+  COLLATERAL_TO_BRANCH,
+} from "~/lib/contracts/constants";
+import { getMinCollateralizationRatio } from "~/lib/contracts/collateral-config";
+import * as dn from "dnum";
 
 interface BorrowRateItem {
   collateral: string;
@@ -32,10 +42,7 @@ interface RatesTableProps {
   earnRates: EarnRateItem[];
 }
 
-export const RatesTable: React.FC<RatesTableProps> = ({
-  borrowRates,
-  earnRates,
-}) => {
+export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
   const navigate = useNavigate();
 
   const handleBorrowClick = (collateralAddress?: string) => {
@@ -56,9 +63,7 @@ export const RatesTable: React.FC<RatesTableProps> = ({
     <div className="bg-[#242424] rounded-lg p-6">
       {/* Borrow Rates Section */}
       <div>
-        {/* Title */}
         <div className="flex items-center gap-2 mb-6">
-          {/* USD Logo */}
           <svg
             width="13"
             height="13"
@@ -76,7 +81,6 @@ export const RatesTable: React.FC<RatesTableProps> = ({
           </h3>
         </div>
 
-        {/* Borrow Rates Table */}
         <Table>
           <TableHeader>
             <TableRow className="border-zinc-800 hover:bg-transparent">
@@ -156,9 +160,7 @@ export const RatesTable: React.FC<RatesTableProps> = ({
 
       {/* Earn Rates Section */}
       <div>
-        {/* Title */}
         <div className="flex items-center gap-2 mb-6">
-          {/* Wallet Icon */}
           <svg
             width="12"
             height="13"
@@ -176,7 +178,6 @@ export const RatesTable: React.FC<RatesTableProps> = ({
           </h3>
         </div>
 
-        {/* Earn Rates Table */}
         <Table>
           <TableHeader>
             <TableRow className="border-zinc-800 hover:bg-transparent">
@@ -246,51 +247,87 @@ export const RatesTable: React.FC<RatesTableProps> = ({
       </div>
     </div>
   );
-};
+}
 
-// Example usage component
-export const RatesExample: React.FC = () => {
-  const borrowRates: BorrowRateItem[] = [
-    {
-      collateral: "UBTC",
-      icon: "/bitcoin.png",
-      borrowRate: "3.49%",
-      totalDebt: "$6.6M",
-      maxLTV: "90.91%",
-      rateAvg: "3.49%",
-      collateralAddress:
-        "0x51bcc0aa4771902500f0f26b883d2c4aa5c6438156c32c3817a6870d9aadf1e",
-    },
-    {
-      collateral: "GBTC",
-      icon: "/bitcoin.png",
-      borrowRate: "3.49%",
-      totalDebt: "$6.6M",
-      maxLTV: "90.91%",
-      rateAvg: "3.49%",
-      collateralAddress:
-        "0x289d7ce6789e78b132b2632d4cba8dbc7d8fb137f363371cf3157c8ec4804e0",
-    },
-  ];
+export default function Stats() {
+  const ubtcInterestRate = useAverageInterestRate(0); // UBTC branch
+  const gbtcInterestRate = useAverageInterestRate(1); // GBTC branch
+  const ubtcVisualizationData = useInterestRateVisualizationData(0); // UBTC
+  const gbtcVisualizationData = useInterestRateVisualizationData(1); // GBTC
+  const stabilityPoolData = useStabilityPoolData();
 
-  const earnRates: EarnRateItem[] = [
-    {
-      pool: "UBTC",
-      icon: "/bitcoin.png",
-      supplyAPR: "2.85%",
-      totalDeposits: "$12.3M",
-      // No collateralParam for UBTC, will navigate to /earn
-    },
-    {
-      pool: "GBTC",
-      icon: "/bitcoin.png",
-      supplyAPR: "3.12%",
-      totalDeposits: "$8.7M",
-      collateralParam: "GBTC",
-    },
-  ];
+  // Helper function to format percentage from interest rate data
+  const formatRateAsPercentage = (rateData: any): string => {
+    if (!rateData) return "—";
+
+    try {
+      // If it's an object with averageInterestRate property (JSON Dnum format)
+      if (rateData.averageInterestRate !== undefined) {
+        const rateDnum = dn.from(rateData.averageInterestRate, 18);
+        const percentage = dn.toNumber(rateDnum) * 100;
+        return `${percentage.toFixed(2)}%`;
+      }
+
+      // If it's already a number (percentage as decimal)
+      if (typeof rateData === "number") {
+        const percentage = rateData * 100;
+        return `${percentage.toFixed(2)}%`;
+      }
+    } catch {
+      return "—";
+    }
+
+    return "—";
+  };
+
+  // Helper function to format currency values
+  const formatCurrency = (value: number | undefined): string => {
+    if (value === undefined || value === null) return "—";
+
+    if (value >= 1_000_000) {
+      return `$${(value / 1_000_000).toFixed(1)}M`;
+    } else if (value >= 1_000) {
+      return `$${(value / 1_000).toFixed(1)}K`;
+    } else {
+      return `$${value.toFixed(0)}`;
+    }
+  };
+
+  // Build borrow rates dynamically using COLLATERAL_TOKENS
+  const borrowRates: BorrowRateItem[] = COLLATERAL_TOKENS.map((token) => {
+    const branchId = COLLATERAL_TO_BRANCH[token.collateralType];
+    const interestRateData =
+      branchId === 0 ? ubtcInterestRate : gbtcInterestRate;
+    const visualizationData =
+      branchId === 0 ? ubtcVisualizationData : gbtcVisualizationData;
+    const minCollatRatio = getMinCollateralizationRatio(token.collateralType);
+    const maxLTV = (1 / minCollatRatio) * 100;
+
+    return {
+      collateral: token.symbol,
+      icon: token.icon,
+      borrowRate: formatRateAsPercentage(interestRateData.data),
+      totalDebt: formatCurrency(visualizationData.data?.totalDebt),
+      maxLTV: `${maxLTV.toFixed(2)}%`,
+      rateAvg: formatRateAsPercentage(interestRateData.data),
+      collateralAddress: token.address,
+    };
+  });
+
+  // Build earn rates dynamically from stability pool
+  const earnRates: EarnRateItem[] = COLLATERAL_TOKENS.map((token) => {
+    const poolData = stabilityPoolData[token.collateralType];
+
+    return {
+      pool: token.symbol,
+      icon: token.icon,
+      supplyAPR:
+        poolData.apr !== undefined ? `${poolData.apr.toFixed(2)}%` : "—",
+      totalDeposits: formatCurrency(poolData.totalDeposits),
+      // Only GBTC has a collateralParam for navigation
+      collateralParam: token.collateralType === "GBTC" ? "GBTC" : undefined,
+    };
+  });
 
   return <RatesTable borrowRates={borrowRates} earnRates={earnRates} />;
-};
-
-export default RatesTable;
+}

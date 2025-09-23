@@ -78,10 +78,10 @@ function UpdatePosition() {
   );
   const collateralType = selectedCollateralToken.symbol as CollateralType;
 
-  // Get rate mode from URL
-  const [rateMode] = useQueryState("rateMode", {
-    defaultValue: "manual" as const,
-  });
+  // // Get rate mode from URL
+  // const [rateMode] = useQueryState("rateMode", {
+  //   defaultValue: "advanced" as const,
+  // });
 
   // Balance for selected token
   const { data: bitcoinBalance } = useBalance({
@@ -915,7 +915,6 @@ function UpdatePosition() {
               },
             }}
             liquidationPrice={metrics.liquidationPrice}
-            liquidationRisk={metrics.liquidationRisk}
             warnings={
               borrowAmount && borrowAmount < 2000
                 ? ["Minimum debt requirement is $2,000 USDU"]

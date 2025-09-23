@@ -1,8 +1,15 @@
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
-import { Sparkles, Info, Calendar, TrendingUp, Clock } from "lucide-react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
+import { Sparkles, Calendar, TrendingUp, Clock } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { NumericFormat } from "react-number-format";
 import { useAccount } from "@starknet-react/core";
@@ -24,60 +31,64 @@ export function STRKRewardsCard() {
 
   // TODO: Replace with actual hook when backend is ready
   // const { rewards, totalClaimable, isLoading, error, claim } = useSTRKRewards(address);
-  
+
   // Check if this is the specific address with hardcoded rewards
-  const isTargetAddress = address?.toLowerCase() === "0x033446F12430CE62862707d5B0495ba79d9965671c558BA163Ab99EF06434144".toLowerCase();
-  
+  const isTargetAddress =
+    address?.toLowerCase() ===
+    "0x033446F12430CE62862707d5B0495ba79d9965671c558BA163Ab99EF06434144".toLowerCase();
+
   // Placeholder data for UI development
   const isLoading = false;
-  
+
   // Hardcoded rewards for the specific address
-  const weeklyRewards: WeeklyReward[] = isTargetAddress ? [
-    {
-      weekNumber: 1,
-      weekStartDate: "2025-08-19",
-      weekEndDate: "2025-08-25",
-      amount: 125.75,
-      status: "claimed",
-      claimedAt: "2025-08-26",
-    },
-    {
-      weekNumber: 2,
-      weekStartDate: "2025-08-26",
-      weekEndDate: "2025-09-01",
-      amount: 148.32,
-      status: "claimed",
-      claimedAt: "2025-09-02",
-    },
-    {
-      weekNumber: 3,
-      weekStartDate: "2025-09-02",
-      weekEndDate: "2025-09-08",
-      amount: 165.40,
-      status: "claimed",
-      claimedAt: "2025-09-09",
-    },
-    {
-      weekNumber: 4,
-      weekStartDate: "2025-09-09",
-      weekEndDate: "2025-09-15",
-      amount: 189.25,
-      status: "claimable",
-    },
-    {
-      weekNumber: 5,
-      weekStartDate: "2025-09-16",
-      weekEndDate: "2025-09-22",
-      amount: 195.50,
-      status: "pending",
-    },
-  ] : [];
-  
+  const weeklyRewards: WeeklyReward[] = isTargetAddress
+    ? [
+        {
+          weekNumber: 1,
+          weekStartDate: "2025-08-19",
+          weekEndDate: "2025-08-25",
+          amount: 125.75,
+          status: "claimed",
+          claimedAt: "2025-08-26",
+        },
+        {
+          weekNumber: 2,
+          weekStartDate: "2025-08-26",
+          weekEndDate: "2025-09-01",
+          amount: 148.32,
+          status: "claimed",
+          claimedAt: "2025-09-02",
+        },
+        {
+          weekNumber: 3,
+          weekStartDate: "2025-09-02",
+          weekEndDate: "2025-09-08",
+          amount: 165.4,
+          status: "claimed",
+          claimedAt: "2025-09-09",
+        },
+        {
+          weekNumber: 4,
+          weekStartDate: "2025-09-09",
+          weekEndDate: "2025-09-15",
+          amount: 189.25,
+          status: "claimable",
+        },
+        {
+          weekNumber: 5,
+          weekStartDate: "2025-09-16",
+          weekEndDate: "2025-09-22",
+          amount: 195.5,
+          status: "pending",
+        },
+      ]
+    : [];
+
   // Calculate total claimable
   const totalClaimable = weeklyRewards
-    .filter(r => r.status === "claimable")
+    .filter((r) => r.status === "claimable")
     .reduce((sum, r) => sum + r.amount, 0);
-  
+
   const hasRewards = weeklyRewards.length > 0;
 
   const handleClaimAll = async () => {
@@ -134,8 +145,9 @@ export function STRKRewardsCard() {
                       No STRK Rewards Yet
                     </h3>
                     <p className="text-sm text-slate-600 max-w-md mx-auto">
-                      You'll earn STRK rewards when you borrow USDU. You get a 30% rebate on your 
-                      interest payments, paid weekly in STRK tokens.
+                      You'll earn STRK rewards when you borrow USDU. You get a
+                      30% rebate on your interest payments, paid weekly in STRK
+                      tokens.
                     </p>
                   </div>
                   <div className="bg-purple-50 rounded-lg p-4 max-w-sm mx-auto">
@@ -244,8 +256,13 @@ export function STRKRewardsCard() {
                               Week {reward.weekNumber}
                             </TableCell>
                             <TableCell className="text-sm text-slate-600">
-                              {new Date(reward.weekStartDate).toLocaleDateString()} -
-                              {" "}{new Date(reward.weekEndDate).toLocaleDateString()}
+                              {new Date(
+                                reward.weekStartDate
+                              ).toLocaleDateString()}{" "}
+                              -{" "}
+                              {new Date(
+                                reward.weekEndDate
+                              ).toLocaleDateString()}
                             </TableCell>
                             <TableCell className="text-right font-semibold">
                               <NumericFormat
@@ -308,8 +325,9 @@ export function STRKRewardsCard() {
                   What are STRK rewards?
                 </h4>
                 <p className="text-sm text-slate-600">
-                  When you borrow USDU, you receive a 30% rebate on your interest
-                  payments. This rebate is paid out weekly in STRK tokens.
+                  When you borrow USDU, you receive a 30% rebate on your
+                  interest payments. This rebate is paid out weekly in STRK
+                  tokens.
                 </p>
               </div>
 
@@ -345,7 +363,9 @@ export function STRKRewardsCard() {
                       <span className="font-medium text-purple-700">$300</span>
                     </div>
                     <div className="flex justify-between pt-1 border-t border-purple-200">
-                      <span className="text-slate-700 font-medium">Weekly STRK:</span>
+                      <span className="text-slate-700 font-medium">
+                        Weekly STRK:
+                      </span>
                       <span className="font-bold text-purple-700">~$5.77</span>
                     </div>
                   </div>

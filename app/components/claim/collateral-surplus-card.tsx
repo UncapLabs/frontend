@@ -142,7 +142,7 @@ export function CollateralSurplusCard() {
           />
         ) : (
           <>
-            {availableSurpluses.map((surplus, index) => (
+            {availableSurpluses.map((surplus) => (
               <div
                 key={surplus.collateralType}
                 className="bg-white rounded-2xl p-6 border border-neutral-200"

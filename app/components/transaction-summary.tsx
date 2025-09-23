@@ -35,7 +35,6 @@ interface TransactionSummaryProps {
   type: "open" | "update" | "close";
   changes: PositionChange;
   liquidationPrice?: number;
-  liquidationRisk?: "High" | "Medium" | "Low" | undefined;
   className?: string;
   isValid?: boolean;
   warnings?: string[];
@@ -48,7 +47,6 @@ export function TransactionSummary({
   type,
   changes,
   liquidationPrice,
-  liquidationRisk,
   className,
   warnings = [],
   collateralType,
