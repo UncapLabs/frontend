@@ -17,6 +17,7 @@ import {
 import { UBTC_TOKEN, GBTC_TOKEN } from "~/lib/contracts/constants";
 import { useAllStabilityPoolPositions } from "~/hooks/use-stability-pool";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
+import { useIntersectionObserver } from "usehooks-ts";
 import BorrowCard from "~/components/dashboard/borrow-card";
 import { RatesExample } from "~/components/dashboard/rates";
 
@@ -52,6 +53,13 @@ export default function Dashboard() {
     (allStabilityPoolPositions.UBTC?.userDeposit ?? 0) > 0 ||
     (allStabilityPoolPositions.GBTC?.userDeposit ?? 0) > 0;
 
+  // Use intersection observer for stability pool section
+  const { ref: stabilityPoolRef, isIntersecting: isEarnMode } =
+    useIntersectionObserver({
+      threshold: 0.1,
+      rootMargin: "0px",
+    });
+
   // Separate liquidated from active/zombie positions
   const liquidatedTroves = troves.filter((t) => t.status === "liquidated");
   const activeTroves = troves.filter((t) => t.status !== "liquidated");
@@ -81,36 +89,22 @@ export default function Dashboard() {
 
   return (
     <div className="w-full mx-auto max-w-7xl py-8 lg:py-12 px-4 sm:px-6 lg:px-8 min-h-screen">
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-3">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-medium font-sora text-neutral-800 leading-tight">
-            Dashboard
-          </h1>
-          {isRefetching && (
-            <div className="flex items-center text-sm text-slate-800">
-              <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* Main Layout with Sticky Rates */}
       <div className="flex flex-col-reverse lg:flex-row gap-5">
         {/* Left Section: Positions */}
         <div className="flex-1 lg:flex-[2]">
-          {/* Borrow Positions Section Header - Always Visible */}
-          <div className="flex justify-between items-center pb-4">
+          <div className="flex justify-between items-end py-4">
             <h2 className="text-2xl md:text-3xl font-medium leading-none font-sora text-neutral-800">
               Borrow Positions
             </h2>
 
-            {address && (
+            {address && !isEarnMode && (
               <Button
                 onClick={handleCreateNew}
-                className="px-4 py-2.5 md:px-6 md:py-3.5 bg-[#006CFF] hover:bg-[#0056CC] rounded-xl inline-flex items-center gap-2 md:gap-2.5 transition-colors border-0 h-auto"
+                className="lg:hidden px-4 py-2.5 md:px-6 md:py-3.5 bg-[#006CFF] hover:bg-[#0056CC] rounded-xl inline-flex items-center gap-2 md:gap-2.5 transition-colors border-0 h-auto"
               >
-                <span className="text-white text-xs font-medium font-sora">
-                  Open new position
+                <span className="text-white text-xs font-medium font-sora leading-none">
+                  Borrow
                 </span>
                 <Plus className="h-2.5 w-2.5 md:h-3 md:w-3 text-white" />
               </Button>
@@ -265,21 +259,23 @@ export default function Dashboard() {
 
           {/* Stability Pool Positions Section */}
           {address && hasStabilityPoolPositions && (
-            <div className="mt-8">
-              <div className="flex justify-between items-center pb-4">
+            <div className="mt-8" ref={stabilityPoolRef}>
+              <div className="flex justify-between items-end pb-4">
                 <h2 className="text-2xl md:text-3xl font-medium leading-none font-sora text-neutral-800">
                   Stability Pool Positions
                 </h2>
 
-                <Button
-                  onClick={handleEarn}
-                  className="px-4 py-2.5 md:px-6 md:py-3.5 bg-[#006CFF] hover:bg-[#0056CC] rounded-xl inline-flex items-center gap-2 md:gap-2.5 transition-colors border-0 h-auto"
-                >
-                  <span className="text-white text-xs font-medium font-sora">
-                    Earn rewards
-                  </span>
-                  <Plus className="h-2.5 w-2.5 md:h-3 md:w-3 text-white" />
-                </Button>
+                {isEarnMode && (
+                  <Button
+                    onClick={handleEarn}
+                    className="lg:hidden px-4 py-2.5 md:px-6 md:py-3.5 bg-[#006CFF] hover:bg-[#0056CC] rounded-xl inline-flex items-center gap-2 md:gap-2.5 transition-colors border-0 h-auto"
+                  >
+                    <span className="text-white text-xs font-medium font-sora leading-none">
+                      Earn rewards
+                    </span>
+                    <Plus className="h-2.5 w-2.5 md:h-3 md:w-3 text-white" />
+                  </Button>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -499,7 +495,19 @@ export default function Dashboard() {
 
         {/* Right Section: Sticky Rates */}
         <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px]">
-          <div className="lg:sticky lg:top-8">
+          <div className="lg:sticky lg:top-16">
+            {/* Button container with padding to match left section */}
+            <div className="hidden lg:flex justify-end items-end pb-4">
+              <Button
+                onClick={isEarnMode ? handleEarn : handleCreateNew}
+                className="px-4 py-2.5 md:px-6 md:py-3.5 bg-[#006CFF] hover:bg-[#0056CC] rounded-xl inline-flex items-center gap-2 md:gap-2.5 transition-colors border-0 h-auto"
+              >
+                <span className="text-white text-xs font-medium font-sora leading-none">
+                  {isEarnMode ? "Earn" : "Open new position"}
+                </span>
+                <Plus className="h-2.5 w-2.5 md:h-3 md:w-3 text-white" />
+              </Button>
+            </div>
             <RatesExample />
           </div>
         </div>

@@ -11,6 +11,7 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
           <Outlet />
         </div>
       </div>
+      <div className="h-96">Footer</div>
     </div>
   );
 }
