@@ -23,6 +23,8 @@ interface InterestRateSelectorProps {
   onInterestRateChange: (rate: number) => void;
   disabled?: boolean;
   borrowAmount?: number;
+  collateralAmount?: number;
+  collateralPriceUSD?: number;
   collateralType?: CollateralType;
   onRateModeChange?: (mode: RateMode) => void;
   lastInterestRateAdjTime?: number;
@@ -35,6 +37,8 @@ export function InterestRateSelector({
   onInterestRateChange,
   disabled = false,
   borrowAmount,
+  collateralAmount,
+  collateralPriceUSD,
   collateralType = "GBTC",
   onRateModeChange,
   lastInterestRateAdjTime,
@@ -233,6 +237,16 @@ export function InterestRateSelector({
                   rebateData.effectiveYearlyInterestUSD
                 }
                 yearlyRebateUSD={rebateData.yearlyRebateUSD}
+                collateralValueUSD={
+                  collateralAmount && collateralPriceUSD
+                    ? collateralAmount * collateralPriceUSD
+                    : undefined
+                }
+                yearlyCollateralRebateUSD={
+                  collateralAmount && collateralPriceUSD
+                    ? collateralAmount * collateralPriceUSD * 0.02 // 2% rebate
+                    : undefined
+                }
               />
             )}
 
@@ -272,7 +286,12 @@ export function InterestRateSelector({
           </>
         ) : (
           // Managed by Telos mode
-          <ManagedStrategy disabled={disabled} borrowAmount={borrowAmount} />
+          <ManagedStrategy 
+            disabled={disabled} 
+            borrowAmount={borrowAmount}
+            collateralAmount={collateralAmount}
+            collateralPriceUSD={collateralPriceUSD}
+          />
         )}
       </div>
     </div>

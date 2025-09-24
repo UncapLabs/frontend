@@ -11,14 +11,21 @@ interface STRKRebateInfoProps {
   yearlyInterestUSD: number;
   effectiveYearlyInterestUSD: number;
   yearlyRebateUSD: number;
+  collateralValueUSD?: number;
+  yearlyCollateralRebateUSD?: number;
 }
 
 export function STRKRebateInfo({
   yearlyInterestUSD,
   effectiveYearlyInterestUSD,
   yearlyRebateUSD,
+  collateralValueUSD = 0,
+  yearlyCollateralRebateUSD = 0,
 }: STRKRebateInfoProps) {
   const [isOpen, setIsOpen] = useState(false);
+  
+  // Total rebate is interest rebate + collateral rebate
+  const totalYearlyRebateUSD = yearlyRebateUSD + yearlyCollateralRebateUSD;
 
   return (
     <Collapsible
@@ -41,7 +48,7 @@ export function STRKRebateInfo({
             +$
             <NumericFormat
               displayType="text"
-              value={yearlyRebateUSD}
+              value={totalYearlyRebateUSD}
               thousandSeparator=","
               decimalScale={0}
               fixedDecimalScale={false}
@@ -59,41 +66,108 @@ export function STRKRebateInfo({
       <CollapsibleContent>
         <div className="px-3 pb-3 border-t border-neutral-100">
           <p className="text-xs text-neutral-600 font-sora mt-3 mb-3">
-            You get a 30% discount on your interest rate, paid as STRK tokens
-            claimable weekly.
+            You get a 40% discount on your interest rate + 2% rebate on your collateral value, paid as STRK tokens claimable weekly.
           </p>
 
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-neutral-600 font-sora">
-                Original Annual Interest
-              </span>
-              <span className="text-xs text-neutral-500 line-through font-sora">
-                $
-                <NumericFormat
-                  displayType="text"
-                  value={yearlyInterestUSD}
-                  thousandSeparator=","
-                  decimalScale={2}
-                  fixedDecimalScale
-                />
-              </span>
+          <div className="space-y-3">
+            {/* Interest Rebate Section */}
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-neutral-800 font-sora">
+                Interest Rebate (40%)
+              </div>
+              
+              <div className="flex justify-between items-center pl-3">
+                <span className="text-xs text-neutral-600 font-sora">
+                  Original Annual Interest
+                </span>
+                <span className="text-xs text-neutral-500 line-through font-sora">
+                  $
+                  <NumericFormat
+                    displayType="text"
+                    value={yearlyInterestUSD}
+                    thousandSeparator=","
+                    decimalScale={2}
+                    fixedDecimalScale
+                  />
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center pl-3">
+                <span className="text-xs text-neutral-600 font-sora">
+                  Interest Rebate
+                </span>
+                <span className="text-xs font-medium text-green-600 font-sora">
+                  +$
+                  <NumericFormat
+                    displayType="text"
+                    value={yearlyRebateUSD}
+                    thousandSeparator=","
+                    decimalScale={2}
+                    fixedDecimalScale
+                  />
+                </span>
+              </div>
             </div>
 
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-neutral-600 font-sora">
-                Effective Annual Interest
-              </span>
-              <span className="text-xs font-medium text-green-600 font-sora">
-                $
-                <NumericFormat
-                  displayType="text"
-                  value={effectiveYearlyInterestUSD}
-                  thousandSeparator=","
-                  decimalScale={2}
-                  fixedDecimalScale
-                />
-              </span>
+            {/* Collateral Rebate Section */}
+            {collateralValueUSD > 0 && (
+              <div className="space-y-2 pt-2 border-t border-neutral-100">
+                <div className="text-xs font-medium text-neutral-800 font-sora">
+                  Collateral Rebate (2%)
+                </div>
+                
+                <div className="flex justify-between items-center pl-3">
+                  <span className="text-xs text-neutral-600 font-sora">
+                    Collateral Value
+                  </span>
+                  <span className="text-xs text-neutral-600 font-sora">
+                    $
+                    <NumericFormat
+                      displayType="text"
+                      value={collateralValueUSD}
+                      thousandSeparator=","
+                      decimalScale={2}
+                      fixedDecimalScale
+                    />
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center pl-3">
+                  <span className="text-xs text-neutral-600 font-sora">
+                    Collateral Rebate
+                  </span>
+                  <span className="text-xs font-medium text-green-600 font-sora">
+                    +$
+                    <NumericFormat
+                      displayType="text"
+                      value={yearlyCollateralRebateUSD}
+                      thousandSeparator=","
+                      decimalScale={2}
+                      fixedDecimalScale
+                    />
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Total Section */}
+            <div className="space-y-2 pt-2 border-t border-neutral-100">
+              
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-medium text-neutral-800 font-sora">
+                  Total Annual Rebate
+                </span>
+                <span className="text-xs font-bold text-green-600 font-sora">
+                  +$
+                  <NumericFormat
+                    displayType="text"
+                    value={totalYearlyRebateUSD}
+                    thousandSeparator=","
+                    decimalScale={2}
+                    fixedDecimalScale
+                  />
+                </span>
+              </div>
             </div>
           </div>
         </div>

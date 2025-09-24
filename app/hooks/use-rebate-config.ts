@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
-// Fixed 30% rebate on interest rate - hardcoded since it's a constant program value
-const REBATE_PERCENTAGE = 30;
+// Fixed 40% rebate on interest rate - hardcoded since it's a constant program value
+const REBATE_PERCENTAGE = 40;
 
 export function useCalculatedRebate(
   borrowAmount: number | undefined,
@@ -12,7 +12,7 @@ export function useCalculatedRebate(
       return null;
     }
 
-    // Calculate effective interest rate after 30% rebate
+    // Calculate effective interest rate after 40% rebate
     const effectiveInterestRate = interestRate * (1 - REBATE_PERCENTAGE / 100);
 
     // Calculate yearly costs

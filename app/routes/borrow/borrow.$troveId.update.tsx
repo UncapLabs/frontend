@@ -776,6 +776,8 @@ function UpdatePosition() {
                         (isZombie && borrowAmount < MIN_DEBT)
                       }
                       borrowAmount={borrowAmount ?? undefined}
+                      collateralAmount={collateralAmount ?? undefined}
+                      collateralPriceUSD={bitcoin?.price}
                       collateralType={collateralType}
                       lastInterestRateAdjTime={
                         position?.lastInterestRateAdjTime

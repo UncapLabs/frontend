@@ -6,11 +6,15 @@ import { useCalculatedRebate } from "~/hooks/use-rebate-config";
 interface ManagedStrategyProps {
   disabled?: boolean;
   borrowAmount?: number;
+  collateralAmount?: number;
+  collateralPriceUSD?: number;
 }
 
 export function ManagedStrategy({ 
   disabled = false,
-  borrowAmount 
+  borrowAmount,
+  collateralAmount,
+  collateralPriceUSD
 }: ManagedStrategyProps) {
   const interestRate = 4.3; // Managed strategy uses 4.3% interest rate
   const annualFee = borrowAmount ? borrowAmount * 0.001 : 0; // 0.1% annual fee
@@ -170,6 +174,16 @@ export function ManagedStrategy({
           yearlyInterestUSD={rebateData.yearlyInterestUSD}
           effectiveYearlyInterestUSD={rebateData.effectiveYearlyInterestUSD}
           yearlyRebateUSD={rebateData.yearlyRebateUSD}
+          collateralValueUSD={
+            collateralAmount && collateralPriceUSD
+              ? collateralAmount * collateralPriceUSD
+              : undefined
+          }
+          yearlyCollateralRebateUSD={
+            collateralAmount && collateralPriceUSD
+              ? collateralAmount * collateralPriceUSD * 0.02 // 2% rebate
+              : undefined
+          }
         />
       )}
     </div>

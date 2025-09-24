@@ -428,6 +428,8 @@ function Borrow() {
                   }}
                   disabled={isSending || isPending}
                   borrowAmount={borrowAmount ?? undefined}
+                  collateralAmount={collateralAmount ?? undefined}
+                  collateralPriceUSD={bitcoin?.price}
                   collateralType={collateralType}
                 />
 
