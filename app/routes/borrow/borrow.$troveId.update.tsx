@@ -202,9 +202,9 @@ function UpdatePosition() {
   if (isPositionLoading || !position) {
     return (
       <>
-        <h2 className="text-2xl font-semibold text-slate-800 mb-6">
+        <h1 className="text-2xl md:text-3xl font-medium leading-none font-sora text-neutral-800">
           Update Position
-        </h2>
+        </h1>
 
         <div className="flex flex-col lg:flex-row gap-5">
           {/* Left Panel Skeleton */}

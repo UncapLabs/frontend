@@ -1,7 +1,15 @@
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
-import { Sparkles, Calendar, TrendingUp, Clock } from "lucide-react";
+import { Badge } from "~/components/ui/badge";
+import {
+  Sparkles,
+  Calendar,
+  TrendingUp,
+  Clock,
+  CheckCircle2,
+  Loader2,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -10,7 +18,6 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { Alert, AlertDescription } from "~/components/ui/alert";
 import { NumericFormat } from "react-number-format";
 import { useAccount } from "@starknet-react/core";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
@@ -107,155 +114,273 @@ export function STRKRewardsCard() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-baseline">
-        <h2 className="text-2xl font-semibold text-slate-800">
-          STRK Rebate Rewards
-        </h2>
-        <div className="flex items-center gap-2">
-          <div className="px-3 py-1 bg-purple-100 rounded-full">
-            <span className="text-xs font-medium text-purple-700">
-              30% Interest Rebate
-            </span>
-          </div>
-        </div>
+        <h1 className="text-2xl md:text-3xl font-medium leading-none font-sora text-neutral-800">
+          STRK Rewards
+        </h1>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-5">
         {/* Left Panel - Main Content */}
         <div className="flex-1 lg:flex-[2]">
           {isLoading ? (
-            <Card className="border border-slate-200 shadow-sm">
+            <Card className="rounded-2xl border-0 shadow-none bg-white">
               <CardContent className="pt-6">
                 <div className="text-center space-y-4 py-8">
                   <Sparkles className="h-12 w-12 text-purple-400 mx-auto animate-pulse" />
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm font-sora text-neutral-600">
                     Loading STRK rewards data...
                   </p>
                 </div>
               </CardContent>
             </Card>
           ) : !hasRewards ? (
-            <Card className="border border-slate-200 shadow-sm">
-              <CardContent className="pt-6">
-                <div className="text-center space-y-4 py-8">
-                  <div className="w-16 h-16 bg-purple-100 rounded-full mx-auto flex items-center justify-center">
-                    <Sparkles className="h-8 w-8 text-purple-500" />
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-lg text-slate-800">
-                      No STRK Rewards Yet
-                    </h3>
-                    <p className="text-sm text-slate-600 max-w-md mx-auto">
-                      You'll earn STRK rewards when you borrow USDU. You get a
-                      30% rebate on your interest payments, paid weekly in STRK
-                      tokens.
-                    </p>
-                  </div>
-                  <div className="bg-purple-50 rounded-lg p-4 max-w-sm mx-auto">
-                    <div className="flex items-center gap-2 mb-2">
-                      <TrendingUp className="h-4 w-4 text-purple-600" />
-                      <span className="text-sm font-medium text-purple-800">
-                        How to earn STRK rewards:
-                      </span>
+            <div className="bg-white rounded-2xl p-8">
+              <div className="text-center space-y-6">
+                <div className="w-20 h-20 bg-purple-50 rounded-2xl mx-auto flex items-center justify-center">
+                  <img
+                    src="/starknet.png"
+                    alt="STRK"
+                    className="w-10 h-10 object-contain"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <h3 className="text-xl font-medium font-sora text-neutral-800">
+                    No STRK Rewards Yet
+                  </h3>
+                  <p className="text-sm font-sora text-neutral-600 max-w-lg mx-auto leading-relaxed">
+                    Start earning STRK rewards by borrowing USDU. You'll receive{" "}
+                    <span className="font-medium text-purple-700">
+                      40% of your interest payments
+                    </span>{" "}
+                    back, plus an additional{" "}
+                    <span className="font-medium text-purple-700">
+                      2% of your collateral value
+                    </span>{" "}
+                    annually, all paid out weekly in STRK tokens.
+                  </p>
+                </div>
+
+                {/* Two reward cards side by side */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto mt-6">
+                  <div className="bg-purple-50 rounded-xl p-4 border border-purple-100">
+                    <div className="text-2xl font-medium font-sora text-purple-700 mb-1">
+                      40%
                     </div>
-                    <ul className="space-y-1 text-xs text-purple-700">
-                      <li>1. Open a borrowing position</li>
-                      <li>2. Pay interest on your loan</li>
-                      <li>3. Receive 30% back as STRK weekly</li>
-                    </ul>
+                    <div className="text-xs font-sora text-purple-600">
+                      Interest Rebate
+                    </div>
+                  </div>
+                  <div className="bg-purple-50 rounded-xl p-4 border border-purple-100">
+                    <div className="text-2xl font-medium font-sora text-purple-700 mb-1">
+                      2%
+                    </div>
+                    <div className="text-xs font-sora text-purple-600">
+                      Collateral Rewards
+                    </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+
+                {/* How to earn section */}
+                <div className="bg-neutral-50 rounded-xl p-5 max-w-md mx-auto">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                      <TrendingUp className="h-4 w-4 text-purple-600" />
+                    </div>
+                    <span className="text-sm font-medium font-sora text-neutral-800">
+                      Start Earning in 3 Steps
+                    </span>
+                  </div>
+                  <div className="space-y-2 text-left">
+                    <div className="flex items-start gap-3">
+                      <span className="text-xs font-medium font-sora text-purple-600 mt-0.5">
+                        1
+                      </span>
+                      <span className="text-xs font-sora text-neutral-700">
+                        Open a borrowing position with BTC collateral
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="text-xs font-medium font-sora text-purple-600 mt-0.5">
+                        2
+                      </span>
+                      <span className="text-xs font-sora text-neutral-700">
+                        Automatically earn 40% interest rebate + 2% collateral
+                        rewards
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="text-xs font-medium font-sora text-purple-600 mt-0.5">
+                        3
+                      </span>
+                      <span className="text-xs font-sora text-neutral-700">
+                        Claim your STRK rewards weekly from this page
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={() => (window.location.href = "/borrow")}
+                  className="h-12 bg-token-bg-blue hover:bg-blue-600 text-white text-sm font-medium font-sora py-4 px-8 rounded-xl transition-all"
+                >
+                  Start Borrowing to Earn STRK
+                </Button>
+              </div>
+            </div>
           ) : (
             <div className="space-y-6">
-              {/* Alert for claimable rewards */}
-              {totalClaimable > 0 && (
-                <Alert className="border-purple-200 bg-purple-50">
-                  <Sparkles className="h-4 w-4 text-purple-600" />
-                  <AlertDescription className="text-purple-800">
-                    <div className="space-y-2">
-                      <p className="font-semibold">
-                        You have STRK rewards ready to claim!
-                      </p>
-                      <p className="text-sm">
-                        Total claimable: {totalClaimable.toFixed(2)} STRK
-                      </p>
-                    </div>
-                  </AlertDescription>
-                </Alert>
-              )}
+              {/* Rewards Claim Card */}
+              <div className="bg-white rounded-2xl p-6 space-y-6">
+                {/* Label */}
+                <div className="flex justify-between items-start">
+                  <label className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight">
+                    Claim Rewards
+                  </label>
+                </div>
 
-              {/* Rewards Summary Card */}
-              <Card className="border border-purple-200 shadow-sm bg-purple-50">
-                <CardContent className="pt-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-lg text-slate-800">
-                        Total Claimable STRK
-                      </h3>
-                      <Sparkles className="h-6 w-6 text-purple-600" />
+                {/* Main content area - exactly like TokenInput */}
+                <div className="flex items-center gap-6">
+                  {/* Token selector on the left */}
+                  <div className="flex flex-col gap-2">
+                    <div className="p-2.5 bg-purple-50 rounded-lg inline-flex justify-start items-center gap-2">
+                      <img
+                        src="/starknet.png"
+                        alt="STRK"
+                        className="w-5 h-5 object-contain"
+                      />
+                      <span className="text-purple-700 text-xs font-medium font-sora">
+                        STRK
+                      </span>
                     </div>
-
-                    <div className="bg-white rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-slate-700">
-                          Available to Claim
-                        </span>
-                        <span className="text-2xl font-bold text-purple-700">
-                          <NumericFormat
-                            displayType="text"
-                            value={totalClaimable}
-                            thousandSeparator=","
-                            decimalScale={2}
-                            fixedDecimalScale
-                          />{" "}
-                          STRK
-                        </span>
-                      </div>
-                    </div>
-
-                    <Button
-                      onClick={handleButtonClick}
-                      disabled={address && totalClaimable === 0}
-                      className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white"
-                      size="lg"
-                    >
-                      {!address
-                        ? "Connect Wallet"
-                        : totalClaimable > 0
-                        ? `Claim ${totalClaimable.toFixed(2)} STRK`
-                        : "No Rewards to Claim"}
-                    </Button>
                   </div>
-                </CardContent>
-              </Card>
+
+                  {/* Amount display on the right */}
+                  <div className="flex-1">
+                    <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal font-sora leading-8 sm:leading-9 md:leading-10 text-neutral-800">
+                      <NumericFormat
+                        displayType="text"
+                        value={totalClaimable}
+                        thousandSeparator=","
+                        decimalScale={2}
+                        fixedDecimalScale
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom row: USD value on left, Available info on right */}
+                <div className="flex justify-between items-center">
+                  {/* USD value on bottom left */}
+                  <span className="text-neutral-800 text-sm font-medium font-sora leading-none">
+                    = ${(totalClaimable * 0.5).toFixed(2)}
+                  </span>
+
+                  {/* Available info on bottom right */}
+                  <div className="flex items-center gap-1">
+                    <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
+                      Available:
+                    </span>
+                    <span className="text-neutral-800 text-base font-medium font-sora leading-none">
+                      {
+                        weeklyRewards.filter((r) => r.status === "claimable")
+                          .length
+                      }
+                    </span>
+                    <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
+                      week
+                      {weeklyRewards.filter((r) => r.status === "claimable")
+                        .length !== 1
+                        ? "s"
+                        : ""}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Additional Info Section */}
+              <div className="bg-white rounded-2xl p-6 space-y-4">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-sora text-neutral-600">
+                    Interest Rebate Rate:
+                  </span>
+                  <span className="font-medium font-sora text-neutral-800">
+                    40% of interest
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-sora text-neutral-600">
+                    Collateral Rewards:
+                  </span>
+                  <span className="font-medium font-sora text-neutral-800">
+                    2% of collateral value
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-sora text-neutral-600">
+                    Total Claimed:
+                  </span>
+                  <span className="font-medium font-sora text-neutral-800">
+                    <NumericFormat
+                      displayType="text"
+                      value={weeklyRewards
+                        .filter((r) => r.status === "claimed")
+                        .reduce((sum, r) => sum + r.amount, 0)}
+                      thousandSeparator=","
+                      decimalScale={2}
+                      fixedDecimalScale
+                    />{" "}
+                    STRK
+                  </span>
+                </div>
+              </div>
+
+              {/* Claim Button */}
+              <Button
+                onClick={handleButtonClick}
+                disabled={address && totalClaimable === 0}
+                className="w-full h-12 bg-token-bg-blue hover:bg-blue-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all"
+              >
+                {!address
+                  ? "Connect Wallet"
+                  : totalClaimable > 0
+                  ? `Claim ${totalClaimable.toFixed(2)} STRK`
+                  : "No Rewards to Claim"}
+              </Button>
 
               {/* Weekly Rewards History */}
-              <Card className="border border-slate-200 shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-slate-600" />
+              <Card className="rounded-2xl border-0 shadow-none bg-white">
+                <CardHeader className="border-b border-[#F5F3EE]">
+                  <CardTitle className="text-lg font-medium font-sora text-neutral-800 flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-neutral-600" />
                     Weekly Rewards History
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                   {weeklyRewards.length > 0 ? (
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Week</TableHead>
-                          <TableHead>Period</TableHead>
-                          <TableHead className="text-right">Amount</TableHead>
-                          <TableHead className="text-center">Status</TableHead>
+                          <TableHead className="font-sora text-xs font-medium uppercase tracking-tight text-neutral-800">
+                            Week
+                          </TableHead>
+                          <TableHead className="font-sora text-xs font-medium uppercase tracking-tight text-neutral-800">
+                            Period
+                          </TableHead>
+                          <TableHead className="text-right font-sora text-xs font-medium uppercase tracking-tight text-neutral-800">
+                            Amount
+                          </TableHead>
+                          <TableHead className="text-center font-sora text-xs font-medium uppercase tracking-tight text-neutral-800">
+                            Status
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {weeklyRewards.map((reward) => (
                           <TableRow key={reward.weekNumber}>
-                            <TableCell className="font-medium">
+                            <TableCell className="font-medium font-sora text-neutral-800">
                               Week {reward.weekNumber}
                             </TableCell>
-                            <TableCell className="text-sm text-slate-600">
+                            <TableCell className="text-sm font-sora text-neutral-600">
                               {new Date(
                                 reward.weekStartDate
                               ).toLocaleDateString()}{" "}
@@ -264,7 +389,7 @@ export function STRKRewardsCard() {
                                 reward.weekEndDate
                               ).toLocaleDateString()}
                             </TableCell>
-                            <TableCell className="text-right font-semibold">
+                            <TableCell className="text-right font-medium font-sora text-neutral-800">
                               <NumericFormat
                                 displayType="text"
                                 value={reward.amount}
@@ -276,17 +401,20 @@ export function STRKRewardsCard() {
                             </TableCell>
                             <TableCell className="text-center">
                               {reward.status === "claimed" ? (
-                                <span className="px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-full">
+                                <Badge variant="success" className="gap-1">
+                                  <CheckCircle2 className="h-3 w-3" />
                                   Claimed
-                                </span>
+                                </Badge>
                               ) : reward.status === "claimable" ? (
-                                <span className="px-2 py-1 text-xs font-medium text-purple-700 bg-purple-100 rounded-full">
+                                <Badge className="gap-1 bg-purple-100 text-purple-700 hover:bg-purple-100">
+                                  <Sparkles className="h-3 w-3" />
                                   Claimable
-                                </span>
+                                </Badge>
                               ) : (
-                                <span className="px-2 py-1 text-xs font-medium text-slate-700 bg-slate-100 rounded-full">
+                                <Badge variant="pending" className="gap-1">
+                                  <Loader2 className="h-3 w-3 animate-spin" />
                                   Pending
-                                </span>
+                                </Badge>
                               )}
                             </TableCell>
                           </TableRow>
@@ -295,11 +423,11 @@ export function STRKRewardsCard() {
                     </Table>
                   ) : (
                     <div className="text-center py-8">
-                      <Clock className="h-8 w-8 text-slate-400 mx-auto mb-3" />
-                      <p className="text-sm text-slate-600">
+                      <Clock className="h-8 w-8 text-neutral-400 mx-auto mb-3" />
+                      <p className="text-sm font-sora text-neutral-600">
                         No rewards history yet
                       </p>
-                      <p className="text-xs text-slate-500 mt-2">
+                      <p className="text-xs font-sora text-neutral-500 mt-2">
                         Your weekly rewards will appear here
                       </p>
                     </div>
@@ -312,78 +440,102 @@ export function STRKRewardsCard() {
 
         {/* Right Panel - Info */}
         <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px]">
-          <Card className="border border-slate-200 shadow-sm lg:sticky lg:top-8">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
+          <Card className="rounded-2xl border-0 shadow-none bg-white lg:sticky lg:top-8">
+            <CardHeader className="border-b border-[#F5F3EE]">
+              <CardTitle className="text-lg font-medium font-sora text-neutral-800 flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-purple-600" />
-                About STRK Rewards
+                Your STRK Rewards
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h4 className="font-medium text-slate-700 mb-2">
-                  What are STRK rewards?
-                </h4>
-                <p className="text-sm text-slate-600">
-                  When you borrow USDU, you receive a 30% rebate on your
-                  interest payments. This rebate is paid out weekly in STRK
-                  tokens.
-                </p>
+            <CardContent className="space-y-4 pt-6">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-purple-50 rounded-lg p-3 text-center">
+                  <div className="text-xl font-medium font-sora text-purple-700">
+                    40%
+                  </div>
+                  <div className="text-xs font-sora text-purple-600 mt-1">
+                    Interest Rebate
+                  </div>
+                </div>
+                <div className="bg-purple-50 rounded-lg p-3 text-center">
+                  <div className="text-xl font-medium font-sora text-purple-700">
+                    2%
+                  </div>
+                  <div className="text-xs font-sora text-purple-600 mt-1">
+                    Collateral APR
+                  </div>
+                </div>
               </div>
 
-              <Separator className="bg-slate-100" />
+              <p className="text-sm font-sora text-neutral-600">
+                Earn STRK rewards by borrowing USDU. Get 40% of your interest
+                back plus 2% of your collateral value annually, paid weekly.
+              </p>
+
+              <Separator className="bg-[#F5F3EE]" />
 
               <div>
-                <h4 className="font-medium text-slate-700 mb-2">
-                  How it works
+                <h4 className="text-xs font-medium font-sora uppercase tracking-tight text-neutral-800 mb-3">
+                  Example with $100k BTC
                 </h4>
-                <ul className="space-y-1 text-sm text-slate-600">
-                  <li>• Borrow USDU with any collateral</li>
-                  <li>• Pay interest on your loan</li>
-                  <li>• Get 30% of interest back as STRK</li>
-                  <li>• Rewards distributed weekly</li>
-                  <li>• Claim anytime after distribution</li>
-                </ul>
-              </div>
-
-              <Separator className="bg-slate-100" />
-
-              <div>
-                <h4 className="font-medium text-slate-700 mb-2">
-                  Example Calculation
-                </h4>
-                <div className="bg-purple-50 rounded-lg p-3">
-                  <div className="space-y-1 text-sm">
+                <div className="bg-neutral-50 rounded-lg p-3 mb-2">
+                  <div className="space-y-1 text-xs font-sora">
                     <div className="flex justify-between">
-                      <span className="text-slate-600">Yearly Interest:</span>
-                      <span className="font-medium">$1,000</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-600">Rebate (30%):</span>
-                      <span className="font-medium text-purple-700">$300</span>
-                    </div>
-                    <div className="flex justify-between pt-1 border-t border-purple-200">
-                      <span className="text-slate-700 font-medium">
-                        Weekly STRK:
+                      <span className="text-neutral-600">Collateral:</span>
+                      <span className="font-medium text-neutral-700">
+                        $100,000 BTC
                       </span>
-                      <span className="font-bold text-purple-700">~$5.77</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">
+                        Borrowed (50% LTV):
+                      </span>
+                      <span className="font-medium text-neutral-700">
+                        $50,000 USDU
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">Interest Rate:</span>
+                      <span className="font-medium text-neutral-700">
+                        5% APR ($2,500/yr)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-purple-50 rounded-lg p-3">
+                  <div className="space-y-2 text-sm font-sora">
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">
+                        Interest Rebate (40%):
+                      </span>
+                      <span className="font-medium text-purple-700">
+                        $1,000/yr
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">
+                        Collateral Rewards (2%):
+                      </span>
+                      <span className="font-medium text-purple-700">
+                        $2,000/yr
+                      </span>
+                    </div>
+                    <div className="flex justify-between pt-2 border-t border-purple-200">
+                      <span className="text-neutral-700 font-medium">
+                        Total STRK/Week:
+                      </span>
+                      <span className="font-medium text-purple-700">
+                        ~$57.69
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <Separator className="bg-slate-100" />
-
-              <div>
-                <h4 className="font-medium text-slate-700 mb-2">
-                  Important Notes
-                </h4>
-                <ul className="space-y-1 text-sm text-slate-600">
-                  <li>• Rewards never expire</li>
-                  <li>• Claim multiple weeks at once</li>
-                  <li>• STRK price may fluctuate</li>
-                  <li>• Gas fees apply when claiming</li>
-                </ul>
+              <div className="text-xs font-sora text-neutral-500 space-y-1">
+                <p>• Rewards distributed weekly</p>
+                <p>• Never expire - claim anytime</p>
+                <p>• STRK price may fluctuate</p>
               </div>
             </CardContent>
           </Card>

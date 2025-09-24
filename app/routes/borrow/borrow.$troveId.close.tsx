@@ -179,8 +179,8 @@ function ClosePosition() {
 
   return (
     <>
-      <div className="flex justify-between items-baseline">
-        <h1 className="text-3xl font-medium leading-none pb-6 font-sora text-neutral-800">
+      <div className="flex justify-between pb-6 items-baseline">
+        <h1 className="text-2xl md:text-3xl font-medium leading-none font-sora text-neutral-800">
           Close Position
         </h1>
       </div>

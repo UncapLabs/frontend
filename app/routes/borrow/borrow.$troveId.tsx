@@ -11,24 +11,6 @@ function TroveLayout() {
 
   return (
     <div className="w-full mx-auto max-w-7xl py-8 lg:py-12 px-4 sm:px-6 lg:px-8 min-h-screen">
-      {/* <div className="flex justify-between items-baseline">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/")}
-            className="rounded-full"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-3xl font-bold mb-2 text-slate-800">
-            Position #{troveId ? truncateTroveId(troveId) : ""}
-          </h1>
-        </div>
-      </div>
-      <Separator className="mb-8 bg-slate-200" /> */}
-
-      {/* Child routes will render here */}
       <Outlet />
     </div>
   );
