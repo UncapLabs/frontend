@@ -133,43 +133,6 @@ function Earn() {
         {/* Left Section: Form */}
         <div className="flex-1 lg:flex-[2]">
           <div>
-            {/* Tab navigation at the top */}
-            <div className="flex gap-6  pb-6">
-              <button
-                type="button"
-                onClick={() => setAction("deposit")}
-                className={`pb-2 px-1 text-sm font-medium font-sora transition-colors relative ${
-                  action === "deposit"
-                    ? "text-neutral-800 border-b-2 border-token-bg-blue -mb-[2px]"
-                    : "text-neutral-500 hover:text-neutral-700"
-                }`}
-              >
-                Deposit
-              </button>
-              <button
-                type="button"
-                onClick={() => setAction("withdraw")}
-                className={`pb-2 px-1 text-sm font-medium font-sora transition-colors relative ${
-                  action === "withdraw"
-                    ? "text-neutral-800 border-b-2 border-token-bg-blue -mb-[2px]"
-                    : "text-neutral-500 hover:text-neutral-700"
-                }`}
-              >
-                Withdraw
-              </button>
-              <button
-                type="button"
-                onClick={() => setAction("claim")}
-                className={`pb-2 px-1 text-sm font-medium font-sora transition-colors relative ${
-                  action === "claim"
-                    ? "text-neutral-800 border-b-2 border-token-bg-blue -mb-[2px]"
-                    : "text-neutral-500 hover:text-neutral-700"
-                }`}
-              >
-                Claim Rewards
-              </button>
-            </div>
-
             {["pending", "success", "error"].includes(currentState) ? (
               <TransactionStatus
                 transactionHash={transactionHash}
@@ -278,72 +241,120 @@ function Earn() {
               />
             ) : (
               <>
-                {/* Collateral Selection */}
-                <div className="bg-white rounded-2xl p-4 mb-2">
-                  <Label className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight mb-3 block">
-                    Select Stability Pool
-                  </Label>
-                  <div className="flex gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedCollateral("UBTC")}
-                      disabled={isSending || isPending}
-                      className={`flex-1 p-3 rounded-lg transition-all flex items-center gap-3 ${
-                        selectedCollateral === "UBTC"
-                          ? "bg-token-bg border-2 border-token-orange"
-                          : "bg-neutral-50 border-2 border-transparent hover:bg-neutral-100"
-                      }`}
-                    >
-                      <img
-                        src={UBTC_TOKEN.icon}
-                        alt="UBTC"
-                        className="w-8 h-8 object-contain"
-                      />
-                      <div className="text-left">
-                        <span
-                          className={`text-sm font-medium font-sora block ${
-                            selectedCollateral === "UBTC"
-                              ? "text-token-orange"
-                              : "text-neutral-800"
-                          }`}
-                        >
-                          UBTC Pool
-                        </span>
-                        <span className="text-xs text-neutral-500 font-sora">
-                          Bitcoin collateral
-                        </span>
-                      </div>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedCollateral("GBTC")}
-                      disabled={isSending || isPending}
-                      className={`flex-1 p-3 rounded-lg transition-all flex items-center gap-3 ${
-                        selectedCollateral === "GBTC"
-                          ? "bg-token-bg border-2 border-token-orange"
-                          : "bg-neutral-50 border-2 border-transparent hover:bg-neutral-100"
-                      }`}
-                    >
-                      <img
-                        src={GBTC_TOKEN.icon}
-                        alt="GBTC"
-                        className="w-8 h-8 object-contain"
-                      />
-                      <div className="text-left">
-                        <span
-                          className={`text-sm font-medium font-sora block ${
-                            selectedCollateral === "GBTC"
-                              ? "text-token-orange"
-                              : "text-neutral-800"
-                          }`}
-                        >
-                          GBTC Pool
-                        </span>
-                        <span className="text-xs text-neutral-500 font-sora">
-                          Grayscale Bitcoin
-                        </span>
-                      </div>
-                    </button>
+                {/* Combined Action Tabs and Pool Selection */}
+                <div className="bg-white rounded-2xl mb-2">
+                  <div className="p-4 pb-2">
+                    <Label className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight mb-3 block">
+                      Choose Action & Pool
+                    </Label>
+                  </div>
+
+                  {/* Action Tabs Row */}
+                  <div className="px-4 pb-3">
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setAction("deposit")}
+                        disabled={isSending || isPending}
+                        className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium font-sora transition-all ${
+                          action === "deposit"
+                            ? "bg-token-bg-blue text-white"
+                            : "text-neutral-600 hover:text-neutral-800 hover:bg-neutral-50"
+                        }`}
+                      >
+                        Deposit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAction("withdraw")}
+                        disabled={isSending || isPending}
+                        className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium font-sora transition-all ${
+                          action === "withdraw"
+                            ? "bg-token-bg-blue text-white"
+                            : "text-neutral-600 hover:text-neutral-800 hover:bg-neutral-50"
+                        }`}
+                      >
+                        Withdraw
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAction("claim")}
+                        disabled={isSending || isPending}
+                        className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium font-sora transition-all ${
+                          action === "claim"
+                            ? "bg-token-bg-blue text-white"
+                            : "text-neutral-600 hover:text-neutral-800 hover:bg-neutral-50"
+                        }`}
+                      >
+                        Claim Rewards
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Pool Selection Row */}
+                  <div className="border-t border-neutral-100 p-4 pt-3">
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedCollateral("UBTC")}
+                        disabled={isSending || isPending}
+                        className={`flex-1 p-3 rounded-lg transition-all flex items-center gap-3 ${
+                          selectedCollateral === "UBTC"
+                            ? "bg-token-bg border-2 border-token-orange"
+                            : "bg-neutral-50 border-2 border-transparent hover:bg-neutral-100"
+                        }`}
+                      >
+                        <img
+                          src={UBTC_TOKEN.icon}
+                          alt="UBTC"
+                          className="w-8 h-8 object-contain"
+                        />
+                        <div className="text-left">
+                          <span
+                            className={`text-sm font-medium font-sora block ${
+                              selectedCollateral === "UBTC"
+                                ? "text-token-orange"
+                                : "text-neutral-800"
+                            }`}
+                          >
+                            UBTC Pool
+                          </span>
+                          <span className="text-xs text-neutral-500 font-sora">
+                            Bitcoin collateral
+                          </span>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedCollateral("GBTC")}
+                        disabled={isSending || isPending}
+                        className={`flex-1 p-3 rounded-lg transition-all flex items-center gap-3 ${
+                          selectedCollateral === "GBTC"
+                            ? "bg-token-bg border-2 border-token-orange"
+                            : "bg-neutral-50 border-2 border-transparent hover:bg-neutral-100"
+                        }`}
+                      >
+                        <img
+                          src={GBTC_TOKEN.icon}
+                          alt="GBTC"
+                          className="w-8 h-8 object-contain"
+                        />
+                        <div className="text-left">
+                          <span
+                            className={`text-sm font-medium font-sora block ${
+                              selectedCollateral === "GBTC"
+                                ? "text-token-orange"
+                                : "text-neutral-800"
+                            }`}
+                          >
+                            GBTC Pool
+                          </span>
+                          <span className="text-xs text-neutral-500 font-sora">
+                            Grayscale Bitcoin
+                          </span>
+                        </div>
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -366,7 +377,7 @@ function Earn() {
                   }}
                 >
                   <div
-                    className={`space-y-6 ${
+                    className={`bg-white rounded-2xl p-6 space-y-6 ${
                       isSending || isPending ? "opacity-75" : ""
                     }`}
                   >
