@@ -63,28 +63,30 @@ export function DepositSection({
         includeMax={true}
       />
 
-      {/* Show projected pool share for deposits */}
-      {value && Number(value) > 0 && selectedPosition && (
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-slate-600">
-            Projected pool share after deposit:
-          </span>
-          <span className="font-medium text-slate-900">
-            {(() => {
-              const inputAmount = Number(value);
-              const currentDeposit = selectedPosition?.userDeposit || 0;
-              const totalDeposit = selectedPosition?.totalDeposits || 0;
-              const newTotalDeposit = totalDeposit + inputAmount;
-              const newUserDeposit = currentDeposit + inputAmount;
-              const share =
-                newTotalDeposit > 0
-                  ? (newUserDeposit / newTotalDeposit) * 100
-                  : 0;
-              return `${share.toFixed(4)}%`;
-            })()}
-          </span>
-        </div>
-      )}
+      <div className="flex items-center justify-between text-sm">
+        <span className="text-slate-600">
+          Projected pool share after deposit:
+        </span>
+        <span className="font-medium text-slate-900">
+          {(() => {
+            // Show placeholder if no value entered or no position data
+            if (!value || Number(value) <= 0 || !selectedPosition) {
+              return "-";
+            }
+
+            const inputAmount = Number(value);
+            const currentDeposit = selectedPosition?.userDeposit || 0;
+            const totalDeposit = selectedPosition?.totalDeposits || 0;
+            const newTotalDeposit = totalDeposit + inputAmount;
+            const newUserDeposit = currentDeposit + inputAmount;
+            const share =
+              newTotalDeposit > 0
+                ? (newUserDeposit / newTotalDeposit) * 100
+                : 0;
+            return `${share.toFixed(4)}%`;
+          })()}
+        </span>
+      </div>
     </div>
   );
 }

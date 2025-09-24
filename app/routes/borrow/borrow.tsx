@@ -403,6 +403,7 @@ function Borrow() {
                       }}
                       onBlur={field.handleBlur}
                       label="Borrow Amount"
+                      decimals={2}
                       percentageButtons
                       percentageButtonsOnHover
                       onPercentageClick={handleBorrowPercentageClick}
@@ -410,6 +411,7 @@ function Borrow() {
                       showBalance={false}
                       tokenSelectorBgColor="bg-token-bg-red/10"
                       tokenSelectorTextColor="text-token-bg-red"
+                      maxValue={100000000}
                     />
                   )}
                 </form.Field>
@@ -512,11 +514,6 @@ function Borrow() {
               },
             }}
             liquidationPrice={metrics.liquidationPrice}
-            warnings={
-              borrowAmount && borrowAmount < 200
-                ? ["Minimum debt requirement is $200 USDU"]
-                : []
-            }
             collateralType={selectedCollateralToken.collateralType}
           />
           <RedemptionInfo variant="inline" />

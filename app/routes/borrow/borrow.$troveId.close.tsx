@@ -2,6 +2,7 @@ import { Button } from "~/components/ui/button";
 import { Info } from "lucide-react";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { InfoBox } from "~/components/ui/info-box";
+import { ArrowIcon } from "~/components/icons/arrow-icon";
 import type { Route } from "./+types/borrow.$troveId.close";
 import { useParams, useNavigate } from "react-router";
 import { useAccount, useBalance } from "@starknet-react/core";
@@ -264,25 +265,28 @@ function ClosePosition() {
               )}
 
               {/* Debt Repayment Section */}
-              <div className="bg-white rounded-2xl p-6 border border-neutral-200">
-                <h3 className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight mb-4">
+              <div className="bg-white rounded-2xl p-6 space-y-6">
+                <div className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight">
                   DEBT TO REPAY
-                </h3>
+                </div>
 
-                {/* USDU Token Display */}
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="flex items-center gap-2 px-3 py-2 bg-token-bg-red/10 rounded-lg">
+                {/* Main content area - matching TokenInput style */}
+                <div className="flex items-center gap-6">
+                  {/* Token selector on the left */}
+                  <div className="flex items-center gap-2 p-2.5 bg-token-bg-red/10 rounded-lg">
                     <img
                       src={USDU_TOKEN.icon}
                       alt="USDU"
-                      className="w-6 h-6 object-contain"
+                      className="w-5 h-5 object-contain"
                     />
-                    <span className="text-sm font-medium text-token-bg-red font-sora">
+                    <span className="text-token-bg-red text-xs font-medium font-sora">
                       USDU
                     </span>
                   </div>
-                  <div className="text-right flex-1">
-                    <div className="text-xl font-semibold text-neutral-800 font-sora">
+
+                  {/* Amount on the right */}
+                  <div className="flex-1">
+                    <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal font-sora text-neutral-800 w-full">
                       <NumericFormat
                         displayType="text"
                         value={position.borrowedAmount}
@@ -291,80 +295,89 @@ function ClosePosition() {
                         fixedDecimalScale
                       />
                     </div>
-                    {usdu?.price && (
-                      <div className="text-xs text-neutral-500">
-                        ≈ $
-                        <NumericFormat
-                          displayType="text"
-                          value={position.borrowedAmount * usdu.price}
-                          thousandSeparator=","
-                          decimalScale={2}
-                          fixedDecimalScale
-                        />
-                      </div>
-                    )}
                   </div>
                 </div>
 
-                {/* Balance Check */}
-                <div className="bg-neutral-50 rounded-lg p-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-neutral-600">
-                      Your Balance
+                {/* Bottom row: USD value and Balance */}
+                <div className="flex justify-between items-center">
+                  {/* USD value on left */}
+                  <NumericFormat
+                    className="text-neutral-800 text-sm font-medium font-sora leading-none"
+                    displayType="text"
+                    value={position.borrowedAmount * (usdu?.price || 1)}
+                    prefix="= $"
+                    thousandSeparator=","
+                    decimalScale={3}
+                    fixedDecimalScale
+                  />
+
+                  {/* Balance info on right */}
+                  <div className="flex items-center gap-1">
+                    <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
+                      Balance:
                     </span>
-                    <div className="text-right flex items-baseline gap-2">
-                      <span
-                        className={`text-sm font-medium ${
-                          hasEnoughBalance ? "text-green-600" : "text-red-600"
-                        }`}
-                      >
-                        <NumericFormat
+                    <NumericFormat
+                      className={`text-base font-medium font-sora leading-none ${
+                        hasEnoughBalance ? "text-neutral-800" : "text-red-600"
+                      }`}
+                      displayType="text"
+                      value={usduBal}
+                      thousandSeparator=","
+                      decimalScale={3}
+                      fixedDecimalScale
+                    />
+                    <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
+                      USDU
+                    </span>
+                    {!hasEnoughBalance && (
+                      <span className="text-xs text-red-600 font-medium ml-1">
+                        (need <NumericFormat
                           displayType="text"
-                          value={usduBal}
+                          value={position.borrowedAmount - usduBal}
                           thousandSeparator=","
                           decimalScale={2}
                           fixedDecimalScale
-                        />{" "}
-                        USDU
+                        /> more)
                       </span>
-                      {!hasEnoughBalance && (
-                        <span className="text-xs text-red-600">
-                          (need{" "}
-                          <NumericFormat
-                            displayType="text"
-                            value={position.borrowedAmount - usduBal}
-                            thousandSeparator=","
-                            decimalScale={2}
-                            fixedDecimalScale
-                          />{" "}
-                          more)
-                        </span>
-                      )}
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Collateral Return Section */}
-              <div className="bg-white rounded-2xl p-6 border border-neutral-200 mt-6">
-                <h3 className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight mb-4">
-                  COLLATERAL TO RECEIVE
-                </h3>
+              <div className="relative flex justify-center items-center">
+                <div className="absolute z-10">
+                  <ArrowIcon
+                    size={40}
+                    className="sm:w-12 sm:h-12 md:w-20 md:h-20"
+                    innerCircleColor="#242424"
+                    direction="down"
+                  />
+                </div>
+              </div>
 
-                {/* Collateral Token Display */}
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 px-3 py-2 bg-token-bg rounded-lg">
+              {/* Collateral Return Section */}
+              <div className="bg-white rounded-2xl p-6 space-y-6">
+                <div className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight">
+                  COLLATERAL TO RECEIVE
+                </div>
+
+                {/* Main content area - matching TokenInput style */}
+                <div className="flex items-center gap-6">
+                  {/* Token selector on the left */}
+                  <div className="flex items-center gap-2 p-2.5 bg-token-bg rounded-lg">
                     <img
                       src={selectedCollateralToken.icon}
                       alt={selectedCollateralToken.symbol}
-                      className="w-6 h-6 object-contain"
+                      className="w-5 h-5 object-contain"
                     />
-                    <span className="text-sm font-medium text-token-orange font-sora">
+                    <span className="text-token-orange text-xs font-medium font-sora">
                       {selectedCollateralToken.symbol}
                     </span>
                   </div>
-                  <div className="text-right flex-1">
-                    <div className="text-xl font-semibold text-neutral-800 font-sora">
+
+                  {/* Amount on the right */}
+                  <div className="flex-1">
+                    <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal font-sora text-neutral-800 w-full">
                       <NumericFormat
                         displayType="text"
                         value={position.collateralAmount}
@@ -373,19 +386,20 @@ function ClosePosition() {
                         fixedDecimalScale={false}
                       />
                     </div>
-                    {bitcoin?.price && (
-                      <div className="text-xs text-neutral-500">
-                        ≈ $
-                        <NumericFormat
-                          displayType="text"
-                          value={position.collateralAmount * bitcoin.price}
-                          thousandSeparator=","
-                          decimalScale={2}
-                          fixedDecimalScale
-                        />
-                      </div>
-                    )}
                   </div>
+                </div>
+
+                {/* Bottom row: USD value */}
+                <div className="flex justify-between items-center">
+                  <NumericFormat
+                    className="text-neutral-800 text-sm font-medium font-sora leading-none"
+                    displayType="text"
+                    value={position.collateralAmount * (bitcoin?.price || 0)}
+                    prefix="= $"
+                    thousandSeparator=","
+                    decimalScale={3}
+                    fixedDecimalScale
+                  />
                 </div>
               </div>
 

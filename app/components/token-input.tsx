@@ -162,7 +162,7 @@ export const TokenInput = memo(function TokenInput({
             </Select>
           ) : (
             <div
-              className={`p-2.5 ${tokenSelectorBgColor} rounded-lg inline-flex justify-start items-center gap-2`}
+              className={`p-2.5 pr-7 ${tokenSelectorBgColor} rounded-lg inline-flex justify-start items-center gap-2`}
             >
               {token.icon && (
                 <img
