@@ -336,7 +336,7 @@ function BorrowCardSkeleton() {
   return (
     <Card className="rounded-2xl border-0 shadow-none bg-white">
       <CardHeader
-        className="border-b border-[#F5F3EE] px-2"
+        className="border-b border-[#F5F3EE]"
         style={{ paddingBottom: "0.75rem" }}
       >
         <div className="flex items-center justify-between">
