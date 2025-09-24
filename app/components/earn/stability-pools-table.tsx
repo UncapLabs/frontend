@@ -85,7 +85,8 @@ export function StabilityPoolsTable() {
                           displayType="text"
                           value={pool.apr}
                           decimalScale={2}
-                        />%
+                        />
+                        %
                       </span>
                       <span className="text-[#B2B2B2] text-xs">APR</span>
                     </div>
@@ -93,9 +94,11 @@ export function StabilityPoolsTable() {
                 </div>
 
                 {/* Pool statistics */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <div className="text-[#B2B2B2] text-xs mb-1">Total Value Locked</div>
+                <div className="flex justify-between gap-6">
+                  <div className="flex-1">
+                    <div className="text-[#B2B2B2] text-xs mb-1">
+                      Total Value Locked
+                    </div>
                     <div className="text-white text-sm font-medium">
                       <NumericFormat
                         displayType="text"
@@ -106,10 +109,14 @@ export function StabilityPoolsTable() {
                       />
                     </div>
                   </div>
-                  <div>
-                    <div className="text-[#B2B2B2] text-xs mb-1">Your Deposit</div>
+                  <div className="flex-1 text-right">
+                    <div className="text-[#B2B2B2] text-xs mb-1">
+                      Your Deposit
+                    </div>
                     <div className="text-white text-sm font-medium">
-                      {address && pool.position && pool.position.userDeposit > 0 ? (
+                      {address &&
+                      pool.position &&
+                      pool.position.userDeposit > 0 ? (
                         <NumericFormat
                           displayType="text"
                           value={pool.position.userDeposit}
@@ -124,39 +131,55 @@ export function StabilityPoolsTable() {
                   </div>
                 </div>
 
-                {/* Rewards section - only show if user has deposits */}
-                {address && pool.position && pool.position.userDeposit > 0 && (
-                  <div className="pt-3 border-t border-zinc-700">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <div className="text-[#B2B2B2] text-xs mb-1">USDU Rewards</div>
-                        <div className="text-white text-sm font-medium">
+                {/* Rewards section */}
+                <div className="pt-3 border-t border-zinc-700">
+                  <div className="flex justify-between gap-6">
+                    <div className="flex-1">
+                      <div className="text-[#B2B2B2] text-xs mb-1">
+                        USDU Rewards
+                      </div>
+                      <div className="text-white text-sm font-medium">
+                        {address &&
+                        pool.position &&
+                        pool.position.rewards?.usdu &&
+                        pool.position.rewards.usdu > 0 ? (
                           <NumericFormat
                             displayType="text"
-                            value={pool.position.rewards?.usdu || 0}
+                            value={pool.position.rewards.usdu}
                             thousandSeparator=","
                             decimalScale={2}
                             fixedDecimalScale
                             suffix=" USDU"
                           />
-                        </div>
+                        ) : (
+                          <span className="text-[#B2B2B2]">—</span>
+                        )}
                       </div>
-                      <div>
-                        <div className="text-[#B2B2B2] text-xs mb-1">Collateral Rewards</div>
-                        <div className="text-white text-sm font-medium">
+                    </div>
+                    <div className="flex-1 text-right">
+                      <div className="text-[#B2B2B2] text-xs mb-1">
+                        Collateral Rewards
+                      </div>
+                      <div className="text-white text-sm font-medium">
+                        {address &&
+                        pool.position &&
+                        pool.position.rewards?.collateral &&
+                        pool.position.rewards.collateral > 0 ? (
                           <NumericFormat
                             displayType="text"
-                            value={pool.position.rewards?.collateral || 0}
+                            value={pool.position.rewards.collateral}
                             thousandSeparator=","
                             decimalScale={6}
                             fixedDecimalScale
                             suffix={` ${pool.token.symbol}`}
                           />
-                        </div>
+                        ) : (
+                          <span className="text-[#B2B2B2]">—</span>
+                        )}
                       </div>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
             </div>
           ))}
