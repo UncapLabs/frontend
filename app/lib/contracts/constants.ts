@@ -3,7 +3,7 @@ import deploymentData from "./deployment_addresses.json";
 import type { Address } from "@starknet-react/chains";
 
 export const INTEREST_RATE_SCALE_DOWN_FACTOR = 10n ** 16n;
-export const MIN_DEBT = 2000; // Minimum debt threshold in USDU
+export const MIN_DEBT = 200; // Minimum debt threshold in USDU
 export const MAX_LIMIT = 1000000; // Maximum amount limit for UI inputs
 
 // Contract addresses

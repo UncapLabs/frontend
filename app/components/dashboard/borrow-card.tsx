@@ -206,7 +206,7 @@ export default function BorrowCard(props: Props) {
                     value={trove.collateralAmount}
                     thousandSeparator=","
                     decimalScale={6}
-                    fixedDecimalScale={false}
+                    fixedDecimalScale={true}
                   />
                 </div>
                 {/* Token display inline like in token-input */}

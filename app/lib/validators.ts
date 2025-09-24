@@ -64,9 +64,9 @@ export const validators = {
     value > maxDebt ? "Exceeds maximum borrowable amount" : undefined,
 
   /**
-   * Validates minimum debt requirement ($2000)
+   * Validates minimum debt requirement ($200)
    */
-  minimumDebt: (value: number, minDebt: number = 2000) =>
+  minimumDebt: (value: number, minDebt: number = 200) =>
     value < minDebt
       ? `Minimum debt is $${minDebt.toLocaleString()}`
       : undefined,

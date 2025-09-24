@@ -372,7 +372,7 @@ function Borrow() {
 
                       return validators.compose(
                         validators.requiresCollateral(value, collateral),
-                        validators.minimumUsdValue(value, usdu.price, 2000),
+                        validators.minimumUsdValue(value, usdu.price, 200),
                         validators.debtLimit(value, debtLimit),
                         // LTV check
                         (() => {
@@ -513,8 +513,8 @@ function Borrow() {
             }}
             liquidationPrice={metrics.liquidationPrice}
             warnings={
-              borrowAmount && borrowAmount < 2000
-                ? ["Minimum debt requirement is $2,000 USDU"]
+              borrowAmount && borrowAmount < 200
+                ? ["Minimum debt requirement is $200 USDU"]
                 : []
             }
             collateralType={selectedCollateralToken.collateralType}

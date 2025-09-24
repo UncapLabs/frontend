@@ -46,42 +46,68 @@ function WalletInfoDisplay({
   handleDisconnect: () => void;
 }) {
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-      <div className="flex justify-between items-center mb-3">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+    <div className="bg-white rounded-2xl border border-[#F5F3EE] p-6">
+      <div className="flex justify-between items-center mb-4">
+        <p className="text-xs font-medium font-sora text-neutral-800 uppercase tracking-tight">
           Connected with {activeConnectorName || "Unknown Connector"}
         </p>
         <button
           onClick={handleDisconnect}
-          className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+          className="inline-flex items-center gap-1 text-sm font-medium font-sora text-token-bg-blue hover:text-blue-600 transition-colors"
         >
-          Disconnect <span aria-hidden="true">&rarr;</span>
+          Disconnect
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 12 12"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="text-current"
+          >
+            <path
+              d="M4.5 2L8.5 6L4.5 10"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
       </div>
 
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-4 mb-6">
         {starkProfile?.profilePicture ? (
           <img
             src={starkProfile.profilePicture}
             alt={starkProfile.name || "Profile picture"}
-            className="w-10 h-10 rounded-full object-cover"
+            className="w-12 h-12 rounded-xl object-cover"
           />
         ) : (
-          <div className="w-10 h-10">
-            <AvatarIcon />
+          <div className="w-12 h-12 rounded-xl bg-token-bg flex items-center justify-center">
+            <div className="w-6 h-6 rounded-full bg-token-orange" />
           </div>
         )}
-        <p className="text-lg font-medium truncate" title={address}>
-          {address ? formatTruncatedAddress(address) : ""}
-        </p>
+        <div>
+          <p
+            className="text-lg font-medium font-sora text-neutral-800 truncate"
+            title={address}
+          >
+            {address ? formatTruncatedAddress(address) : ""}
+          </p>
+          {starkProfile?.name && (
+            <p className="text-sm font-normal font-sora text-[#AAA28E]">
+              {starkProfile.name}
+            </p>
+          )}
+        </div>
       </div>
 
-      <div className="flex items-center gap-4 text-sm">
+      <div className="flex flex-col gap-2">
         <a
           href={getExplorerUrl()}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline"
+          className="flex items-center justify-center gap-2 w-full h-10 px-4 bg-white hover:bg-[#F5F3EE] border border-[#F5F3EE] rounded-xl text-sm font-medium font-sora text-neutral-800 transition-all"
         >
           View on explorer
           <svg
@@ -101,9 +127,9 @@ function WalletInfoDisplay({
         </a>
         <button
           onClick={handleCopyToClipboard}
-          className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline"
+          className="flex items-center justify-center gap-2 w-full h-10 px-4 bg-white hover:bg-[#F5F3EE] border border-[#F5F3EE] rounded-xl text-sm font-medium font-sora text-neutral-800 transition-all"
         >
-          {copied ? "Copied!" : "Copy to clipboard"}
+          {copied ? "Copied!" : "Copy address"}
           {!copied && (
             <svg
               className="w-4 h-4"
@@ -209,8 +235,21 @@ export function WalletConnector() {
         {starkProfile?.name || formatTruncatedAddress(address || "")}
       </span>
       {/* Dropdown arrow */}
-      <svg width="8" height="5" viewBox="0 0 8 5" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
-        <path d="M1 1L4 4L7 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <svg
+        width="8"
+        height="5"
+        viewBox="0 0 8 5"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="mr-2"
+      >
+        <path
+          d="M1 1L4 4L7 1"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     </button>
   );

@@ -158,23 +158,16 @@ export default function StabilityPoolCard({
           {/* Collateral Rewards section */}
           <div className="pl-6 py-6">
             <div className="text-xs font-medium font-sora uppercase tracking-tight mb-2 text-neutral-800">
-              Collateral Rewards
+              {poolType} Rewards
             </div>
-            <div className="flex items-baseline gap-2">
-              <div className="text-xl font-medium font-sora text-neutral-800">
-                <NumericFormat
-                  displayType="text"
-                  value={collateralRewards}
-                  thousandSeparator=","
-                  decimalScale={6}
-                  fixedDecimalScale={false}
-                />
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-sm font-medium font-sora text-neutral-800">
-                  {poolType}
-                </span>
-              </div>
+            <div className="text-xl font-medium font-sora text-neutral-800">
+              <NumericFormat
+                displayType="text"
+                value={collateralRewards}
+                thousandSeparator=","
+                decimalScale={6}
+                fixedDecimalScale={true}
+              />
             </div>
           </div>
         </div>

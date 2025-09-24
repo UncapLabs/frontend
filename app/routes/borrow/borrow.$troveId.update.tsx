@@ -713,7 +713,7 @@ function UpdatePosition() {
                           : 0;
 
                         return validators.compose(
-                          validators.minimumUsdValue(value, usdu.price, 2000),
+                          validators.minimumUsdValue(value, usdu.price, 200),
                           validators.minimumDebt(value * usdu.price),
                           value > currentDebt
                             ? validators.debtLimit(value, debtLimit)
@@ -916,8 +916,8 @@ function UpdatePosition() {
             }}
             liquidationPrice={metrics.liquidationPrice}
             warnings={
-              borrowAmount && borrowAmount < 2000
-                ? ["Minimum debt requirement is $2,000 USDU"]
+              borrowAmount && borrowAmount < 200
+                ? ["Minimum debt requirement is $200 USDU"]
                 : []
             }
             collateralType={position?.collateralAsset as CollateralType}
