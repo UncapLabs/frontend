@@ -67,14 +67,14 @@ export default function Dashboard() {
   return (
     <div className="w-full mx-auto max-w-7xl py-8 lg:py-12 px-4 sm:px-6 lg:px-8 min-h-screen">
       {/* Header with title and dynamic button */}
-      <div className="flex justify-between items-end pb-6">
+      <div className="flex justify-between items-baseline pb-2">
         <h1 className="text-2xl md:text-3xl font-medium leading-none font-sora text-neutral-800">
           Dashboard
         </h1>
 
         <Button
           onClick={handleCreateNew}
-          className="px-4 py-2.5 md:px-6 md:py-3.5 bg-[#006CFF] hover:bg-[#0056CC] rounded-xl inline-flex items-center gap-2 md:gap-2.5 transition-colors border-0 h-auto"
+          className="px-4 py-2.5 md:px-6 md:py-4 bg-[#006CFF] hover:bg-[#0056CC] rounded-xl inline-flex items-center gap-2 md:gap-2.5 transition-colors border-0 h-auto"
         >
           <span className="text-white text-xs font-medium font-sora leading-none">
             Open new position

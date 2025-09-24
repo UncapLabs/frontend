@@ -129,14 +129,9 @@ function Earn() {
         </h1>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-7 lg:max-w-6xl gap-6">
-        {/* Table section: top on mobile, right on desktop */}
-        <div className="lg:col-span-3 lg:order-2">
-          <StabilityPoolsTable />
-        </div>
-
-        {/* Form section: bottom on mobile, left on desktop */}
-        <div className="lg:col-span-4 lg:order-1">
+      <div className="flex flex-col-reverse lg:flex-row gap-5">
+        {/* Left Section: Form */}
+        <div className="flex-1 lg:flex-[2]">
           <div>
             {/* Tab navigation at the top */}
             <div className="flex gap-6  pb-6">
@@ -783,6 +778,11 @@ function Earn() {
               </>
             )}
           </div>
+        </div>
+
+        {/* Right Section: Table */}
+        <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px]">
+          <StabilityPoolsTable />
         </div>
       </div>
     </div>

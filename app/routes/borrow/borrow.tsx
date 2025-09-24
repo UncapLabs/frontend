@@ -193,14 +193,14 @@ function Borrow() {
   return (
     <div className="w-full mx-auto max-w-7xl py-8 lg:py-12 px-4 sm:px-6 lg:px-8 min-h-screen">
       <div className="flex justify-between items-baseline">
-        <h1 className="text-3xl font-medium leading-none mb-4 font-sora text-neutral-800">
+        <h1 className="text-3xl font-medium leading-none pb-6 font-sora text-neutral-800">
           Borrow
         </h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+      <div className="flex flex-col lg:flex-row gap-5">
         {/* Left Panel */}
-        <div className="md:col-span-4">
+        <div className="flex-1 lg:flex-[2]">
           {["pending", "success", "error"].includes(currentState) ? (
             <TransactionStatus
               transactionHash={transactionHash}
@@ -493,7 +493,7 @@ function Borrow() {
         </div>
 
         {/* Right Panel - Transaction Summary and Redemption Info */}
-        <div className="md:col-span-3 space-y-4">
+        <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px] space-y-4">
           <TransactionSummary
             type="open"
             changes={{

@@ -104,9 +104,9 @@ export function CollateralSurplusCard() {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-7 md:max-w-3xl lg:max-w-5xl gap-4">
+    <div className="flex flex-col lg:flex-row gap-5">
       {/* Left Panel */}
-      <div className="md:col-span-4 space-y-6">
+      <div className="flex-1 lg:flex-[2] space-y-6">
         {/* Show transaction status if in progress */}
         {["pending", "success", "error"].includes(currentState) ? (
           <TransactionStatus
@@ -201,7 +201,7 @@ export function CollateralSurplusCard() {
       </div>
 
       {/* Right Panel - Info Box */}
-      <div className="md:col-span-3">
+      <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px]">
         <InfoBox title="Collateral Surplus Available" variant="green">
           <div className="space-y-3">
             <p className="text-sm font-normal leading-relaxed">

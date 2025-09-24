@@ -206,9 +206,9 @@ function UpdatePosition() {
           Update Position
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="flex flex-col lg:flex-row gap-5">
           {/* Left Panel Skeleton */}
-          <div className="md:col-span-2">
+          <div className="flex-1 lg:flex-[2]">
             <Card className="border border-slate-200">
               <CardContent className="pt-6 space-y-6">
                 {/* Current Position Info Skeleton */}
@@ -266,7 +266,7 @@ function UpdatePosition() {
           </div>
 
           {/* Right Panel Skeleton */}
-          <div className="md:col-span-1">
+          <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px]">
             <Card className="border border-slate-200">
               <CardContent className="pt-6 space-y-4">
                 <div className="h-5 w-32 bg-slate-200 rounded animate-pulse" />
@@ -302,9 +302,9 @@ function UpdatePosition() {
         Update Position
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="flex flex-col lg:flex-row gap-5">
         {/* Left Panel */}
-        <div className="md:col-span-2">
+        <div className="flex-1 lg:flex-[2]">
           {["pending", "success", "error"].includes(currentState) ? (
             <TransactionStatus
               transactionHash={transactionHash}
@@ -888,7 +888,7 @@ function UpdatePosition() {
         </div>
 
         {/* Right Panel - Transaction Summary */}
-        <div className="md:col-span-1">
+        <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px]">
           <TransactionSummary
             type="update"
             changes={{

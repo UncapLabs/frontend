@@ -119,9 +119,9 @@ export function STRKRewardsCard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="flex flex-col lg:flex-row gap-5">
         {/* Left Panel - Main Content */}
-        <div className="md:col-span-2">
+        <div className="flex-1 lg:flex-[2]">
           {isLoading ? (
             <Card className="border border-slate-200 shadow-sm">
               <CardContent className="pt-6">
@@ -311,8 +311,8 @@ export function STRKRewardsCard() {
         </div>
 
         {/* Right Panel - Info */}
-        <div className="md:col-span-1">
-          <Card className="border border-slate-200 shadow-sm sticky top-8">
+        <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px]">
+          <Card className="border border-slate-200 shadow-sm lg:sticky lg:top-8">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-purple-600" />

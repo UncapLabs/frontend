@@ -1,5 +1,5 @@
 import { Button } from "~/components/ui/button";
-import { AlertTriangle, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { InfoBox } from "~/components/ui/info-box";
 import type { Route } from "./+types/borrow.$troveId.close";
@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { BorrowingRestrictionsAlert } from "~/components/borrow/borrowing-restrictions-alert";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
+import { Skeleton } from "~/components/ui/skeleton";
 
 function ClosePosition() {
   const { address } = useAccount();
@@ -80,7 +81,6 @@ function ClosePosition() {
     : false;
 
   // Check trove status
-  const isLiquidated = position?.status === "liquidated";
   const isZombie =
     position?.status === "redeemed" && position?.borrowedAmount < MIN_DEBT;
   const isRedeemed = position?.status === "redeemed";
@@ -115,30 +115,79 @@ function ClosePosition() {
 
   if (isTroveLoading || !position) {
     return (
-      <div>
+      <>
         <div className="flex justify-between items-baseline">
-          <h1 className="text-3xl font-medium leading-none mb-4 font-sora text-neutral-800">
+          <h1 className="text-3xl font-medium leading-none pb-6 font-sora text-neutral-800">
             Close Position
           </h1>
         </div>
-        <div className="flex justify-center items-center h-64">
-          <p className="text-neutral-600">Loading position data...</p>
+
+        <div className="flex flex-col lg:flex-row gap-5">
+          {/* Left Panel Skeleton */}
+          <div className="flex-1 lg:flex-[2] space-y-6">
+            {/* Debt Section Skeleton */}
+            <div className="bg-white rounded-2xl p-6 border border-neutral-200">
+              <Skeleton className="h-3 w-24 mb-4" />
+              <div className="flex items-center gap-3 mb-4">
+                <Skeleton className="h-10 w-24 rounded-lg" />
+                <div className="flex-1 text-right space-y-2">
+                  <Skeleton className="h-7 w-20 ml-auto" />
+                  <Skeleton className="h-4 w-16 ml-auto" />
+                </div>
+              </div>
+              <div className="bg-neutral-50 rounded-lg p-3">
+                <div className="flex justify-between">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+              </div>
+            </div>
+
+            {/* Collateral Section Skeleton */}
+            <div className="bg-white rounded-2xl p-6 border border-neutral-200">
+              <Skeleton className="h-3 w-32 mb-4" />
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-10 w-24 rounded-lg" />
+                <div className="flex-1 text-right space-y-2">
+                  <Skeleton className="h-7 w-24 ml-auto" />
+                  <Skeleton className="h-4 w-16 ml-auto" />
+                </div>
+              </div>
+            </div>
+
+            {/* Button Skeleton */}
+            <Skeleton className="h-12 w-full rounded-xl" />
+          </div>
+
+          {/* Right Panel Skeleton */}
+          <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px]">
+            <div className="bg-blue-50 rounded-2xl p-6 border border-blue-200">
+              <Skeleton className="h-5 w-32 mb-4" />
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
     <>
       <div className="flex justify-between items-baseline">
-        <h1 className="text-3xl font-medium leading-none mb-4 font-sora text-neutral-800">
-          {isLiquidated ? "Liquidated Position" : "Close Position"}
+        <h1 className="text-3xl font-medium leading-none pb-6 font-sora text-neutral-800">
+          Close Position
         </h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+      <div className="flex flex-col lg:flex-row gap-5">
         {/* Left Panel */}
-        <div className="md:col-span-4">
+        <div className="flex-1 lg:flex-[2]">
           {["pending", "success", "error"].includes(currentState) ? (
             <TransactionStatus
               transactionHash={transactionHash}
@@ -192,58 +241,7 @@ function ClosePosition() {
                 currentState === "error" ? "Try Again" : "Back to Dashboard"
               }
             />
-          ) : isLiquidated ? (
-            // Liquidated Position UI
-            <div className="space-y-6">
-              <Alert className="border-orange-200 bg-orange-50 rounded-xl">
-                <AlertTriangle className="h-4 w-4 text-orange-600" />
-                <AlertDescription className="text-orange-800">
-                  <div className="space-y-2">
-                    <p className="font-semibold">
-                      This position has been liquidated
-                    </p>
-                    <p>
-                      The collateral has been sold to cover the debt. Any excess
-                      collateral from this and other liquidated positions can be
-                      claimed from the surplus claim page.
-                    </p>
-                  </div>
-                </AlertDescription>
-              </Alert>
-
-              <div className="bg-white rounded-2xl p-6 border border-neutral-200">
-                <div className="text-center space-y-4">
-                  <div className="inline-flex p-3 rounded-full bg-neutral-100">
-                    <Info className="h-8 w-8 text-neutral-600" />
-                  </div>
-                  <h3 className="font-semibold text-lg text-neutral-800 font-sora">
-                    Check for Collateral Surplus
-                  </h3>
-                  <p className="text-sm text-neutral-600 max-w-md mx-auto">
-                    If there was excess collateral after liquidation, you can
-                    claim it along with surplus from any other liquidated
-                    positions.
-                  </p>
-                  <div className="flex gap-3 justify-center pt-2">
-                    <Button
-                      onClick={() => navigate("/claim")}
-                      className="bg-token-bg-blue hover:bg-blue-600 text-white font-sora"
-                    >
-                      Go to Claim Page
-                    </Button>
-                    <Button
-                      onClick={() => navigate("/")}
-                      variant="outline"
-                      className="font-sora"
-                    >
-                      Back to Dashboard
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
           ) : (
-            // Normal close position UI
             <div className="space-y-1">
               {/* Borrowing Restrictions Alert */}
               <BorrowingRestrictionsAlert collateralType={collateralType} />
@@ -314,7 +312,7 @@ function ClosePosition() {
                     <span className="text-sm text-neutral-600">
                       Your Balance
                     </span>
-                    <div className="text-right">
+                    <div className="text-right flex items-baseline gap-2">
                       <span
                         className={`text-sm font-medium ${
                           hasEnoughBalance ? "text-green-600" : "text-red-600"
@@ -330,8 +328,8 @@ function ClosePosition() {
                         USDU
                       </span>
                       {!hasEnoughBalance && (
-                        <div className="text-xs text-red-600 mt-1">
-                          Need{" "}
+                        <span className="text-xs text-red-600">
+                          (need{" "}
                           <NumericFormat
                             displayType="text"
                             value={position.borrowedAmount - usduBal}
@@ -339,8 +337,8 @@ function ClosePosition() {
                             decimalScale={2}
                             fixedDecimalScale
                           />{" "}
-                          more
-                        </div>
+                          more)
+                        </span>
                       )}
                     </div>
                   </div>
@@ -414,75 +412,42 @@ function ClosePosition() {
         </div>
 
         {/* Right Panel - Info Box */}
-        <div className="md:col-span-3 space-y-4">
-          <InfoBox
-            title={isLiquidated ? "About Liquidation" : "About Closing"}
-            variant="blue"
-          >
-            {isLiquidated ? (
-              <>
-                <div className="space-y-3">
-                  <p className="text-sm font-normal leading-relaxed">
-                    Your position has been liquidated because the collateral
-                    value fell below the required threshold.
-                  </p>
-                  <ul className="space-y-2 list-disc list-inside">
-                    <li className="text-sm font-normal leading-relaxed">
-                      Your collateral was sold to cover the debt
-                    </li>
-                    <li className="text-sm font-normal leading-relaxed">
-                      The position is now permanently closed
-                    </li>
-                    <li className="text-sm font-normal leading-relaxed">
-                      Any excess collateral can be claimed from the surplus page
-                    </li>
-                  </ul>
-                  <p className="text-sm font-medium">
-                    Next Steps: Visit the claim page to check for and claim any
-                    collateral surplus.
-                  </p>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="space-y-3">
-                  <p className="text-sm font-normal leading-relaxed">
-                    Closing your position will repay your entire debt and return
-                    all your collateral.
-                  </p>
-                  <ul className="space-y-2 list-disc list-inside">
-                    <li className="text-sm font-normal leading-relaxed">
-                      You need{" "}
-                      <strong>
-                        {position?.borrowedAmount.toFixed(2)} USDU
-                      </strong>{" "}
-                      to repay your debt
-                    </li>
-                    <li className="text-sm font-normal leading-relaxed">
-                      You will receive back{" "}
-                      <strong>
-                        {position?.collateralAmount.toFixed(7)}{" "}
-                        {selectedCollateralToken.symbol}
-                      </strong>
-                    </li>
-                    <li className="text-sm font-normal leading-relaxed">
-                      The position will be permanently closed
-                    </li>
-                    <li className="text-sm font-normal leading-relaxed">
-                      No further interest or fees will accrue
-                    </li>
-                  </ul>
-                  {(isZombie || isRedeemed) && (
-                    <p className="text-sm font-medium">
-                      ⚠️{" "}
-                      {isZombie
-                        ? "This is a zombie position - closing it will recover your remaining collateral"
-                        : "This position has been partially redeemed - check for surplus after closing"}
-                    </p>
-                  )}
-                </div>
-              </>
-            )}
+        <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px] space-y-4">
+          <InfoBox title="About Closing" variant="blue">
+            <div className="space-y-3">
+              <p className="text-sm font-normal leading-relaxed">
+                Closing your position will repay your entire debt and return all
+                your collateral.
+              </p>
+              <ul className="space-y-2 list-disc list-inside">
+                <li className="text-sm font-normal leading-relaxed">
+                  You need{" "}
+                  <strong>{position?.borrowedAmount.toFixed(2)} USDU</strong> to
+                  repay your debt
+                </li>
+                <li className="text-sm font-normal leading-relaxed">
+                  You will receive back{" "}
+                  <strong>
+                    {position?.collateralAmount.toFixed(7)}{" "}
+                    {selectedCollateralToken.symbol}
+                  </strong>
+                </li>
+                <li className="text-sm font-normal leading-relaxed">
+                  The position will be permanently closed
+                </li>
+                <li className="text-sm font-normal leading-relaxed">
+                  No further interest or fees will accrue
+                </li>
+              </ul>
+              {(isZombie || isRedeemed) && (
+                <p className="text-sm font-medium">
+                  ⚠️{" "}
+                  {isZombie
+                    ? "This is a zombie position - closing it will recover your remaining collateral"
+                    : "This position has been partially redeemed - check for surplus after closing"}
+                </p>
+              )}
+            </div>
           </InfoBox>
         </div>
       </div>
