@@ -4,6 +4,7 @@ import type { RpcProvider } from "starknet";
 
 export interface CloudflareBindings extends Bindings {
   VALUE_FROM_CLOUDFLARE: string;
+  ASSETS: Fetcher;
   // Need to add other specific environment variables as needed
 }
 

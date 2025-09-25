@@ -55,6 +55,7 @@
     "posthog-js": "^1.250.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-markdown": "^10.1.0",
     "react-number-format": "^5.4.4",
     "react-router": "^7.5.3",
     "react-scan": "^0.4.3",
