@@ -21,11 +21,10 @@ export function RedemptionInfo({
   const content = (
     <>
       <p className="text-[#004BB2] text-sm font-normal leading-relaxed font-sora">
-        Redemptions help maintain USDU's peg in a decentralized way.
+        You control your loan's interest rate: lower rates mean less annual cost but higher redemption risk, while higher rates cost more but provide better protection.
       </p>
       <p className="text-[#004BB2] text-sm font-normal leading-relaxed font-sora">
-        If a user is redeemed, their collateral and debt are reduced equally,
-        resulting in no net loss.
+        Redemptions occur when USDU trades below $1. Your debt and collateral are reduced equally (no net loss), with loans redeemed from lowest to highest rate.
       </p>
       <div className="grid grid-cols-3 gap-4 mt-6">
         <div className="flex flex-col items-start">
@@ -65,7 +64,7 @@ export function RedemptionInfo({
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-[#004BB2] text-base font-medium font-sora flex items-center gap-2">
-              Redemptions
+              Setting Your Interest Rate
               <Info className="h-4 w-4 text-[#004BB2]" />
             </DialogTitle>
           </DialogHeader>
@@ -80,11 +79,11 @@ export function RedemptionInfo({
   // Inline version using InfoBox component
   return (
     <InfoBox
-      title="Redemptions"
+      title="Setting Your Interest Rate"
       variant="blue"
       className={className}
-      learnMoreUrl="https://docs.uncap.finance/redemptions"
-      learnMoreText="Learn more about redemptions"
+      learnMoreUrl="https://docs.uncap.finance/interest-rates"
+      learnMoreText="Learn more about interest rates and redemptions"
     >
       {content}
     </InfoBox>
