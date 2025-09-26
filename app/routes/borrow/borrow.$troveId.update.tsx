@@ -25,7 +25,7 @@ import { NumericFormat } from "react-number-format";
 import { useTroveData } from "~/hooks/use-trove-data";
 import { useUpdatePosition } from "~/hooks/use-update-position";
 import { bigintToDecimal } from "~/lib/decimal";
-import { useQueryState, parseAsFloat, parseAsInteger } from "nuqs";
+import { useQueryState, parseAsFloat } from "nuqs";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { getInterestRatePercentage } from "~/lib/utils/position-helpers";
 import { extractTroveId } from "~/lib/utils/trove-id";
@@ -72,9 +72,7 @@ function UpdatePosition() {
   );
   const [interestRate, setInterestRate] = useQueryState(
     "rate",
-    parseAsFloat.withDefault(
-      position ? getInterestRatePercentage(position) : 5
-    )
+    parseAsFloat.withDefault(position ? getInterestRatePercentage(position) : 5)
   );
   const collateralType = selectedCollateralToken.symbol as CollateralType;
 

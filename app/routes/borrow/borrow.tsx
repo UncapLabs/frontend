@@ -22,7 +22,7 @@ import {
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
 import { useBorrow } from "~/hooks/use-borrow";
-import { useQueryState, parseAsFloat, parseAsInteger } from "nuqs";
+import { useQueryState, parseAsFloat } from "nuqs";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { useCollateralToken } from "~/hooks/use-collateral-token";
 import { usePositionMetrics } from "~/hooks/use-position-metrics";
