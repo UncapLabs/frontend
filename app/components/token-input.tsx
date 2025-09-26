@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, type ReactNode } from "react";
 import { NumericFormat, type NumberFormatValues } from "react-number-format";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -29,12 +29,14 @@ interface TokenInputProps {
   value?: number;
   onChange: (value: number | undefined) => void;
   onBlur?: () => void;
-  label: string;
+  label: string | ReactNode;
   placeholder?: string;
   decimals?: number;
   percentageButtons?: boolean;
   percentageButtonsOnHover?: boolean;
   onPercentageClick?: (percentage: number) => void;
+  customPercentageButtons?: ReactNode; // Custom buttons to replace percentage buttons
+  onBalanceClick?: () => void; // Callback when balance is clicked
   disabled?: boolean;
   error?: string;
   helperText?: string;
@@ -56,10 +58,12 @@ export const TokenInput = memo(function TokenInput({
   onBlur,
   label,
   placeholder = "0",
-  decimals = 6,
+  decimals = 7,
   percentageButtons = false,
   percentageButtonsOnHover = false,
   onPercentageClick,
+  customPercentageButtons,
+  onBalanceClick,
   disabled = false,
   error,
   helperText,
@@ -80,7 +84,7 @@ export const TokenInput = memo(function TokenInput({
 
   return (
     <div className="bg-white rounded-2xl p-6 space-y-6 group">
-      <div className="flex justify-between items-start">
+      <div className="flex justify-between items-center">
         <Label
           htmlFor={`${token.symbol}-input`}
           className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight"
@@ -88,27 +92,29 @@ export const TokenInput = memo(function TokenInput({
           {label}
         </Label>
 
-        {/* Percentage buttons on top right */}
-        {shouldShowPercentageButtons && (
-          <div
-            className={`${
-              percentageButtonsOnHover
-                ? "opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out"
-                : ""
-            } flex items-center gap-1.5`}
-          >
-            {(includeMax ? [25, 50, 75, 100] : [25, 50, 75]).map((pct) => (
-              <button
-                key={pct}
-                type="button"
-                className="py-1 px-2 sm:py-2 sm:px-3 text-[10px] sm:text-xs text-neutral-800 font-medium font-sora rounded-md outline outline-offset-[-1px] outline-button-border bg-transparent hover:bg-button-border/50 transition-colors flex items-center justify-center"
-                onClick={() => onPercentageClick(pct / 100)}
+        {/* Custom buttons or percentage buttons on top right */}
+        {customPercentageButtons
+          ? customPercentageButtons
+          : shouldShowPercentageButtons && (
+              <div
+                className={`${
+                  percentageButtonsOnHover
+                    ? "opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out"
+                    : ""
+                } flex items-center gap-1.5`}
               >
-                {pct === 100 ? "MAX" : `${pct}%`}
-              </button>
-            ))}
-          </div>
-        )}
+                {(includeMax ? [25, 50, 75, 100] : [25, 50, 75]).map((pct) => (
+                  <button
+                    key={pct}
+                    type="button"
+                    className="py-1 px-2 sm:py-2 sm:px-3 text-[10px] sm:text-xs text-neutral-800 font-medium font-sora rounded-md outline outline-offset-[-1px] outline-button-border bg-transparent hover:bg-button-border/50 transition-colors flex items-center justify-center"
+                    onClick={() => onPercentageClick(pct / 100)}
+                  >
+                    {pct === 100 ? "MAX" : `${pct}%`}
+                  </button>
+                ))}
+              </div>
+            )}
       </div>
 
       {/* Main content area */}
@@ -204,7 +210,7 @@ export const TokenInput = memo(function TokenInput({
       </div>
 
       {/* Bottom row: USD value on left, Balance on right */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-end">
         {/* USD value on bottom left */}
         <NumericFormat
           className="text-neutral-800 text-sm font-medium font-sora leading-none"
@@ -218,7 +224,19 @@ export const TokenInput = memo(function TokenInput({
 
         {/* Balance info on bottom right */}
         {showBalance && (
-          <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={onBalanceClick}
+            disabled={!onBalanceClick || disabled || !balance?.value}
+            className={`
+              flex items-end gap-1 
+              ${
+                onBalanceClick && balance?.value && !disabled
+                  ? "cursor-pointer hover:opacity-70 transition-opacity"
+                  : "cursor-default"
+              }
+            `}
+          >
             <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
               Balance:
             </span>
@@ -234,7 +252,7 @@ export const TokenInput = memo(function TokenInput({
                       : 0)
                   }
                   thousandSeparator=","
-                  decimalScale={3}
+                  decimalScale={6}
                   fixedDecimalScale
                 />
                 <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
@@ -246,7 +264,7 @@ export const TokenInput = memo(function TokenInput({
                 -
               </span>
             )}
-          </div>
+          </button>
         )}
       </div>
 
