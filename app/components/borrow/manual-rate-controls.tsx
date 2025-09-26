@@ -99,11 +99,8 @@ export function ManualRateControls({
           value={interestRate}
           onValueChange={(values) => {
             const numericValue = values.floatValue;
-            if (
-              numericValue !== undefined &&
-              numericValue >= 0.5 &&
-              numericValue <= 20
-            ) {
+            if (numericValue !== undefined) {
+              // Allow all values during typing, let isAllowed handle the validation
               onInterestRateChange(numericValue);
             }
           }}
@@ -118,10 +115,13 @@ export function ManualRateControls({
           thousandSeparator={false}
           isAllowed={(values) => {
             const { floatValue } = values;
-            return (
-              floatValue === undefined ||
-              (floatValue >= 0.5 && floatValue <= 20)
-            );
+            // Only check maximum, not minimum
+            return floatValue === undefined || floatValue <= 20;
+          }}
+          onBlur={() => {
+            if (interestRate < 0.5) {
+              onInterestRateChange(0.5);
+            }
           }}
         />
         {/* Yearly Interest Cost - Display on the right */}

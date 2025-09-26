@@ -72,7 +72,8 @@ export const TokenInput = memo(function TokenInput({
   const usdValue = value && price ? value * price.price : 0;
 
   const handleValueChange = (values: NumberFormatValues) => {
-    onChange(values.floatValue);
+    if (disabled) return;
+    onChange(values.floatValue ?? 0);
   };
 
   const shouldShowPercentageButtons = percentageButtons && onPercentageClick;
@@ -184,20 +185,18 @@ export const TokenInput = memo(function TokenInput({
         <div className="flex-1">
           <NumericFormat
             id={`${token.symbol}-input`}
-            customInput={Input}
             thousandSeparator=","
             placeholder={placeholder}
             inputMode="decimal"
             allowNegative={false}
             decimalScale={decimals}
             value={value}
-            onValueChange={disabled ? undefined : handleValueChange}
+            onValueChange={handleValueChange}
             onBlur={onBlur}
             disabled={disabled}
             isAllowed={(values) => {
               const { floatValue } = values;
-              if (floatValue === undefined) return true;
-              return floatValue < maxValue;
+              return floatValue === undefined || floatValue < maxValue;
             }}
             className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal font-sora leading-8 sm:leading-9 md:leading-10 h-auto p-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none outline-none shadow-none text-neutral-800 w-full"
           />

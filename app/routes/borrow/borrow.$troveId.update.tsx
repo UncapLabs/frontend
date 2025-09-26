@@ -72,7 +72,7 @@ function UpdatePosition() {
   );
   const [interestRate, setInterestRate] = useQueryState(
     "rate",
-    parseAsInteger.withDefault(
+    parseAsFloat.withDefault(
       position ? getInterestRatePercentage(position) : 5
     )
   );

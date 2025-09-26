@@ -41,7 +41,7 @@ function Borrow() {
   const [borrowAmount, setBorrowAmount] = useQueryState("borrow", parseAsFloat);
   const [interestRate, setInterestRate] = useQueryState(
     "rate",
-    parseAsInteger.withDefault(5)
+    parseAsFloat.withDefault(5)
   );
   const [selectedTokenAddress, setSelectedTokenAddress] =
     useQueryState("collateral");
