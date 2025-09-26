@@ -1,9 +1,11 @@
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import { ArrowDown, AlertTriangle, Info } from "lucide-react";
+import { AlertTriangle, Info } from "lucide-react";
+import { ArrowIcon } from "~/components/icons/arrow-icon";
 import { InterestRateSelector } from "~/components/borrow/interest-rate-selector";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { BorrowingRestrictionsAlert } from "~/components/borrow/borrowing-restrictions-alert";
+import { RedemptionInfo } from "~/components/borrow/redemption-info";
 import { TokenInput } from "~/components/token-input";
 import { useEffect, useCallback } from "react";
 import { useForm } from "@tanstack/react-form";
@@ -296,7 +298,7 @@ function UpdatePosition() {
 
   return (
     <>
-      <h2 className="text-2xl font-semibold text-slate-800 mb-6">
+      <h2 className="text-2xl md:text-3xl font-medium leading-none font-sora text-neutral-800 mb-6">
         Update Position
       </h2>
 
@@ -488,56 +490,11 @@ function UpdatePosition() {
                 </div>
               )}
 
-              <Card
-                className={`border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden ${
+              <div
+                className={`space-y-1 ${
                   isSending || isPending ? "opacity-75" : ""
                 }`}
               >
-                <CardContent className="pt-6 space-y-6">
-                  {/* Current Position Info */}
-                  <div className="bg-slate-50 rounded-lg p-4">
-                    <h3 className="text-sm font-medium text-slate-700 mb-3">
-                      Current Position
-                    </h3>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-slate-600">Collateral:</span>{" "}
-                        <span className="font-medium">
-                          <NumericFormat
-                            displayType="text"
-                            value={position.collateralAmount}
-                            thousandSeparator=","
-                            decimalScale={7}
-                            fixedDecimalScale={false}
-                          />{" "}
-                          {selectedCollateralToken.symbol}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-slate-600">Debt:</span>{" "}
-                        <span className="font-medium">
-                          <NumericFormat
-                            displayType="text"
-                            value={position.borrowedAmount}
-                            thousandSeparator=","
-                            decimalScale={2}
-                            fixedDecimalScale
-                          />{" "}
-                          USDU
-                        </span>
-                      </div>
-                    </div>
-                    <div className="mt-3 pt-3 border-t border-slate-200">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-600">Interest Rate:</span>
-                        <span className="font-medium">
-                          {position ? getInterestRatePercentage(position) : 0}%
-                          APR
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
                   {/* Update Collateral */}
                   <form.Field
                     name="collateralAmount"
@@ -647,20 +604,21 @@ function UpdatePosition() {
                           setCollateralAmount(newValue);
                         }}
                         includeMax={true}
+                        tokenSelectorBgColor="bg-token-bg"
+                        tokenSelectorTextColor="text-token-orange"
                       />
                     )}
                   </form.Field>
 
-                  <div className="relative flex justify-center items-center py-3">
-                    <div className="w-full h-px bg-slate-200"></div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="absolute bg-white rounded-full border border-slate-200 shadow-sm hover:shadow transition-shadow z-10"
-                    >
-                      <ArrowDown className="h-4 w-4 text-slate-600" />
-                    </Button>
+                  <div className="relative flex justify-center items-center">
+                    <div className="absolute z-10">
+                      <ArrowIcon
+                        size={40}
+                        className="sm:w-12 sm:h-12 md:w-20 md:h-20"
+                        innerCircleColor="#242424"
+                        direction="down"
+                      />
+                    </div>
                   </div>
 
                   {/* Update Debt */}
@@ -754,6 +712,8 @@ function UpdatePosition() {
                           field.handleChange(newValue);
                           setBorrowAmount(newValue);
                         }}
+                        tokenSelectorBgColor="bg-token-bg-red/10"
+                        tokenSelectorTextColor="text-token-bg-red"
                       />
                     )}
                   </form.Field>
@@ -869,7 +829,7 @@ function UpdatePosition() {
                                   !changes.hasDebtChange &&
                                   !changes.hasInterestRateChange))
                             }
-                            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2 px-6 rounded-xl shadow-sm hover:shadow transition-all whitespace-nowrap"
+                            className="w-full h-12 bg-token-bg-blue hover:bg-blue-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all whitespace-nowrap"
                           >
                             {isSending
                               ? "Confirm in wallet..."
@@ -881,14 +841,13 @@ function UpdatePosition() {
                       }}
                     </form.Subscribe>
                   </div>
-                </CardContent>
-              </Card>
+              </div>
             </form>
           )}
         </div>
 
-        {/* Right Panel - Transaction Summary */}
-        <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px]">
+        {/* Right Panel - Transaction Summary and Redemption Info */}
+        <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px] space-y-4">
           <TransactionSummary
             type="update"
             changes={{
@@ -922,8 +881,8 @@ function UpdatePosition() {
             }
             collateralType={position?.collateralAsset as CollateralType}
             troveId={extractTroveId(position?.id)}
-            className="sticky top-8"
           />
+          <RedemptionInfo variant="inline" />
         </div>
       </div>
     </>
