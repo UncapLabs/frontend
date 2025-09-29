@@ -26,7 +26,6 @@ import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
 import { useTroveData } from "~/hooks/use-trove-data";
 import { useUpdatePosition } from "~/hooks/use-update-position";
-import { bigintToDecimal } from "~/lib/decimal";
 import { useQueryState, parseAsFloat, parseAsString } from "nuqs";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { getInterestRatePercentage } from "~/lib/utils/position-helpers";
@@ -35,6 +34,8 @@ import { TransactionSummary } from "~/components/transaction-summary";
 import { usePositionMetrics } from "~/hooks/use-position-metrics";
 import { getMinCollateralizationRatio } from "~/lib/contracts/collateral-config";
 import type { CollateralType } from "~/lib/contracts/constants";
+import Big from "big.js";
+import { bigintToBig } from "~/lib/decimal";
 
 // Helper component for action toggle buttons
 const ActionToggle = ({
@@ -85,13 +86,13 @@ function UpdatePosition() {
   const isZombie = !!(
     position &&
     position.status === "redeemed" &&
-    position.borrowedAmount > 0 &&
-    position.borrowedAmount < MIN_DEBT
+    position.borrowedAmount.gt(0) &&
+    position.borrowedAmount.lt(MIN_DEBT)
   );
   const isFullyRedeemed = !!(
     position &&
     position.status === "redeemed" &&
-    position.borrowedAmount === 0
+    position.borrowedAmount.eq(0)
   );
   const hasBeenRedeemed = !!(position && position.status === "redeemed");
 
@@ -99,13 +100,11 @@ function UpdatePosition() {
   const selectedCollateralToken =
     position?.collateralAsset === "GBTC" ? GBTC_TOKEN : UBTC_TOKEN;
 
-  // Use local state for amounts to avoid URL precision issues
-  const [collateralAmount, setCollateralAmount] = useState<number | undefined>(
+  // Use local state for amounts with Big.js for precision
+  const [collateralAmount, setCollateralAmount] = useState<Big | undefined>(
     undefined
   );
-  const [borrowAmount, setBorrowAmount] = useState<number | undefined>(
-    undefined
-  );
+  const [borrowAmount, setBorrowAmount] = useState<Big | undefined>(undefined);
   const [interestRate, setInterestRate] = useQueryState(
     "rate",
     parseAsFloat.withDefault(position ? getInterestRatePercentage(position) : 5)
@@ -149,20 +148,20 @@ function UpdatePosition() {
   const minCollateralizationRatio =
     getMinCollateralizationRatio(collateralType);
 
-  // Calculate final amounts based on actions
+  // Calculate final amounts based on actions using Big for precision
   const finalCollateralAmount =
     collateralAmount !== null && collateralAmount !== undefined
       ? collateralAction === "add"
-        ? (position?.collateralAmount || 0) + collateralAmount
-        : (position?.collateralAmount || 0) - collateralAmount
-      : position?.collateralAmount || 0;
+        ? (position?.collateralAmount || new Big(0)).plus(collateralAmount)
+        : (position?.collateralAmount || new Big(0)).minus(collateralAmount)
+      : position?.collateralAmount || new Big(0);
 
   const finalDebtAmount =
     borrowAmount !== null && borrowAmount !== undefined
       ? debtAction === "borrow"
-        ? (position?.borrowedAmount || 0) + borrowAmount
-        : (position?.borrowedAmount || 0) - borrowAmount
-      : position?.borrowedAmount || 0;
+        ? (position?.borrowedAmount || new Big(0)).plus(borrowAmount)
+        : (position?.borrowedAmount || new Big(0)).minus(borrowAmount)
+      : position?.borrowedAmount || new Big(0);
 
   const metrics = usePositionMetrics({
     collateralAmount: finalCollateralAmount,
@@ -172,11 +171,11 @@ function UpdatePosition() {
     minCollateralizationRatio,
   });
 
-  // Initialize form with empty values (let user explicitly input what they want to change)
+  // Initialize form with empty values using Big for precision
   const form = useForm({
     defaultValues: {
-      collateralAmount: collateralAmount ?? undefined,
-      borrowAmount: borrowAmount ?? undefined,
+      collateralAmount: undefined as Big | undefined,
+      borrowAmount: undefined as Big | undefined,
       interestRate:
         interestRate ?? (position ? getInterestRatePercentage(position) : 5),
     },
@@ -239,10 +238,10 @@ function UpdatePosition() {
   // Revalidate fields when wallet connection changes
   useEffect(() => {
     if (address) {
-      if (collateralAmount && collateralAmount > 0) {
+      if (collateralAmount && collateralAmount.gt(0)) {
         form.validateField("collateralAmount", "change");
       }
-      if (borrowAmount && borrowAmount > 0) {
+      if (borrowAmount && borrowAmount.gt(0)) {
         form.validateField("borrowAmount", "change");
       }
     }
@@ -380,10 +379,10 @@ function UpdatePosition() {
                           <>
                             <NumericFormat
                               displayType="text"
-                              value={bigintToDecimal(
+                              value={bigintToBig(
                                 changes.collateralChange,
                                 18
-                              )}
+                              ).toString()}
                               thousandSeparator=","
                               decimalScale={7}
                               fixedDecimalScale={false}
@@ -400,7 +399,10 @@ function UpdatePosition() {
                           <>
                             <NumericFormat
                               displayType="text"
-                              value={bigintToDecimal(changes.debtChange, 18)}
+                              value={bigintToBig(
+                                changes.debtChange,
+                                18
+                              ).toString()}
                               thousandSeparator=","
                               decimalScale={2}
                               fixedDecimalScale
@@ -444,7 +446,7 @@ function UpdatePosition() {
                           <div>
                             <span className="text-blue-700">Redemptions: </span>
                             <span className="font-medium">
-                              {position.redemptionCount || 0} time
+                              {position.redemptionCount?.toString() || "0"} time
                               {position.redemptionCount !== 1 ? "s" : ""}
                             </span>
                           </div>
@@ -455,7 +457,7 @@ function UpdatePosition() {
                             <span className="font-medium">
                               <NumericFormat
                                 displayType="text"
-                                value={position.redeemedDebt || 0}
+                                value={position.redeemedDebt?.toString() || "0"}
                                 thousandSeparator=","
                                 decimalScale={2}
                                 fixedDecimalScale
@@ -471,7 +473,7 @@ function UpdatePosition() {
                           <span className="font-medium">
                             <NumericFormat
                               displayType="text"
-                              value={position.redeemedColl || 0}
+                              value={position.redeemedColl?.toString() || "0"}
                               thousandSeparator=","
                               decimalScale={7}
                               fixedDecimalScale={false}
@@ -502,7 +504,9 @@ function UpdatePosition() {
                         <li>
                           Borrow at least{" "}
                           <span className="font-semibold">
-                            {(MIN_DEBT - position.borrowedAmount).toFixed(2)}{" "}
+                            {new Big(MIN_DEBT)
+                              .minus(position.borrowedAmount)
+                              .toFixed(2)}{" "}
                             USDU
                           </span>{" "}
                           to restore normal status
@@ -563,49 +567,60 @@ function UpdatePosition() {
                         // Adding collateral - check wallet balance
                         if (!bitcoinBalance) return undefined;
 
-                        const balance =
-                          Number(bitcoinBalance.value) /
-                          10 ** selectedCollateralToken.decimals;
+                        const balance = bigintToBig(
+                          bitcoinBalance.value,
+                          selectedCollateralToken.decimals
+                        );
 
-                        if (value > balance) {
+                        if (value.gt(balance)) {
                           return `Insufficient balance. You have ${balance.toFixed(
                             7
                           )} ${selectedCollateralToken.symbol}`;
                         }
 
                         // Check max limit for total collateral
-                        const totalCollateral = currentCollateral + value;
+                        const totalCollateral = currentCollateral.plus(value);
                         return validators.compose(
-                          validators.maximumAmount(totalCollateral, MAX_LIMIT)
+                          validators.maximumAmount(
+                            totalCollateral,
+                            new Big(MAX_LIMIT)
+                          )
                         );
                       } else {
                         // Withdrawing collateral
-                        if (value > currentCollateral) {
+                        if (value.gt(currentCollateral)) {
                           return `Cannot withdraw more than current collateral (${currentCollateral.toFixed(
                             7
                           )} ${selectedCollateralToken.symbol})`;
                         }
 
                         // Check minimum collateral ratio after withdrawal
-                        const newTotalCollateral = currentCollateral - value;
+                        const newTotalCollateral =
+                          currentCollateral.minus(value);
 
-                        if (bitcoin?.price && usdu?.price && currentDebt > 0) {
+                        if (
+                          bitcoin?.price &&
+                          usdu?.price &&
+                          currentDebt.gt(0)
+                        ) {
                           // Get the current debt action value from the form
                           const formDebtAction =
-                            fieldApi.form.getFieldValue("borrowAmount") || 0;
+                            fieldApi.form.getFieldValue("borrowAmount") ||
+                            new Big(0);
                           // Calculate final debt based on debt action
                           const finalDebt =
                             debtAction === "borrow"
-                              ? currentDebt + formDebtAction
-                              : currentDebt - formDebtAction;
+                              ? currentDebt.plus(formDebtAction)
+                              : currentDebt.minus(formDebtAction);
 
-                          const newCollateralValue =
-                            newTotalCollateral * bitcoin.price;
-                          const debtValue = finalDebt * usdu.price;
+                          const newCollateralValue = newTotalCollateral.times(
+                            bitcoin.price
+                          );
+                          const debtValue = finalDebt.times(usdu.price);
                           const ratioError = validators.minimumCollateralRatio(
                             newCollateralValue,
                             debtValue,
-                            minCollateralizationRatio
+                            new Big(minCollateralizationRatio)
                           );
                           if (ratioError) return ratioError;
                         }
@@ -621,7 +636,7 @@ function UpdatePosition() {
                         fieldApi.form.getFieldValue("borrowAmount");
                       if (
                         currentBorrowAmount !== undefined &&
-                        currentBorrowAmount > 0
+                        currentBorrowAmount.gt(0)
                       ) {
                         fieldApi.form.validateField("borrowAmount", "change");
                       }
@@ -635,29 +650,24 @@ function UpdatePosition() {
                       price={bitcoin}
                       value={field.state.value}
                       onChange={(value) => {
-                        if (value !== undefined) {
-                          field.handleChange(value);
-                          setCollateralAmount(value);
-                        } else {
-                          field.handleChange(position?.collateralAmount || 0);
-                          setCollateralAmount(position?.collateralAmount || 0);
-                        }
+                        field.handleChange(value);
+                        setCollateralAmount(value);
                       }}
                       onBalanceClick={() => {
                         if (collateralAction === "add") {
-                          // Set to max wallet balance with proper precision using bigintToDecimal
-                          const balance = bitcoinBalance?.value
-                            ? bigintToDecimal(
+                          // Set to max wallet balance with proper precision using bigintToBig
+                          const balanceBig = bitcoinBalance?.value
+                            ? bigintToBig(
                                 bitcoinBalance.value,
                                 selectedCollateralToken.decimals
                               )
-                            : 0;
-                          field.handleChange(balance);
-                          setCollateralAmount(balance);
+                            : new Big(0);
+                          field.handleChange(balanceBig);
+                          setCollateralAmount(balanceBig);
                         } else {
                           // Set to current position amount (max withdrawable)
                           const currentCollateral =
-                            position?.collateralAmount || 0;
+                            position?.collateralAmount || new Big(0);
                           field.handleChange(currentCollateral);
                           setCollateralAmount(currentCollateral);
                         }
@@ -710,18 +720,18 @@ function UpdatePosition() {
 
                       const currentDebt = position.borrowedAmount;
                       const usduBal = usduBalance
-                        ? Number(usduBalance.value) / 10 ** USDU_TOKEN.decimals
-                        : 0;
+                        ? bigintToBig(usduBalance.value, USDU_TOKEN.decimals)
+                        : new Big(0);
 
                       if (debtAction === "borrow") {
                         // Borrowing more - value is amount to borrow
-                        const newTotalDebt = currentDebt + value;
+                        const newTotalDebt = currentDebt.plus(value);
 
                         // Check zombie trove restrictions
                         const zombieError = validators.zombieTroveDebt(
                           newTotalDebt,
                           currentDebt,
-                          MIN_DEBT,
+                          new Big(MIN_DEBT),
                           isZombie
                         );
                         if (zombieError) return zombieError;
@@ -731,50 +741,58 @@ function UpdatePosition() {
 
                         // Get collateral action value
                         const formCollateralAction =
-                          fieldApi.form.getFieldValue("collateralAmount") || 0;
+                          fieldApi.form.getFieldValue("collateralAmount") ||
+                          new Big(0);
                         // Calculate final collateral based on collateral action
                         const finalCollateral =
                           collateralAction === "add"
-                            ? position.collateralAmount + formCollateralAction
-                            : position.collateralAmount - formCollateralAction;
+                            ? position.collateralAmount.plus(
+                                formCollateralAction
+                              )
+                            : position.collateralAmount.minus(
+                                formCollateralAction
+                              );
 
                         // Calculate debt limit with proper collateralization ratio
-                        const debtLimit = finalCollateral
+                        const debtLimit = finalCollateral.gt(0)
                           ? computeDebtLimit(
                               finalCollateral,
                               bitcoin.price,
                               minCollateralizationRatio
                             )
-                          : 0;
+                          : new Big(0);
 
                         return validators.compose(
                           validators.minimumUsdValue(
                             newTotalDebt,
                             usdu.price,
-                            200
+                            new Big(200)
                           ),
-                          validators.minimumDebt(newTotalDebt * usdu.price),
+                          validators.minimumDebt(
+                            newTotalDebt.times(usdu.price)
+                          ),
                           validators.debtLimit(newTotalDebt, debtLimit)
                         );
                       } else {
                         // Repaying debt - value is amount to repay
-                        if (value > currentDebt) {
+                        if (value.gt(currentDebt)) {
                           return `Cannot repay more than current debt (${currentDebt.toFixed(
                             2
                           )} USDU)`;
                         }
 
                         // Check if have enough USDU balance to repay
-                        if (value > usduBal) {
+                        if (value.gt(usduBal)) {
                           return `Insufficient USDU balance. You have ${usduBal.toFixed(
                             2
                           )} USDU`;
                         }
 
-                        const newTotalDebt = currentDebt - value;
+                        const newTotalDebt = currentDebt.minus(value);
+                        const minDebtBig = new Big(MIN_DEBT);
 
                         // Check zombie trove restrictions
-                        if (newTotalDebt > 0 && newTotalDebt < MIN_DEBT) {
+                        if (newTotalDebt.gt(0) && newTotalDebt.lt(minDebtBig)) {
                           if (isZombie) {
                             return `Must either repay all debt or keep debt above ${MIN_DEBT} USDU`;
                           }
@@ -795,33 +813,33 @@ function UpdatePosition() {
                       price={usdu}
                       value={field.state.value}
                       onChange={(value) => {
-                        if (value !== undefined) {
-                          field.handleChange(value);
-                          setBorrowAmount(value);
-                        } else {
-                          field.handleChange(position?.borrowedAmount || 0);
-                          setBorrowAmount(position?.borrowedAmount || 0);
-                        }
+                        field.handleChange(value);
+                        setBorrowAmount(value);
                       }}
                       onBalanceClick={() => {
                         if (debtAction === "repay") {
                           // For repay: calculate max amount user can repay
                           const usduBal = usduBalance?.value
-                            ? bigintToDecimal(
+                            ? bigintToBig(
                                 usduBalance.value,
                                 USDU_TOKEN.decimals
                               )
-                            : 0;
-                          const currentDebt = position?.borrowedAmount || 0;
+                            : new Big(0);
+                          const currentDebt =
+                            position?.borrowedAmount || new Big(0);
 
                           // Maximum they can repay is current debt minus MIN_DEBT (must leave 200)
-                          const maxAllowedRepay = Math.max(
-                            0,
-                            currentDebt - MIN_DEBT
-                          );
+                          const minDebtBig = new Big(MIN_DEBT);
+                          const maxAllowedRepay = currentDebt
+                            .minus(minDebtBig)
+                            .gt(0)
+                            ? currentDebt.minus(minDebtBig)
+                            : new Big(0);
 
                           // But they're also limited by their USDU balance
-                          const maxRepay = Math.min(usduBal, maxAllowedRepay);
+                          const maxRepay = usduBal.lt(maxAllowedRepay)
+                            ? usduBal
+                            : maxAllowedRepay;
 
                           field.handleChange(maxRepay);
                           setBorrowAmount(maxRepay);
@@ -869,10 +887,10 @@ function UpdatePosition() {
                     disabled={
                       isSending ||
                       isPending ||
-                      (isZombie && (borrowAmount ?? 0) < MIN_DEBT)
+                      (isZombie && borrowAmount && borrowAmount.lt(MIN_DEBT))
                     }
-                    borrowAmount={borrowAmount ?? undefined}
-                    collateralAmount={collateralAmount ?? undefined}
+                    borrowAmount={borrowAmount}
+                    collateralAmount={collateralAmount}
                     collateralPriceUSD={bitcoin?.price}
                     collateralType={collateralType}
                     lastInterestRateAdjTime={position?.lastInterestRateAdjTime}
@@ -883,7 +901,7 @@ function UpdatePosition() {
                   />
 
                   {/* Interest Rate Lock Notice for Zombie Troves */}
-                  {isZombie && (borrowAmount ?? 0) < MIN_DEBT && (
+                  {isZombie && (!borrowAmount || borrowAmount.lt(MIN_DEBT)) && (
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
                       <p className="text-xs text-amber-700">
                         <strong>Interest rate is locked</strong> - To change the
@@ -894,7 +912,7 @@ function UpdatePosition() {
                   )}
 
                   {/* Interest Rate Unlock Notice for Zombie Troves restoring debt */}
-                  {isZombie && (borrowAmount ?? 0) >= MIN_DEBT && (
+                  {isZombie && borrowAmount && borrowAmount.gte(MIN_DEBT) && (
                     <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                       <p className="text-xs text-green-700">
                         <strong>Interest rate unlocked!</strong> - You can now
@@ -917,13 +935,7 @@ function UpdatePosition() {
                       borrowAmount: state.values.borrowAmount,
                     })}
                   >
-                    {({
-                      canSubmit,
-                      collateralErrors,
-                      borrowErrors,
-                      collateralAmount,
-                      borrowAmount,
-                    }) => {
+                    {({ canSubmit, collateralErrors, borrowErrors }) => {
                       let buttonText = "Update Position";
 
                       if (!address) {
@@ -939,10 +951,6 @@ function UpdatePosition() {
                         buttonText = collateralErrors[0];
                       } else if (borrowErrors.length > 0) {
                         buttonText = borrowErrors[0];
-                      } else if (!collateralAmount) {
-                        buttonText = "Enter collateral amount";
-                      } else if (!borrowAmount) {
-                        buttonText = "Enter borrow amount";
                       }
 
                       return (
@@ -951,10 +959,7 @@ function UpdatePosition() {
                           onClick={!address ? connectWallet : undefined}
                           disabled={
                             address &&
-                            (!collateralAmount ||
-                              !borrowAmount ||
-                              borrowAmount <= 0 ||
-                              isSending ||
+                            (isSending ||
                               isPending ||
                               !canSubmit ||
                               !changes ||
@@ -991,8 +996,8 @@ function UpdatePosition() {
               },
               collateralValueUSD: bitcoin?.price
                 ? {
-                    from: position.collateralAmount * bitcoin.price,
-                    to: finalCollateralAmount * bitcoin.price,
+                    from: position.collateralAmount.times(bitcoin.price),
+                    to: finalCollateralAmount.times(bitcoin.price),
                   }
                 : undefined,
               debt: {

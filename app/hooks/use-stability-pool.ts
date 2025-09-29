@@ -11,37 +11,38 @@ import { useTransaction } from "~/hooks/use-transaction";
 import { useTransactionState } from "./use-transaction-state";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
-import { decimalToBigint } from "~/lib/decimal";
+import { bigToBigint } from "~/lib/decimal";
 import { useTRPC } from "~/lib/trpc";
+import Big from "big.js";
 
 // Deposit form data structure
 export interface DepositFormData {
-  depositAmount?: number;
+  depositAmount?: Big;
   collateralType: CollateralType;
   rewardsClaimed?: {
-    usdu: number;
-    collateral: number;
+    usdu: Big;
+    collateral: Big;
   };
 }
 
 // Withdraw form data structure
 export interface WithdrawFormData {
-  withdrawAmount?: number;
+  withdrawAmount?: Big;
   collateralType: CollateralType;
   rewardsClaimed?: {
-    usdu: number;
-    collateral: number;
+    usdu: Big;
+    collateral: Big;
   };
 }
 
 interface UseDepositToStabilityPoolParams {
-  amount?: number;
+  amount?: Big;
   doClaim?: boolean;
   collateralType: CollateralType;
   onSuccess?: () => void;
   rewards?: {
-    usdu: number;
-    collateral: number;
+    usdu: Big;
+    collateral: Big;
   };
 }
 
@@ -68,11 +69,11 @@ export function useDepositToStabilityPool({
 
   // Prepare the calls
   const calls = useMemo(() => {
-    if (!address || !amount || amount <= 0) {
+    if (!address || !amount || amount.lte(0)) {
       return undefined;
     }
 
-    const amountBigInt = decimalToBigint(amount, 18);
+    const amountBigInt = bigToBigint(amount, 18);
     const addresses = getCollateralAddresses(collateralType);
 
     return [
@@ -106,16 +107,16 @@ export function useDepositToStabilityPool({
       transactionState.setPending(hash);
 
       // Add to transaction store
-      if (address) {
+      if (address && amount) {
         const transactionData = {
           hash,
           type: "deposit" as const,
           description: createTransactionDescription("deposit", {
-            amount,
+            amount: Number(amount.toString()), // Only convert for display in description
             token: "USDU",
           }),
           details: {
-            amount,
+            amount: Number(amount.toString()), // Only convert for display
             pool: collateralType,
           },
         };
@@ -155,13 +156,13 @@ export function useDepositToStabilityPool({
 }
 
 interface UseWithdrawFromStabilityPoolParams {
-  amount?: number;
+  amount?: Big;
   doClaim?: boolean;
   collateralType: CollateralType;
   onSuccess?: () => void;
   rewards?: {
-    usdu: number;
-    collateral: number;
+    usdu: Big;
+    collateral: Big;
   };
 }
 
@@ -189,11 +190,11 @@ export function useWithdrawFromStabilityPool({
   // Prepare the calls
   const calls = useMemo(() => {
     // Allow amount to be 0 for claiming rewards without withdrawing
-    if (!address || amount === undefined || amount < 0) {
+    if (!address || amount === undefined || amount.lt(0)) {
       return undefined;
     }
 
-    const amountBigInt = decimalToBigint(amount, 18);
+    const amountBigInt = bigToBigint(amount, 18);
     return [
       contractCall.stabilityPool.withdraw(
         amountBigInt,
@@ -222,16 +223,16 @@ export function useWithdrawFromStabilityPool({
       transactionState.setPending(hash);
 
       // Add to transaction store
-      if (address) {
+      if (address && amount) {
         const transactionData = {
           hash,
           type: "withdraw" as const,
           description: createTransactionDescription("withdraw", {
-            amount,
+            amount: Number(amount.toString()), // Only convert for display in description
             token: "USDU",
           }),
           details: {
-            amount,
+            amount: Number(amount.toString()), // Only convert for display
             pool: collateralType,
           },
         };

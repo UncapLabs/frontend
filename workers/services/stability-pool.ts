@@ -1,8 +1,9 @@
 import { RpcProvider } from "starknet";
 import { contractRead } from "~/lib/contracts/calls";
 import { USDU_TOKEN, type CollateralType, COLLATERAL_TO_BRANCH } from "~/lib/contracts/constants";
-import { bigintToDecimal } from "~/lib/decimal";
+import { bigintToDecimal, bigintToBig } from "~/lib/decimal";
 import { getAverageInterestRateForBranch } from "./interest";
+import Big from "big.js";
 
 export async function fetchPoolPosition(
   provider: RpcProvider,
@@ -16,13 +17,17 @@ export async function fetchPoolPosition(
       collateralType
     );
 
-    const userDeposit = bigintToDecimal(position.deposit, USDU_TOKEN.decimals);
-    const usduRewards = bigintToDecimal(position.usduGain, USDU_TOKEN.decimals);
-    const collateralRewards = bigintToDecimal(position.collateralGain, 18);
-    const totalDeposits = bigintToDecimal(
+    const userDeposit = bigintToBig(position.deposit, USDU_TOKEN.decimals);
+    const usduRewards = bigintToBig(position.usduGain, USDU_TOKEN.decimals);
+    const collateralRewards = bigintToBig(position.collateralGain, 18);
+    const totalDeposits = bigintToBig(
       position.totalDeposits,
       USDU_TOKEN.decimals
     );
+
+    const poolShare = totalDeposits.gt(0) 
+      ? userDeposit.div(totalDeposits).times(100)
+      : new Big(0);
 
     return {
       userDeposit,
@@ -31,7 +36,7 @@ export async function fetchPoolPosition(
         collateral: collateralRewards,
       },
       totalDeposits,
-      poolShare: totalDeposits > 0 ? (userDeposit / totalDeposits) * 100 : 0,
+      poolShare,
     };
   } catch (error) {
     console.error(

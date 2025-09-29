@@ -23,13 +23,14 @@ import {
 } from "~/lib/contracts/constants";
 import { getMinCollateralizationRatio } from "~/lib/contracts/collateral-config";
 import {
-  formatBigIntToNumber,
   formatInterestRateForDisplay,
   isPrefixedTroveId,
   parsePrefixedTroveId,
 } from "workers/services/utils";
 import { contractRead } from "~/lib/contracts/calls";
 import { DEFAULT_RETRY_OPTIONS, retryWithBackoff } from "./retry";
+import Big from "big.js";
+import { bigintToBig } from "~/lib/decimal";
 
 // Prefixed trove ID format: "branchId:troveId"
 type PrefixedTroveId = string;
@@ -96,15 +97,15 @@ export interface IndexedTrove {
 export interface Position {
   id: string;
   collateralAsset: string;
-  collateralAmount: number;
-  collateralValue: number;
+  collateralAmount: Big;
+  collateralValue: Big;
   borrowedAsset: string;
-  borrowedAmount: number;
+  borrowedAmount: Big;
   redemptionCount: number;
-  redeemedColl: number;
-  redeemedDebt: number;
+  redeemedColl: Big;
+  redeemedDebt: Big;
   interestRate: number;
-  liquidationPrice: number;
+  liquidationPrice: Big;
   status: "active" | "closed" | "non-existent" | "liquidated" | "redeemed";
   batchManager: string | null;
   lastInterestRateAdjTime: number; // Unix timestamp in seconds
@@ -274,12 +275,12 @@ export async function fetchPositionById(
       return null;
     }
 
-    // Extract values
-    const collateralAmount = formatBigIntToNumber(
+    // Extract values using Big for precision
+    const collateralAmount = bigintToBig(
       troveData.entire_coll,
       collateralToken.decimals
     );
-    const borrowedAmount = formatBigIntToNumber(
+    const borrowedAmount = bigintToBig(
       troveData.entire_debt,
       USDU_TOKEN.decimals
     );
@@ -295,11 +296,13 @@ export async function fetchPositionById(
     // Get collateral decimals for conversion
     const collDecimals = collateralToken.decimals;
 
-    // Calculate liquidation price
-    const minCollateralizationRatio = getMinCollateralizationRatio(collateralType);
-    const liquidationPrice = collateralAmount > 0 && borrowedAmount > 0
-      ? (borrowedAmount * minCollateralizationRatio) / collateralAmount
-      : 0;
+    // Calculate liquidation price using Big
+    const minCollateralizationRatio =
+      getMinCollateralizationRatio(collateralType);
+    const liquidationPrice =
+      collateralAmount.gt(0) && borrowedAmount.gt(0)
+        ? borrowedAmount.times(minCollateralizationRatio).div(collateralAmount)
+        : new Big(0);
 
     return {
       id: fullId,
@@ -310,14 +313,11 @@ export async function fetchPositionById(
       borrowedAmount,
       redemptionCount: indexedTrove?.redemptionCount ?? 0,
       redeemedColl: indexedTrove?.redeemedColl
-        ? formatBigIntToNumber(BigInt(indexedTrove.redeemedColl), collDecimals)
-        : 0,
+        ? bigintToBig(BigInt(indexedTrove.redeemedColl), collDecimals)
+        : new Big(0),
       redeemedDebt: indexedTrove?.redeemedDebt
-        ? formatBigIntToNumber(
-            BigInt(indexedTrove.redeemedDebt),
-            USDU_TOKEN.decimals
-          )
-        : 0,
+        ? bigintToBig(BigInt(indexedTrove.redeemedDebt), USDU_TOKEN.decimals)
+        : new Big(0),
       interestRate,
       liquidationPrice,
       status: mapTroveStatus(troveStatus),
@@ -445,8 +445,8 @@ export async function getCollateralSurplus(
   provider: RpcProvider,
   borrower: string
 ): Promise<{
-  UBTC: number;
-  GBTC: number;
+  UBTC: Big;
+  GBTC: Big;
 }> {
   try {
     // Fetch surplus for both collateral types in parallel
@@ -455,16 +455,16 @@ export async function getCollateralSurplus(
       contractRead.collSurplusPool.getCollateral(provider, borrower, "GBTC"),
     ]);
 
-    // Convert from blockchain integers to human-readable decimals
+    // Convert from blockchain integers to human-readable Big decimals
     return {
-      UBTC: formatBigIntToNumber(ubtcSurplusRaw, UBTC_TOKEN.decimals),
-      GBTC: formatBigIntToNumber(gbtcSurplusRaw, GBTC_TOKEN.decimals),
+      UBTC: bigintToBig(ubtcSurplusRaw, UBTC_TOKEN.decimals),
+      GBTC: bigintToBig(gbtcSurplusRaw, GBTC_TOKEN.decimals),
     };
   } catch (error) {
     console.error(`Error fetching collateral surplus for ${borrower}:`, error);
     return {
-      UBTC: 0,
-      GBTC: 0,
+      UBTC: new Big(0),
+      GBTC: new Big(0),
     };
   }
 }

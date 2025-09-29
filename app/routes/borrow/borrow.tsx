@@ -22,7 +22,11 @@ import {
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
 import { useBorrow } from "~/hooks/use-borrow";
-import { useQueryState, parseAsFloat } from "nuqs";
+import { useQueryState } from "nuqs";
+import { parseAsBig, parseAsBigWithDefault } from "~/lib/url-parsers";
+import Big from "big.js";
+import { bigintToBig } from "~/lib/decimal";
+import { calculatePercentageAmountBig } from "~/lib/input-parsers";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { useCollateralToken } from "~/hooks/use-collateral-token";
 import { usePositionMetrics } from "~/hooks/use-position-metrics";
@@ -33,15 +37,15 @@ function Borrow() {
   const { address } = useAccount();
   const { connectWallet } = useWalletConnect();
 
-  // URL state for form inputs with built-in parsers
+  // URL state for form inputs with Big.js for full precision
   const [collateralAmount, setCollateralAmount] = useQueryState(
     "amount",
-    parseAsFloat
+    parseAsBig
   );
-  const [borrowAmount, setBorrowAmount] = useQueryState("borrow", parseAsFloat);
+  const [borrowAmount, setBorrowAmount] = useQueryState("borrow", parseAsBig);
   const [interestRate, setInterestRate] = useQueryState(
     "rate",
-    parseAsFloat.withDefault(5)
+    parseAsBigWithDefault("5")
   );
   const [selectedTokenAddress, setSelectedTokenAddress] =
     useQueryState("collateral");
@@ -63,26 +67,28 @@ function Borrow() {
     enabled:
       (collateralAmount !== null &&
         collateralAmount !== undefined &&
-        collateralAmount > 0) ||
-      (borrowAmount !== null && borrowAmount !== undefined && borrowAmount > 0),
+        collateralAmount.gt(0)) ||
+      (borrowAmount !== null &&
+        borrowAmount !== undefined &&
+        borrowAmount.gt(0)),
   });
   const minCollateralizationRatio =
     getMinCollateralizationRatio(collateralType);
 
   const metrics = usePositionMetrics({
-    collateralAmount,
-    borrowAmount,
+    collateralAmount: collateralAmount,
+    borrowAmount: borrowAmount,
     bitcoinPrice: bitcoin?.price,
     usduPrice: usdu?.price,
     minCollateralizationRatio,
   });
 
-  // Initialize form with URL values
+  // Initialize form with URL values using Big for precision
   const form = useForm({
     defaultValues: {
-      collateralAmount: collateralAmount ?? (undefined as number | undefined),
-      borrowAmount: borrowAmount ?? (undefined as number | undefined),
-      interestRate: interestRate ?? 5,
+      collateralAmount: collateralAmount ?? (undefined as Big | undefined),
+      borrowAmount: borrowAmount ?? (undefined as Big | undefined),
+      interestRate: interestRate ?? new Big("5"),
     },
     onSubmit: async ({ value }) => {
       if (!isReady) {
@@ -117,7 +123,7 @@ function Borrow() {
   } = useBorrow({
     collateralAmount: collateralAmount ?? undefined,
     borrowAmount: borrowAmount ?? undefined,
-    interestRate: interestRate ?? 5,
+    interestRate: interestRate ?? new Big("5"),
     collateralToken: selectedCollateralToken,
   });
 
@@ -126,11 +132,11 @@ function Borrow() {
     // Only run validation if wallet just connected (not on disconnect)
     if (address) {
       // Validate collateral if user has entered a value
-      if (collateralAmount && collateralAmount > 0) {
+      if (collateralAmount && collateralAmount.gt(0)) {
         form.validateField("collateralAmount", "change");
       }
       // Validate borrow amount if user has entered a value
-      if (borrowAmount && borrowAmount > 0) {
+      if (borrowAmount && borrowAmount.gt(0)) {
         form.validateField("borrowAmount", "change");
       }
     }
@@ -140,23 +146,38 @@ function Borrow() {
   const handlePercentageClick = useCallback(
     (percentage: number, type: "collateral" | "borrow") => {
       if (type === "collateral") {
-        const balance = bitcoinBalance?.value
-          ? Number(bitcoinBalance.value) /
-            10 ** selectedCollateralToken.decimals
-          : 0;
-        const newValue = balance * percentage;
+        if (!bitcoinBalance?.value) {
+          form.setFieldValue("collateralAmount", undefined);
+          return;
+        }
+
+        // Use big.js for precise calculation
+        const newValue = calculatePercentageAmountBig(
+          bitcoinBalance.value,
+          selectedCollateralToken.decimals,
+          percentage * 100 // Convert to 0-100 scale
+        );
         form.setFieldValue("collateralAmount", newValue);
         // Manually trigger validation after setting value
         form.validateField("collateralAmount", "change");
       } else {
         // For borrow, percentage represents LTV (Loan-to-Value)
         // If collateral is worth $100k and user clicks 50%, they want to borrow $50k
-        const collateral = form.getFieldValue("collateralAmount") || 0;
-        const btcPrice = bitcoin?.price || 0;
-        const usduPrice = usdu?.price || 1;
-        const collateralValueUSD = collateral * btcPrice;
-        const borrowAmountUSD = collateralValueUSD * percentage;
-        const newValue = borrowAmountUSD / usduPrice; // Convert USD value to USDU amount
+        const collateral = form.getFieldValue("collateralAmount");
+        if (!collateral) {
+          form.setFieldValue("borrowAmount", undefined);
+          return;
+        }
+
+        const btcPrice = bitcoin?.price || new Big(0);
+        const usduPrice = usdu?.price || new Big(1);
+        const collateralBig =
+          collateral instanceof Big ? collateral : new Big(String(collateral));
+
+        const collateralValueUSD = collateralBig.times(btcPrice);
+        const borrowAmountUSD = collateralValueUSD.times(percentage);
+        const newValue = borrowAmountUSD.div(usduPrice);
+
         form.setFieldValue("borrowAmount", newValue);
         // Manually trigger validation after setting value
         form.validateField("borrowAmount", "change");
@@ -187,7 +208,7 @@ function Borrow() {
     reset(); // Reset transaction state
     setBorrowAmount(null);
     setCollateralAmount(null);
-    setInterestRate(5);
+    setInterestRate(new Big("5"));
   }, [form, reset, setBorrowAmount, setCollateralAmount, setInterestRate]);
 
   return (
@@ -220,7 +241,14 @@ function Borrow() {
                           <>
                             <NumericFormat
                               displayType="text"
-                              value={formData.collateralAmount}
+                              value={
+                                formData.collateralAmount instanceof Big
+                                  ? Number(formData.collateralAmount.toString())
+                                  : typeof formData.collateralAmount ===
+                                    "string"
+                                  ? Number(formData.collateralAmount)
+                                  : formData.collateralAmount
+                              }
                               thousandSeparator=","
                               decimalScale={7}
                               fixedDecimalScale={false}
@@ -235,7 +263,13 @@ function Borrow() {
                           <>
                             <NumericFormat
                               displayType="text"
-                              value={formData.borrowAmount}
+                              value={
+                                formData.borrowAmount instanceof Big
+                                  ? Number(formData.borrowAmount.toString())
+                                  : typeof formData.borrowAmount === "string"
+                                  ? Number(formData.borrowAmount)
+                                  : formData.borrowAmount
+                              }
                               thousandSeparator=","
                               decimalScale={2}
                               fixedDecimalScale
@@ -246,7 +280,11 @@ function Borrow() {
                       },
                       {
                         label: "Interest Rate (APR)",
-                        value: `${interestRate}%`,
+                        value: `${
+                          formData.interestRate instanceof Big
+                            ? formData.interestRate.toString()
+                            : formData.interestRate
+                        }%`,
                       },
                     ]
                   : undefined
@@ -281,13 +319,15 @@ function Borrow() {
                       // Don't validate balance until it's loaded
                       if (!bitcoinBalance) return undefined;
 
-                      const balance =
-                        Number(bitcoinBalance.value) /
-                        10 ** selectedCollateralToken.decimals;
+                      // Convert balance to Big for precise comparison
+                      const balance = bigintToBig(
+                        bitcoinBalance.value,
+                        selectedCollateralToken.decimals
+                      );
 
                       return validators.compose(
                         validators.insufficientBalance(value, balance),
-                        validators.maximumAmount(value, MAX_LIMIT)
+                        validators.maximumAmount(value, new Big(MAX_LIMIT))
                       );
                     },
                   }}
@@ -300,7 +340,8 @@ function Borrow() {
                         fieldApi.form.getFieldValue("borrowAmount");
                       if (
                         currentBorrowAmount !== undefined &&
-                        currentBorrowAmount > 0
+                        currentBorrowAmount instanceof Big &&
+                        currentBorrowAmount.gt(0)
                       ) {
                         fieldApi.form.validateField("borrowAmount", "change");
                       }
@@ -314,15 +355,15 @@ function Borrow() {
                       onTokenChange={(token) => {
                         setSelectedTokenAddress(token.address);
                         // Reset amount when token changes
-                        field.handleChange(undefined as number | undefined);
+                        field.handleChange(undefined);
                       }}
                       balance={bitcoinBalance}
                       price={bitcoin}
                       value={field.state.value}
                       onChange={(value) => {
                         field.handleChange(value);
-                        // Update URL
-                        setCollateralAmount(value || null);
+                        // Update URL - value is already a Big instance
+                        setCollateralAmount(value ?? null);
                       }}
                       onBlur={field.handleBlur}
                       label="Deposit Amount"
@@ -362,29 +403,46 @@ function Borrow() {
                       if (!bitcoin?.price || !usdu?.price) return undefined;
 
                       // Calculate debt limit inline with proper collateralization ratio
-                      const debtLimit = collateral
-                        ? computeDebtLimit(
-                            collateral,
-                            bitcoin.price,
-                            minCollateralizationRatio
-                          )
-                        : 0;
+                      const debtLimit =
+                        collateral && bitcoin?.price
+                          ? computeDebtLimit(
+                              collateral instanceof Big
+                                ? collateral
+                                : new Big(String(collateral)),
+                              bitcoin.price,
+                              minCollateralizationRatio
+                            )
+                          : new Big(0);
 
                       return validators.compose(
                         validators.requiresCollateral(value, collateral),
-                        validators.minimumUsdValue(value, usdu.price, 200),
+                        validators.minimumUsdValue(
+                          value,
+                          usdu.price,
+                          new Big(200)
+                        ),
                         validators.debtLimit(value, debtLimit),
                         // LTV check
                         (() => {
                           if (!collateral) return undefined;
-                          const collateralValue = collateral * bitcoin.price;
-                          const borrowValue = value * usdu.price;
+                          const collateralBig =
+                            collateral instanceof Big
+                              ? collateral
+                              : new Big(String(collateral));
+                          const valueBig =
+                            value instanceof Big
+                              ? value
+                              : new Big(String(value));
+                          const collateralValue = collateralBig.times(
+                            bitcoin.price
+                          );
+                          const borrowValue = valueBig.times(usdu.price);
                           const maxLtvPercent =
                             (1 / minCollateralizationRatio) * 100;
                           return validators.ltvRatio(
                             borrowValue,
                             collateralValue,
-                            maxLtvPercent
+                            new Big(maxLtvPercent)
                           );
                         })()
                       );
@@ -398,8 +456,7 @@ function Borrow() {
                       value={field.state.value}
                       onChange={(value) => {
                         field.handleChange(value);
-                        // Update URL
-                        setBorrowAmount(value || null);
+                        setBorrowAmount(value ?? null);
                       }}
                       onBlur={field.handleBlur}
                       label="Borrow Amount"
@@ -418,12 +475,15 @@ function Borrow() {
 
                 {/* Interest Rate Options */}
                 <InterestRateSelector
-                  interestRate={interestRate}
+                  interestRate={
+                    interestRate ? Number(interestRate.toString()) : 5
+                  }
                   onInterestRateChange={(rate) => {
                     if (!isSending && !isPending) {
-                      form.setFieldValue("interestRate", rate);
+                      const rateBig = new Big(rate);
+                      form.setFieldValue("interestRate", rateBig);
                       // Update URL
-                      setInterestRate(rate);
+                      setInterestRate(rateBig);
                     }
                   }}
                   disabled={isSending || isPending}
@@ -474,7 +534,8 @@ function Borrow() {
                             address &&
                             (!collateralAmount ||
                               !borrowAmount ||
-                              borrowAmount <= 0 ||
+                              (borrowAmount instanceof Big &&
+                                borrowAmount.lte(0)) ||
                               isSending ||
                               isPending ||
                               !canSubmit)
@@ -502,17 +563,20 @@ function Borrow() {
             type="open"
             changes={{
               collateral: {
-                to: collateralAmount || 0,
+                to: collateralAmount || new Big(0),
                 token: selectedCollateralToken.symbol,
               },
               collateralValueUSD: {
-                to: (collateralAmount || 0) * (bitcoin?.price || 0),
+                to:
+                  collateralAmount && bitcoin?.price
+                    ? collateralAmount.times(bitcoin.price)
+                    : new Big(0),
               },
               debt: {
-                to: borrowAmount || 0,
+                to: borrowAmount || new Big(0),
               },
               interestRate: {
-                to: interestRate || 5,
+                to: interestRate ? Number(interestRate.toString()) : 5,
               },
             }}
             liquidationPrice={metrics.liquidationPrice}

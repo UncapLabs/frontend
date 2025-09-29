@@ -1,4 +1,3 @@
-import { Separator } from "~/components/ui/separator";
 import type { Route } from "./+types/claim";
 import { STRKRewardsCard } from "~/components/claim/strk-rewards-card";
 

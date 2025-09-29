@@ -17,14 +17,15 @@ import { RateModeSelector, type RateMode } from "./rate-mode-selector";
 export type { RateMode } from "./rate-mode-selector";
 import { ManagedStrategy } from "./managed-strategy";
 import { useQueryState, parseAsStringEnum } from "nuqs";
+import Big from "big.js";
 
 interface InterestRateSelectorProps {
   interestRate: number;
   onInterestRateChange: (rate: number) => void;
   disabled?: boolean;
-  borrowAmount?: number;
-  collateralAmount?: number;
-  collateralPriceUSD?: number;
+  borrowAmount?: Big;
+  collateralAmount?: Big;
+  collateralPriceUSD?: Big;
   collateralType?: CollateralType;
   onRateModeChange?: (mode: RateMode) => void;
   lastInterestRateAdjTime?: number;
@@ -209,16 +210,13 @@ export function InterestRateSelector({
                         disabled={disabled}
                       />
                       {/* Yearly Interest Cost - Display below the interest rate input */}
-                      {borrowAmount && borrowAmount > 0 && (
+                      {borrowAmount && borrowAmount.gt(0) && (
                         <div className="mt-2 ml-1">
                           <span className="text-xs text-slate-500">
-                            {(
-                              (borrowAmount * interestRate) /
-                              100
-                            ).toLocaleString("en-US", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}{" "}
+                            {borrowAmount
+                              .times(interestRate)
+                              .div(100)
+                              .toFixed(2)}{" "}
                             USDU / year
                           </span>
                         </div>
@@ -230,21 +228,18 @@ export function InterestRateSelector({
             </div>
 
             {/* STRK Rebate Information */}
-            {borrowAmount && borrowAmount > 0 && rebateData && (
+            {borrowAmount && borrowAmount.gt(0) && rebateData && (
               <STRKRebateInfo
                 yearlyInterestUSD={rebateData.yearlyInterestUSD}
-                effectiveYearlyInterestUSD={
-                  rebateData.effectiveYearlyInterestUSD
-                }
                 yearlyRebateUSD={rebateData.yearlyRebateUSD}
                 collateralValueUSD={
                   collateralAmount && collateralPriceUSD
-                    ? collateralAmount * collateralPriceUSD
+                    ? collateralAmount.times(collateralPriceUSD)
                     : undefined
                 }
                 yearlyCollateralRebateUSD={
                   collateralAmount && collateralPriceUSD
-                    ? collateralAmount * collateralPriceUSD * 0.02 // 2% rebate
+                    ? collateralAmount.times(collateralPriceUSD).times(0.02) // 2% rebate
                     : undefined
                 }
               />
@@ -286,11 +281,11 @@ export function InterestRateSelector({
           </>
         ) : (
           // Managed by Telos mode
-          <ManagedStrategy 
-            disabled={disabled} 
-            borrowAmount={borrowAmount}
-            collateralAmount={collateralAmount}
-            collateralPriceUSD={collateralPriceUSD}
+          <ManagedStrategy
+            disabled={disabled}
+            borrowAmount={borrowAmount ? Number(borrowAmount.toString()) : undefined}
+            collateralAmount={collateralAmount ? Number(collateralAmount.toString()) : undefined}
+            collateralPriceUSD={collateralPriceUSD ? Number(collateralPriceUSD.toString()) : undefined}
           />
         )}
       </div>

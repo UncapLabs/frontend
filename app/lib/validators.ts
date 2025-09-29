@@ -1,90 +1,113 @@
 /**
- * Common validation utilities for transaction forms
+ * Validation utilities for transaction forms
+ * All validators use Big.js for full precision decimal arithmetic
  */
+
+import Big from "big.js";
 
 export const validators = {
   /**
    * Validates that the value doesn't exceed the available balance
+   * @param value - The amount to validate (Big instance)
+   * @param balance - The available balance (Big instance)
    */
-  insufficientBalance: (value: number, balance: number) => {
-    return value > balance ? "Insufficient balance" : undefined;
+  insufficientBalance: (value: Big, balance: Big) => {
+    return value.gt(balance) ? "Insufficient balance" : undefined;
   },
 
   /**
    * Validates minimum amount requirements
    */
-  minimumAmount: (value: number, minimum: number, symbol: string) =>
-    value < minimum ? `Minimum amount is ${minimum} ${symbol}` : undefined,
+  minimumAmount: (value: Big, minimum: Big, symbol: string) => {
+    return value.lt(minimum)
+      ? `Minimum amount is ${minimum.toFixed()} ${symbol}`
+      : undefined;
+  },
 
   /**
    * Validates maximum amount limits
    */
-  maximumAmount: (value: number, maximum: number) =>
-    value > maximum
-      ? `Maximum amount is ${maximum.toLocaleString()}`
-      : undefined,
+  maximumAmount: (value: Big, maximum: Big) => {
+    return value.gt(maximum)
+      ? `Maximum amount is ${maximum.toFixed()}`
+      : undefined;
+  },
 
   /**
    * Validates minimum USD value requirements
    */
-  minimumUsdValue: (value: number, price: number, minimumUsd: number) => {
-    const usdValue = value * price;
-    return usdValue < minimumUsd
-      ? `Minimum value is $${minimumUsd.toLocaleString()}`
+  minimumUsdValue: (value: Big, price: Big, minimumUsd: Big) => {
+    const usdValue = value.times(price);
+    return usdValue.lt(minimumUsd)
+      ? `Minimum value is $${minimumUsd.toFixed()}`
       : undefined;
   },
 
   /**
    * Validates that collateral is required before borrowing
    */
-  requiresCollateral: (borrowAmount: number, collateralAmount?: number) =>
-    borrowAmount > 0 && (!collateralAmount || collateralAmount <= 0)
+  requiresCollateral: (borrowAmount: Big, collateralAmount?: Big) => {
+    const zeroBig = new Big(0);
+
+    if (borrowAmount.lte(zeroBig)) return undefined;
+
+    if (!collateralAmount) {
+      return "Please enter collateral amount first";
+    }
+
+    return collateralAmount.lte(zeroBig)
       ? "Please enter collateral amount first"
-      : undefined,
+      : undefined;
+  },
 
   /**
    * Validates LTV ratio
    */
-  ltvRatio: (
-    borrowValue: number,
-    collateralValue: number,
-    maxLtvPercent: number
-  ) => {
-    if (collateralValue <= 0) return undefined;
-    const ltv = (borrowValue / collateralValue) * 100;
-    return ltv > maxLtvPercent
-      ? `LTV ratio too high (max ${maxLtvPercent}%)`
+  ltvRatio: (borrowValue: Big, collateralValue: Big, maxLtvPercent: Big) => {
+    const zeroBig = new Big(0);
+
+    if (collateralValue.lte(zeroBig)) return undefined;
+
+    // Calculate LTV: (borrowValue / collateralValue) * 100
+    const ltv = borrowValue.div(collateralValue).times(100);
+
+    return ltv.gt(maxLtvPercent)
+      ? `LTV ratio too high (max ${maxLtvPercent.toFixed()}%)`
       : undefined;
   },
 
   /**
    * Validates debt limit
    */
-  debtLimit: (value: number, maxDebt: number) =>
-    value > maxDebt ? "Exceeds maximum borrowable amount" : undefined,
+  debtLimit: (value: Big, maxDebt: Big) => {
+    return value.gt(maxDebt)
+      ? "Exceeds maximum borrowable amount"
+      : undefined;
+  },
 
   /**
-   * Validates minimum debt requirement ($200)
+   * Validates minimum debt requirement
    */
-  minimumDebt: (value: number, minDebt: number = 200) =>
-    value < minDebt
-      ? `Minimum debt is $${minDebt.toLocaleString()}`
-      : undefined,
+  minimumDebt: (value: Big, minDebt: Big = new Big(200)) => {
+    return value.lt(minDebt)
+      ? `Minimum debt is $${minDebt.toFixed()}`
+      : undefined;
+  },
 
   /**
    * Validates minimum collateral ratio for withdrawals
    */
   minimumCollateralRatio: (
-    newCollateralValue: number,
-    debtValue: number,
-    minRatio: number = 1.1 // 110% minimum
+    newCollateralValue: Big,
+    debtValue: Big,
+    minRatio: Big = new Big(1.1) // 110% minimum
   ) => {
-    if (debtValue <= 0) return undefined;
-    const ratio = newCollateralValue / debtValue;
-    return ratio < minRatio
-      ? `Must maintain at least ${(minRatio * 100).toFixed(
-          0
-        )}% collateral ratio`
+    const zeroBig = new Big(0);
+    if (debtValue.lte(zeroBig)) return undefined;
+    
+    const ratio = newCollateralValue.div(debtValue);
+    return ratio.lt(minRatio)
+      ? `Must maintain at least ${minRatio.times(100).toFixed(0)}% collateral ratio`
       : undefined;
   },
 
@@ -97,18 +120,21 @@ export const validators = {
   /**
    * Validates percentage input (0-100)
    */
-  percentage: (value: number) => {
-    if (value < 0) return "Percentage must be positive";
-    if (value > 100) return "Percentage cannot exceed 100%";
+  percentage: (value: Big) => {
+    const zeroBig = new Big(0);
+    const hundredBig = new Big(100);
+    
+    if (value.lt(zeroBig)) return "Percentage must be positive";
+    if (value.gt(hundredBig)) return "Percentage cannot exceed 100%";
     return undefined;
   },
 
   /**
    * Validates interest rate
    */
-  interestRate: (value: number, min: number, max: number) => {
-    if (value < min) return `Interest rate must be at least ${min}%`;
-    if (value > max) return `Interest rate cannot exceed ${max}%`;
+  interestRate: (value: Big, min: Big, max: Big) => {
+    if (value.lt(min)) return `Interest rate must be at least ${min.toFixed()}%`;
+    if (value.gt(max)) return `Interest rate cannot exceed ${max.toFixed()}%`;
     return undefined;
   },
 
@@ -117,19 +143,21 @@ export const validators = {
    * Zombie troves cannot have debt between 0 and MIN_DEBT (exclusive)
    */
   zombieTroveDebt: (
-    newDebt: number,
-    currentDebt: number,
-    minDebt: number,
+    newDebt: Big,
+    currentDebt: Big,
+    minDebt: Big,
     isZombie: boolean
   ) => {
     if (!isZombie) return undefined;
 
+    const zeroBig = new Big(0);
+
     // Cannot reduce debt to a value between 0 and MIN_DEBT
-    if (newDebt > 0 && newDebt < minDebt) {
-      if (newDebt < currentDebt) {
-        return `Cannot reduce debt below ${minDebt} USDU while in zombie state. Either maintain at least ${minDebt} USDU or close the position entirely`;
+    if (newDebt.gt(zeroBig) && newDebt.lt(minDebt)) {
+      if (newDebt.lt(currentDebt)) {
+        return `Cannot reduce debt below ${minDebt.toFixed()} USDU while in zombie state. Either maintain at least ${minDebt.toFixed()} USDU or close the position entirely`;
       }
-      return `Zombie positions must have at least ${minDebt} USDU debt or be closed entirely`;
+      return `Zombie positions must have at least ${minDebt.toFixed()} USDU debt or be closed entirely`;
     }
 
     return undefined;

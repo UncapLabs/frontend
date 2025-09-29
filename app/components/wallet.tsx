@@ -3,7 +3,6 @@ import {
   useDisconnect,
   useStarkProfile,
 } from "@starknet-react/core";
-import { AvatarIcon } from "./icons/avatar-icon";
 import { toHexChainid, isMainnet } from "../lib/utils/chain-id";
 import { formatTruncatedAddress } from "../lib/utils/format-address";
 import { useState } from "react";
@@ -38,7 +37,7 @@ function WalletInfoDisplay({
   handleDisconnect,
 }: {
   activeConnectorName?: string;
-  starkProfile: any; // Consider defining a more specific type for starkProfile
+  starkProfile: any;
   address?: string;
   getExplorerUrl: () => string;
   handleCopyToClipboard: () => void;

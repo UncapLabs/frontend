@@ -1,6 +1,5 @@
 import { memo, type ReactNode } from "react";
 import { NumericFormat, type NumberFormatValues } from "react-number-format";
-import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
   Select,
@@ -9,6 +8,8 @@ import {
   SelectTrigger,
 } from "~/components/ui/select";
 import { MAX_LIMIT } from "~/lib/contracts/constants";
+import Big from "big.js";
+import { bigintToBig } from "~/lib/decimal";
 
 export interface Token {
   address: string;
@@ -25,9 +26,9 @@ interface TokenInputProps {
     value?: bigint;
     formatted?: string;
   };
-  price?: { price: number };
-  value?: number;
-  onChange: (value: number | undefined) => void;
+  price?: { price: Big | number };
+  value?: Big | string | number | undefined;
+  onChange: (value: Big | undefined) => void;
   onBlur?: () => void;
   label: string | ReactNode;
   placeholder?: string;
@@ -73,11 +74,37 @@ export const TokenInput = memo(function TokenInput({
   tokenSelectorBgColor = "bg-token-bg",
   tokenSelectorTextColor = "text-token-orange",
 }: TokenInputProps) {
-  const usdValue = value && price ? value * price.price : 0;
+  // Convert value to string for display (preserves full precision) as NumericFormat can accept strings directly!
+  const displayValue = value instanceof Big ? value.toString() : value;
+
+  // Calculate USD value (using Big for precision)
+  const usdValue = (() => {
+    if (!value || !price) return 0;
+
+    const valueBig = value instanceof Big ? value : new Big(String(value || 0));
+    const priceBig =
+      price.price instanceof Big ? price.price : new Big(price.price);
+
+    return Number(valueBig.times(priceBig).toString());
+  })();
 
   const handleValueChange = (values: NumberFormatValues) => {
     if (disabled) return;
-    onChange(values.floatValue ?? 0);
+
+    if (values.floatValue === undefined || values.floatValue === 0) {
+      onChange(undefined);
+    } else if (values.value && values.value !== "") {
+      // Use the actual string value to preserve full precision!
+      try {
+        const bigValue = new Big(values.value);
+        onChange(bigValue);
+      } catch {
+        // Fallback to floatValue if string parsing fails
+        onChange(new Big(values.floatValue.toString()));
+      }
+    } else {
+      onChange(new Big(values.floatValue.toString()));
+    }
   };
 
   const shouldShowPercentageButtons = percentageButtons && onPercentageClick;
@@ -195,8 +222,8 @@ export const TokenInput = memo(function TokenInput({
             placeholder={placeholder}
             inputMode="decimal"
             allowNegative={false}
-            decimalScale={decimals}
-            value={value}
+            // decimalScale={decimals}
+            value={displayValue}
             onValueChange={handleValueChange}
             onBlur={onBlur}
             disabled={disabled}
@@ -248,7 +275,9 @@ export const TokenInput = memo(function TokenInput({
                   value={
                     balance.formatted ??
                     (balance.value
-                      ? Number(balance.value) / 10 ** token.decimals
+                      ? Number(
+                          bigintToBig(balance.value, token.decimals).toString()
+                        )
                       : 0)
                   }
                   thousandSeparator=","

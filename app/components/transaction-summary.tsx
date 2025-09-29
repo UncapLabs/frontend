@@ -7,23 +7,24 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { usePredictUpfrontFee } from "~/hooks/use-predict-upfront-fee";
-import { decimalToBigint, bigintToDecimal } from "~/lib/decimal";
+import { bigToBigint, bigintToBig } from "~/lib/decimal";
 import type { CollateralType } from "~/lib/contracts/constants";
 import { Skeleton } from "~/components/ui/skeleton";
+import Big from "big.js";
 
 interface PositionChange {
   collateral?: {
-    from?: number;
-    to: number;
+    from?: Big;
+    to: Big;
     token: string;
   };
   collateralValueUSD?: {
-    from?: number;
-    to: number;
+    from?: Big;
+    to: Big;
   };
   debt?: {
-    from?: number;
-    to: number;
+    from?: Big;
+    to: Big;
   };
   interestRate?: {
     from?: number;
@@ -34,7 +35,7 @@ interface PositionChange {
 interface TransactionSummaryProps {
   type: "open" | "update" | "close";
   changes: PositionChange;
-  liquidationPrice?: number;
+  liquidationPrice?: Big;
   className?: string;
   isValid?: boolean;
   warnings?: string[];
@@ -59,22 +60,17 @@ export function TransactionSummary({
       ? "Position Changes"
       : "Close Position";
 
-  // Calculate annual interest cost
   const annualInterestCost =
     changes.debt?.to && changes.interestRate?.to
-      ? (changes.debt.to * changes.interestRate.to) / 100
-      : 0;
-
-  // Calculate STRK rebate (30% of yearly interest)
-  // const REBATE_PERCENTAGE = 30;
-  // const yearlyRebate = annualInterestCost > 0 ? (annualInterestCost * REBATE_PERCENTAGE) / 100 : 0;
+      ? changes.debt.to.times(changes.interestRate.to).div(100)
+      : new Big(0);
 
   // Determine if we're increasing debt (for updates)
   const isDebtIncrease =
     type === "update" &&
     changes.debt?.from !== undefined &&
     changes.debt?.to !== undefined &&
-    changes.debt.to > changes.debt.from;
+    changes.debt.to.gt(changes.debt.from);
 
   // Calculate upfront fee using the unified hook
   const { upfrontFee, isLoading: isFeeLoading } = usePredictUpfrontFee(
@@ -83,10 +79,10 @@ export function TransactionSummary({
           type: "open",
           collateralType: collateralType || "UBTC",
           borrowedAmount: changes.debt?.to
-            ? decimalToBigint(changes.debt.to, 18)
+            ? bigToBigint(changes.debt.to, 18)
             : undefined,
           interestRate: changes.interestRate?.to
-            ? decimalToBigint(changes.interestRate.to / 100, 18)
+            ? bigToBigint(new Big(changes.interestRate.to).div(100), 18)
             : undefined,
           enabled:
             !!collateralType &&
@@ -101,11 +97,13 @@ export function TransactionSummary({
             isDebtIncrease &&
             changes.debt?.from !== undefined &&
             changes.debt?.to !== undefined
-              ? decimalToBigint(changes.debt.to - changes.debt.from, 18)
+              ? bigToBigint(changes.debt.to.minus(changes.debt.from), 18)
               : undefined,
           enabled: !!collateralType && !!troveId && isDebtIncrease,
         }
   );
+
+  const upfrontFeeBig = upfrontFee ? bigintToBig(upfrontFee, 18) : null;
 
   return (
     <div className={cn("bg-white rounded-2xl p-6 space-y-6", className)}>
@@ -133,7 +131,11 @@ export function TransactionSummary({
                   <span className="text-neutral-800/50 text-base font-medium font-sora line-through">
                     <NumericFormat
                       displayType="text"
-                      value={changes.collateral?.from || 0}
+                      value={
+                        changes.collateral?.from
+                          ? changes.collateral.from.toString()
+                          : "0"
+                      }
                       thousandSeparator=","
                       decimalScale={4}
                       fixedDecimalScale={false}
@@ -144,7 +146,11 @@ export function TransactionSummary({
                   <span className="text-neutral-800 text-base font-medium font-sora">
                     <NumericFormat
                       displayType="text"
-                      value={changes.collateral?.to || 0}
+                      value={
+                        changes.collateral?.to
+                          ? changes.collateral.to.toString()
+                          : "0"
+                      }
                       thousandSeparator=","
                       decimalScale={4}
                       fixedDecimalScale={false}
@@ -155,7 +161,11 @@ export function TransactionSummary({
                 <div className="text-xs text-neutral-800/70 font-sora">
                   <NumericFormat
                     displayType="text"
-                    value={changes.collateralValueUSD?.to || 0}
+                    value={
+                      changes.collateralValueUSD?.to
+                        ? changes.collateralValueUSD.to.toString()
+                        : "0"
+                    }
                     prefix="$"
                     thousandSeparator=","
                     decimalScale={2}
@@ -168,7 +178,11 @@ export function TransactionSummary({
                 <div className="text-neutral-800 text-base font-medium font-sora">
                   <NumericFormat
                     displayType="text"
-                    value={changes.collateral?.to || 0}
+                    value={
+                      changes.collateral?.to
+                        ? changes.collateral.to.toString()
+                        : "0"
+                    }
                     thousandSeparator=","
                     decimalScale={4}
                     fixedDecimalScale={false}
@@ -178,7 +192,11 @@ export function TransactionSummary({
                 <div className="text-xs text-neutral-800/70 font-sora">
                   <NumericFormat
                     displayType="text"
-                    value={changes.collateralValueUSD?.to || 0}
+                    value={
+                      changes.collateralValueUSD?.to
+                        ? changes.collateralValueUSD.to.toString()
+                        : "0"
+                    }
                     prefix="$"
                     thousandSeparator=","
                     decimalScale={2}
@@ -212,7 +230,9 @@ export function TransactionSummary({
                   <span className="text-neutral-800/50 text-base font-medium font-sora line-through">
                     <NumericFormat
                       displayType="text"
-                      value={changes.debt?.from || 0}
+                      value={
+                        changes.debt?.from ? changes.debt.from.toString() : "0"
+                      }
                       thousandSeparator=","
                       decimalScale={2}
                       fixedDecimalScale
@@ -223,7 +243,9 @@ export function TransactionSummary({
                   <span className="text-neutral-800 text-base font-medium font-sora">
                     <NumericFormat
                       displayType="text"
-                      value={changes.debt?.to || 0}
+                      value={
+                        changes.debt?.to ? changes.debt.to.toString() : "0"
+                      }
                       thousandSeparator=","
                       decimalScale={2}
                       fixedDecimalScale
@@ -236,12 +258,12 @@ export function TransactionSummary({
                   <div className="text-xs text-neutral-800/70 font-sora">
                     {isFeeLoading ? (
                       <Skeleton className="h-3 w-24 ml-auto" />
-                    ) : upfrontFee ? (
+                    ) : upfrontFeeBig ? (
                       <>
                         Incl.{" "}
                         <NumericFormat
                           displayType="text"
-                          value={bigintToDecimal(upfrontFee, 18)}
+                          value={upfrontFeeBig.toString()}
                           thousandSeparator=","
                           decimalScale={2}
                           fixedDecimalScale
@@ -257,7 +279,7 @@ export function TransactionSummary({
                 <span className="text-neutral-800 text-base font-medium font-sora">
                   <NumericFormat
                     displayType="text"
-                    value={changes.debt?.to || 0}
+                    value={changes.debt?.to ? changes.debt.to.toString() : "0"}
                     thousandSeparator=","
                     decimalScale={2}
                     fixedDecimalScale
@@ -269,12 +291,12 @@ export function TransactionSummary({
                   <div className="text-xs text-neutral-800/70 font-sora">
                     {isFeeLoading ? (
                       <Skeleton className="h-3 w-24 ml-auto" />
-                    ) : upfrontFee ? (
+                    ) : upfrontFeeBig ? (
                       <>
                         Incl.{" "}
                         <NumericFormat
                           displayType="text"
-                          value={bigintToDecimal(upfrontFee, 18)}
+                          value={upfrontFeeBig.toString()}
                           thousandSeparator=","
                           decimalScale={2}
                           fixedDecimalScale
@@ -320,11 +342,11 @@ export function TransactionSummary({
                     {changes.interestRate?.to?.toFixed(2)}%
                   </span>
                 </div>
-                {annualInterestCost > 0 && (
+                {annualInterestCost.gt(0) && (
                   <div className="text-xs text-neutral-800/70 font-sora">
                     <NumericFormat
                       displayType="text"
-                      value={annualInterestCost}
+                      value={annualInterestCost.toString()}
                       thousandSeparator=","
                       decimalScale={2}
                       fixedDecimalScale
@@ -338,11 +360,11 @@ export function TransactionSummary({
                 <div className="text-neutral-800 text-base font-medium font-sora">
                   {(changes.interestRate?.to || 5).toFixed(2)}%
                 </div>
-                {annualInterestCost > 0 && (
+                {annualInterestCost.gt(0) && (
                   <div className="text-xs text-neutral-800/70 font-sora">
                     <NumericFormat
                       displayType="text"
-                      value={annualInterestCost}
+                      value={annualInterestCost.toString()}
                       thousandSeparator=","
                       decimalScale={2}
                       fixedDecimalScale
@@ -376,14 +398,27 @@ export function TransactionSummary({
           <div className="text-right">
             {(() => {
               const currentLTV =
-                changes.collateralValueUSD?.to && changes.debt?.to
-                  ? (changes.debt.to / changes.collateralValueUSD.to) * 100
+                changes.collateralValueUSD?.to &&
+                changes.debt?.to &&
+                changes.collateralValueUSD.to.gt(0)
+                  ? Number(
+                      changes.debt.to
+                        .div(changes.collateralValueUSD.to)
+                        .times(100)
+                        .toString()
+                    )
                   : 0;
               const previousLTV =
                 type === "update" &&
                 changes.collateralValueUSD?.from &&
-                changes.debt?.from
-                  ? (changes.debt.from / changes.collateralValueUSD.from) * 100
+                changes.debt?.from &&
+                changes.collateralValueUSD.from.gt(0)
+                  ? Number(
+                      changes.debt.from
+                        .div(changes.collateralValueUSD.from)
+                        .times(100)
+                        .toString()
+                    )
                   : undefined;
 
               if (
@@ -470,10 +505,10 @@ export function TransactionSummary({
             </Tooltip>
           </div>
           <span className="text-neutral-800 text-base font-medium font-sora">
-            {liquidationPrice && liquidationPrice > 0 ? (
+            {liquidationPrice && liquidationPrice.gt(0) ? (
               <NumericFormat
                 displayType="text"
-                value={liquidationPrice}
+                value={Number(liquidationPrice.toString())}
                 prefix="$"
                 thousandSeparator=","
                 decimalScale={2}

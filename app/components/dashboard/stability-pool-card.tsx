@@ -6,14 +6,15 @@ import {
 } from "~/components/ui/card";
 import { NumericFormat } from "react-number-format";
 import { Edit3 } from "lucide-react";
+import Big from "big.js";
 
 interface StabilityPoolCardProps {
   poolType: "UBTC" | "GBTC";
-  userDeposit: number;
-  poolShare: number;
-  usduRewards: number;
-  collateralRewards: number;
-  usduPrice?: number;
+  userDeposit: Big;
+  poolShare: Big;
+  usduRewards: Big;
+  collateralRewards: Big;
+  usduPrice?: Big;
   onManagePosition: () => void;
 }
 
@@ -80,7 +81,7 @@ export default function StabilityPoolCard({
               <span className="text-xs font-medium font-sora leading-3 text-neutral-800">
                 <NumericFormat
                   displayType="text"
-                  value={poolShare}
+                  value={poolShare.toString()}
                   decimalScale={3}
                   suffix="%"
                 />
@@ -95,7 +96,7 @@ export default function StabilityPoolCard({
                 <div className="text-3xl font-medium font-sora text-neutral-800">
                   <NumericFormat
                     displayType="text"
-                    value={userDeposit}
+                    value={userDeposit.toString()}
                     thousandSeparator=","
                     decimalScale={2}
                     fixedDecimalScale
@@ -119,7 +120,7 @@ export default function StabilityPoolCard({
                     $
                     <NumericFormat
                       displayType="text"
-                      value={userDeposit * usduPrice}
+                      value={userDeposit.times(usduPrice).toString()}
                       thousandSeparator=","
                       decimalScale={2}
                       fixedDecimalScale
@@ -147,7 +148,7 @@ export default function StabilityPoolCard({
             <div className="text-xl font-medium font-sora text-neutral-800">
               <NumericFormat
                 displayType="text"
-                value={usduRewards}
+                value={usduRewards.toString()}
                 thousandSeparator=","
                 decimalScale={2}
                 fixedDecimalScale
@@ -163,7 +164,7 @@ export default function StabilityPoolCard({
             <div className="text-xl font-medium font-sora text-neutral-800">
               <NumericFormat
                 displayType="text"
-                value={collateralRewards}
+                value={collateralRewards.toString()}
                 thousandSeparator=","
                 decimalScale={6}
                 fixedDecimalScale={true}

@@ -10,15 +10,15 @@ interface ManagedStrategyProps {
   collateralPriceUSD?: number;
 }
 
-export function ManagedStrategy({ 
+export function ManagedStrategy({
   disabled = false,
   borrowAmount,
   collateralAmount,
-  collateralPriceUSD
+  collateralPriceUSD,
 }: ManagedStrategyProps) {
   const interestRate = 4.3; // Managed strategy uses 4.3% interest rate
   const annualFee = borrowAmount ? borrowAmount * 0.001 : 0; // 0.1% annual fee
-  
+
   // Calculate STRK rebate for the managed strategy (only if borrowAmount exists)
   const rebateData = useCalculatedRebate(borrowAmount, interestRate);
 
@@ -170,9 +170,8 @@ export function ManagedStrategy({
 
       {/* STRK Rebate Information - Only show when borrowAmount is provided */}
       {borrowAmount && borrowAmount > 0 && rebateData && (
-        <STRKRebateInfo 
+        <STRKRebateInfo
           yearlyInterestUSD={rebateData.yearlyInterestUSD}
-          effectiveYearlyInterestUSD={rebateData.effectiveYearlyInterestUSD}
           yearlyRebateUSD={rebateData.yearlyRebateUSD}
           collateralValueUSD={
             collateralAmount && collateralPriceUSD

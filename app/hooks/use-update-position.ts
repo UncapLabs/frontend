@@ -13,19 +13,20 @@ import {
 } from "~/lib/utils/position-helpers";
 import { getAnnualInterestRate } from "~/lib/utils/calc";
 import { bigintToDecimal } from "~/lib/decimal";
+import Big from "big.js";
 
-// Update form data structure
+// Update form data structure to use Big for precision
 export interface UpdateFormData {
-  collateralAmount?: number;
-  borrowAmount?: number;
+  collateralAmount?: Big;
+  borrowAmount?: Big;
   interestRate: number;
   selectedCollateralToken: string;
 }
 
 interface UseUpdatePositionParams {
   position: any | null;
-  collateralAmount?: number;
-  borrowAmount?: number;
+  collateralAmount?: Big;
+  borrowAmount?: Big;
   interestRate?: number;
   collateralToken?: Token;
   onSuccess?: () => void;
@@ -42,7 +43,7 @@ export function useUpdatePosition({
   const { address } = useAccount();
   const transactionStore = useTransactionStore();
 
-  // Transaction state management
+  // Transaction state management - keep Big instances for precision
   const transactionState = useTransactionState<UpdateFormData>({
     initialFormData: {
       collateralAmount: position?.collateralAmount,
@@ -52,7 +53,7 @@ export function useUpdatePosition({
     },
   });
 
-  // Use the adjust trove hook
+  // Use the adjust trove hook - now with Big instances
   const {
     send: adjustTroveSend,
     isPending: adjustTroveIsPending,
@@ -79,8 +80,8 @@ export function useUpdatePosition({
     isZombie:
       position &&
       position.status === "redeemed" &&
-      position.borrowedAmount > 0 &&
-      position.borrowedAmount < MIN_DEBT,
+      position.borrowedAmount.gt(0) &&
+      position.borrowedAmount.lt(MIN_DEBT),
   });
 
   // Create a wrapped send function that manages state transitions
@@ -121,10 +122,10 @@ export function useUpdatePosition({
           description,
           details: {
             troveId: position.id,
-            previousCollateral: position.collateralAmount,
-            previousDebt: position.borrowedAmount,
-            newCollateral: collateralAmount,
-            newDebt: borrowAmount,
+            previousCollateral: Number(position.collateralAmount.toString()),
+            previousDebt: Number(position.borrowedAmount.toString()),
+            newCollateral: collateralAmount ? Number(collateralAmount.toString()) : undefined,
+            newDebt: borrowAmount ? Number(borrowAmount.toString()) : undefined,
             previousInterestRate: getInterestRatePercentage(position),
             newInterestRate: interestRate,
             collateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,

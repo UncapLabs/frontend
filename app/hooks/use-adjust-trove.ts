@@ -2,19 +2,20 @@ import { useMemo } from "react";
 import { useAccount } from "@starknet-react/core";
 import { contractCall } from "~/lib/contracts/calls";
 import { useTransaction } from "./use-transaction";
-import { toBigInt } from "~/lib/utils";
 import {
   getCollateralAddresses,
   type CollateralType,
 } from "~/lib/contracts/constants";
+import Big from "big.js";
+import { bigToBigint } from "~/lib/decimal";
 
 interface UseAdjustTroveParams {
   troveId?: bigint;
-  currentCollateral?: number;
-  currentDebt?: number;
+  currentCollateral?: Big;
+  currentDebt?: Big;
   currentInterestRate?: bigint;
-  newCollateral?: number;
-  newDebt?: number;
+  newCollateral?: Big;
+  newDebt?: Big;
   newInterestRate?: bigint;
   maxUpfrontFee?: bigint;
   collateralToken?: { address: string; collateralType?: CollateralType };
@@ -189,7 +190,7 @@ export function useAdjustTrove({
 }: UseAdjustTroveParams) {
   const { address } = useAccount();
 
-  // Calculate the changes
+  // Calculate the changes using Big for precision
   const changes = useMemo(() => {
     if (
       !currentCollateral ||
@@ -202,16 +203,16 @@ export function useAdjustTrove({
       return null;
     }
 
-    const collateralDiff = newCollateral - currentCollateral;
-    const debtDiff = newDebt - currentDebt;
+    const collateralDiff = newCollateral.minus(currentCollateral);
+    const debtDiff = newDebt.minus(currentDebt);
 
     return {
-      collateralChange: toBigInt(Math.abs(collateralDiff)),
-      debtChange: toBigInt(Math.abs(debtDiff)),
-      isCollIncrease: collateralDiff > 0,
-      isDebtIncrease: debtDiff > 0,
-      hasCollateralChange: Math.abs(collateralDiff) > 0.000001, // Minimum change threshold
-      hasDebtChange: Math.abs(debtDiff) > 0.01, // Minimum change threshold
+      collateralChange: bigToBigint(collateralDiff.abs(), 18),
+      debtChange: bigToBigint(debtDiff.abs(), 18),
+      isCollIncrease: collateralDiff.gt(0),
+      isDebtIncrease: debtDiff.gt(0),
+      hasCollateralChange: collateralDiff.abs().gt(0.000001), // Minimum change threshold
+      hasDebtChange: debtDiff.abs().gt(0.01), // Minimum change threshold
       hasInterestRateChange: currentInterestRate !== newInterestRate,
       newInterestRate: newInterestRate,
     };

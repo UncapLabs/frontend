@@ -1,11 +1,12 @@
 import { NumericFormat } from "react-number-format";
 import type { CollateralType } from "~/lib/contracts/constants";
+import Big from "big.js";
 
 interface ClaimRewardsSectionProps {
   selectedPosition: any;
   selectedCollateral: CollateralType;
-  usduPrice: number;
-  collateralPrice: number;
+  usduPrice: Big;
+  collateralPrice: Big;
 }
 
 export function ClaimRewardsSection({
@@ -14,14 +15,14 @@ export function ClaimRewardsSection({
   usduPrice,
   collateralPrice,
 }: ClaimRewardsSectionProps) {
-  const usduRewards = selectedPosition?.rewards?.usdu || 0;
-  const collateralRewards = selectedPosition?.rewards?.collateral || 0;
-  const hasRewards = usduRewards > 0 || collateralRewards > 0;
+  const usduRewards = new Big(selectedPosition?.rewards?.usdu || 0);
+  const collateralRewards = new Big(selectedPosition?.rewards?.collateral || 0);
+  const hasRewards = usduRewards.gt(0) || collateralRewards.gt(0);
 
-  // Calculate USD values
-  const usduRewardsUSD = usduRewards * usduPrice;
-  const collateralRewardsUSD = collateralRewards * collateralPrice;
-  const totalUSD = usduRewardsUSD + collateralRewardsUSD;
+  // Calculate USD values (using Big for precision)
+  const usduRewardsUSD = usduRewards.times(usduPrice);
+  const collateralRewardsUSD = collateralRewards.times(collateralPrice);
+  const totalUSD = usduRewardsUSD.plus(collateralRewardsUSD);
 
   return (
     <div className="bg-white rounded-2xl p-6 space-y-6">
@@ -45,7 +46,7 @@ export function ClaimRewardsSection({
               <div className="text-lg font-medium text-neutral-800 font-sora">
                 <NumericFormat
                   displayType="text"
-                  value={usduRewards}
+                  value={usduRewards.toString()}
                   thousandSeparator=","
                   decimalScale={2}
                   fixedDecimalScale
@@ -55,7 +56,7 @@ export function ClaimRewardsSection({
               <div className="text-xs text-neutral-500 font-sora">
                 <NumericFormat
                   displayType="text"
-                  value={usduRewardsUSD}
+                  value={usduRewardsUSD.toString()}
                   prefix="≈ $"
                   thousandSeparator=","
                   decimalScale={2}
@@ -81,7 +82,7 @@ export function ClaimRewardsSection({
               <div className="text-lg font-medium text-neutral-800 font-sora">
                 <NumericFormat
                   displayType="text"
-                  value={collateralRewards}
+                  value={collateralRewards.toString()}
                   thousandSeparator=","
                   decimalScale={6}
                   fixedDecimalScale
@@ -91,7 +92,7 @@ export function ClaimRewardsSection({
               <div className="text-xs text-neutral-500 font-sora">
                 <NumericFormat
                   displayType="text"
-                  value={collateralRewardsUSD}
+                  value={collateralRewardsUSD.toString()}
                   prefix="≈ $"
                   thousandSeparator=","
                   decimalScale={2}
@@ -114,7 +115,7 @@ export function ClaimRewardsSection({
                   <div className="text-xl font-semibold text-neutral-800 font-sora">
                     <NumericFormat
                       displayType="text"
-                      value={totalUSD}
+                      value={totalUSD.toString()}
                       prefix="$"
                       thousandSeparator=","
                       decimalScale={2}

@@ -8,7 +8,7 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useAccount, useBalance } from "@starknet-react/core";
 import {
@@ -30,6 +30,8 @@ import { HelpCircle } from "lucide-react";
 import { DepositSection } from "~/components/earn/deposit-section";
 import { WithdrawSection } from "~/components/earn/withdraw-section";
 import { ClaimRewardsSection } from "~/components/earn/claim-rewards-section";
+import Big from "big.js";
+import { bigintToBig } from "~/lib/decimal";
 
 type ActionType = "deposit" | "withdraw" | "claim";
 
@@ -49,16 +51,14 @@ function Earn() {
     "claim",
     parseAsBoolean.withDefault(true)
   );
-  // Use local state for amount to avoid URL precision issues
-  const [amountState, setAmountState] = useState<number | undefined>(undefined);
 
   const form = useForm({
     defaultValues: {
-      amount: amountState ?? (undefined as number | undefined),
+      amount: new Big(0) as Big | undefined,
     },
     onSubmit: async ({ value }) => {
       // For claim action, we don't need an amount
-      if (action !== "claim" && !value.amount) return;
+      if (action !== "claim" && (!value.amount || value.amount.lte(0))) return;
 
       try {
         if (!isReady) {
@@ -79,8 +79,6 @@ function Earn() {
     address: address,
     refetchInterval: 30000,
   });
-
-  const amount = form.state.values.amount;
 
   const allPositions = useAllStabilityPoolPositions();
   const selectedPosition = allPositions[selectedCollateral];
@@ -103,21 +101,20 @@ function Earn() {
     reset: transactionReset,
   } = useStabilityPoolTransaction({
     action: action,
-    amount: amount,
+    amount: form.state.values.amount,
     doClaim: claimRewards,
     collateralType: selectedCollateral,
     rewards: selectedPosition?.rewards,
   });
 
   useEffect(() => {
-    if (address && amount && amount > 0) {
+    if (address && form.state.values.amount && form.state.values.amount.gt(0)) {
       form.validateField("amount", "change");
     }
   }, [address, action]);
 
   const handleComplete = useCallback(() => {
     form.reset();
-    setAmountState(undefined);
     transactionReset();
   }, [form, transactionReset]);
 
@@ -169,12 +166,14 @@ function Earn() {
                                 displayType="text"
                                 value={
                                   action === "deposit" &&
-                                  "depositAmount" in formData
-                                    ? formData.depositAmount
+                                  "depositAmount" in formData &&
+                                  formData.depositAmount
+                                    ? formData.depositAmount.toString()
                                     : action === "withdraw" &&
-                                      "withdrawAmount" in formData
-                                    ? formData.withdrawAmount
-                                    : 0
+                                      "withdrawAmount" in formData &&
+                                      formData.withdrawAmount
+                                    ? formData.withdrawAmount.toString()
+                                    : "0"
                                 }
                                 thousandSeparator=","
                                 decimalScale={2}
@@ -191,18 +190,18 @@ function Earn() {
                         // Add rewards claimed if applicable
                         ...(claimRewards &&
                         formData.rewardsClaimed &&
-                        (formData.rewardsClaimed.usdu > 0 ||
-                          formData.rewardsClaimed.collateral > 0)
+                        (formData.rewardsClaimed.usdu.gt(0) ||
+                          formData.rewardsClaimed.collateral.gt(0))
                           ? [
                               {
                                 label: "Rewards Claimed",
                                 value: (
                                   <div className="space-y-1">
-                                    {formData.rewardsClaimed.usdu > 0 && (
+                                    {formData.rewardsClaimed.usdu.gt(0) && (
                                       <div>
                                         <NumericFormat
                                           displayType="text"
-                                          value={formData.rewardsClaimed.usdu}
+                                          value={formData.rewardsClaimed.usdu.toString()}
                                           thousandSeparator=","
                                           decimalScale={2}
                                           fixedDecimalScale
@@ -210,13 +209,13 @@ function Earn() {
                                         USDU
                                       </div>
                                     )}
-                                    {formData.rewardsClaimed.collateral > 0 && (
+                                    {formData.rewardsClaimed.collateral.gt(
+                                      0
+                                    ) && (
                                       <div>
                                         <NumericFormat
                                           displayType="text"
-                                          value={
-                                            formData.rewardsClaimed.collateral
-                                          }
+                                          value={formData.rewardsClaimed.collateral.toString()}
                                           thousandSeparator=","
                                           decimalScale={6}
                                           fixedDecimalScale
@@ -386,8 +385,8 @@ function Earn() {
                         <ClaimRewardsSection
                           selectedPosition={selectedPosition}
                           selectedCollateral={selectedCollateral}
-                          usduPrice={usduPrice?.price || 1}
-                          collateralPrice={bitcoinPrice?.price || 0}
+                          usduPrice={usduPrice?.price || new Big(1)}
+                          collateralPrice={bitcoinPrice?.price || new Big(0)}
                         />
                       ) : action === "deposit" ? (
                         <form.Field
@@ -397,9 +396,10 @@ function Earn() {
                             onChangeAsync: async ({ value }) => {
                               if (!address || !value) return undefined;
                               if (!usduBalance) return undefined;
-                              const balance =
-                                Number(usduBalance.value) /
-                                10 ** USDU_TOKEN.decimals;
+                              const balance = bigintToBig(
+                                usduBalance.value,
+                                USDU_TOKEN.decimals
+                              );
                               return validators.compose(
                                 validators.insufficientBalance(value, balance)
                               );
@@ -409,28 +409,24 @@ function Earn() {
                           {(field) => (
                             <DepositSection
                               value={field.state.value}
-                              onChange={(value) => {
-                                field.handleChange(value);
-                                setAmountState(value || undefined);
-                              }}
+                              onChange={field.handleChange}
                               onBlur={field.handleBlur}
                               error={field.state.meta.errors?.[0]}
                               balance={usduBalance}
                               price={usduPrice}
-                              selectedCollateral={selectedCollateral}
-                              claimRewards={claimRewards}
                               selectedPosition={
                                 selectedPosition
                                   ? {
                                       ...selectedPosition,
                                       totalDeposits:
-                                        allPositions[selectedCollateral]
-                                          ?.totalDeposits || 0,
+                                        selectedPosition.totalDeposits ||
+                                        new Big(0),
                                       pendingUsduGain:
-                                        selectedPosition.rewards?.usdu || 0,
+                                        selectedPosition.rewards?.usdu ||
+                                        new Big(0),
                                       pendingCollGain:
                                         selectedPosition.rewards?.collateral ||
-                                        0,
+                                        new Big(0),
                                     }
                                   : null
                               }
@@ -447,7 +443,7 @@ function Earn() {
                               // Don't validate if position data hasn't loaded yet
                               if (!selectedPosition) return undefined;
                               const userDeposit =
-                                selectedPosition.userDeposit || 0;
+                                selectedPosition?.userDeposit || new Big(0);
                               return validators.compose(
                                 validators.insufficientBalance(
                                   value,
@@ -460,40 +456,35 @@ function Earn() {
                           {(field) => (
                             <WithdrawSection
                               value={field.state.value}
-                              onChange={(value) => {
-                                field.handleChange(value);
-                                setAmountState(value || undefined);
-                              }}
+                              onChange={field.handleChange}
                               onBlur={field.handleBlur}
                               error={field.state.meta.errors?.[0]}
                               price={usduPrice}
-                              selectedCollateral={selectedCollateral}
                               selectedPosition={
                                 selectedPosition
                                   ? {
                                       ...selectedPosition,
                                       totalDeposits:
-                                        allPositions[selectedCollateral]
-                                          ?.totalDeposits || 0,
+                                        selectedPosition.totalDeposits ||
+                                        new Big(0),
                                       pendingUsduGain:
-                                        selectedPosition.rewards?.usdu || 0,
+                                        selectedPosition.rewards?.usdu ||
+                                        new Big(0),
                                       pendingCollGain:
                                         selectedPosition.rewards?.collateral ||
-                                        0,
+                                        new Big(0),
                                     }
                                   : null
                               }
-                              claimRewards={claimRewards}
                               onPercentageClick={(percentage) => {
                                 const userDeposit =
-                                  selectedPosition?.userDeposit || 0;
+                                  selectedPosition?.userDeposit || new Big(0);
                                 // For MAX (percentage === 1), use exact value to avoid floating-point precision issues
                                 const newValue =
                                   percentage === 1
                                     ? userDeposit
-                                    : userDeposit * percentage;
+                                    : userDeposit.times(percentage);
                                 field.handleChange(newValue);
-                                setAmountState(newValue || undefined);
                               }}
                             />
                           )}
@@ -515,14 +506,14 @@ function Earn() {
                                     isSending ||
                                     isPending ||
                                     !selectedPosition?.rewards?.usdu ||
-                                    selectedPosition.rewards.usdu === 0
+                                    selectedPosition.rewards.usdu.eq(0)
                                   }
                                 />
                                 <Label
                                   htmlFor="compound-rewards"
                                   className={`text-sm font-medium select-none flex items-center gap-2 ${
                                     !selectedPosition?.rewards?.usdu ||
-                                    selectedPosition.rewards.usdu === 0
+                                    selectedPosition.rewards.usdu.eq(0)
                                       ? "text-neutral-400"
                                       : "text-neutral-700 cursor-pointer"
                                   }`}
@@ -553,7 +544,7 @@ function Earn() {
                               </div>
                               <p className="text-xs text-neutral-500 mt-1 ml-7">
                                 {!selectedPosition?.rewards?.usdu ||
-                                selectedPosition.rewards.usdu === 0
+                                selectedPosition.rewards.usdu.eq(0)
                                   ? "No USDU rewards available to compound"
                                   : !claimRewards
                                   ? "USDU rewards will be re-deposited to the pool"
@@ -565,7 +556,10 @@ function Earn() {
                               <div className="text-sm font-medium text-neutral-700">
                                 <NumericFormat
                                   displayType="text"
-                                  value={selectedPosition?.rewards?.usdu || 0}
+                                  value={
+                                    selectedPosition?.rewards?.usdu?.toString() ||
+                                    "0"
+                                  }
                                   thousandSeparator=","
                                   decimalScale={2}
                                   fixedDecimalScale
@@ -578,8 +572,8 @@ function Earn() {
                       ) : (
                         <div className="space-y-3">
                           {selectedPosition?.rewards &&
-                            (selectedPosition.rewards.usdu > 0 ||
-                              selectedPosition.rewards.collateral > 0) && (
+                            (selectedPosition.rewards.usdu.gt(0) ||
+                              selectedPosition.rewards.collateral.gt(0)) && (
                               <div className="flex items-center justify-between gap-4">
                                 <div className="flex-1">
                                   <div className="flex items-center gap-3">
@@ -634,11 +628,11 @@ function Earn() {
                                 </div>
 
                                 <div className="text-right space-y-1">
-                                  {selectedPosition.rewards.usdu > 0 && (
+                                  {selectedPosition.rewards.usdu.gt(0) && (
                                     <div className="text-sm font-medium text-neutral-700">
                                       <NumericFormat
                                         displayType="text"
-                                        value={selectedPosition.rewards.usdu}
+                                        value={selectedPosition.rewards.usdu.toString()}
                                         thousandSeparator=","
                                         decimalScale={2}
                                         fixedDecimalScale
@@ -646,13 +640,13 @@ function Earn() {
                                       USDU
                                     </div>
                                   )}
-                                  {selectedPosition.rewards.collateral > 0 && (
+                                  {selectedPosition.rewards.collateral.gt(
+                                    0
+                                  ) && (
                                     <div className="text-sm font-medium text-neutral-700">
                                       <NumericFormat
                                         displayType="text"
-                                        value={
-                                          selectedPosition.rewards.collateral
-                                        }
+                                        value={selectedPosition.rewards.collateral.toString()}
                                         thousandSeparator=","
                                         decimalScale={6}
                                         fixedDecimalScale
@@ -666,8 +660,8 @@ function Earn() {
 
                           {/* Show message when no rewards available */}
                           {(!selectedPosition?.rewards ||
-                            (selectedPosition.rewards.usdu === 0 &&
-                              selectedPosition.rewards.collateral === 0)) && (
+                            (selectedPosition.rewards.usdu.eq(0) &&
+                              selectedPosition.rewards.collateral.eq(0))) && (
                             <div className="flex items-center justify-between gap-4">
                               <div className="flex-1">
                                 <div className="flex items-center gap-3">
@@ -726,7 +720,7 @@ function Earn() {
                         amount: state.values.amount,
                       })}
                     >
-                      {({ canSubmit, errors, amount }) => {
+                      {({ canSubmit, errors }) => {
                         let buttonText =
                           action === "deposit"
                             ? "Deposit USDU"
@@ -740,21 +734,25 @@ function Earn() {
                           buttonText = "Connect Wallet";
                         } else if (action !== "claim" && errors.length > 0) {
                           buttonText = errors[0];
-                        } else if (action !== "claim" && !amount) {
+                        } else if (
+                          action !== "claim" &&
+                          !form.state.values.amount
+                        ) {
                           buttonText =
                             action === "deposit"
                               ? "Enter deposit amount"
                               : "Enter withdraw amount";
                         } else if (
                           action === "withdraw" &&
-                          (selectedPosition?.userDeposit ?? 0) === 0
+                          (!selectedPosition?.userDeposit ||
+                            selectedPosition.userDeposit.eq(0))
                         ) {
                           buttonText = "No deposit in this pool";
                         } else if (
                           action === "claim" &&
                           (!selectedPosition?.rewards ||
-                            (selectedPosition.rewards.usdu === 0 &&
-                              selectedPosition.rewards.collateral === 0))
+                            (selectedPosition.rewards.usdu.eq(0) &&
+                              selectedPosition.rewards.collateral.eq(0)))
                         ) {
                           buttonText = "No rewards to claim";
                         }
@@ -766,16 +764,17 @@ function Earn() {
                             disabled={
                               address &&
                               ((action !== "claim" &&
-                                (!amount ||
-                                  amount <= 0 ||
+                                (!form.state.values.amount ||
+                                  form.state.values.amount.lte(0) ||
                                   (action === "withdraw" &&
-                                    (selectedPosition?.userDeposit ?? 0) ===
-                                      0))) ||
+                                    (!selectedPosition?.userDeposit ||
+                                      selectedPosition.userDeposit.eq(0))))) ||
                                 (action === "claim" &&
                                   (!selectedPosition?.rewards ||
-                                    (selectedPosition.rewards.usdu === 0 &&
-                                      selectedPosition.rewards.collateral ===
-                                        0))) ||
+                                    (selectedPosition.rewards.usdu.eq(0) &&
+                                      selectedPosition.rewards.collateral.eq(
+                                        0
+                                      )))) ||
                                 isSending ||
                                 isPending ||
                                 (action !== "claim" && !canSubmit))

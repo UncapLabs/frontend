@@ -14,13 +14,13 @@ import type { Token } from "~/components/token-input";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
 import { getTroveId, getPrefixedTroveId } from "~/lib/utils/trove-id";
-import { decimalToBigint } from "~/lib/decimal";
+import { bigToBigint } from "~/lib/decimal";
+import Big from "big.js";
 
-// Borrow form data structure
 export interface BorrowFormData {
-  collateralAmount?: number;
-  borrowAmount?: number;
-  interestRate: number;
+  collateralAmount?: Big | string | number;
+  borrowAmount?: Big | string | number;
+  interestRate: Big | string | number;
   selectedCollateralToken: string;
 }
 
@@ -29,9 +29,9 @@ interface TokenWithCollateralType extends Token {
 }
 
 interface UseBorrowParams {
-  collateralAmount?: number;
-  borrowAmount?: number;
-  interestRate: number;
+  collateralAmount?: Big | string | number;
+  borrowAmount?: Big | string | number;
+  interestRate: Big | string | number;
   collateralToken?: TokenWithCollateralType;
   onSuccess?: () => void;
 }
@@ -88,16 +88,34 @@ export function useBorrow({
       contractCall.token.approve(
         collateralToken.address,
         addresses.borrowerOperations,
-        decimalToBigint(collateralAmount, 18)
+        bigToBigint(
+          collateralAmount instanceof Big
+            ? collateralAmount
+            : new Big(String(collateralAmount)),
+          18
+        )
       ),
 
       // 2. Open trove
       contractCall.borrowerOperations.openTrove({
         owner: address,
         ownerIndex: nextOwnerIndex,
-        collAmount: decimalToBigint(collateralAmount, 18),
-        usduAmount: decimalToBigint(borrowAmount, 18),
-        annualInterestRate: decimalToBigint(interestRate / 100, 18),
+        collAmount: bigToBigint(
+          collateralAmount instanceof Big
+            ? collateralAmount
+            : new Big(String(collateralAmount)),
+          18
+        ),
+        usduAmount: bigToBigint(
+          borrowAmount instanceof Big
+            ? borrowAmount
+            : new Big(String(borrowAmount)),
+          18
+        ),
+        annualInterestRate: bigToBigint(
+          new Big(String(interestRate)).div(100),
+          18
+        ),
         collateralType: collateralType,
         maxUpfrontFee: 2n ** 256n - 1n,
       }),

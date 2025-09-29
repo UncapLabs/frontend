@@ -4,17 +4,18 @@ import {
   useWithdrawFromStabilityPool,
 } from "~/hooks/use-stability-pool";
 import type { CollateralType } from "~/lib/contracts/constants";
+import Big from "big.js";
 
 type ActionType = "deposit" | "withdraw" | "claim";
 
 interface UseStabilityPoolTransactionParams {
   action: ActionType;
-  amount: number | undefined;
+  amount: Big | undefined;
   doClaim: boolean;
   collateralType: CollateralType;
   rewards?: {
-    usdu: number;
-    collateral: number;
+    usdu: Big;
+    collateral: Big;
   };
 }
 
@@ -30,7 +31,7 @@ export function useStabilityPoolTransaction({
   // For withdrawals: only pass amount to withdraw hook
   // For claims: pass 0 to withdraw hook
   const depositAmount = action === "deposit" ? amount : undefined;
-  const withdrawAmount = action === "withdraw" ? amount : (action === "claim" ? 0 : undefined);
+  const withdrawAmount = action === "withdraw" ? amount : (action === "claim" ? new Big(0) : undefined);
   
   // Always call both hooks - we cannot conditionally call hooks
   const depositHook = useDepositToStabilityPool({

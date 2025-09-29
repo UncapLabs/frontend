@@ -24,6 +24,8 @@ import { Alert, AlertDescription } from "~/components/ui/alert";
 import { BorrowingRestrictionsAlert } from "~/components/borrow/borrowing-restrictions-alert";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
 import { Skeleton } from "~/components/ui/skeleton";
+import Big from "big.js";
+import { bigintToBig } from "~/lib/decimal";
 
 function ClosePosition() {
   const { address } = useAccount();
@@ -75,15 +77,16 @@ function ClosePosition() {
 
   // Check if user has enough USDU to repay
   const usduBal = usduBalance
-    ? Number(usduBalance.value) / 10 ** USDU_TOKEN.decimals
-    : 0;
+    ? bigintToBig(usduBalance.value, USDU_TOKEN.decimals)
+    : new Big(0);
   const hasEnoughBalance = position
-    ? usduBal >= position.borrowedAmount
+    ? usduBal.gte(position.borrowedAmount)
     : false;
 
   // Check trove status
   const isZombie =
-    position?.status === "redeemed" && position?.borrowedAmount < MIN_DEBT;
+    position?.status === "redeemed" &&
+    position?.borrowedAmount.lt(MIN_DEBT);
   const isRedeemed = position?.status === "redeemed";
 
   const handleClosePosition = async () => {
@@ -210,7 +213,7 @@ function ClosePosition() {
                           <>
                             <NumericFormat
                               displayType="text"
-                              value={formData.debt}
+                              value={formData.debt.toString()}
                               thousandSeparator=","
                               decimalScale={2}
                               fixedDecimalScale
@@ -225,7 +228,7 @@ function ClosePosition() {
                           <>
                             <NumericFormat
                               displayType="text"
-                              value={formData.collateral}
+                              value={formData.collateral.toString()}
                               thousandSeparator=","
                               decimalScale={7}
                               fixedDecimalScale={false}
@@ -289,7 +292,7 @@ function ClosePosition() {
                     <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal font-sora text-neutral-800 w-full">
                       <NumericFormat
                         displayType="text"
-                        value={position.borrowedAmount}
+                        value={position.borrowedAmount.toString()}
                         thousandSeparator=","
                         decimalScale={2}
                         fixedDecimalScale
@@ -304,7 +307,9 @@ function ClosePosition() {
                   <NumericFormat
                     className="text-neutral-800 text-sm font-medium font-sora leading-none"
                     displayType="text"
-                    value={position.borrowedAmount * (usdu?.price || 1)}
+                    value={position.borrowedAmount
+                      .times(usdu?.price || 1)
+                      .toString()}
                     prefix="= $"
                     thousandSeparator=","
                     decimalScale={3}
@@ -321,7 +326,7 @@ function ClosePosition() {
                         hasEnoughBalance ? "text-neutral-800" : "text-red-600"
                       }`}
                       displayType="text"
-                      value={usduBal}
+                      value={usduBal.toString()}
                       thousandSeparator=","
                       decimalScale={3}
                       fixedDecimalScale
@@ -331,13 +336,17 @@ function ClosePosition() {
                     </span>
                     {!hasEnoughBalance && (
                       <span className="text-xs text-red-600 font-medium ml-1">
-                        (need <NumericFormat
+                        (need{" "}
+                        <NumericFormat
                           displayType="text"
-                          value={position.borrowedAmount - usduBal}
+                          value={position.borrowedAmount
+                            .minus(usduBal)
+                            .toString()}
                           thousandSeparator=","
                           decimalScale={2}
                           fixedDecimalScale
-                        /> more)
+                        />{" "}
+                        more)
                       </span>
                     )}
                   </div>
@@ -380,7 +389,7 @@ function ClosePosition() {
                     <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal font-sora text-neutral-800 w-full">
                       <NumericFormat
                         displayType="text"
-                        value={position.collateralAmount}
+                        value={position.collateralAmount.toString()}
                         thousandSeparator=","
                         decimalScale={7}
                         fixedDecimalScale={false}
@@ -394,7 +403,9 @@ function ClosePosition() {
                   <NumericFormat
                     className="text-neutral-800 text-sm font-medium font-sora leading-none"
                     displayType="text"
-                    value={position.collateralAmount * (bitcoin?.price || 0)}
+                    value={position.collateralAmount
+                      .times(bitcoin?.price || 0)
+                      .toString()}
                     prefix="= $"
                     thousandSeparator=","
                     decimalScale={3}

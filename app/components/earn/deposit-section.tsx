@@ -1,10 +1,12 @@
 import { Badge } from "~/components/ui/badge";
 import { TokenInput } from "~/components/token-input";
-import { USDU_TOKEN, type CollateralType } from "~/lib/contracts/constants";
+import { USDU_TOKEN } from "~/lib/contracts/constants";
+import Big from "big.js";
+import { calculatePercentageAmountBig } from "~/lib/input-parsers";
 
 interface DepositSectionProps {
-  value: number | undefined;
-  onChange: (value: number | undefined) => void;
+  value: Big | undefined;
+  onChange: (value: Big | undefined) => void;
   onBlur: () => void;
   error?: string;
   balance:
@@ -15,19 +17,17 @@ interface DepositSectionProps {
         symbol: string;
       }
     | undefined;
-  price?: { price: number };
+  price?: { price: Big };
   selectedPosition: {
-    userDeposit: number;
-    totalDeposits: number;
-    pendingUsduGain: bigint | string | number;
-    pendingCollGain: bigint | string | number;
+    userDeposit: Big;
+    totalDeposits: Big;
+    pendingUsduGain: Big;
+    pendingCollGain: Big;
     rewards?: {
-      usdu: number;
-      collateral: number;
+      usdu: Big;
+      collateral: Big;
     };
   } | null;
-  selectedCollateral?: CollateralType;
-  claimRewards?: boolean;
 }
 
 export function DepositSection({
@@ -38,8 +38,6 @@ export function DepositSection({
   balance,
   price,
   selectedPosition,
-  selectedCollateral,
-  claimRewards = true,
 }: DepositSectionProps) {
   return (
     <div className="space-y-6">
@@ -54,10 +52,15 @@ export function DepositSection({
         error={error}
         percentageButtons
         onPercentageClick={(percentage) => {
-          const balanceValue = balance?.value
-            ? Number(balance.value) / 10 ** USDU_TOKEN.decimals
-            : 0;
-          const newValue = balanceValue * percentage;
+          if (!balance?.value) {
+            onChange(undefined);
+            return;
+          }
+          const newValue = calculatePercentageAmountBig(
+            balance.value,
+            USDU_TOKEN.decimals,
+            percentage * 100 // Convert to 0-100 scale
+          );
           onChange(newValue);
         }}
         includeMax={true}
@@ -70,20 +73,19 @@ export function DepositSection({
         <span className="font-medium text-slate-900">
           {(() => {
             // Show placeholder if no value entered or no position data
-            if (!value || Number(value) <= 0 || !selectedPosition) {
+            if (!value || value.lte(0) || !selectedPosition) {
               return "-";
             }
 
-            const inputAmount = Number(value);
-            const currentDeposit = selectedPosition?.userDeposit || 0;
-            const totalDeposit = selectedPosition?.totalDeposits || 0;
-            const newTotalDeposit = totalDeposit + inputAmount;
-            const newUserDeposit = currentDeposit + inputAmount;
-            const share =
-              newTotalDeposit > 0
-                ? (newUserDeposit / newTotalDeposit) * 100
-                : 0;
-            return `${share.toFixed(4)}%`;
+            const inputAmount = value;
+            const currentDeposit = selectedPosition?.userDeposit || new Big(0);
+            const totalDeposit = selectedPosition?.totalDeposits || new Big(0);
+            const newTotalDeposit = totalDeposit.plus(inputAmount);
+            const newUserDeposit = currentDeposit.plus(inputAmount);
+            const share = newTotalDeposit.gt(0)
+              ? newUserDeposit.div(newTotalDeposit).times(100)
+              : new Big(0);
+            return `${Number(share.toFixed(4))}%`;
           })()}
         </span>
       </div>

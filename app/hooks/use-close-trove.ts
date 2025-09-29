@@ -7,19 +7,20 @@ import { type CollateralType } from "~/lib/contracts/constants";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
 import { extractTroveId } from "~/lib/utils/position-helpers";
+import Big from "big.js";
 
 // Close trove form data structure
 export interface CloseTroveFormData {
   troveId: string;
-  debt: number;
-  collateral: number;
+  debt: Big;
+  collateral: Big;
   collateralType: CollateralType;
 }
 
 interface UseCloseTroveParams {
   troveId?: string;
-  debt?: number;
-  collateral?: number;
+  debt?: Big;
+  collateral?: Big;
   collateralType?: CollateralType;
   onSuccess?: () => void;
 }
@@ -38,8 +39,8 @@ export function useCloseTrove({
   const transactionState = useTransactionState<CloseTroveFormData>({
     initialFormData: {
       troveId: troveId || "",
-      debt: debt || 0,
-      collateral: collateral || 0,
+      debt: debt || new Big(0),
+      collateral: collateral || new Big(0),
       collateralType,
     },
   });
@@ -53,7 +54,10 @@ export function useCloseTrove({
     try {
       const numericTroveId = extractTroveId(troveId);
       return [
-        contractCall.borrowerOperations.closeTrove(numericTroveId, collateralType),
+        contractCall.borrowerOperations.closeTrove(
+          numericTroveId,
+          collateralType
+        ),
       ];
     } catch {
       // If we can't parse the trove ID, return undefined
@@ -72,8 +76,8 @@ export function useCloseTrove({
       // Transaction was sent successfully, move to pending
       transactionState.updateFormData({
         troveId: troveId || "",
-        debt: debt || 0,
-        collateral: collateral || 0,
+        debt: debt || new Big(0),
+        collateral: collateral || new Big(0),
         collateralType,
       });
       transactionState.setPending(hash);
@@ -131,7 +135,7 @@ export function useCloseTrove({
     ...transaction,
     ...transactionState,
     send, // Override send with our wrapped version
-    isReady: !!calls && !!debt && debt > 0,
+    isReady: !!calls && !!debt && debt.gt(0),
     // Pass through isSending for UI state
     isSending: transaction.isSending,
   };

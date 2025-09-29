@@ -4,6 +4,7 @@ import { z } from "zod";
 import type { CollateralType } from "~/lib/contracts/constants";
 import * as dn from "dnum";
 import { dnum18 } from "~/lib/decimal";
+import Big from "big.js";
 
 export const priceRouter = router({
   getBitcoinPrice: publicProcedure
@@ -17,13 +18,15 @@ export const priceRouter = router({
         input.collateralType as CollateralType
       );
       const rawPrice = dnum18(price[0] as bigint);
+      // Convert to Big instance instead of number
       return {
-        price: dn.toNumber(rawPrice),
+        price: new Big(dn.toNumber(rawPrice)),
       };
     }),
   getUSDUPrice: publicProcedure.query(({}) => {
+    // Return as Big instance for consistency
     return {
-      price: 1.0,
+      price: new Big(1.0),
     };
   }),
 });

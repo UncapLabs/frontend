@@ -16,11 +16,23 @@ import { useState } from "react";
 import { useEffect } from "react";
 import type { AppRouter } from "workers/router";
 import { NuqsAdapter } from "nuqs/adapters/react-router/v7";
+import superjson from "superjson";
+import Big from "big.js";
 
 import type { Route } from "./+types/root";
 import "./app.css";
 import { StarknetProvider } from "./providers/starknet-provider";
 import { PHProvider } from "./providers/posthog-provider";
+
+// Register Big.js with superjson for serialization (must match server)
+superjson.registerCustom<Big, string>(
+  {
+    isApplicable: (v): v is Big => v instanceof Big,
+    serialize: (v) => v.toString(),
+    deserialize: (v) => new Big(v),
+  },
+  "big.js"
+);
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -95,6 +107,7 @@ export default function App() {
       links: [
         httpBatchLink({
           url: "/trpc",
+          transformer: superjson,
         }),
       ],
     })

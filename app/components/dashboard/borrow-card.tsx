@@ -8,19 +8,20 @@ import { NumericFormat } from "react-number-format";
 import { truncateTroveId } from "~/lib/utils/trove-id";
 import { Edit3, X } from "lucide-react";
 import { MIN_DEBT, UBTC_TOKEN, GBTC_TOKEN } from "~/lib/contracts/constants";
+import Big from "big.js";
 
 interface BorrowCardProps {
   trove: {
     id: string;
     status: string;
-    borrowedAmount: number;
-    collateralAmount: number;
+    borrowedAmount: Big;
+    collateralAmount: Big;
     collateralAsset: string;
     interestRate: number;
-    liquidationPrice: number;
+    liquidationPrice: Big;
   };
   collateralPrice?: {
-    price: number;
+    price: Big;
   };
   onUpdatePosition: (troveId: string, collateralAsset: string) => void;
   onClosePosition: (troveId: string, collateralAsset: string) => void;
@@ -44,9 +45,9 @@ export default function BorrowCard(props: Props) {
 
   // Zombie = redeemed trove with debt < MIN_DEBT
   const isZombie =
-    trove.status === "redeemed" && trove.borrowedAmount < MIN_DEBT;
+    trove.status === "redeemed" && trove.borrowedAmount.lt(MIN_DEBT);
   const isFullyRedeemed =
-    trove.status === "redeemed" && trove.borrowedAmount === 0;
+    trove.status === "redeemed" && trove.borrowedAmount.eq(0);
 
   return (
     <Card
@@ -203,7 +204,7 @@ export default function BorrowCard(props: Props) {
                 >
                   <NumericFormat
                     displayType="text"
-                    value={trove.collateralAmount}
+                    value={trove.collateralAmount.toString()}
                     thousandSeparator=","
                     decimalScale={6}
                     fixedDecimalScale={true}
@@ -247,7 +248,7 @@ export default function BorrowCard(props: Props) {
                     $
                     <NumericFormat
                       displayType="text"
-                      value={trove.collateralAmount * collateralPrice.price}
+                      value={trove.collateralAmount.times(collateralPrice.price).toString()}
                       thousandSeparator=","
                       decimalScale={2}
                       fixedDecimalScale
@@ -291,7 +292,7 @@ export default function BorrowCard(props: Props) {
             >
               <NumericFormat
                 displayType="text"
-                value={trove.borrowedAmount}
+                value={trove.borrowedAmount.toString()}
                 thousandSeparator=","
                 decimalScale={2}
                 fixedDecimalScale
@@ -318,7 +319,7 @@ export default function BorrowCard(props: Props) {
               $
               <NumericFormat
                 displayType="text"
-                value={trove.liquidationPrice}
+                value={trove.liquidationPrice.toString()}
                 thousandSeparator=","
                 decimalScale={2}
                 fixedDecimalScale

@@ -6,11 +6,12 @@ import {
   findPositionInChart,
   getRateFromPosition,
 } from "~/lib/interest-rate-visualization";
+import Big from "big.js";
 
 interface ManualRateControlsProps {
   interestRate: number;
   onInterestRateChange: (rate: number) => void;
-  borrowAmount?: number;
+  borrowAmount?: Big;
   disabled?: boolean;
   visualizationData?: any;
 }
@@ -125,13 +126,13 @@ export function ManualRateControls({
           }}
         />
         {/* Yearly Interest Cost - Display on the right */}
-        {borrowAmount && borrowAmount > 0 && (
+        {borrowAmount && borrowAmount.gt(0) && (
           <div className="flex items-baseline">
             <span className="text-sm text-neutral-800 font-medium font-sora">
-              {((borrowAmount * interestRate) / 100).toLocaleString("en-US", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
+              {borrowAmount
+                .times(interestRate)
+                .div(100)
+                .toFixed(2)}
             </span>
             <span className="text-xs text-neutral-500 block ml-1">
               {" "}

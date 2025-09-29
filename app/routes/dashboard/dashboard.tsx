@@ -39,8 +39,8 @@ export default function Dashboard() {
 
   // Check if user has any stability pool positions
   const hasStabilityPoolPositions =
-    (allStabilityPoolPositions.UBTC?.userDeposit ?? 0) > 0 ||
-    (allStabilityPoolPositions.GBTC?.userDeposit ?? 0) > 0;
+    (allStabilityPoolPositions.UBTC?.userDeposit?.gt(0) ?? false) ||
+    (allStabilityPoolPositions.GBTC?.userDeposit?.gt(0) ?? false);
 
   // Separate liquidated from active/zombie positions
   const liquidatedTroves = troves.filter((t) => t.status === "liquidated");
@@ -222,7 +222,7 @@ export default function Dashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* UBTC Pool Card */}
                 {allStabilityPoolPositions.UBTC &&
-                  allStabilityPoolPositions.UBTC.userDeposit > 0 && (
+                  allStabilityPoolPositions.UBTC.userDeposit.gt(0) && (
                     <StabilityPoolCard
                       poolType="UBTC"
                       userDeposit={allStabilityPoolPositions.UBTC.userDeposit}
@@ -238,7 +238,7 @@ export default function Dashboard() {
 
                 {/* GBTC Pool Card */}
                 {allStabilityPoolPositions.GBTC &&
-                  allStabilityPoolPositions.GBTC.userDeposit > 0 && (
+                  allStabilityPoolPositions.GBTC.userDeposit.gt(0) && (
                     <StabilityPoolCard
                       poolType="GBTC"
                       userDeposit={allStabilityPoolPositions.GBTC.userDeposit}

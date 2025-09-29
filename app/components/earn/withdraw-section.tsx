@@ -1,25 +1,25 @@
 import { TokenInput } from "~/components/token-input";
-import { USDU_TOKEN, type CollateralType } from "~/lib/contracts/constants";
+import { USDU_TOKEN } from "~/lib/contracts/constants";
+import Big from "big.js";
+import { bigToBigint } from "~/lib/decimal";
 
 interface WithdrawSectionProps {
-  value: number | undefined;
-  onChange: (value: number | undefined) => void;
+  value: Big | undefined;
+  onChange: (value: Big | undefined) => void;
   onBlur: () => void;
   error?: string;
-  price?: { price: number };
-  selectedCollateral: CollateralType;
+  price?: { price: Big };
   selectedPosition: {
-    userDeposit: number;
-    totalDeposits: number;
-    pendingUsduGain: bigint | string | number;
-    pendingCollGain: bigint | string | number;
+    userDeposit: Big;
+    totalDeposits: Big;
+    pendingUsduGain: Big;
+    pendingCollGain: Big;
     rewards?: {
-      usdu: number;
-      collateral: number;
+      usdu: Big;
+      collateral: Big;
     };
   } | null;
   onPercentageClick?: (percentage: number) => void;
-  claimRewards?: boolean;
 }
 
 export function WithdrawSection({
@@ -28,13 +28,11 @@ export function WithdrawSection({
   onBlur,
   error,
   price,
-  selectedCollateral,
   selectedPosition,
   onPercentageClick,
-  claimRewards = true,
 }: WithdrawSectionProps) {
   // Get the userDeposit value directly from selectedPosition
-  const userDeposit = selectedPosition?.userDeposit || 0;
+  const userDeposit = selectedPosition?.userDeposit || new Big(0);
 
   return (
     <div className="space-y-6">
@@ -44,19 +42,17 @@ export function WithdrawSection({
         onChange={onChange}
         token={USDU_TOKEN}
         balance={
-          userDeposit > 0
+          userDeposit.gt(0)
             ? {
-                value: BigInt(
-                  Math.floor(userDeposit * 10 ** USDU_TOKEN.decimals)
-                ),
-                formatted: userDeposit.toString(),
+                value: bigToBigint(userDeposit, USDU_TOKEN.decimals),
+                formatted: userDeposit.toFixed(),
               }
             : undefined
         }
         price={price}
         onBlur={onBlur}
         error={error}
-        disabled={userDeposit === 0}
+        disabled={userDeposit.eq(0)}
         decimals={18}
         percentageButtons
         onPercentageClick={onPercentageClick}
@@ -72,26 +68,26 @@ export function WithdrawSection({
             // Show placeholder if no value entered or no position data
             if (
               !value ||
-              Number(value) <= 0 ||
+              value.lte(0) ||
               !selectedPosition ||
-              selectedPosition.userDeposit <= 0
+              selectedPosition.userDeposit.lte(0)
             ) {
               return "-";
             }
 
-            const withdrawAmount = Number(value);
-            const currentDeposit = selectedPosition?.userDeposit || 0;
-            const totalDeposit = selectedPosition?.totalDeposits || 0;
-            const newTotalDeposit = totalDeposit - withdrawAmount;
-            const newUserDeposit = currentDeposit - withdrawAmount;
+            const withdrawAmount = value;
+            const currentDeposit = selectedPosition?.userDeposit || new Big(0);
+            const totalDeposit = selectedPosition?.totalDeposits || new Big(0);
+            const newTotalDeposit = totalDeposit.minus(withdrawAmount);
+            const newUserDeposit = currentDeposit.minus(withdrawAmount);
 
             // If withdrawing everything, share will be 0
-            if (newUserDeposit <= 0 || newTotalDeposit <= 0) {
+            if (newUserDeposit.lte(0) || newTotalDeposit.lte(0)) {
               return "0.0000%";
             }
 
-            const share = (newUserDeposit / newTotalDeposit) * 100;
-            return `${share.toFixed(4)}%`;
+            const share = newUserDeposit.div(newTotalDeposit).times(100);
+            return `${Number(share.toFixed(4))}%`;
           })()}
         </span>
       </div>
