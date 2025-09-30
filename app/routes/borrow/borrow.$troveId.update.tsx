@@ -149,24 +149,43 @@ function UpdatePosition() {
   const minCollateralizationRatio =
     getMinCollateralizationRatio(collateralType);
 
-  // Calculate final amounts based on actions using Big for precision
-  const finalCollateralAmount =
-    collateralAmount !== null && collateralAmount !== undefined
-      ? collateralAction === "add"
-        ? (position?.collateralAmount || new Big(0)).plus(collateralAmount)
-        : (position?.collateralAmount || new Big(0)).minus(collateralAmount)
-      : position?.collateralAmount || new Big(0);
+  // Calculate target amounts based on user input
+  const getTargetCollateral = () => {
+    if (!collateralAmount || collateralAmount.eq(0)) {
+      return position?.collateralAmount || new Big(0);
+    }
+    if (!position) return new Big(0);
+    return collateralAction === "add"
+      ? position.collateralAmount.plus(collateralAmount)
+      : position.collateralAmount.minus(collateralAmount);
+  };
 
-  const finalDebtAmount =
-    borrowAmount !== null && borrowAmount !== undefined
-      ? debtAction === "borrow"
-        ? (position?.borrowedAmount || new Big(0)).plus(borrowAmount)
-        : (position?.borrowedAmount || new Big(0)).minus(borrowAmount)
-      : position?.borrowedAmount || new Big(0);
+  const getTargetDebt = () => {
+    if (!borrowAmount || borrowAmount.eq(0)) {
+      return position?.borrowedAmount || new Big(0);
+    }
+    if (!position) return new Big(0);
+    return debtAction === "borrow"
+      ? position.borrowedAmount.plus(borrowAmount)
+      : position.borrowedAmount.minus(borrowAmount);
+  };
 
+  const targetCollateral = getTargetCollateral();
+  const targetDebt = getTargetDebt();
+
+  // Calculate metrics for current position (for previous liquidation price)
+  const previousMetrics = usePositionMetrics({
+    collateralAmount: position?.collateralAmount || new Big(0),
+    borrowAmount: position?.borrowedAmount || new Big(0),
+    bitcoinPrice: bitcoin?.price,
+    usduPrice: usdu?.price,
+    minCollateralizationRatio,
+  });
+
+  // Calculate metrics for target position (for new liquidation price)
   const metrics = usePositionMetrics({
-    collateralAmount: finalCollateralAmount,
-    borrowAmount: finalDebtAmount,
+    collateralAmount: targetCollateral,
+    borrowAmount: targetDebt,
     bitcoinPrice: bitcoin?.price,
     usduPrice: usdu?.price,
     minCollateralizationRatio,
@@ -181,25 +200,25 @@ function UpdatePosition() {
         interestRate ?? (position ? getInterestRatePercentage(position) : new Big(5)),
     },
     onSubmit: async ({ value }) => {
+      if (!address) {
+        toast.error("Please connect your wallet");
+        return;
+      }
+
+      // Allow submission if at least one field has been changed
+      const hasCollateralInput = value.collateralAmount && value.collateralAmount.gt(0);
+      const hasBorrowInput = value.borrowAmount && value.borrowAmount.gt(0);
+      const hasInterestInput = value.interestRate && 
+        position && 
+        !value.interestRate.eq(getInterestRatePercentage(position));
+
+      if (!hasCollateralInput && !hasBorrowInput && !hasInterestInput) {
+        toast.error("Please make at least one change to update your position");
+        return;
+      }
+
       if (!isReady) {
-        if (!address) {
-          toast.error("Please connect your wallet");
-        }
-        return;
-      }
-
-      if (!value.collateralAmount || !value.borrowAmount) {
-        return;
-      }
-
-      // Check if there are actual changes
-      if (
-        !changes ||
-        (!changes.hasCollateralChange &&
-          !changes.hasDebtChange &&
-          !changes.hasInterestRateChange)
-      ) {
-        toast.error("No changes to update");
+        toast.error("No changes detected");
         return;
       }
 
@@ -230,8 +249,8 @@ function UpdatePosition() {
     changes,
   } = useUpdatePosition({
     position,
-    collateralAmount: finalCollateralAmount,
-    borrowAmount: finalDebtAmount,
+    collateralAmount: collateralAmount && collateralAmount.gt(0) ? targetCollateral : undefined,
+    borrowAmount: borrowAmount && borrowAmount.gt(0) ? targetDebt : undefined,
     interestRate: interestRate ?? new Big(5),
     collateralToken: selectedCollateralToken,
   });
@@ -993,18 +1012,18 @@ function UpdatePosition() {
             changes={{
               collateral: {
                 from: position.collateralAmount,
-                to: finalCollateralAmount,
+                to: targetCollateral,
                 token: selectedCollateralToken.symbol,
               },
               collateralValueUSD: bitcoin?.price
                 ? {
                     from: position.collateralAmount.times(bitcoin.price),
-                    to: finalCollateralAmount.times(bitcoin.price),
+                    to: targetCollateral.times(bitcoin.price),
                   }
                 : undefined,
               debt: {
                 from: position.borrowedAmount,
-                to: finalDebtAmount,
+                to: targetDebt,
               },
               interestRate: {
                 from: getInterestRatePercentage(position),
@@ -1012,6 +1031,7 @@ function UpdatePosition() {
               },
             }}
             liquidationPrice={metrics.liquidationPrice}
+            previousLiquidationPrice={previousMetrics.liquidationPrice}
             collateralType={position?.collateralAsset as CollateralType}
             troveId={extractTroveId(position?.id)}
           />

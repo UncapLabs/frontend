@@ -36,10 +36,10 @@ interface TransactionSummaryProps {
   type: "open" | "update" | "close";
   changes: PositionChange;
   liquidationPrice?: Big;
+  previousLiquidationPrice?: Big;
   className?: string;
   isValid?: boolean;
   warnings?: string[];
-  // For fee calculation
   collateralType?: CollateralType;
   troveId?: bigint; // For update operations
 }
@@ -48,6 +48,7 @@ export function TransactionSummary({
   type,
   changes,
   liquidationPrice,
+  previousLiquidationPrice,
   className,
   warnings = [],
   collateralType,
@@ -331,15 +332,17 @@ export function TransactionSummary({
           </div>
           <div className="text-right">
             {type === "update" &&
-            changes.interestRate?.from !== changes.interestRate?.to ? (
+            changes.interestRate?.from !== undefined &&
+            changes.interestRate?.to !== undefined &&
+            !changes.interestRate.from.eq(changes.interestRate.to) ? (
               <div className="space-y-1">
                 <div className="flex items-center gap-2 justify-end">
                   <span className="text-neutral-800/50 text-base font-medium font-sora line-through">
-                    {changes.interestRate?.from?.toFixed(2)}%
+                    {changes.interestRate.from.toFixed(2)}%
                   </span>
                   <span className="text-xs text-neutral-800/50">→</span>
                   <span className="text-neutral-800 text-base font-medium font-sora">
-                    {changes.interestRate?.to?.toFixed(2)}%
+                    {changes.interestRate.to.toFixed(2)}%
                   </span>
                 </div>
                 {annualInterestCost.gt(0) && (
@@ -416,7 +419,8 @@ export function TransactionSummary({
                   : undefined;
 
               // Check if LTV changed significantly (more than 0.01%)
-              const ltvChanged = previousLTV !== undefined &&
+              const ltvChanged =
+                previousLTV !== undefined &&
                 currentLTV.minus(previousLTV).abs().gt(0.01);
 
               if (type === "update" && ltvChanged) {
@@ -447,7 +451,7 @@ export function TransactionSummary({
         </div>
 
         {/* Liquidation Price */}
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-start">
           <div className="flex items-center gap-2">
             <span className="text-neutral-800 text-sm font-normal font-sora">
               Liquidation Price
@@ -464,20 +468,53 @@ export function TransactionSummary({
               </TooltipContent>
             </Tooltip>
           </div>
-          <span className="text-neutral-800 text-base font-medium font-sora">
-            {liquidationPrice && liquidationPrice.gt(0) ? (
-              <NumericFormat
-                displayType="text"
-                value={liquidationPrice.toString()}
-                prefix="$"
-                thousandSeparator=","
-                decimalScale={2}
-                fixedDecimalScale
-              />
+          <div className="text-right">
+            {type === "update" &&
+            previousLiquidationPrice &&
+            liquidationPrice &&
+            previousLiquidationPrice.gt(0) &&
+            liquidationPrice.gt(0) &&
+            !previousLiquidationPrice.eq(liquidationPrice) ? (
+              <div className="flex items-center gap-2 justify-end">
+                <span className="text-neutral-800/50 text-base font-medium font-sora line-through">
+                  <NumericFormat
+                    displayType="text"
+                    value={previousLiquidationPrice.toString()}
+                    prefix="$"
+                    thousandSeparator=","
+                    decimalScale={2}
+                    fixedDecimalScale
+                  />
+                </span>
+                <span className="text-xs text-neutral-800/50">→</span>
+                <span className="text-neutral-800 text-base font-medium font-sora">
+                  <NumericFormat
+                    displayType="text"
+                    value={liquidationPrice.toString()}
+                    prefix="$"
+                    thousandSeparator=","
+                    decimalScale={2}
+                    fixedDecimalScale
+                  />
+                </span>
+              </div>
             ) : (
-              <span className="text-neutral-800/50">—</span>
+              <span className="text-neutral-800 text-base font-medium font-sora">
+                {liquidationPrice && liquidationPrice.gt(0) ? (
+                  <NumericFormat
+                    displayType="text"
+                    value={liquidationPrice.toString()}
+                    prefix="$"
+                    thousandSeparator=","
+                    decimalScale={2}
+                    fixedDecimalScale
+                  />
+                ) : (
+                  <span className="text-neutral-800/50">—</span>
+                )}
+              </span>
             )}
-          </span>
+          </div>
         </div>
 
         {/* Warnings */}

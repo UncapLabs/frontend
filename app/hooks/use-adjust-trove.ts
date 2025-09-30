@@ -191,19 +191,18 @@ export function useAdjustTrove({
   const { address } = useAccount();
 
   const changes = useMemo(() => {
-    if (
-      !currentCollateral ||
-      !currentDebt ||
-      currentInterestRate === undefined ||
-      newCollateral === undefined ||
-      newDebt === undefined ||
-      newInterestRate === undefined
-    ) {
+    // Need at least current values to calculate changes
+    if (!currentCollateral || !currentDebt || currentInterestRate === undefined) {
       return null;
     }
 
-    const collateralDiff = newCollateral.minus(currentCollateral);
-    const debtDiff = newDebt.minus(currentDebt);
+    // Use current values as defaults if new values not provided
+    const targetCollateral = newCollateral ?? currentCollateral;
+    const targetDebt = newDebt ?? currentDebt;
+    const targetInterestRate = newInterestRate ?? currentInterestRate;
+
+    const collateralDiff = targetCollateral.minus(currentCollateral);
+    const debtDiff = targetDebt.minus(currentDebt);
 
     return {
       collateralChange: bigToBigint(collateralDiff.abs(), 18),
@@ -212,8 +211,8 @@ export function useAdjustTrove({
       isDebtIncrease: debtDiff.gt(0),
       hasCollateralChange: collateralDiff.abs().gt(0.000001), // Minimum change threshold
       hasDebtChange: debtDiff.abs().gt(0.01), // Minimum change threshold
-      hasInterestRateChange: currentInterestRate !== newInterestRate,
-      newInterestRate: newInterestRate,
+      hasInterestRateChange: currentInterestRate !== targetInterestRate,
+      newInterestRate: targetInterestRate,
     };
   }, [
     currentCollateral,
