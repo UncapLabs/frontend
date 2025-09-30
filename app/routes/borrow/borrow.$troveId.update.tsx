@@ -19,6 +19,7 @@ import {
   USDU_TOKEN,
   UBTC_TOKEN,
   GBTC_TOKEN,
+  WMWBTC_TOKEN,
   MIN_DEBT,
 } from "~/lib/contracts/constants";
 import { toast } from "sonner";
@@ -98,7 +99,11 @@ function UpdatePosition() {
 
   // Get collateral token based on position
   const selectedCollateralToken =
-    position?.collateralAsset === "GBTC" ? GBTC_TOKEN : UBTC_TOKEN;
+    position?.collateralAsset === "GBTC"
+      ? GBTC_TOKEN
+      : position?.collateralAsset === "WMWBTC"
+      ? WMWBTC_TOKEN
+      : UBTC_TOKEN;
 
   // Use local state for amounts with Big.js for precision
   const [collateralAmount, setCollateralAmount] = useState<Big | undefined>(
@@ -117,7 +122,7 @@ function UpdatePosition() {
     parseAsString.withDefault("borrow")
   );
 
-  const collateralType = selectedCollateralToken.symbol as CollateralType;
+  const collateralType = selectedCollateralToken.collateralType;
 
   // // Get rate mode from URL
   // const [rateMode] = useQueryState("rateMode", {
@@ -125,8 +130,15 @@ function UpdatePosition() {
   // });
 
   // Balance for selected token
+  // For WMWBTC, query the underlying token balance (8 decimals)
+  // For other tokens, query the collateral token balance (18 decimals)
+  const balanceTokenAddress =
+    "underlyingAddress" in selectedCollateralToken
+      ? selectedCollateralToken.underlyingAddress
+      : selectedCollateralToken.address;
+
   const { data: bitcoinBalance } = useBalance({
-    token: selectedCollateralToken.address,
+    token: balanceTokenAddress,
     address: address,
     refetchInterval: 30000,
   });
@@ -496,9 +508,14 @@ function UpdatePosition() {
                         // Adding collateral - check wallet balance
                         if (!bitcoinBalance) return undefined;
 
+                        // Use underlying decimals for wrapped tokens
+                        const balanceDecimals =
+                          "underlyingDecimals" in selectedCollateralToken
+                            ? selectedCollateralToken.underlyingDecimals
+                            : selectedCollateralToken.decimals;
                         const balance = bigintToBig(
                           bitcoinBalance.value,
-                          selectedCollateralToken.decimals
+                          balanceDecimals
                         );
 
                         if (value.gt(balance)) {
@@ -584,12 +601,13 @@ function UpdatePosition() {
                       }}
                       onBalanceClick={() => {
                         if (collateralAction === "add") {
-                          // Set to max wallet balance with proper precision using bigintToBig
+                          // Use underlying decimals for wrapped tokens
+                          const balanceDecimals =
+                            "underlyingDecimals" in selectedCollateralToken
+                              ? selectedCollateralToken.underlyingDecimals
+                              : selectedCollateralToken.decimals;
                           const balanceBig = bitcoinBalance?.value
-                            ? bigintToBig(
-                                bitcoinBalance.value,
-                                selectedCollateralToken.decimals
-                              )
+                            ? bigintToBig(bitcoinBalance.value, balanceDecimals)
                             : new Big(0);
                           field.handleChange(balanceBig);
                           setCollateralAmount(balanceBig);

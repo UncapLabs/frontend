@@ -21,6 +21,7 @@ import TroveManagerAbi from "./abis/TroveManager.json";
 import TroveNFTAbi from "./abis/TroveNFT.json";
 import UBTCAbi from "./abis/UBTC.json";
 import USDUAbi from "./abis/USDU.json";
+import CollateralWrapperAbi from "./abis/CollateralWrapper.json";
 
 // Export all ABIs with proper typing
 export const ACTIVE_POOL_ABI = ActivePoolAbi as Abi;
@@ -44,6 +45,7 @@ export const TROVE_MANAGER_ABI = TroveManagerAbi as Abi;
 export const TROVE_NFT_ABI = TroveNFTAbi as Abi;
 export const UBTC_ABI = UBTCAbi as Abi;
 export const USDU_ABI = USDUAbi as Abi;
+export const COLLATERAL_WRAPPER_ABI = CollateralWrapperAbi as Abi;
 
 // Create a map for dynamic access
 export const CONTRACT_ABIS = {
@@ -67,6 +69,7 @@ export const CONTRACT_ABIS = {
   TroveNFT: TROVE_NFT_ABI,
   UBTC: UBTC_ABI,
   USDU: USDU_ABI,
+  CollateralWrapper: COLLATERAL_WRAPPER_ABI,
 } as const;
 
 export type ContractName = keyof typeof CONTRACT_ABIS;

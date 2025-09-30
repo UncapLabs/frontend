@@ -252,8 +252,10 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
 export default function Stats() {
   const ubtcInterestRate = useAverageInterestRate(0); // UBTC branch
   const gbtcInterestRate = useAverageInterestRate(1); // GBTC branch
+  const wmwbtcInterestRate = useAverageInterestRate(2); // WMWBTC branch
   const ubtcVisualizationData = useInterestRateVisualizationData(0); // UBTC
   const gbtcVisualizationData = useInterestRateVisualizationData(1); // GBTC
+  const wmwbtcVisualizationData = useInterestRateVisualizationData(2); // WMWBTC
   const stabilityPoolData = useStabilityPoolData();
 
   // Helper function to format percentage from interest rate data
@@ -297,9 +299,17 @@ export default function Stats() {
   const borrowRates: BorrowRateItem[] = COLLATERAL_TOKENS.map((token) => {
     const branchId = COLLATERAL_TO_BRANCH[token.collateralType];
     const interestRateData =
-      branchId === 0 ? ubtcInterestRate : gbtcInterestRate;
+      branchId === 0
+        ? ubtcInterestRate
+        : branchId === 1
+        ? gbtcInterestRate
+        : wmwbtcInterestRate;
     const visualizationData =
-      branchId === 0 ? ubtcVisualizationData : gbtcVisualizationData;
+      branchId === 0
+        ? ubtcVisualizationData
+        : branchId === 1
+        ? gbtcVisualizationData
+        : wmwbtcVisualizationData;
     const minCollatRatio = getMinCollateralizationRatio(token.collateralType);
     const maxLTV = (1 / minCollatRatio) * 100;
 

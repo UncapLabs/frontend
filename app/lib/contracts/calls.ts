@@ -15,6 +15,7 @@ import {
   HINT_HELPERS_ABI,
   STABILITY_POOL_ABI,
   USDU_ABI,
+  COLLATERAL_WRAPPER_ABI,
 } from ".";
 
 /**
@@ -283,6 +284,28 @@ export const contractCall = {
     approve: (spender: string, amount: bigint) => {
       const contract = new Contract(USDU_ABI, USDU_TOKEN.address);
       return contract.populate("approve", [spender, amount]);
+    },
+  },
+
+  collateralWrapper: {
+    /**
+     * Wrap underlying token (8 decimals) to wrapped token (18 decimals)
+     * @param wrapperAddress - Address of the CollateralWrapper contract
+     * @param amount - Amount in 8 decimals (underlying token precision)
+     */
+    wrap: (wrapperAddress: string, amount: bigint) => {
+      const contract = new Contract(COLLATERAL_WRAPPER_ABI, wrapperAddress);
+      return contract.populate("wrap", [amount]);
+    },
+
+    /**
+     * Unwrap wrapped token (18 decimals) to underlying token (8 decimals)
+     * @param wrapperAddress - Address of the CollateralWrapper contract
+     * @param amount - Amount in 18 decimals (wrapped token precision)
+     */
+    unwrap: (wrapperAddress: string, amount: bigint) => {
+      const contract = new Contract(COLLATERAL_WRAPPER_ABI, wrapperAddress);
+      return contract.populate("unwrap", [amount]);
     },
   },
 

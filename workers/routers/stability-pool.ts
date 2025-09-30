@@ -2,7 +2,7 @@ import { z } from "zod";
 import { router, publicProcedure } from "../trpc";
 import { RpcProvider } from "starknet";
 import { contractRead } from "~/lib/contracts/calls";
-import { USDU_TOKEN } from "~/lib/contracts/constants";
+import { USDU_TOKEN, CollateralTypeSchema } from "~/lib/contracts/constants";
 import { bigintToBig } from "~/lib/decimal";
 import Big from "big.js";
 import {
@@ -25,20 +25,22 @@ export const stabilityPoolRouter = router({
       const { userAddress } = input;
 
       // Fetch positions for all collateral types in parallel
-      const [ubtcPosition, gbtcPosition] = await Promise.all([
+      const [ubtcPosition, gbtcPosition, wmwbtcPosition] = await Promise.all([
         fetchPoolPosition(provider, userAddress, "UBTC"),
         fetchPoolPosition(provider, userAddress, "GBTC"),
+        fetchPoolPosition(provider, userAddress, "WMWBTC"),
       ]);
 
       return {
         UBTC: ubtcPosition,
         GBTC: gbtcPosition,
+        WMWBTC: wmwbtcPosition,
       };
     }),
   getTotalDeposits: publicProcedure
     .input(
       z.object({
-        collateralType: z.enum(["UBTC", "GBTC"]),
+        collateralType: CollateralTypeSchema,
       })
     )
     .query(async ({ input }) => {
@@ -62,7 +64,7 @@ export const stabilityPoolRouter = router({
   getPoolApr: publicProcedure
     .input(
       z.object({
-        collateralType: z.enum(["UBTC", "GBTC"]),
+        collateralType: CollateralTypeSchema,
       })
     )
     .query(async ({ input }) => {

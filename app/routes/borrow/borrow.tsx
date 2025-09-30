@@ -53,14 +53,21 @@ function Borrow() {
     selectedTokenAddress || UBTC_TOKEN.address
   );
 
+  const collateralType = selectedCollateralToken.collateralType;
+
   // Balance for selected token
+  // For WMWBTC, query the underlying token balance (8 decimals)
+  // For other tokens, query the collateral token balance (18 decimals)
+  const balanceTokenAddress =
+    "underlyingAddress" in selectedCollateralToken
+      ? selectedCollateralToken.underlyingAddress
+      : selectedCollateralToken.address;
+
   const { data: bitcoinBalance } = useBalance({
-    token: selectedCollateralToken.address,
+    token: balanceTokenAddress,
     address: address,
     refetchInterval: 30000,
   });
-
-  const collateralType = selectedCollateralToken.symbol as CollateralType;
 
   const { bitcoin, usdu } = useFetchPrices({
     collateralType,
@@ -150,10 +157,14 @@ function Borrow() {
           return;
         }
 
-        // Use big.js for precise calculation
+        // Use underlying decimals for wrapped tokens
+        const balanceDecimals =
+          "underlyingDecimals" in selectedCollateralToken
+            ? selectedCollateralToken.underlyingDecimals
+            : selectedCollateralToken.decimals;
         const newValue = calculatePercentageAmountBig(
           bitcoinBalance.value,
-          selectedCollateralToken.decimals,
+          balanceDecimals,
           percentage * 100 // Convert to 0-100 scale
         );
         form.setFieldValue("collateralAmount", newValue);
@@ -300,9 +311,14 @@ function Borrow() {
                       if (!bitcoinBalance) return undefined;
 
                       // Convert balance to Big for precise comparison
+                      // Use underlying decimals for wrapped tokens
+                      const balanceDecimals =
+                        "underlyingDecimals" in selectedCollateralToken
+                          ? selectedCollateralToken.underlyingDecimals
+                          : selectedCollateralToken.decimals;
                       const balance = bigintToBig(
                         bitcoinBalance.value,
-                        selectedCollateralToken.decimals
+                        balanceDecimals
                       );
 
                       return validators.compose(

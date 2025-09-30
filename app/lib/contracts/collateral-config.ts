@@ -13,6 +13,9 @@ export const COLLATERAL_CONFIG: Record<CollateralType, CollateralConfig> = {
   GBTC: {
     minCollateralizationRatio: new Big(1.1), // 110%
   },
+  WMWBTC: {
+    minCollateralizationRatio: new Big(1.1), // 110%
+  },
 };
 
 export function getMinCollateralizationRatio(

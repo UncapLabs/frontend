@@ -42,6 +42,28 @@
     "multiTroveGetter": "0x3e3d5db4cc703297915a32870dee9941151f1d0fddf768b4d610d4d7d921f5b",
     "troveManagerEventsEmitter": "0x1d8b0f60333b36f03dc0d32da3277f1a5d6b1e2dd80420a805037c2e8fb969f"
   },
+  "WMWBTC": {
+    "collateral": "0x1192e7027caff8343a03e394065299aa028e3be57d0785ac6231db4f0f26706",
+    "addressesRegistry": "0x17e8ff2e4d541e74a06c8dc1f12485a72fe6a4a4dced8df468b9f401e6d5626",
+    "borrowerOperations": "0x928fd9d71dd35883e1e79ea2784ea41425bcb7469c13f7a7c06af2e8eb0913",
+    "troveManager": "0x6452d5a815f61fad1a0b00655ceac9140ee5d782ece51c3a59dd7db8de7211a",
+    "troveNft": "0x5af37c7c6ae72626b31938ee8352e2e3328eeee00f8cc46d2f313f292605584",
+    "stabilityPool": "0x3743a157e081243a86a01e1ac31f1747becf7e01a660389c8f577f0510acfc4",
+    "sortedTroves": "0x3a98d3b3cebbf9fb8d3f695bca2fa1f4a9fe18ad99d090b94d86b2ad2f48b43",
+    "activePool": "0xf6ecd522e5fdf0e39ccdac4837f280a577b5681fd2590aed6ef978e688b31e",
+    "defaultPool": "0x687e16d0e11f5330309c580e6a70bef08be5c58a8969a1f3be55185e0152d6f",
+    "collSurplusPool": "0x9905d523c10199e206095bd00e67a0fae21659cf1705ed2ba3796fc22a6e04",
+    "gasPool": "0x2a06b76b7444e624a0a56acdf09ed16653ed311bcbf4b5e5f8b2617ea473cb9",
+    "interestRouter": "0xc342a1aa73f325f6f186be9f91dfed01e556d6a933539b1da469cffb7ef085",
+    "liquidationManager": "0x2c796bfd1a525e9601ffa3f98353a31f5b369c20a477e684badfb6d76d9b43f",
+    "redemptionManager": "0x30fa22e89beae4470faf09a9c687002c76b08e2f340ba680a62e03f7ab11cb",
+    "batchManager": "0xd36c20f8c7f1b7378a44688d371cae4d17d655a182c0e00e7bd6b51ff2bd00",
+    "priceFeed": "0x581572c27c859e57fd914f1d151ca17b709ffc001bd35fd82b0722f6340ae19",
+    "hintHelpers": "0x48a7715ac8358ca6d8547d0ea205db22763453ff2aa2dc8394605bbb9c66dd9",
+    "multiTroveGetter": "0xf6ecd522e5fdf0e39ccdac4837f280a577b5681fd2590aed6ef978e688b31e",
+    "troveManagerEventsEmitter": "0x6f5725b6ce9098f1491c474517c5640d32dc11e513e7744caec9259a080377a",
+    "underlyingAddress": "0xc91b27e93913360f52c385d59f08aaa19eae6f7dd1744aadd6c185f562f8f7"
+  },
   "gasToken": "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
   "collateralRegistry": "0x49a3a461ecfda9df31a0dcc066b881361a608a459024950e983a7c25fe80a45"
 }

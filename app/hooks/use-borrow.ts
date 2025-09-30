@@ -9,6 +9,8 @@ import {
   UBTC_TOKEN,
   type CollateralType,
   getBranchId,
+  requiresWrapping,
+  WMWBTC_TOKEN,
 } from "~/lib/contracts/constants";
 import type { Token } from "~/components/token-input";
 import { useTransactionStore } from "~/providers/transaction-provider";
@@ -83,6 +85,58 @@ export function useBorrow({
     // Get addresses for this collateral type
     const addresses = getCollateralAddresses(collateralType);
 
+    // Check if this collateral needs wrapping
+    const needsWrapping = requiresWrapping(collateralType);
+
+    if (needsWrapping) {
+      // For wrapped collateral (WMWBTC):
+      // 1. Approve underlying token (8 decimals) to CollateralWrapper
+      // 2. Wrap the underlying token (converts 8 decimals -> 18 decimals)
+      // 3. Approve wrapped token (18 decimals) to BorrowerOperations
+      // 4. Open trove with wrapped token (18 decimals)
+
+      const underlyingAddress =
+        collateralType === "WMWBTC"
+          ? WMWBTC_TOKEN.underlyingAddress
+          : collateralToken.address;
+      const underlyingDecimals =
+        collateralType === "WMWBTC" ? WMWBTC_TOKEN.underlyingDecimals : 18;
+
+      return [
+        // 1. Approve underlying token spending to CollateralWrapper
+        contractCall.token.approve(
+          underlyingAddress,
+          collateralToken.address, // This is the wrapper address
+          bigToBigint(collateralAmount, underlyingDecimals)
+        ),
+
+        // 2. Wrap underlying token (8 decimals -> 18 decimals)
+        contractCall.collateralWrapper.wrap(
+          collateralToken.address, // Wrapper address
+          bigToBigint(collateralAmount, underlyingDecimals)
+        ),
+
+        // 3. Approve wrapped token to BorrowerOperations
+        contractCall.token.approve(
+          collateralToken.address, // Wrapped token address
+          addresses.borrowerOperations,
+          bigToBigint(collateralAmount, 18) // Now in 18 decimals
+        ),
+
+        // 4. Open trove
+        contractCall.borrowerOperations.openTrove({
+          owner: address,
+          ownerIndex: nextOwnerIndex,
+          collAmount: bigToBigint(collateralAmount, 18),
+          usduAmount: bigToBigint(borrowAmount, 18),
+          annualInterestRate: bigToBigint(interestRate.div(100), 18),
+          collateralType: collateralType,
+          maxUpfrontFee: 2n ** 256n - 1n,
+        }),
+      ];
+    }
+
+    // For standard collateral (UBTC, GBTC):
     return [
       // 1. Approve collateral token spending
       contractCall.token.approve(

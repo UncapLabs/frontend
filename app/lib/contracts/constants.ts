@@ -1,6 +1,7 @@
 // Import deployment configuration
 import deploymentData from "./deployment_addresses.json";
 import type { Address } from "@starknet-react/chains";
+import { z } from "zod";
 
 export const INTEREST_RATE_SCALE_DOWN_FACTOR = 10n ** 16n;
 export const MIN_DEBT = 200; // Minimum debt threshold in USDU
@@ -55,6 +56,29 @@ export const COLLATERAL_ADDRESSES = {
     troveManagerEventsEmitter: deploymentData.GBTC
       .troveManagerEventsEmitter as Address,
   },
+  WMWBTC: {
+    collateral: deploymentData.WMWBTC.collateral as Address,
+    addressesRegistry: deploymentData.WMWBTC.addressesRegistry as Address,
+    borrowerOperations: deploymentData.WMWBTC.borrowerOperations as Address,
+    troveManager: deploymentData.WMWBTC.troveManager as Address,
+    troveNft: deploymentData.WMWBTC.troveNft as Address,
+    stabilityPool: deploymentData.WMWBTC.stabilityPool as Address,
+    sortedTroves: deploymentData.WMWBTC.sortedTroves as Address,
+    activePool: deploymentData.WMWBTC.activePool as Address,
+    defaultPool: deploymentData.WMWBTC.defaultPool as Address,
+    collSurplusPool: deploymentData.WMWBTC.collSurplusPool as Address,
+    gasPool: deploymentData.WMWBTC.gasPool as Address,
+    interestRouter: deploymentData.WMWBTC.interestRouter as Address,
+    liquidationManager: deploymentData.WMWBTC.liquidationManager as Address,
+    redemptionManager: deploymentData.WMWBTC.redemptionManager as Address,
+    batchManager: deploymentData.WMWBTC.batchManager as Address,
+    priceFeed: deploymentData.WMWBTC.priceFeed as Address,
+    hintHelpers: deploymentData.WMWBTC.hintHelpers as Address,
+    multiTroveGetter: deploymentData.WMWBTC.multiTroveGetter as Address,
+    troveManagerEventsEmitter: deploymentData.WMWBTC
+      .troveManagerEventsEmitter as Address,
+    underlyingAddress: deploymentData.WMWBTC.underlyingAddress as Address,
+  },
 } as const;
 
 // Token definitions
@@ -74,6 +98,16 @@ export const GBTC_TOKEN = {
   collateralType: "GBTC" as CollateralType,
 } as const;
 
+export const WMWBTC_TOKEN = {
+  address: COLLATERAL_ADDRESSES.WMWBTC.collateral,
+  symbol: "wBTC", // User-facing name (what they hold in their wallet)
+  decimals: 18, // Wrapped token is 18 decimals (used internally)
+  icon: "/bitcoin.png",
+  collateralType: "WMWBTC" as CollateralType, // Internal identifier for contract routing
+  underlyingDecimals: 8, // Underlying token is 8 decimals
+  underlyingAddress: COLLATERAL_ADDRESSES.WMWBTC.underlyingAddress,
+} as const;
+
 export const USDU_TOKEN = {
   address: USDU_ADDRESS,
   symbol: "USDU",
@@ -89,18 +123,23 @@ export const STRK_TOKEN = {
 } as const;
 
 // Collateral types and branch mapping
-export type CollateralType = "UBTC" | "GBTC";
-export type BranchId = 0 | 1;
+export type CollateralType = "UBTC" | "GBTC" | "WMWBTC";
+export type BranchId = 0 | 1 | 2;
+
+// Zod schema for CollateralType validation (used in tRPC routers)
+export const CollateralTypeSchema = z.enum(["UBTC", "GBTC", "WMWBTC"]);
 
 // Mapping between collateral types and branch IDs
 export const COLLATERAL_TO_BRANCH: Record<CollateralType, BranchId> = {
   UBTC: 0,
   GBTC: 1,
+  WMWBTC: 2,
 } as const;
 
 export const BRANCH_TO_COLLATERAL: Record<BranchId, CollateralType> = {
   0: "UBTC",
   1: "GBTC",
+  2: "WMWBTC",
 } as const;
 
 // Helper functions
@@ -113,14 +152,36 @@ export function getCollateralType(branchId: BranchId): CollateralType {
 }
 
 // Available collateral tokens
-export const COLLATERAL_TOKENS = [UBTC_TOKEN, GBTC_TOKEN];
+export const COLLATERAL_TOKENS = [UBTC_TOKEN, GBTC_TOKEN, WMWBTC_TOKEN];
 
 // Token lookup map by address for O(1) access
 export const COLLATERAL_TOKENS_BY_ADDRESS = Object.fromEntries(
   COLLATERAL_TOKENS.map((token) => [token.address, token])
-) as Record<string, typeof UBTC_TOKEN | typeof GBTC_TOKEN>;
+) as Record<string, typeof UBTC_TOKEN | typeof GBTC_TOKEN | typeof WMWBTC_TOKEN>;
 
 // Helper function to get contract addresses for a specific collateral type
 export function getCollateralAddresses(collateralType: CollateralType) {
   return COLLATERAL_ADDRESSES[collateralType];
+}
+
+// Helper function to check if a collateral type requires wrapping
+export function requiresWrapping(collateralType: CollateralType): boolean {
+  return collateralType === "WMWBTC";
+}
+
+// Helper function to get the token address for balance queries
+// For wrapped tokens, returns the underlying address; otherwise returns the collateral address
+export function getBalanceTokenAddress(collateralType: CollateralType): Address {
+  if (collateralType === "WMWBTC") {
+    return WMWBTC_TOKEN.underlyingAddress;
+  }
+  return COLLATERAL_ADDRESSES[collateralType].collateral;
+}
+
+// Helper function to get the correct decimals for balance display
+export function getBalanceDecimals(collateralType: CollateralType): number {
+  if (collateralType === "WMWBTC") {
+    return WMWBTC_TOKEN.underlyingDecimals;
+  }
+  return 18;
 }

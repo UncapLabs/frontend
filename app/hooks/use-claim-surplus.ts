@@ -3,17 +3,31 @@ import { useAccount } from "@starknet-react/core";
 import { contractCall } from "~/lib/contracts/calls";
 import { useTransaction } from "./use-transaction";
 import { useTransactionState } from "./use-transaction-state";
-import { type CollateralType } from "~/lib/contracts/constants";
+import {
+  type CollateralType,
+  requiresWrapping,
+  getCollateralAddresses,
+} from "~/lib/contracts/constants";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
+import { bigToBigint } from "~/lib/decimal";
+import type { Call } from "starknet";
+import Big from "big.js";
+
+interface SurplusAmount {
+  collateralType: CollateralType;
+  amount: Big;
+}
 
 interface UseClaimAllSurplusParams {
   collateralTypes: CollateralType[];
+  surplusAmounts?: SurplusAmount[];
   onSuccess?: () => void;
 }
 
 export function useClaimAllSurplus({
   collateralTypes,
+  surplusAmounts,
   onSuccess,
 }: UseClaimAllSurplusParams) {
   const { address } = useAccount();
@@ -30,12 +44,38 @@ export function useClaimAllSurplus({
       return undefined;
     }
 
+    const callList: Call[] = [];
+
     // Create a call for each collateral type that has surplus
     // Must use borrowerOperations.claimCollateral, not collSurplusPool directly
-    return collateralTypes.map((collateralType) =>
-      contractCall.borrowerOperations.claimCollateral(address, collateralType)
-    );
-  }, [address, collateralTypes]);
+    collateralTypes.forEach((collateralType) => {
+      callList.push(
+        contractCall.borrowerOperations.claimCollateral(address, collateralType)
+      );
+
+      // For WMWBTC: add unwrap call after claiming to return underlying wBTC
+      if (requiresWrapping(collateralType)) {
+        const addresses = getCollateralAddresses(collateralType);
+        const surplus = surplusAmounts?.find(
+          (s) => s.collateralType === collateralType
+        );
+
+        if (surplus && surplus.amount.gt(0)) {
+          // Convert Big amount to bigint (18 decimals on-chain)
+          const surplusBigint = bigToBigint(surplus.amount, 18);
+
+          callList.push(
+            contractCall.collateralWrapper.unwrap(
+              addresses.collateral, // Wrapper address
+              surplusBigint
+            )
+          );
+        }
+      }
+    });
+
+    return callList;
+  }, [address, collateralTypes, surplusAmounts]);
 
   // Use the generic transaction hook
   const transaction = useTransaction(calls);

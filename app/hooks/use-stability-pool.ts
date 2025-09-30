@@ -6,6 +6,7 @@ import {
   type CollateralType,
   USDU_TOKEN,
   getCollateralAddresses,
+  requiresWrapping,
 } from "~/lib/contracts/constants";
 import { useTransaction } from "~/hooks/use-transaction";
 import { useTransactionState } from "./use-transaction-state";
@@ -291,6 +292,7 @@ export function useAllStabilityPoolPositions() {
     return {
       UBTC: null,
       GBTC: null,
+      WMWBTC: null,
     };
   }
 

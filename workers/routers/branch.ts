@@ -3,7 +3,7 @@ import { z } from "zod";
 import { RpcProvider } from "starknet";
 import { contractRead } from "~/lib/contracts/calls";
 import { getBitcoinprice } from "../services/utils";
-import type { CollateralType } from "~/lib/contracts/constants";
+import { CollateralTypeSchema, type CollateralType } from "~/lib/contracts/constants";
 import { bigintToBig } from "~/lib/decimal";
 import Big from "big.js";
 
@@ -11,7 +11,7 @@ export const branchRouter = router({
   getTCR: publicProcedure
     .input(
       z.object({
-        branchId: z.enum(["UBTC", "GBTC"]),
+        branchId: CollateralTypeSchema,
       })
     )
     .query(async ({ input }) => {

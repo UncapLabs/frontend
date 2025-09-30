@@ -3,7 +3,11 @@ import { useAccount } from "@starknet-react/core";
 import { useTransaction } from "~/hooks/use-transaction";
 import { useTransactionState } from "~/hooks/use-transaction-state";
 import { contractCall } from "~/lib/contracts/calls";
-import { type CollateralType } from "~/lib/contracts/constants";
+import {
+  type CollateralType,
+  requiresWrapping,
+  getCollateralAddresses,
+} from "~/lib/contracts/constants";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
 import { extractTroveId } from "~/lib/utils/position-helpers";
@@ -53,17 +57,34 @@ export function useCloseTrove({
 
     try {
       const numericTroveId = extractTroveId(troveId);
-      return [
+      const callList = [
         contractCall.borrowerOperations.closeTrove(
           numericTroveId,
           collateralType
         ),
       ];
+
+      // For WMWBTC: unwrap after closing to return underlying token
+      if (requiresWrapping(collateralType) && collateral) {
+        const addresses = getCollateralAddresses(collateralType);
+        const collateralBigint = BigInt(
+          collateral.times(10 ** 18).toFixed(0)
+        ); // Convert to 18 decimal bigint
+
+        callList.push(
+          contractCall.collateralWrapper.unwrap(
+            addresses.collateral, // Wrapper address
+            collateralBigint
+          )
+        );
+      }
+
+      return callList;
     } catch {
       // If we can't parse the trove ID, return undefined
       return undefined;
     }
-  }, [troveId, collateralType]);
+  }, [troveId, collateralType, collateral]);
 
   // Use the generic transaction hook
   const transaction = useTransaction(calls);

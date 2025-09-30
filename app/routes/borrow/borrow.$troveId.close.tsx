@@ -9,6 +9,7 @@ import { useAccount, useBalance } from "@starknet-react/core";
 import {
   UBTC_TOKEN,
   GBTC_TOKEN,
+  WMWBTC_TOKEN,
   USDU_TOKEN,
   type CollateralType,
   MIN_DEBT,
@@ -43,9 +44,13 @@ function ClosePosition() {
 
   // Get the collateral token based on collateral type
   const selectedCollateralToken =
-    troveCollateralType === "GBTC" ? GBTC_TOKEN : UBTC_TOKEN;
+    troveCollateralType === "GBTC"
+      ? GBTC_TOKEN
+      : troveCollateralType === "WMWBTC"
+      ? WMWBTC_TOKEN
+      : UBTC_TOKEN;
 
-  const collateralType = selectedCollateralToken.symbol as CollateralType;
+  const collateralType = selectedCollateralToken.collateralType;
 
   const { data: usduBalance } = useBalance({
     token: USDU_TOKEN.address,

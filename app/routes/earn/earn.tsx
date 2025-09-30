@@ -15,6 +15,7 @@ import {
   USDU_TOKEN,
   UBTC_TOKEN,
   GBTC_TOKEN,
+  WMWBTC_TOKEN,
   type CollateralType,
 } from "~/lib/contracts/constants";
 import { toast } from "sonner";
@@ -350,6 +351,36 @@ function Earn() {
                           </span>
                           <span className="text-xs text-neutral-500 font-sora">
                             Grayscale Bitcoin
+                          </span>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedCollateral("WMWBTC")}
+                        disabled={isSending || isPending}
+                        className={`flex-1 p-3 rounded-lg transition-all flex items-center gap-3 ${
+                          selectedCollateral === "WMWBTC"
+                            ? "bg-token-bg border-2 border-token-orange"
+                            : "bg-neutral-50 border-2 border-transparent hover:bg-neutral-100"
+                        }`}
+                      >
+                        <img
+                          src={WMWBTC_TOKEN.icon}
+                          alt="wBTC"
+                          className="w-8 h-8 object-contain"
+                        />
+                        <div className="text-left">
+                          <span
+                            className={`text-sm font-medium font-sora block ${
+                              selectedCollateral === "WMWBTC"
+                                ? "text-token-orange"
+                                : "text-neutral-800"
+                            }`}
+                          >
+                            wBTC Pool
+                          </span>
+                          <span className="text-xs text-neutral-500 font-sora">
+                            Wrapped Bitcoin
                           </span>
                         </div>
                       </button>

@@ -9,7 +9,7 @@ import { useClaimAllSurplus } from "~/hooks/use-claim-surplus";
 import { useCollateralSurplus } from "~/hooks/use-collateral-surplus";
 import { useCallback } from "react";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
-import { UBTC_TOKEN, GBTC_TOKEN } from "~/lib/contracts/constants";
+import { UBTC_TOKEN, GBTC_TOKEN, WMWBTC_TOKEN } from "~/lib/contracts/constants";
 
 export function CollateralSurplusCard() {
   const { address } = useAccount();
@@ -30,6 +30,10 @@ export function CollateralSurplusCard() {
     reset,
   } = useClaimAllSurplus({
     collateralTypes: availableSurpluses.map((s) => s.collateralType),
+    surplusAmounts: availableSurpluses.map((s) => ({
+      collateralType: s.collateralType,
+      amount: s.formatted, // Pass the formatted Big amount
+    })),
     onSuccess: () => {
       // Refetch surplus data after successful claim
       refetch();
@@ -100,6 +104,7 @@ export function CollateralSurplusCard() {
   const getTokenIcon = (symbol: string) => {
     if (symbol === "WBTC" || symbol === "UBTC") return UBTC_TOKEN.icon;
     if (symbol === "GBTC") return GBTC_TOKEN.icon;
+    if (symbol === "wBTC") return WMWBTC_TOKEN.icon; // WMWBTC shows as "wBTC" to users
     return UBTC_TOKEN.icon; // fallback
   };
 

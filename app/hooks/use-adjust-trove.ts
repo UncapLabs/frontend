@@ -5,6 +5,8 @@ import { useTransaction } from "./use-transaction";
 import {
   getCollateralAddresses,
   type CollateralType,
+  requiresWrapping,
+  WMWBTC_TOKEN,
 } from "~/lib/contracts/constants";
 import Big from "big.js";
 import { bigToBigint } from "~/lib/decimal";
@@ -54,13 +56,45 @@ function getAdjustmentCalls(params: {
   if (isZombie) {
     // Need approvals for additions
     if (isCollIncrease && collateralTokenAddress) {
-      calls.push(
-        contractCall.token.approve(
-          collateralTokenAddress,
-          addresses.borrowerOperations,
-          collateralChange
-        )
-      );
+      if (requiresWrapping(collateralType)) {
+        // For WMWBTC: wrap underlying token before adding
+        const underlyingAddress = WMWBTC_TOKEN.underlyingAddress;
+        const underlyingAmount = collateralChange / (10n ** 10n); // 18 - 8 = 10
+
+        // 1. Approve underlying token to wrapper
+        calls.push(
+          contractCall.token.approve(
+            underlyingAddress,
+            collateralTokenAddress,
+            underlyingAmount
+          )
+        );
+
+        // 2. Wrap underlying token
+        calls.push(
+          contractCall.collateralWrapper.wrap(
+            collateralTokenAddress,
+            underlyingAmount
+          )
+        );
+
+        // 3. Approve wrapped token to BorrowerOperations
+        calls.push(
+          contractCall.token.approve(
+            collateralTokenAddress,
+            addresses.borrowerOperations,
+            collateralChange
+          )
+        );
+      } else {
+        calls.push(
+          contractCall.token.approve(
+            collateralTokenAddress,
+            addresses.borrowerOperations,
+            collateralChange
+          )
+        );
+      }
     }
     if (!isDebtIncrease && debtChange !== 0n) {
       // Repaying debt - need to approve USDU spending
@@ -83,6 +117,17 @@ function getAdjustmentCalls(params: {
         collateralType,
       })
     );
+
+    // For WMWBTC: unwrap after withdrawal
+    if (!isCollIncrease && collateralChange !== 0n && requiresWrapping(collateralType) && collateralTokenAddress) {
+      calls.push(
+        contractCall.collateralWrapper.unwrap(
+          collateralTokenAddress,
+          collateralChange
+        )
+      );
+    }
+
     return calls;
   }
 
@@ -90,13 +135,45 @@ function getAdjustmentCalls(params: {
   if (collateralChange !== 0n && debtChange !== 0n) {
     // Need approvals for additions
     if (isCollIncrease && collateralTokenAddress) {
-      calls.push(
-        contractCall.token.approve(
-          collateralTokenAddress,
-          addresses.borrowerOperations,
-          collateralChange
-        )
-      );
+      if (requiresWrapping(collateralType)) {
+        // For WMWBTC: wrap underlying token before adding
+        const underlyingAddress = WMWBTC_TOKEN.underlyingAddress;
+        const underlyingAmount = collateralChange / (10n ** 10n); // 18 - 8 = 10
+
+        // 1. Approve underlying token to wrapper
+        calls.push(
+          contractCall.token.approve(
+            underlyingAddress,
+            collateralTokenAddress,
+            underlyingAmount
+          )
+        );
+
+        // 2. Wrap underlying token
+        calls.push(
+          contractCall.collateralWrapper.wrap(
+            collateralTokenAddress,
+            underlyingAmount
+          )
+        );
+
+        // 3. Approve wrapped token to BorrowerOperations
+        calls.push(
+          contractCall.token.approve(
+            collateralTokenAddress,
+            addresses.borrowerOperations,
+            collateralChange
+          )
+        );
+      } else {
+        calls.push(
+          contractCall.token.approve(
+            collateralTokenAddress,
+            addresses.borrowerOperations,
+            collateralChange
+          )
+        );
+      }
     }
     if (!isDebtIncrease) {
       // Repaying debt - need to approve USDU spending
@@ -116,6 +193,17 @@ function getAdjustmentCalls(params: {
         collateralType,
       })
     );
+
+    // For WMWBTC: unwrap after withdrawal
+    if (!isCollIncrease && requiresWrapping(collateralType) && collateralTokenAddress) {
+      calls.push(
+        contractCall.collateralWrapper.unwrap(
+          collateralTokenAddress,
+          collateralChange
+        )
+      );
+    }
+
     return calls;
   }
 
@@ -123,7 +211,42 @@ function getAdjustmentCalls(params: {
   if (collateralChange !== 0n) {
     if (isCollIncrease) {
       // Adding collateral
-      if (collateralTokenAddress) {
+      if (requiresWrapping(collateralType)) {
+        // For WMWBTC: wrap underlying token before adding
+        const underlyingAddress = WMWBTC_TOKEN.underlyingAddress;
+        const underlyingDecimals = WMWBTC_TOKEN.underlyingDecimals;
+
+        // Calculate underlying amount (8 decimals) from wrapped amount (18 decimals)
+        // Since we assume 1:1 ratio, just adjust decimals
+        const underlyingAmount = collateralChange / (10n ** 10n); // 18 - 8 = 10
+
+        // 1. Approve underlying token to wrapper
+        calls.push(
+          contractCall.token.approve(
+            underlyingAddress,
+            collateralTokenAddress!, // Wrapper address
+            underlyingAmount
+          )
+        );
+
+        // 2. Wrap underlying token
+        calls.push(
+          contractCall.collateralWrapper.wrap(
+            collateralTokenAddress!, // Wrapper address
+            underlyingAmount
+          )
+        );
+
+        // 3. Approve wrapped token to BorrowerOperations
+        calls.push(
+          contractCall.token.approve(
+            collateralTokenAddress!, // Wrapped token address
+            addresses.borrowerOperations,
+            collateralChange // Now in 18 decimals
+          )
+        );
+      } else if (collateralTokenAddress) {
+        // Standard collateral - just approve
         calls.push(
           contractCall.token.approve(
             collateralTokenAddress,
@@ -132,6 +255,8 @@ function getAdjustmentCalls(params: {
           )
         );
       }
+
+      // 4. Add collateral
       calls.push(
         contractCall.borrowerOperations.addColl(
           troveId,
@@ -148,6 +273,19 @@ function getAdjustmentCalls(params: {
           collateralType
         )
       );
+
+      // For WMWBTC: unwrap after withdrawal
+      if (requiresWrapping(collateralType) && collateralTokenAddress) {
+        // Calculate underlying amount (8 decimals) from wrapped amount (18 decimals)
+        const underlyingAmount = collateralChange / (10n ** 10n); // 18 - 8 = 10
+
+        calls.push(
+          contractCall.collateralWrapper.unwrap(
+            collateralTokenAddress, // Wrapper address
+            collateralChange // Unwrap the full 18-decimal amount
+          )
+        );
+      }
     }
   } else if (debtChange !== 0n) {
     if (isDebtIncrease) {
