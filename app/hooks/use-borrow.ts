@@ -18,9 +18,9 @@ import { bigToBigint } from "~/lib/decimal";
 import Big from "big.js";
 
 export interface BorrowFormData {
-  collateralAmount?: Big | string | number;
-  borrowAmount?: Big | string | number;
-  interestRate: Big | string | number;
+  collateralAmount?: Big;
+  borrowAmount?: Big;
+  interestRate: Big;
   selectedCollateralToken: string;
 }
 
@@ -29,9 +29,9 @@ interface TokenWithCollateralType extends Token {
 }
 
 interface UseBorrowParams {
-  collateralAmount?: Big | string | number;
-  borrowAmount?: Big | string | number;
-  interestRate: Big | string | number;
+  collateralAmount?: Big;
+  borrowAmount?: Big;
+  interestRate: Big;
   collateralToken?: TokenWithCollateralType;
   onSuccess?: () => void;
 }
@@ -62,7 +62,7 @@ export function useBorrow({
     initialFormData: {
       collateralAmount: undefined,
       borrowAmount: undefined,
-      interestRate: 5, // Default to 5% APR
+      interestRate: new Big(5), // Default to 5% APR as Big instance
       selectedCollateralToken: UBTC_TOKEN.symbol,
     },
   });
@@ -88,34 +88,16 @@ export function useBorrow({
       contractCall.token.approve(
         collateralToken.address,
         addresses.borrowerOperations,
-        bigToBigint(
-          collateralAmount instanceof Big
-            ? collateralAmount
-            : new Big(String(collateralAmount)),
-          18
-        )
+        bigToBigint(collateralAmount, 18)
       ),
 
       // 2. Open trove
       contractCall.borrowerOperations.openTrove({
         owner: address,
         ownerIndex: nextOwnerIndex,
-        collAmount: bigToBigint(
-          collateralAmount instanceof Big
-            ? collateralAmount
-            : new Big(String(collateralAmount)),
-          18
-        ),
-        usduAmount: bigToBigint(
-          borrowAmount instanceof Big
-            ? borrowAmount
-            : new Big(String(borrowAmount)),
-          18
-        ),
-        annualInterestRate: bigToBigint(
-          new Big(String(interestRate)).div(100),
-          18
-        ),
+        collAmount: bigToBigint(collateralAmount, 18),
+        usduAmount: bigToBigint(borrowAmount, 18),
+        annualInterestRate: bigToBigint(interestRate.div(100), 18),
         collateralType: collateralType,
         maxUpfrontFee: 2n ** 256n - 1n,
       }),

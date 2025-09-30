@@ -17,7 +17,7 @@ interface BorrowCardProps {
     borrowedAmount: Big;
     collateralAmount: Big;
     collateralAsset: string;
-    interestRate: number;
+    interestRate: Big;
     liquidationPrice: Big;
   };
   collateralPrice?: {
@@ -186,7 +186,7 @@ export default function BorrowCard(props: Props) {
                     : "text-neutral-800"
                 }`}
               >
-                {trove.interestRate}%
+                {trove.interestRate.toFixed(2)}%
               </span>
             </div>
           </div>

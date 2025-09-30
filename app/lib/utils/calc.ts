@@ -11,11 +11,10 @@ import { bigToBigint } from "~/lib/decimal";
 export function computeDebtLimit(
   collateralAmount: Big,
   bitcoinPrice: Big,
-  minCollateralRatio: Big | number
+  minCollateralRatio: Big
 ): Big {
-  const minRatioBig = minCollateralRatio instanceof Big ? minCollateralRatio : new Big(minCollateralRatio);
   const collateralValue = collateralAmount.times(bitcoinPrice);
-  return collateralValue.div(minRatioBig);
+  return collateralValue.div(minCollateralRatio);
 }
 
 /**
@@ -23,10 +22,9 @@ export function computeDebtLimit(
  * @param interestRate - The interest rate as a percentage (e.g., 5 for 5%)
  * @returns The annual interest rate as a bigint (18-decimal number)
  */
-export function getAnnualInterestRate(interestRate: Big | number): bigint {
-  const rateBig = interestRate instanceof Big ? interestRate : new Big(interestRate);
+export function getAnnualInterestRate(interestRate: Big): bigint {
   // Convert percentage to 18-decimal number
   // Rate is in percentage (e.g., 5 for 5%), so divide by 100 first
-  const rateDecimal = rateBig.div(100);
+  const rateDecimal = interestRate.div(100);
   return bigToBigint(rateDecimal, 18);
 }

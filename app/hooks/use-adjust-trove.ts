@@ -190,7 +190,6 @@ export function useAdjustTrove({
 }: UseAdjustTroveParams) {
   const { address } = useAccount();
 
-  // Calculate the changes using Big for precision
   const changes = useMemo(() => {
     if (
       !currentCollateral ||
@@ -231,14 +230,12 @@ export function useAdjustTrove({
       return undefined;
     }
 
-    // Determine collateral type
     const collateralType: CollateralType =
       collateralToken.collateralType ||
       (collateralToken.address === getCollateralAddresses("UBTC").collateral
         ? "UBTC"
         : "GBTC");
 
-    // No changes
     if (
       !changes.hasCollateralChange &&
       !changes.hasDebtChange &&

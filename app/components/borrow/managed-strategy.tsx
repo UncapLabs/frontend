@@ -2,12 +2,13 @@ import { Shield } from "lucide-react";
 import { NumericFormat } from "react-number-format";
 import { STRKRebateInfo } from "./strk-rebate-info";
 import { useCalculatedRebate } from "~/hooks/use-rebate-config";
+import Big from "big.js";
 
 interface ManagedStrategyProps {
   disabled?: boolean;
-  borrowAmount?: number;
-  collateralAmount?: number;
-  collateralPriceUSD?: number;
+  borrowAmount?: Big;
+  collateralAmount?: Big;
+  collateralPriceUSD?: Big;
 }
 
 export function ManagedStrategy({
@@ -17,7 +18,7 @@ export function ManagedStrategy({
   collateralPriceUSD,
 }: ManagedStrategyProps) {
   const interestRate = 4.3; // Managed strategy uses 4.3% interest rate
-  const annualFee = borrowAmount ? borrowAmount * 0.001 : 0; // 0.1% annual fee
+  const annualFee = borrowAmount ? borrowAmount.times(0.001) : new Big(0); // 0.1% annual fee
 
   // Calculate STRK rebate for the managed strategy (only if borrowAmount exists)
   const rebateData = useCalculatedRebate(borrowAmount, interestRate);
@@ -31,13 +32,13 @@ export function ManagedStrategy({
             <h4 className="text-base font-semibold text-slate-800">
               Balanced Strategy
             </h4>
-            {borrowAmount && borrowAmount > 0 && (
+            {borrowAmount && borrowAmount.gt(0) && (
               <div className="flex items-center gap-3 mt-1 text-sm text-slate-600">
                 <span>
                   USDU Managed: $
                   <NumericFormat
                     displayType="text"
-                    value={borrowAmount}
+                    value={borrowAmount.toString()}
                     thousandSeparator=","
                     decimalScale={0}
                     fixedDecimalScale={false}
@@ -48,7 +49,7 @@ export function ManagedStrategy({
                   Annual Fee: $
                   <NumericFormat
                     displayType="text"
-                    value={annualFee}
+                    value={annualFee.toString()}
                     thousandSeparator=","
                     decimalScale={2}
                     fixedDecimalScale
@@ -118,7 +119,7 @@ export function ManagedStrategy({
       </div>
 
       {/* Fee Breakdown */}
-      {borrowAmount && borrowAmount > 0 && (
+      {borrowAmount && borrowAmount.gt(0) && (
         <div className="bg-white rounded-lg border border-slate-200 p-3">
           <div className="text-xs text-slate-600 space-y-1">
             <div className="flex justify-between">
@@ -127,7 +128,7 @@ export function ManagedStrategy({
                 $
                 <NumericFormat
                   displayType="text"
-                  value={annualFee}
+                  value={annualFee.toString()}
                   thousandSeparator=","
                   decimalScale={2}
                   fixedDecimalScale
@@ -141,7 +142,7 @@ export function ManagedStrategy({
                 $
                 <NumericFormat
                   displayType="text"
-                  value={borrowAmount * 0.043}
+                  value={borrowAmount.times(0.043).toString()}
                   thousandSeparator=","
                   decimalScale={2}
                   fixedDecimalScale
@@ -156,7 +157,7 @@ export function ManagedStrategy({
                   $
                   <NumericFormat
                     displayType="text"
-                    value={annualFee + borrowAmount * 0.043}
+                    value={annualFee.plus(borrowAmount.times(0.043)).toString()}
                     thousandSeparator=","
                     decimalScale={2}
                     fixedDecimalScale
@@ -169,18 +170,18 @@ export function ManagedStrategy({
       )}
 
       {/* STRK Rebate Information - Only show when borrowAmount is provided */}
-      {borrowAmount && borrowAmount > 0 && rebateData && (
+      {borrowAmount && borrowAmount.gt(0) && rebateData && (
         <STRKRebateInfo
           yearlyInterestUSD={rebateData.yearlyInterestUSD}
           yearlyRebateUSD={rebateData.yearlyRebateUSD}
           collateralValueUSD={
             collateralAmount && collateralPriceUSD
-              ? collateralAmount * collateralPriceUSD
+              ? collateralAmount.times(collateralPriceUSD)
               : undefined
           }
           yearlyCollateralRebateUSD={
             collateralAmount && collateralPriceUSD
-              ? collateralAmount * collateralPriceUSD * 0.02 // 2% rebate
+              ? collateralAmount.times(collateralPriceUSD).times(0.02) // 2% rebate
               : undefined
           }
         />

@@ -12,14 +12,13 @@ import {
   getInterestRatePercentage,
 } from "~/lib/utils/position-helpers";
 import { getAnnualInterestRate } from "~/lib/utils/calc";
-import { bigintToDecimal } from "~/lib/decimal";
+import { bigintToBig } from "~/lib/decimal";
 import Big from "big.js";
 
-// Update form data structure to use Big for precision
 export interface UpdateFormData {
   collateralAmount?: Big;
   borrowAmount?: Big;
-  interestRate: number;
+  interestRate: Big;
   selectedCollateralToken: string;
 }
 
@@ -27,7 +26,7 @@ interface UseUpdatePositionParams {
   position: any | null;
   collateralAmount?: Big;
   borrowAmount?: Big;
-  interestRate?: number;
+  interestRate?: Big;
   collateralToken?: Token;
   onSuccess?: () => void;
 }
@@ -43,17 +42,16 @@ export function useUpdatePosition({
   const { address } = useAccount();
   const transactionStore = useTransactionStore();
 
-  // Transaction state management - keep Big instances for precision
+  // Transaction state management
   const transactionState = useTransactionState<UpdateFormData>({
     initialFormData: {
       collateralAmount: position?.collateralAmount,
       borrowAmount: position?.borrowedAmount,
-      interestRate: position ? getInterestRatePercentage(position) : 5,
+      interestRate: position ? getInterestRatePercentage(position) : new Big(5),
       selectedCollateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
     },
   });
 
-  // Use the adjust trove hook - now with Big instances
   const {
     send: adjustTroveSend,
     isPending: adjustTroveIsPending,
@@ -93,7 +91,7 @@ export function useUpdatePosition({
       transactionState.updateFormData({
         collateralAmount,
         borrowAmount,
-        interestRate: interestRate || 5,
+        interestRate: interestRate || new Big(5),
         selectedCollateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
       });
       transactionState.setPending(hash);
@@ -104,15 +102,15 @@ export function useUpdatePosition({
           hasCollateralChange: changes?.hasCollateralChange || false,
           isCollIncrease: changes?.isCollIncrease || false,
           collateralChange: changes?.collateralChange
-            ? bigintToDecimal(changes.collateralChange, 18)
-            : 0,
+            ? bigintToBig(changes.collateralChange, 18)
+            : new Big(0),
           hasDebtChange: changes?.hasDebtChange || false,
           isDebtIncrease: changes?.isDebtIncrease || false,
           debtChange: changes?.debtChange
-            ? bigintToDecimal(changes.debtChange, 18)
-            : 0,
+            ? bigintToBig(changes.debtChange, 18)
+            : new Big(0),
           hasInterestRateChange: changes?.hasInterestRateChange || false,
-          newInterestRate: interestRate,
+          newInterestRate: interestRate || undefined,
           collateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
         });
 
@@ -122,12 +120,12 @@ export function useUpdatePosition({
           description,
           details: {
             troveId: position.id,
-            previousCollateral: Number(position.collateralAmount.toString()),
-            previousDebt: Number(position.borrowedAmount.toString()),
-            newCollateral: collateralAmount ? Number(collateralAmount.toString()) : undefined,
-            newDebt: borrowAmount ? Number(borrowAmount.toString()) : undefined,
+            previousCollateral: position.collateralAmount,
+            previousDebt: position.borrowedAmount,
+            newCollateral: collateralAmount || undefined,
+            newDebt: borrowAmount || undefined,
             previousInterestRate: getInterestRatePercentage(position),
-            newInterestRate: interestRate,
+            newInterestRate: interestRate || undefined,
             collateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
           },
         };

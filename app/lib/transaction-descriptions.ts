@@ -1,66 +1,89 @@
-import type { TransactionType } from '~/types/transaction';
+import type { TransactionType } from "~/types/transaction";
 
 export function createTransactionDescription(
   type: TransactionType,
   details?: Record<string, any>
 ): string {
   switch (type) {
-    case 'borrow':
+    case "borrow":
       if (details?.collateralAmount && details?.borrowAmount) {
-        return `Open trove with ${details.collateralAmount} ${details.collateralToken || 'collateral'} to borrow ${details.borrowAmount} USDU`;
+        return `Open trove with ${details.collateralAmount} ${
+          details.collateralToken || "collateral"
+        } to borrow ${details.borrowAmount} USDU`;
       }
-      return 'Open new trove';
+      return "Open new trove";
 
-    case 'adjust':
+    case "adjust":
       if (details?.troveId) {
         const parts: string[] = [];
         if (details.hasCollateralChange && details.collateralChange) {
-          parts.push(`${details.isCollIncrease ? 'Add' : 'Remove'} ${Math.abs(details.collateralChange).toFixed(7)} ${details.collateralToken || 'collateral'}`);
+          parts.push(
+            `${
+              details.isCollIncrease ? "Add" : "Remove"
+            } ${details.collateralChange.abs().toFixed(7)} ${
+              details.collateralToken || "collateral"
+            }`
+          );
         }
         if (details.hasDebtChange && details.debtChange) {
-          parts.push(`${details.isDebtIncrease ? 'Borrow' : 'Repay'} ${Math.abs(details.debtChange).toFixed(2)} USDU`);
+          parts.push(
+            `${details.isDebtIncrease ? "Borrow" : "Repay"} ${details.debtChange
+              .abs()
+              .toFixed(2)} USDU`
+          );
         }
-        if (details.hasInterestRateChange && details.newInterestRate !== undefined) {
-          parts.push(`Change rate to ${details.newInterestRate}%`);
+        if (
+          details.hasInterestRateChange &&
+          details.newInterestRate !== undefined
+        ) {
+          parts.push(`Change rate to ${details.newInterestRate.toFixed(2)}%`);
         }
-        return parts.length > 0 ? parts.join(' and ') : `Adjust trove #${details.troveId}`;
+        return parts.length > 0
+          ? parts.join(" and ")
+          : `Adjust trove #${details.troveId}`;
       }
-      return 'Adjust trove';
+      return "Adjust trove";
 
-    case 'close':
-      return details?.troveId ? `Close trove #${details.troveId}` : 'Close trove';
+    case "close":
+      return details?.troveId
+        ? `Close trove #${details.troveId}`
+        : "Close trove";
 
-    case 'claim':
+    case "claim":
       if (details?.amount && details?.token) {
         return `Claim ${details.amount} ${details.token}`;
       }
-      return 'Claim rewards';
+      return "Claim rewards";
 
-    case 'claim_surplus':
+    case "claim_surplus":
       if (details?.collateralType) {
         return `Claim ${details.collateralType} collateral surplus`;
       }
-      return 'Claim collateral surplus';
+      return "Claim collateral surplus";
 
-    case 'adjust_rate':
+    case "adjust_rate":
       if (details?.newRate) {
         return `Change interest rate to ${details.newRate}%`;
       }
-      return 'Adjust interest rate';
+      return "Adjust interest rate";
 
-    case 'deposit':
+    case "deposit":
       if (details?.amount) {
-        return `Deposit ${details.amount} ${details.token || 'USDU'} to Stability Pool`;
+        return `Deposit ${details.amount} ${
+          details.token || "USDU"
+        } to Stability Pool`;
       }
-      return 'Deposit to Stability Pool';
+      return "Deposit to Stability Pool";
 
-    case 'withdraw':
+    case "withdraw":
       if (details?.amount) {
-        return `Withdraw ${details.amount} ${details.token || 'USDU'} from Stability Pool`;
+        return `Withdraw ${details.amount} ${
+          details.token || "USDU"
+        } from Stability Pool`;
       }
-      return 'Withdraw from Stability Pool';
+      return "Withdraw from Stability Pool";
 
     default:
-      return 'Transaction';
+      return "Transaction";
   }
 }

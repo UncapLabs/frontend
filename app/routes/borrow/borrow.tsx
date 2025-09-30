@@ -83,7 +83,6 @@ function Borrow() {
     minCollateralizationRatio,
   });
 
-  // Initialize form with URL values using Big for precision
   const form = useForm({
     defaultValues: {
       collateralAmount: collateralAmount ?? (undefined as Big | undefined),
@@ -171,10 +170,8 @@ function Borrow() {
 
         const btcPrice = bitcoin?.price || new Big(0);
         const usduPrice = usdu?.price || new Big(1);
-        const collateralBig =
-          collateral instanceof Big ? collateral : new Big(String(collateral));
 
-        const collateralValueUSD = collateralBig.times(btcPrice);
+        const collateralValueUSD = collateral.times(btcPrice);
         const borrowAmountUSD = collateralValueUSD.times(percentage);
         const newValue = borrowAmountUSD.div(usduPrice);
 
@@ -241,14 +238,7 @@ function Borrow() {
                           <>
                             <NumericFormat
                               displayType="text"
-                              value={
-                                formData.collateralAmount instanceof Big
-                                  ? Number(formData.collateralAmount.toString())
-                                  : typeof formData.collateralAmount ===
-                                    "string"
-                                  ? Number(formData.collateralAmount)
-                                  : formData.collateralAmount
-                              }
+                              value={formData.collateralAmount.toString()}
                               thousandSeparator=","
                               decimalScale={7}
                               fixedDecimalScale={false}
@@ -263,13 +253,7 @@ function Borrow() {
                           <>
                             <NumericFormat
                               displayType="text"
-                              value={
-                                formData.borrowAmount instanceof Big
-                                  ? Number(formData.borrowAmount.toString())
-                                  : typeof formData.borrowAmount === "string"
-                                  ? Number(formData.borrowAmount)
-                                  : formData.borrowAmount
-                              }
+                              value={formData.borrowAmount.toString()}
                               thousandSeparator=","
                               decimalScale={2}
                               fixedDecimalScale
@@ -280,11 +264,7 @@ function Borrow() {
                       },
                       {
                         label: "Interest Rate (APR)",
-                        value: `${
-                          formData.interestRate instanceof Big
-                            ? formData.interestRate.toString()
-                            : formData.interestRate
-                        }%`,
+                        value: `${formData.interestRate.toString()}%`,
                       },
                     ]
                   : undefined
@@ -340,7 +320,6 @@ function Borrow() {
                         fieldApi.form.getFieldValue("borrowAmount");
                       if (
                         currentBorrowAmount !== undefined &&
-                        currentBorrowAmount instanceof Big &&
                         currentBorrowAmount.gt(0)
                       ) {
                         fieldApi.form.validateField("borrowAmount", "change");
@@ -406,9 +385,7 @@ function Borrow() {
                       const debtLimit =
                         collateral && bitcoin?.price
                           ? computeDebtLimit(
-                              collateral instanceof Big
-                                ? collateral
-                                : new Big(String(collateral)),
+                              collateral,
                               bitcoin.price,
                               minCollateralizationRatio
                             )
@@ -425,24 +402,17 @@ function Borrow() {
                         // LTV check
                         (() => {
                           if (!collateral) return undefined;
-                          const collateralBig =
-                            collateral instanceof Big
-                              ? collateral
-                              : new Big(String(collateral));
-                          const valueBig =
-                            value instanceof Big
-                              ? value
-                              : new Big(String(value));
-                          const collateralValue = collateralBig.times(
+                          const collateralValue = collateral.times(
                             bitcoin.price
                           );
-                          const borrowValue = valueBig.times(usdu.price);
-                          const maxLtvPercent =
-                            (1 / minCollateralizationRatio) * 100;
+                          const borrowValue = value.times(usdu.price);
+                          const maxLtvPercent = new Big(1)
+                            .div(minCollateralizationRatio)
+                            .times(100);
                           return validators.ltvRatio(
                             borrowValue,
                             collateralValue,
-                            new Big(maxLtvPercent)
+                            maxLtvPercent
                           );
                         })()
                       );
@@ -534,8 +504,7 @@ function Borrow() {
                             address &&
                             (!collateralAmount ||
                               !borrowAmount ||
-                              (borrowAmount instanceof Big &&
-                                borrowAmount.lte(0)) ||
+                              borrowAmount.lte(0) ||
                               isSending ||
                               isPending ||
                               !canSubmit)
@@ -576,7 +545,7 @@ function Borrow() {
                 to: borrowAmount || new Big(0),
               },
               interestRate: {
-                to: interestRate ? Number(interestRate.toString()) : 5,
+                to: interestRate || new Big(5),
               },
             }}
             liquidationPrice={metrics.liquidationPrice}

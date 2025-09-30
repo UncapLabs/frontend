@@ -112,11 +112,11 @@ export function useDepositToStabilityPool({
           hash,
           type: "deposit" as const,
           description: createTransactionDescription("deposit", {
-            amount: Number(amount.toString()), // Only convert for display in description
+            amount: amount.toString(),
             token: "USDU",
           }),
           details: {
-            amount: Number(amount.toString()), // Only convert for display
+            amount: amount.toString(),
             pool: collateralType,
           },
         };
@@ -228,11 +228,11 @@ export function useWithdrawFromStabilityPool({
           hash,
           type: "withdraw" as const,
           description: createTransactionDescription("withdraw", {
-            amount: Number(amount.toString()), // Only convert for display in description
+            amount: amount.toString(),
             token: "USDU",
           }),
           details: {
-            amount: Number(amount.toString()), // Only convert for display
+            amount: amount.toString(),
             pool: collateralType,
           },
         };

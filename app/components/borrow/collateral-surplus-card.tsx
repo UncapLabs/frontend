@@ -124,7 +124,7 @@ export function CollateralSurplusCard() {
                       <>
                         <NumericFormat
                           displayType="text"
-                          value={surplus.formatted}
+                          value={surplus.formatted.toString()}
                           thousandSeparator=","
                           decimalScale={7}
                           fixedDecimalScale={false}
@@ -167,7 +167,7 @@ export function CollateralSurplusCard() {
                     <div className="text-xl font-semibold text-neutral-800 font-sora">
                       <NumericFormat
                         displayType="text"
-                        value={surplus.formatted}
+                        value={surplus.formatted.toString()}
                         thousandSeparator=","
                         decimalScale={7}
                         fixedDecimalScale={false}

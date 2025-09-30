@@ -2,8 +2,18 @@ import { NumericFormat } from "react-number-format";
 import type { CollateralType } from "~/lib/contracts/constants";
 import Big from "big.js";
 
+interface StabilityPoolPosition {
+  userDeposit: Big;
+  rewards: {
+    usdu: Big;
+    collateral: Big;
+  };
+  totalDeposits: Big;
+  poolShare: Big;
+}
+
 interface ClaimRewardsSectionProps {
-  selectedPosition: any;
+  selectedPosition: StabilityPoolPosition | null;
   selectedCollateral: CollateralType;
   usduPrice: Big;
   collateralPrice: Big;
@@ -15,11 +25,9 @@ export function ClaimRewardsSection({
   usduPrice,
   collateralPrice,
 }: ClaimRewardsSectionProps) {
-  const usduRewards = new Big(selectedPosition?.rewards?.usdu || 0);
-  const collateralRewards = new Big(selectedPosition?.rewards?.collateral || 0);
+  const usduRewards = selectedPosition?.rewards?.usdu || new Big(0);
+  const collateralRewards = selectedPosition?.rewards?.collateral || new Big(0);
   const hasRewards = usduRewards.gt(0) || collateralRewards.gt(0);
-
-  // Calculate USD values (using Big for precision)
   const usduRewardsUSD = usduRewards.times(usduPrice);
   const collateralRewardsUSD = collateralRewards.times(collateralPrice);
   const totalUSD = usduRewardsUSD.plus(collateralRewardsUSD);

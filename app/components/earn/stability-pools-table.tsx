@@ -102,7 +102,7 @@ export function StabilityPoolsTable() {
                     <div className="text-white text-sm font-medium">
                       <NumericFormat
                         displayType="text"
-                        value={pool.totalDeposits}
+                        value={pool.totalDeposits.toString()}
                         thousandSeparator=","
                         decimalScale={0}
                         suffix=" USDU"
@@ -116,10 +116,10 @@ export function StabilityPoolsTable() {
                     <div className="text-white text-sm font-medium">
                       {address &&
                       pool.position &&
-                      pool.position.userDeposit > 0 ? (
+                      pool.position.userDeposit.gt(0) ? (
                         <NumericFormat
                           displayType="text"
-                          value={pool.position.userDeposit}
+                          value={pool.position.userDeposit.toString()}
                           thousandSeparator=","
                           suffix=" USDU"
                           decimalScale={0}
@@ -142,10 +142,10 @@ export function StabilityPoolsTable() {
                         {address &&
                         pool.position &&
                         pool.position.rewards?.usdu &&
-                        pool.position.rewards.usdu > 0 ? (
+                        pool.position.rewards.usdu.gt(0) ? (
                           <NumericFormat
                             displayType="text"
-                            value={pool.position.rewards.usdu}
+                            value={pool.position.rewards.usdu.toString()}
                             thousandSeparator=","
                             decimalScale={2}
                             fixedDecimalScale
@@ -164,10 +164,10 @@ export function StabilityPoolsTable() {
                         {address &&
                         pool.position &&
                         pool.position.rewards?.collateral &&
-                        pool.position.rewards.collateral > 0 ? (
+                        pool.position.rewards.collateral.gt(0) ? (
                           <NumericFormat
                             displayType="text"
-                            value={pool.position.rewards.collateral}
+                            value={pool.position.rewards.collateral.toString()}
                             thousandSeparator=","
                             decimalScale={6}
                             fixedDecimalScale

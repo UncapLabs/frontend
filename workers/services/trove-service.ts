@@ -23,7 +23,6 @@ import {
 } from "~/lib/contracts/constants";
 import { getMinCollateralizationRatio } from "~/lib/contracts/collateral-config";
 import {
-  formatInterestRateForDisplay,
   isPrefixedTroveId,
   parsePrefixedTroveId,
 } from "workers/services/utils";
@@ -104,7 +103,7 @@ export interface Position {
   redemptionCount: number;
   redeemedColl: Big;
   redeemedDebt: Big;
-  interestRate: number;
+  interestRate: Big;
   liquidationPrice: Big;
   status: "active" | "closed" | "non-existent" | "liquidated" | "redeemed";
   batchManager: string | null;
@@ -285,9 +284,11 @@ export async function fetchPositionById(
       USDU_TOKEN.decimals
     );
 
-    const interestRate = formatInterestRateForDisplay(
-      troveData.annual_interest_rate
-    );
+    // Convert interest rate from bigint (18 decimals) to percentage
+    // The value is stored with 18 decimals, but represents a rate like 0.05 for 5%
+    // So we need to scale down by 16 to get the percentage value (5.0 instead of 0.05)
+    const interestRateDecimal = bigintToBig(troveData.annual_interest_rate, 18);
+    const interestRate = interestRateDecimal.times(100); // Convert to percentage
 
     // Check batch manager
     const isZeroAddress =

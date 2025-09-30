@@ -283,9 +283,9 @@ export function InterestRateSelector({
           // Managed by Telos mode
           <ManagedStrategy
             disabled={disabled}
-            borrowAmount={borrowAmount ? Number(borrowAmount.toString()) : undefined}
-            collateralAmount={collateralAmount ? Number(collateralAmount.toString()) : undefined}
-            collateralPriceUSD={collateralPriceUSD ? Number(collateralPriceUSD.toString()) : undefined}
+            borrowAmount={borrowAmount}
+            collateralAmount={collateralAmount}
+            collateralPriceUSD={collateralPriceUSD}
           />
         )}
       </div>

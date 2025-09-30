@@ -26,8 +26,8 @@ interface TokenInputProps {
     value?: bigint;
     formatted?: string;
   };
-  price?: { price: Big | number };
-  value?: Big | string | number | undefined;
+  price?: { price: Big };
+  value?: Big | undefined;
   onChange: (value: Big | undefined) => void;
   onBlur?: () => void;
   label: string | ReactNode;
@@ -74,18 +74,13 @@ export const TokenInput = memo(function TokenInput({
   tokenSelectorBgColor = "bg-token-bg",
   tokenSelectorTextColor = "text-token-orange",
 }: TokenInputProps) {
-  // Convert value to string for display (preserves full precision) as NumericFormat can accept strings directly!
-  const displayValue = value instanceof Big ? value.toString() : value;
+  // Convert value to string for display (preserves full precision)
+  const displayValue = value?.toString() || "";
 
   // Calculate USD value (using Big for precision)
   const usdValue = (() => {
-    if (!value || !price) return 0;
-
-    const valueBig = value instanceof Big ? value : new Big(String(value || 0));
-    const priceBig =
-      price.price instanceof Big ? price.price : new Big(price.price);
-
-    return Number(valueBig.times(priceBig).toString());
+    if (!value || !price?.price) return new Big(0);
+    return value.times(price.price);
   })();
 
   const handleValueChange = (values: NumberFormatValues) => {
@@ -100,14 +95,25 @@ export const TokenInput = memo(function TokenInput({
         onChange(bigValue);
       } catch {
         // Fallback to floatValue if string parsing fails
-        onChange(new Big(values.floatValue.toString()));
+        if (values.floatValue !== undefined) {
+          onChange(new Big(values.floatValue.toString()));
+        } else {
+          onChange(undefined);
+        }
       }
-    } else {
+    } else if (values.floatValue !== undefined) {
       onChange(new Big(values.floatValue.toString()));
+    } else {
+      onChange(undefined);
     }
   };
 
   const shouldShowPercentageButtons = percentageButtons && onPercentageClick;
+
+  // Calculate balance as Big for display
+  const balanceAsBig = balance?.value
+    ? bigintToBig(balance.value, token.decimals)
+    : undefined;
 
   return (
     <div className="bg-white rounded-2xl p-6 space-y-6 group">
@@ -242,7 +248,7 @@ export const TokenInput = memo(function TokenInput({
         <NumericFormat
           className="text-neutral-800 text-sm font-medium font-sora leading-none"
           displayType="text"
-          value={usdValue}
+          value={usdValue.toString()}
           prefix="= $"
           thousandSeparator=","
           decimalScale={3}
@@ -273,12 +279,7 @@ export const TokenInput = memo(function TokenInput({
                   className="text-neutral-800 text-base font-medium font-sora leading-none"
                   displayType="text"
                   value={
-                    balance.formatted ??
-                    (balance.value
-                      ? Number(
-                          bigintToBig(balance.value, token.decimals).toString()
-                        )
-                      : 0)
+                    balance.formatted ?? balanceAsBig?.toString() ?? "0"
                   }
                   thousandSeparator=","
                   decimalScale={6}

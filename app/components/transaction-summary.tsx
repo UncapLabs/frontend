@@ -27,8 +27,8 @@ interface PositionChange {
     to: Big;
   };
   interestRate?: {
-    from?: number;
-    to: number;
+    from?: Big;
+    to: Big;
   };
 }
 
@@ -82,7 +82,7 @@ export function TransactionSummary({
             ? bigToBigint(changes.debt.to, 18)
             : undefined,
           interestRate: changes.interestRate?.to
-            ? bigToBigint(new Big(changes.interestRate.to).div(100), 18)
+            ? bigToBigint(changes.interestRate.to.div(100), 18)
             : undefined,
           enabled:
             !!collateralType &&
@@ -358,7 +358,7 @@ export function TransactionSummary({
             ) : (
               <div className="space-y-0.5">
                 <div className="text-neutral-800 text-base font-medium font-sora">
-                  {(changes.interestRate?.to || 5).toFixed(2)}%
+                  {changes.interestRate?.to?.toFixed(2) ?? "5.00"}%
                 </div>
                 {annualInterestCost.gt(0) && (
                   <div className="text-xs text-neutral-800/70 font-sora">
@@ -401,31 +401,25 @@ export function TransactionSummary({
                 changes.collateralValueUSD?.to &&
                 changes.debt?.to &&
                 changes.collateralValueUSD.to.gt(0)
-                  ? Number(
-                      changes.debt.to
-                        .div(changes.collateralValueUSD.to)
-                        .times(100)
-                        .toString()
-                    )
-                  : 0;
+                  ? changes.debt.to
+                      .div(changes.collateralValueUSD.to)
+                      .times(100)
+                  : new Big(0);
               const previousLTV =
                 type === "update" &&
                 changes.collateralValueUSD?.from &&
                 changes.debt?.from &&
                 changes.collateralValueUSD.from.gt(0)
-                  ? Number(
-                      changes.debt.from
-                        .div(changes.collateralValueUSD.from)
-                        .times(100)
-                        .toString()
-                    )
+                  ? changes.debt.from
+                      .div(changes.collateralValueUSD.from)
+                      .times(100)
                   : undefined;
 
-              if (
-                type === "update" &&
-                previousLTV !== undefined &&
-                Math.abs(currentLTV - previousLTV) > 0.01
-              ) {
+              // Check if LTV changed significantly (more than 0.01%)
+              const ltvChanged = previousLTV !== undefined &&
+                currentLTV.minus(previousLTV).abs().gt(0.01);
+
+              if (type === "update" && ltvChanged) {
                 return (
                   <div className="flex items-center gap-2 justify-end">
                     <span className="text-neutral-800/50 text-base font-medium font-sora line-through">
@@ -440,7 +434,7 @@ export function TransactionSummary({
               } else {
                 return (
                   <span className="text-neutral-800 text-base font-medium font-sora">
-                    {currentLTV > 0 ? (
+                    {currentLTV.gt(0) ? (
                       `${currentLTV.toFixed(1)}%`
                     ) : (
                       <span className="text-neutral-800/50">—</span>
@@ -451,40 +445,6 @@ export function TransactionSummary({
             })()}
           </div>
         </div>
-
-        {/* STRK Rebate - Only show if there's a yearly rebate */}
-        {/* {yearlyRebate > 0 && (
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-3.5 w-3.5 text-purple-500" />
-              <span className="text-neutral-800 text-sm font-normal font-sora">
-                STRK Rebate
-              </span>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="h-3 w-3 text-neutral-400 cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>
-                    You earn a 30% rebate on interest payments through the STRK
-                    rebate program
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-            <span className="text-green-600 text-base font-medium font-sora">
-              +$
-              <NumericFormat
-                displayType="text"
-                value={yearlyRebate}
-                thousandSeparator=","
-                decimalScale={0}
-                fixedDecimalScale={false}
-              />{" "}
-              /year
-            </span>
-          </div>
-        )} */}
 
         {/* Liquidation Price */}
         <div className="flex justify-between items-center">
@@ -508,7 +468,7 @@ export function TransactionSummary({
             {liquidationPrice && liquidationPrice.gt(0) ? (
               <NumericFormat
                 displayType="text"
-                value={Number(liquidationPrice.toString())}
+                value={liquidationPrice.toString()}
                 prefix="$"
                 thousandSeparator=","
                 decimalScale={2}

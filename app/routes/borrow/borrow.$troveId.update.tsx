@@ -26,7 +26,8 @@ import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
 import { useTroveData } from "~/hooks/use-trove-data";
 import { useUpdatePosition } from "~/hooks/use-update-position";
-import { useQueryState, parseAsFloat, parseAsString } from "nuqs";
+import { useQueryState, parseAsString } from "nuqs";
+import { parseAsBig } from "~/lib/url-parsers";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { getInterestRatePercentage } from "~/lib/utils/position-helpers";
 import { extractTroveId } from "~/lib/utils/trove-id";
@@ -107,7 +108,7 @@ function UpdatePosition() {
   const [borrowAmount, setBorrowAmount] = useState<Big | undefined>(undefined);
   const [interestRate, setInterestRate] = useQueryState(
     "rate",
-    parseAsFloat.withDefault(position ? getInterestRatePercentage(position) : 5)
+    parseAsBig
   );
 
   // Action state for collateral and debt
@@ -177,7 +178,7 @@ function UpdatePosition() {
       collateralAmount: undefined as Big | undefined,
       borrowAmount: undefined as Big | undefined,
       interestRate:
-        interestRate ?? (position ? getInterestRatePercentage(position) : 5),
+        interestRate ?? (position ? getInterestRatePercentage(position) : new Big(5)),
     },
     onSubmit: async ({ value }) => {
       if (!isReady) {
@@ -231,7 +232,7 @@ function UpdatePosition() {
     position,
     collateralAmount: finalCollateralAmount,
     borrowAmount: finalDebtAmount,
-    interestRate: interestRate ?? 5,
+    interestRate: interestRate ?? new Big(5),
     collateralToken: selectedCollateralToken,
   });
 
@@ -877,11 +878,12 @@ function UpdatePosition() {
                 {/* Interest Rate Section */}
                 <div className="space-y-4">
                   <InterestRateSelector
-                    interestRate={interestRate}
+                    interestRate={interestRate ? Number(interestRate.toString()) : 5}
                     onInterestRateChange={(rate) => {
                       if (!isSending && !isPending) {
-                        form.setFieldValue("interestRate", rate);
-                        setInterestRate(rate);
+                        const rateBig = new Big(rate);
+                        form.setFieldValue("interestRate", rateBig);
+                        setInterestRate(rateBig);
                       }
                     }}
                     disabled={
@@ -895,7 +897,7 @@ function UpdatePosition() {
                     collateralType={collateralType}
                     lastInterestRateAdjTime={position?.lastInterestRateAdjTime}
                     currentInterestRate={
-                      position ? getInterestRatePercentage(position) : undefined
+                      position ? Number(getInterestRatePercentage(position).toString()) : undefined
                     }
                     isZombie={isZombie}
                   />

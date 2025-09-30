@@ -3,7 +3,7 @@
  * Based on nuqs documentation: https://nuqs.dev/docs/parsers/making-your-own
  */
 
-import { createParser, type ParserBuilder } from "nuqs";
+import { createParser } from "nuqs";
 import Big from "big.js";
 
 /**

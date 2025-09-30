@@ -1,16 +1,23 @@
 import type { Position } from "workers/services/trove-service";
+import Big from "big.js";
+import { bigToBigint } from "~/lib/decimal";
 
 /**
  * Convert position interest rate to BigInt format for contracts
+ * Interest rate is a percentage (e.g., 5 for 5%), need to convert to 18 decimal format
  */
 export function getAnnualInterestRateAsBigInt(position: Position): bigint {
-  return BigInt(Math.floor(position.interestRate * 1e16));
+  // position.interestRate is now a Big representing percentage (e.g., 5 for 5%)
+  // Convert to decimal (0.05) then to 18 decimal bigint
+  const decimalRate = position.interestRate.div(100);
+  return bigToBigint(decimalRate, 18);
 }
 
 /**
- * Convert position interest rate to percentage for display
+ * Get position interest rate as percentage Big
+ * Returns Big to maintain precision
  */
-export function getInterestRatePercentage(position: Position): number {
+export function getInterestRatePercentage(position: Position): Big {
   return position.interestRate;
 }
 
