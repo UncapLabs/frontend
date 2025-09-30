@@ -7,13 +7,13 @@ import type { Route } from "./+types/borrow.$troveId.close";
 import { useParams, useNavigate } from "react-router";
 import { useAccount, useBalance } from "@starknet-react/core";
 import {
-  UBTC_TOKEN,
-  GBTC_TOKEN,
-  WMWBTC_TOKEN,
   USDU_TOKEN,
   type CollateralType,
   MIN_DEBT,
+  getCollateralToken,
+  getCollateralType,
 } from "~/lib/contracts/constants";
+import { extractBranchId } from "~/lib/utils/trove-id";
 import { NumericFormat } from "react-number-format";
 import { useTroveData } from "~/hooks/use-trove-data";
 import { useCloseTrove } from "~/hooks/use-close-trove";
@@ -34,23 +34,14 @@ function ClosePosition() {
   const navigate = useNavigate();
   const { connectWallet } = useWalletConnect();
 
-  // Get collateral type from URL or default to UBTC
-  const [troveCollateralType] = useQueryState("type", {
-    defaultValue: "UBTC",
-  });
-
   // Fetch existing trove data
   const { position, isLoading: isTroveLoading } = useTroveData(troveId);
 
-  // Get the collateral token based on collateral type
-  const selectedCollateralToken =
-    troveCollateralType === "GBTC"
-      ? GBTC_TOKEN
-      : troveCollateralType === "WMWBTC"
-      ? WMWBTC_TOKEN
-      : UBTC_TOKEN;
-
-  const collateralType = selectedCollateralToken.collateralType;
+  // Get collateral type from position ID
+  const branchId = extractBranchId(position?.id);
+  const collateralType =
+    branchId !== undefined ? getCollateralType(branchId) : "UBTC";
+  const selectedCollateralToken = getCollateralToken(collateralType);
 
   const { data: usduBalance } = useBalance({
     token: USDU_TOKEN.address,
@@ -77,7 +68,7 @@ function ClosePosition() {
     troveId: position?.id,
     debt: position?.borrowedAmount,
     collateral: position?.collateralAmount,
-    collateralType: troveCollateralType as CollateralType,
+    collateralType: collateralType,
   });
 
   // Check if user has enough USDU to repay
@@ -90,8 +81,7 @@ function ClosePosition() {
 
   // Check trove status
   const isZombie =
-    position?.status === "redeemed" &&
-    position?.borrowedAmount.lt(MIN_DEBT);
+    position?.status === "redeemed" && position?.borrowedAmount.lt(MIN_DEBT);
   const isRedeemed = position?.status === "redeemed";
 
   const handleClosePosition = async () => {

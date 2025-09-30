@@ -330,6 +330,18 @@
     "items": [
       {
         "type": "function",
+        "name": "batch_liquidate_positions",
+        "inputs": [
+          {
+            "name": "position_array",
+            "type": "core::array::Span::<core::integer::u256>"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
         "name": "batch_liquidate_troves",
         "inputs": [
           {
@@ -741,7 +753,7 @@
       },
       {
         "type": "function",
-        "name": "update_trove_id_coll",
+        "name": "update_trove_coll",
         "inputs": [
           {
             "name": "trove_id",
@@ -890,6 +902,17 @@
       },
       {
         "type": "function",
+        "name": "get_l_usdu_debt",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
         "name": "get_last_zombie_trove_id",
         "inputs": [],
         "outputs": [
@@ -958,7 +981,7 @@
         "name": "get_reward_snapshots",
         "inputs": [
           {
-            "name": "index",
+            "name": "trove_id",
             "type": "core::integer::u256"
           }
         ],
@@ -982,21 +1005,10 @@
       },
       {
         "type": "function",
-        "name": "get_total_coll_and_debt",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "(core::integer::u256, core::integer::u256)"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
         "name": "get_trove",
         "inputs": [
           {
-            "name": "index",
+            "name": "trove_id",
             "type": "core::integer::u256"
           }
         ],
@@ -1170,6 +1182,16 @@
           }
         ],
         "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "constructor",
+    "name": "constructor",
+    "inputs": [
+      {
+        "name": "deployer",
+        "type": "core::starknet::contract_address::ContractAddress"
       }
     ]
   },

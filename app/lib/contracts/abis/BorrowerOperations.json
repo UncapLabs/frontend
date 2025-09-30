@@ -144,6 +144,38 @@
       },
       {
         "type": "function",
+        "name": "adjust_position",
+        "inputs": [
+          {
+            "name": "position_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "coll_change",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "is_coll_increase",
+            "type": "core::bool"
+          },
+          {
+            "name": "usdu_change",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "is_debt_increase",
+            "type": "core::bool"
+          },
+          {
+            "name": "max_upfront_fee",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
         "name": "adjust_trove",
         "inputs": [
           {
@@ -176,6 +208,34 @@
       },
       {
         "type": "function",
+        "name": "adjust_position_interest_rate",
+        "inputs": [
+          {
+            "name": "position_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "new_annual_interest_rate",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "upper_hint",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "lower_hint",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "max_upfront_fee",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
         "name": "adjust_trove_interest_rate",
         "inputs": [
           {
@@ -185,6 +245,46 @@
           {
             "name": "new_annual_interest_rate",
             "type": "core::integer::u256"
+          },
+          {
+            "name": "upper_hint",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "lower_hint",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "max_upfront_fee",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "adjust_zombie_position",
+        "inputs": [
+          {
+            "name": "position_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "coll_change",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "is_coll_increase",
+            "type": "core::bool"
+          },
+          {
+            "name": "debt_change",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "is_debt_increase",
+            "type": "core::bool"
           },
           {
             "name": "upper_hint",
@@ -271,6 +371,18 @@
       },
       {
         "type": "function",
+        "name": "close_position",
+        "inputs": [
+          {
+            "name": "position_id",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
         "name": "close_trove",
         "inputs": [
           {
@@ -288,6 +400,26 @@
           {
             "name": "addresses_registry",
             "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "kick_from_batch",
+        "inputs": [
+          {
+            "name": "trove_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "upper_hint",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "lower_hint",
+            "type": "core::integer::u256"
           }
         ],
         "outputs": [],
@@ -315,6 +447,62 @@
           }
         ],
         "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "open_position",
+        "inputs": [
+          {
+            "name": "owner",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "owner_index",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "coll_amount",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "usdu_amount",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "upper_hint",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "lower_hint",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "annual_interest_rate",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "max_upfront_fee",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "add_manager",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "remove_manager",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "receiver",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
         "state_mutability": "external"
       },
       {
@@ -364,6 +552,22 @@
           {
             "name": "receiver",
             "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "open_position_and_join_interest_batch_manager",
+        "inputs": [
+          {
+            "name": "params",
+            "type": "usdu::branch::interfaces::IBorrowerOperations::OpenTroveAndJoinInterestBatchManagerParams"
           }
         ],
         "outputs": [
@@ -673,6 +877,17 @@
       },
       {
         "type": "function",
+        "name": "get_addresses_registry",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
         "name": "get_bcr",
         "inputs": [],
         "outputs": [
@@ -938,6 +1153,16 @@
           }
         ],
         "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "constructor",
+    "name": "constructor",
+    "inputs": [
+      {
+        "name": "deployer",
+        "type": "core::starknet::contract_address::ContractAddress"
       }
     ]
   },

@@ -105,7 +105,23 @@
       },
       {
         "type": "function",
-        "name": "base_rate",
+        "name": "get_addresses_registry",
+        "inputs": [
+          {
+            "name": "index",
+            "type": "core::integer::u8"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_base_rate",
         "inputs": [],
         "outputs": [
           {

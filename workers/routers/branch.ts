@@ -3,7 +3,10 @@ import { z } from "zod";
 import { RpcProvider } from "starknet";
 import { contractRead } from "~/lib/contracts/calls";
 import { getBitcoinprice } from "../services/utils";
-import { CollateralTypeSchema, type CollateralType } from "~/lib/contracts/constants";
+import {
+  CollateralTypeSchema,
+  type CollateralType,
+} from "~/lib/contracts/constants";
 import { bigintToBig } from "~/lib/decimal";
 import Big from "big.js";
 
@@ -24,7 +27,7 @@ export const branchRouter = router({
         const priceResult = await getBitcoinprice(
           input.branchId as CollateralType
         );
-        const priceBig = bigintToBig(priceResult[0] as bigint, 18);
+        const priceBig = bigintToBig(priceResult, 18);
 
         // Get branch data
         const { totalCollateral, totalDebt } =

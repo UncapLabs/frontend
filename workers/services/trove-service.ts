@@ -15,6 +15,7 @@ import type { GraphQLClient } from "graphql-request";
 import {
   UBTC_TOKEN,
   GBTC_TOKEN,
+  WMWBTC_TOKEN,
   type CollateralType,
   getBranchId,
   getCollateralType,
@@ -206,7 +207,12 @@ export async function fetchPositionById(
 
   // Get the appropriate contracts based on branchId
   const collateralType = getCollateralType(Number(branchId) as BranchId);
-  const collateralToken = collateralType === "UBTC" ? UBTC_TOKEN : GBTC_TOKEN;
+  const collateralToken =
+    collateralType === "UBTC"
+      ? UBTC_TOKEN
+      : collateralType === "GBTC"
+        ? GBTC_TOKEN
+        : WMWBTC_TOKEN;
 
   try {
     // Fetch indexed trove data and on-chain data in parallel

@@ -17,10 +17,9 @@ import { useParams, useNavigate } from "react-router";
 import { useAccount, useBalance } from "@starknet-react/core";
 import {
   USDU_TOKEN,
-  UBTC_TOKEN,
-  GBTC_TOKEN,
-  WMWBTC_TOKEN,
   MIN_DEBT,
+  getCollateralToken,
+  getCollateralType,
 } from "~/lib/contracts/constants";
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
@@ -30,7 +29,7 @@ import { useQueryState, parseAsString } from "nuqs";
 import { parseAsBig } from "~/lib/url-parsers";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { getInterestRatePercentage } from "~/lib/utils/position-helpers";
-import { extractTroveId } from "~/lib/utils/trove-id";
+import { extractTroveId, extractBranchId } from "~/lib/utils/trove-id";
 import { TransactionSummary } from "~/components/transaction-summary";
 import { usePositionMetrics } from "~/hooks/use-position-metrics";
 import { getMinCollateralizationRatio } from "~/lib/contracts/collateral-config";
@@ -97,13 +96,11 @@ function UpdatePosition() {
   );
   const hasBeenRedeemed = !!(position && position.status === "redeemed");
 
-  // Get collateral token based on position
-  const selectedCollateralToken =
-    position?.collateralAsset === "GBTC"
-      ? GBTC_TOKEN
-      : position?.collateralAsset === "WMWBTC"
-      ? WMWBTC_TOKEN
-      : UBTC_TOKEN;
+  // Get collateral token based on position ID
+  const branchId = extractBranchId(position?.id);
+  const collateralType =
+    branchId !== undefined ? getCollateralType(branchId) : "UBTC";
+  const selectedCollateralToken = getCollateralToken(collateralType);
 
   // Use local state for amounts with Big.js for precision
   const [collateralAmount, setCollateralAmount] = useState<Big | undefined>(
@@ -121,8 +118,6 @@ function UpdatePosition() {
     "debtAction",
     parseAsString.withDefault("borrow")
   );
-
-  const collateralType = selectedCollateralToken.collateralType;
 
   // // Get rate mode from URL
   // const [rateMode] = useQueryState("rateMode", {
@@ -551,13 +546,17 @@ function UpdatePosition() {
                         ) {
                           // Get the current debt action value from the form
                           const formDebtAction =
-                            fieldApi.form.getFieldValue("borrowAmount") ||
-                            new Big(0);
+                            fieldApi.form.getFieldValue("borrowAmount");
+
                           // Calculate final debt based on debt action
-                          const finalDebt =
-                            debtAction === "borrow"
-                              ? currentDebt.plus(formDebtAction)
-                              : currentDebt.minus(formDebtAction);
+                          // If no debt action specified, use current debt
+                          let finalDebt = currentDebt;
+                          if (formDebtAction && formDebtAction.gt(0)) {
+                            finalDebt =
+                              debtAction === "borrow"
+                                ? currentDebt.plus(formDebtAction)
+                                : currentDebt.minus(formDebtAction);
+                          }
 
                           const newCollateralValue = newTotalCollateral.times(
                             bitcoin.price
@@ -688,17 +687,24 @@ function UpdatePosition() {
 
                         // Get collateral action value
                         const formCollateralAction =
-                          fieldApi.form.getFieldValue("collateralAmount") ||
-                          new Big(0);
+                          fieldApi.form.getFieldValue("collateralAmount");
+
                         // Calculate final collateral based on collateral action
-                        const finalCollateral =
-                          collateralAction === "add"
-                            ? position.collateralAmount.plus(
-                                formCollateralAction
-                              )
-                            : position.collateralAmount.minus(
-                                formCollateralAction
-                              );
+                        // If no collateral action specified, use current collateral
+                        let finalCollateral = position.collateralAmount;
+                        if (
+                          formCollateralAction &&
+                          formCollateralAction.gt(0)
+                        ) {
+                          finalCollateral =
+                            collateralAction === "add"
+                              ? position.collateralAmount.plus(
+                                  formCollateralAction
+                                )
+                              : position.collateralAmount.minus(
+                                  formCollateralAction
+                                );
+                        }
 
                         // Calculate debt limit with proper collateralization ratio
                         const debtLimit = finalCollateral.gt(0)
@@ -750,6 +756,18 @@ function UpdatePosition() {
                       }
 
                       return undefined;
+                    },
+                  }}
+                  listeners={{
+                    onChange: ({ fieldApi }) => {
+                      const currentCollateralAmount =
+                        fieldApi.form.getFieldValue("collateralAmount");
+                      if (
+                        currentCollateralAmount !== undefined &&
+                        currentCollateralAmount.gt(0)
+                      ) {
+                        fieldApi.form.validateField("collateralAmount", "change");
+                      }
                     },
                   }}
                 >

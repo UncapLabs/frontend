@@ -22,6 +22,7 @@ import TroveNFTAbi from "./abis/TroveNFT.json";
 import UBTCAbi from "./abis/UBTC.json";
 import USDUAbi from "./abis/USDU.json";
 import CollateralWrapperAbi from "./abis/CollateralWrapper.json";
+import PriceFeedMockAbi from "./abis/PriceFeedMock.json";
 
 // Export all ABIs with proper typing
 export const ACTIVE_POOL_ABI = ActivePoolAbi as Abi;
@@ -46,6 +47,7 @@ export const TROVE_NFT_ABI = TroveNFTAbi as Abi;
 export const UBTC_ABI = UBTCAbi as Abi;
 export const USDU_ABI = USDUAbi as Abi;
 export const COLLATERAL_WRAPPER_ABI = CollateralWrapperAbi as Abi;
+export const PRICE_FEED_MOCK_ABI = PriceFeedMockAbi as Abi;
 
 // Create a map for dynamic access
 export const CONTRACT_ABIS = {

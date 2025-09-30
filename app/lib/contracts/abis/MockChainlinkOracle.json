@@ -1,0 +1,72 @@
+[
+  {
+    "type": "impl",
+    "name": "MockChainlinkOracleImpl",
+    "interface_name": "usdu::mocks::MockChainlinkOracle::IMockChainlinkOracle"
+  },
+  {
+    "type": "struct",
+    "name": "usdu::price_feeds::WBTCPriceFeed::Round",
+    "members": [
+      {
+        "name": "round_id",
+        "type": "core::felt252"
+      },
+      {
+        "name": "answer",
+        "type": "core::integer::u128"
+      },
+      {
+        "name": "block_num",
+        "type": "core::integer::u64"
+      },
+      {
+        "name": "started_at",
+        "type": "core::integer::u64"
+      },
+      {
+        "name": "updated_at",
+        "type": "core::integer::u64"
+      }
+    ]
+  },
+  {
+    "type": "interface",
+    "name": "usdu::mocks::MockChainlinkOracle::IMockChainlinkOracle",
+    "items": [
+      {
+        "type": "function",
+        "name": "set_price",
+        "inputs": [
+          {
+            "name": "price",
+            "type": "core::integer::u128"
+          },
+          {
+            "name": "last_updated_timestamp",
+            "type": "core::integer::u64"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "latest_round_data",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "usdu::price_feeds::WBTCPriceFeed::Round"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::mocks::MockChainlinkOracle::MockChainlinkOracle::Event",
+    "kind": "enum",
+    "variants": []
+  }
+]

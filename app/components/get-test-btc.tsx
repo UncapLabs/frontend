@@ -18,14 +18,26 @@ import {
 } from "~/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { UBTC_ABI } from "~/lib/contracts";
-import { GBTC_TOKEN, UBTC_TOKEN } from "~/lib/contracts/constants";
+import { GBTC_TOKEN, UBTC_TOKEN, WMWBTC_TOKEN, type CollateralType } from "~/lib/contracts/constants";
 
 export function GetTestBtc() {
   const { address } = useAccount();
-  const [selectedToken, setSelectedToken] = useState<"UBTC" | "GBTC">("UBTC");
+  const [selectedToken, setSelectedToken] = useState<CollateralType>("UBTC");
   const [amount, setAmount] = useState<string>("1");
-  
-  const tokenConfig = selectedToken === "UBTC" ? UBTC_TOKEN : GBTC_TOKEN;
+
+  // For WMWBTC, we mint the underlying token (8 decimals)
+  const tokenConfig =
+    selectedToken === "UBTC"
+      ? UBTC_TOKEN
+      : selectedToken === "GBTC"
+      ? GBTC_TOKEN
+      : selectedToken === "WMWBTC"
+      ? {
+          address: WMWBTC_TOKEN.underlyingAddress,
+          symbol: "wBTC",
+          decimals: WMWBTC_TOKEN.underlyingDecimals,
+        }
+      : UBTC_TOKEN;
   
   const { data: balance } = useBalance({
     address,
@@ -37,7 +49,11 @@ export function GetTestBtc() {
     address: tokenConfig.address,
   });
 
-  const mintAmount = amount ? BigInt(Math.floor(parseFloat(amount) * 1e18)) : 0n;
+  // Use correct decimals for minting
+  const decimals = tokenConfig.decimals;
+  const mintAmount = amount
+    ? BigInt(Math.floor(parseFloat(amount) * 10 ** decimals))
+    : 0n;
 
   const { send, isPending } = useSendTransaction({
     calls:
@@ -62,6 +78,8 @@ export function GetTestBtc() {
     }
   };
 
+  const displayTokenName = tokenConfig.symbol;
+
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     // Allow only positive numbers with decimals
@@ -74,7 +92,9 @@ export function GetTestBtc() {
     return null;
   }
 
-  const currentBalance = balance ? (Number(balance.value) / 1e18).toFixed(4) : "0";
+  const currentBalance = balance
+    ? (Number(balance.value) / 10 ** decimals).toFixed(decimals === 8 ? 8 : 4)
+    : "0";
 
   return (
     <Card className="w-full max-w-md">
@@ -86,7 +106,7 @@ export function GetTestBtc() {
           <Label htmlFor="token">Select Token</Label>
           <Select
             value={selectedToken}
-            onValueChange={(value) => setSelectedToken(value as "UBTC" | "GBTC")}
+            onValueChange={(value) => setSelectedToken(value as CollateralType)}
           >
             <SelectTrigger id="token">
               <SelectValue />
@@ -94,6 +114,7 @@ export function GetTestBtc() {
             <SelectContent>
               <SelectItem value="UBTC">UBTC</SelectItem>
               <SelectItem value="GBTC">GBTC</SelectItem>
+              <SelectItem value="WMWBTC">wBTC (8 decimals)</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -109,7 +130,7 @@ export function GetTestBtc() {
             disabled={isPending}
           />
           <p className="text-sm text-muted-foreground">
-            Current balance: {currentBalance} {selectedToken}
+            Current balance: {currentBalance} {displayTokenName}
           </p>
         </div>
 
@@ -118,7 +139,7 @@ export function GetTestBtc() {
           disabled={!contract || isPending || !amount || parseFloat(amount) <= 0}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white"
         >
-          {isPending ? `Minting ${selectedToken}...` : `Mint ${amount} ${selectedToken}`}
+          {isPending ? `Minting ${displayTokenName}...` : `Mint ${amount} ${displayTokenName}`}
         </Button>
       </CardContent>
     </Card>

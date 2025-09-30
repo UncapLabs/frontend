@@ -33,6 +33,28 @@
     ]
   },
   {
+    "type": "struct",
+    "name": "usdu::branch::interfaces::IStabilityPool::Snapshots",
+    "members": [
+      {
+        "name": "S",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "P",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "B",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "scale",
+        "type": "core::integer::u256"
+      }
+    ]
+  },
+  {
     "type": "interface",
     "name": "usdu::branch::interfaces::IStabilityPool::IStabilityPool",
     "items": [
@@ -89,11 +111,43 @@
       },
       {
         "type": "function",
+        "name": "stake",
+        "inputs": [
+          {
+            "name": "top_up",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "do_claim",
+            "type": "core::bool"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
         "name": "trigger_usdu_rewards",
         "inputs": [
           {
             "name": "usdu_yield",
             "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "unstake",
+        "inputs": [
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "do_claim",
+            "type": "core::bool"
           }
         ],
         "outputs": [],
@@ -117,16 +171,11 @@
       },
       {
         "type": "function",
-        "name": "deposits",
-        "inputs": [
-          {
-            "name": "depositor",
-            "type": "core::starknet::contract_address::ContractAddress"
-          }
-        ],
+        "name": "get_addresses_registry",
+        "inputs": [],
         "outputs": [
           {
-            "type": "core::integer::u256"
+            "type": "core::starknet::contract_address::ContractAddress"
           }
         ],
         "state_mutability": "view"
@@ -171,6 +220,22 @@
       },
       {
         "type": "function",
+        "name": "get_deposit_snapshots",
+        "inputs": [
+          {
+            "name": "depositor",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "usdu::branch::interfaces::IStabilityPool::Snapshots"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
         "name": "get_depositor_coll_gain",
         "inputs": [
           {
@@ -204,6 +269,22 @@
       {
         "type": "function",
         "name": "get_depositor_yield_gain_with_pending",
+        "inputs": [
+          {
+            "name": "depositor",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_deposits",
         "inputs": [
           {
             "name": "depositor",
@@ -434,6 +515,16 @@
     ]
   },
   {
+    "type": "constructor",
+    "name": "constructor",
+    "inputs": [
+      {
+        "name": "deployer",
+        "type": "core::starknet::contract_address::ContractAddress"
+      }
+    ]
+  },
+  {
     "type": "event",
     "name": "usdu::branch::StabilityPool::StabilityPool::StabilityPoolCollBalanceUpdated",
     "kind": "struct",
@@ -638,30 +729,6 @@
   },
   {
     "type": "event",
-    "name": "usdu::branch::StabilityPool::StabilityPool::TroveManagerAddressChanged",
-    "kind": "struct",
-    "members": [
-      {
-        "name": "new_trove_manager_address",
-        "type": "core::starknet::contract_address::ContractAddress",
-        "kind": "data"
-      }
-    ]
-  },
-  {
-    "type": "event",
-    "name": "usdu::branch::StabilityPool::StabilityPool::USDUTokenAddressChanged",
-    "kind": "struct",
-    "members": [
-      {
-        "name": "new_usdu_token_address",
-        "type": "core::starknet::contract_address::ContractAddress",
-        "kind": "data"
-      }
-    ]
-  },
-  {
-    "type": "event",
     "name": "usdu::components::UncapBase::UncapBaseComponent::Event",
     "kind": "enum",
     "variants": []
@@ -750,16 +817,6 @@
       {
         "name": "DepositOperation",
         "type": "usdu::branch::StabilityPool::StabilityPool::DepositOperation",
-        "kind": "nested"
-      },
-      {
-        "name": "TroveManagerAddressChanged",
-        "type": "usdu::branch::StabilityPool::StabilityPool::TroveManagerAddressChanged",
-        "kind": "nested"
-      },
-      {
-        "name": "USDUTokenAddressChanged",
-        "type": "usdu::branch::StabilityPool::StabilityPool::USDUTokenAddressChanged",
         "kind": "nested"
       },
       {

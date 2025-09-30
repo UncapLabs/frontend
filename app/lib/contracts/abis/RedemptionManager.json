@@ -95,6 +95,17 @@
         ],
         "outputs": [],
         "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "get_addresses_registry",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
       }
     ]
   },
@@ -154,6 +165,16 @@
           }
         ],
         "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "constructor",
+    "name": "constructor",
+    "inputs": [
+      {
+        "name": "deployer",
+        "type": "core::starknet::contract_address::ContractAddress"
       }
     ]
   },

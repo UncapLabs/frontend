@@ -1,0 +1,121 @@
+[
+  {
+    "type": "impl",
+    "name": "MockPragmaOracleImpl",
+    "interface_name": "usdu::mocks::MockPragmaOracle::IMockPragmaOracle"
+  },
+  {
+    "type": "enum",
+    "name": "pragma_lib::types::DataType",
+    "variants": [
+      {
+        "name": "SpotEntry",
+        "type": "core::felt252"
+      },
+      {
+        "name": "FutureEntry",
+        "type": "(core::felt252, core::integer::u64)"
+      },
+      {
+        "name": "GenericEntry",
+        "type": "core::felt252"
+      }
+    ]
+  },
+  {
+    "type": "enum",
+    "name": "core::option::Option::<core::integer::u64>",
+    "variants": [
+      {
+        "name": "Some",
+        "type": "core::integer::u64"
+      },
+      {
+        "name": "None",
+        "type": "()"
+      }
+    ]
+  },
+  {
+    "type": "struct",
+    "name": "pragma_lib::types::PragmaPricesResponse",
+    "members": [
+      {
+        "name": "price",
+        "type": "core::integer::u128"
+      },
+      {
+        "name": "decimals",
+        "type": "core::integer::u32"
+      },
+      {
+        "name": "last_updated_timestamp",
+        "type": "core::integer::u64"
+      },
+      {
+        "name": "num_sources_aggregated",
+        "type": "core::integer::u32"
+      },
+      {
+        "name": "expiration_timestamp",
+        "type": "core::option::Option::<core::integer::u64>"
+      }
+    ]
+  },
+  {
+    "type": "interface",
+    "name": "usdu::mocks::MockPragmaOracle::IMockPragmaOracle",
+    "items": [
+      {
+        "type": "function",
+        "name": "set_price",
+        "inputs": [
+          {
+            "name": "data_type",
+            "type": "pragma_lib::types::DataType"
+          },
+          {
+            "name": "price",
+            "type": "core::integer::u128"
+          },
+          {
+            "name": "decimals",
+            "type": "core::integer::u32"
+          },
+          {
+            "name": "last_updated_timestamp",
+            "type": "core::integer::u64"
+          },
+          {
+            "name": "num_sources_aggregated",
+            "type": "core::integer::u32"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "get_data_median",
+        "inputs": [
+          {
+            "name": "data_type",
+            "type": "pragma_lib::types::DataType"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "pragma_lib::types::PragmaPricesResponse"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::mocks::MockPragmaOracle::MockPragmaOracle::Event",
+    "kind": "enum",
+    "variants": []
+  }
+]

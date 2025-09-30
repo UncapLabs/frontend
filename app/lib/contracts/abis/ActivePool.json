@@ -239,6 +239,17 @@
       },
       {
         "type": "function",
+        "name": "get_addresses_registry",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
         "name": "get_agg_batch_management_fees",
         "inputs": [],
         "outputs": [
@@ -407,6 +418,16 @@
           }
         ],
         "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "constructor",
+    "name": "constructor",
+    "inputs": [
+      {
+        "name": "deployer",
+        "type": "core::starknet::contract_address::ContractAddress"
       }
     ]
   },

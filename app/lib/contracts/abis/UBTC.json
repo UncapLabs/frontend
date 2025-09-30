@@ -1,5 +1,10 @@
 [
   {
+    "type": "impl",
+    "name": "ExternalImpl",
+    "interface_name": "usdu::mocks::UBTC::IUBTC"
+  },
+  {
     "type": "struct",
     "name": "core::integer::u256",
     "members": [
@@ -14,51 +19,43 @@
     ]
   },
   {
-    "type": "function",
-    "name": "burn",
-    "inputs": [
+    "type": "interface",
+    "name": "usdu::mocks::UBTC::IUBTC",
+    "items": [
       {
-        "name": "value",
-        "type": "core::integer::u256"
-      }
-    ],
-    "outputs": [],
-    "state_mutability": "external"
-  },
-  {
-    "type": "function",
-    "name": "mint",
-    "inputs": [
-      {
-        "name": "recipient",
-        "type": "core::starknet::contract_address::ContractAddress"
+        "type": "function",
+        "name": "mint",
+        "inputs": [
+          {
+            "name": "recipient",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
       },
       {
-        "name": "amount",
-        "type": "core::integer::u256"
+        "type": "function",
+        "name": "burn",
+        "inputs": [
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
       }
-    ],
-    "outputs": [],
-    "state_mutability": "external"
+    ]
   },
   {
     "type": "impl",
-    "name": "ERC20MixinImpl",
-    "interface_name": "openzeppelin_token::erc20::interface::IERC20Mixin"
-  },
-  {
-    "type": "enum",
-    "name": "core::bool",
-    "variants": [
-      {
-        "name": "False",
-        "type": "()"
-      },
-      {
-        "name": "True",
-        "type": "()"
-      }
-    ]
+    "name": "ERC20CustomMetadataImpl",
+    "interface_name": "openzeppelin_token::erc20::interface::IERC20Metadata"
   },
   {
     "type": "struct",
@@ -80,7 +77,65 @@
   },
   {
     "type": "interface",
-    "name": "openzeppelin_token::erc20::interface::IERC20Mixin",
+    "name": "openzeppelin_token::erc20::interface::IERC20Metadata",
+    "items": [
+      {
+        "type": "function",
+        "name": "name",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::byte_array::ByteArray"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "symbol",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::byte_array::ByteArray"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "decimals",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u8"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "impl",
+    "name": "ERC20Impl",
+    "interface_name": "openzeppelin_token::erc20::interface::IERC20"
+  },
+  {
+    "type": "enum",
+    "name": "core::bool",
+    "variants": [
+      {
+        "name": "False",
+        "type": "()"
+      },
+      {
+        "name": "True",
+        "type": "()"
+      }
+    ]
+  },
+  {
+    "type": "interface",
+    "name": "openzeppelin_token::erc20::interface::IERC20",
     "items": [
       {
         "type": "function",
@@ -192,40 +247,18 @@
           }
         ],
         "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "name",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::byte_array::ByteArray"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "symbol",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::byte_array::ByteArray"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "decimals",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::integer::u8"
-          }
-        ],
-        "state_mutability": "view"
-      },
+      }
+    ]
+  },
+  {
+    "type": "impl",
+    "name": "ERC20CamelOnlyImpl",
+    "interface_name": "openzeppelin_token::erc20::interface::IERC20CamelOnly"
+  },
+  {
+    "type": "interface",
+    "name": "openzeppelin_token::erc20::interface::IERC20CamelOnly",
+    "items": [
       {
         "type": "function",
         "name": "totalSupply",
@@ -282,7 +315,20 @@
   {
     "type": "constructor",
     "name": "constructor",
-    "inputs": []
+    "inputs": [
+      {
+        "name": "name",
+        "type": "core::byte_array::ByteArray"
+      },
+      {
+        "name": "symbol",
+        "type": "core::byte_array::ByteArray"
+      },
+      {
+        "name": "decimals",
+        "type": "core::integer::u8"
+      }
+    ]
   },
   {
     "type": "event",

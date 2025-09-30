@@ -158,6 +158,18 @@
       },
       {
         "type": "function",
+        "name": "set_price_feed",
+        "inputs": [
+          {
+            "name": "new_price_feed",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
         "name": "set_sponsor",
         "inputs": [
           {
@@ -594,6 +606,10 @@
       {
         "name": "sponsor",
         "type": "core::starknet::contract_address::ContractAddress"
+      },
+      {
+        "name": "deployer",
+        "type": "core::starknet::contract_address::ContractAddress"
       }
     ]
   },
@@ -617,6 +633,18 @@
       {
         "name": "new_mcr",
         "type": "core::integer::u256",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::branch::AddressesRegistry::AddressesRegistry::PriceFeedSet",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "new_price_feed",
+        "type": "core::starknet::contract_address::ContractAddress",
         "kind": "data"
       }
     ]
@@ -687,6 +715,11 @@
       {
         "name": "MCRDecreased",
         "type": "usdu::branch::AddressesRegistry::AddressesRegistry::MCRDecreased",
+        "kind": "nested"
+      },
+      {
+        "name": "PriceFeedSet",
+        "type": "usdu::branch::AddressesRegistry::AddressesRegistry::PriceFeedSet",
         "kind": "nested"
       },
       {

@@ -75,3 +75,24 @@ export function extractTroveId(
     return undefined;
   }
 }
+
+/**
+ * Extracts the branch ID from a prefixed trove ID
+ * @param prefixedId The prefixed trove ID in format "branchId:troveId"
+ * @returns The extracted branch ID (0, 1, or 2), or undefined if invalid
+ */
+export function extractBranchId(
+  prefixedId: string | undefined
+): 0 | 1 | 2 | undefined {
+  if (!prefixedId) return undefined;
+
+  const parts = prefixedId.split(":");
+  if (parts.length < 2) return undefined;
+
+  const branchId = parseInt(parts[0], 10);
+  if (branchId === 0 || branchId === 1 || branchId === 2) {
+    return branchId;
+  }
+
+  return undefined;
+}

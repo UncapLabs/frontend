@@ -466,6 +466,10 @@
       {
         "name": "symbol",
         "type": "core::byte_array::ByteArray"
+      },
+      {
+        "name": "deployer",
+        "type": "core::starknet::contract_address::ContractAddress"
       }
     ]
   },

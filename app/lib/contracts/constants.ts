@@ -3,7 +3,6 @@ import deploymentData from "./deployment_addresses.json";
 import type { Address } from "@starknet-react/chains";
 import { z } from "zod";
 
-export const INTEREST_RATE_SCALE_DOWN_FACTOR = 10n ** 16n;
 export const MIN_DEBT = 200; // Minimum debt threshold in USDU
 export const MAX_LIMIT = 1000000; // Maximum amount limit for UI inputs
 
@@ -132,14 +131,14 @@ export const CollateralTypeSchema = z.enum(["UBTC", "GBTC", "WMWBTC"]);
 // Mapping between collateral types and branch IDs
 export const COLLATERAL_TO_BRANCH: Record<CollateralType, BranchId> = {
   UBTC: 0,
-  GBTC: 1,
-  WMWBTC: 2,
+  WMWBTC: 1,
+  GBTC: 2,
 } as const;
 
 export const BRANCH_TO_COLLATERAL: Record<BranchId, CollateralType> = {
   0: "UBTC",
-  1: "GBTC",
-  2: "WMWBTC",
+  1: "WMWBTC",
+  2: "GBTC",
 } as const;
 
 // Helper functions
@@ -189,4 +188,29 @@ export function getBalanceDecimals(collateralType: CollateralType): number {
     return WMWBTC_TOKEN.underlyingDecimals;
   }
   return 18;
+}
+
+// Helper function to get collateral token by symbol
+export function getCollateralTokenBySymbol(
+  symbol: string
+): typeof UBTC_TOKEN | typeof GBTC_TOKEN | typeof WMWBTC_TOKEN {
+  const token = COLLATERAL_TOKENS.find((t) => t.symbol === symbol);
+  if (!token) {
+    throw new Error(`Unknown collateral token symbol: ${symbol}`);
+  }
+  return token;
+}
+
+// Helper function to get collateral token by collateral type
+export function getCollateralToken(
+  collateralType: CollateralType
+): typeof UBTC_TOKEN | typeof GBTC_TOKEN | typeof WMWBTC_TOKEN {
+  switch (collateralType) {
+    case "UBTC":
+      return UBTC_TOKEN;
+    case "GBTC":
+      return GBTC_TOKEN;
+    case "WMWBTC":
+      return WMWBTC_TOKEN;
+  }
 }

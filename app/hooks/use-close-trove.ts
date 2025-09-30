@@ -156,7 +156,7 @@ export function useCloseTrove({
     ...transaction,
     ...transactionState,
     send, // Override send with our wrapped version
-    isReady: !!calls && !!debt && debt.gt(0),
+    isReady: !!calls,
     // Pass through isSending for UI state
     isSending: transaction.isSending,
   };

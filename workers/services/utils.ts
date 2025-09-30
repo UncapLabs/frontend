@@ -1,8 +1,7 @@
 import { Contract, RpcProvider } from "starknet";
-import { PRICE_FEED_ABI } from "~/lib/contracts";
+import { PRICE_FEED_MOCK_ABI } from "~/lib/contracts";
 import {
   getCollateralAddresses,
-  INTEREST_RATE_SCALE_DOWN_FACTOR,
   type CollateralType,
 } from "~/lib/contracts/constants";
 
@@ -20,12 +19,12 @@ export const getBitcoinprice = async (
   // Get the price feed for the specified collateral type
   const addresses = getCollateralAddresses(collateralType);
   const PriceFeedContract = new Contract(
-    PRICE_FEED_ABI,
+    PRICE_FEED_MOCK_ABI,
     addresses.priceFeed,
     myProvider
   );
 
-  const result = await PriceFeedContract.fetch_price();
+  const result = await PriceFeedContract.get_price();
 
   return result;
 };
@@ -47,21 +46,3 @@ export function parsePrefixedTroveId(prefixedId: PrefixedTroveId): {
   }
   return { branchId, troveId };
 }
-
-export const formatBigIntToNumber = (
-  value: bigint,
-  decimals: number
-): number => {
-  if (decimals === 0) return Number(value);
-  const factor = Math.pow(10, decimals);
-  return Number(value.toString()) / factor;
-};
-
-export const formatInterestRateForDisplay = (rawValue: bigint): number => {
-  // rawValue is in 18 decimals, we need to scale down by 16 to get percentage
-  // Do the division in bigint to avoid floating point issues
-  const percentageInThousandths =
-    (rawValue * 1000n) / INTEREST_RATE_SCALE_DOWN_FACTOR;
-  // Convert to number and divide by 1000 to get the percentage
-  return Number(percentageInThousandths) / 1000;
-};

@@ -82,6 +82,16 @@
     ]
   },
   {
+    "type": "constructor",
+    "name": "constructor",
+    "inputs": [
+      {
+        "name": "deployer",
+        "type": "core::starknet::contract_address::ContractAddress"
+      }
+    ]
+  },
+  {
     "type": "event",
     "name": "usdu::components::UpgradeableBase::UpgradeableBaseComponent::CollateralRegistryAddressChanged",
     "kind": "struct",

@@ -16,6 +16,7 @@ import {
   STABILITY_POOL_ABI,
   USDU_ABI,
   COLLATERAL_WRAPPER_ABI,
+  PRICE_FEED_MOCK_ABI,
 } from ".";
 
 /**
@@ -315,8 +316,8 @@ export const contractCall = {
      */
     fetchPrice: (collateralType: CollateralType) => {
       const addresses = getCollateralAddresses(collateralType);
-      const contract = new Contract(PRICE_FEED_ABI, addresses.priceFeed);
-      return contract.populate("fetch_price", []);
+      const contract = new Contract(PRICE_FEED_MOCK_ABI, addresses.priceFeed);
+      return contract.populate("get_price", []);
     },
   },
 
@@ -626,7 +627,7 @@ export const contractRead = {
       // Use get_depositor_yield_gain_with_pending to include pending rewards
       const [deposit, usduGain, collateralGain, totalDeposits] =
         await Promise.all([
-          contract.call("deposits", [userAddress]),
+          contract.call("get_deposits", [userAddress]),
           contract.call("get_depositor_yield_gain_with_pending", [userAddress]),
           contract.call("get_depositor_coll_gain", [userAddress]),
           contract.call("get_total_usdu_deposits", []),

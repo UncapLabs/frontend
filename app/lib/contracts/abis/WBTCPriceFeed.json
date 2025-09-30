@@ -72,9 +72,49 @@
     ]
   },
   {
+    "type": "constructor",
+    "name": "constructor",
+    "inputs": [
+      {
+        "name": "pragma_oracle_address",
+        "type": "core::starknet::contract_address::ContractAddress"
+      },
+      {
+        "name": "chainlink_btc_usd_address",
+        "type": "core::starknet::contract_address::ContractAddress"
+      },
+      {
+        "name": "chainlink_wbtc_usd_address",
+        "type": "core::starknet::contract_address::ContractAddress"
+      },
+      {
+        "name": "addresses_registry",
+        "type": "core::starknet::contract_address::ContractAddress"
+      }
+    ]
+  },
+  {
     "type": "event",
-    "name": "usdu::mocks::PragmaBTCPriceFeed::PragmaBTCPriceFeed::Event",
+    "name": "usdu::price_feeds::WBTCPriceFeed::WBTCPriceFeed::ShutDownFromOracleFailure",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "oracle",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "usdu::price_feeds::WBTCPriceFeed::WBTCPriceFeed::Event",
     "kind": "enum",
-    "variants": []
+    "variants": [
+      {
+        "name": "ShutDownFromOracleFailure",
+        "type": "usdu::price_feeds::WBTCPriceFeed::WBTCPriceFeed::ShutDownFromOracleFailure",
+        "kind": "nested"
+      }
+    ]
   }
 ]
