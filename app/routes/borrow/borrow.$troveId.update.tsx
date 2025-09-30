@@ -1,5 +1,4 @@
 import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
 import { AlertTriangle, Info } from "lucide-react";
 import { ArrowIcon } from "~/components/icons/arrow-icon";
 import { InterestRateSelector } from "~/components/borrow/interest-rate-selector";
@@ -106,10 +105,7 @@ function UpdatePosition() {
     undefined
   );
   const [borrowAmount, setBorrowAmount] = useState<Big | undefined>(undefined);
-  const [interestRate, setInterestRate] = useQueryState(
-    "rate",
-    parseAsBig
-  );
+  const [interestRate, setInterestRate] = useQueryState("rate", parseAsBig);
 
   // Action state for collateral and debt
   const [collateralAction, setCollateralAction] = useQueryState(
@@ -197,7 +193,8 @@ function UpdatePosition() {
       collateralAmount: undefined as Big | undefined,
       borrowAmount: undefined as Big | undefined,
       interestRate:
-        interestRate ?? (position ? getInterestRatePercentage(position) : new Big(5)),
+        interestRate ??
+        (position ? getInterestRatePercentage(position) : new Big(5)),
     },
     onSubmit: async ({ value }) => {
       if (!address) {
@@ -206,10 +203,12 @@ function UpdatePosition() {
       }
 
       // Allow submission if at least one field has been changed
-      const hasCollateralInput = value.collateralAmount && value.collateralAmount.gt(0);
+      const hasCollateralInput =
+        value.collateralAmount && value.collateralAmount.gt(0);
       const hasBorrowInput = value.borrowAmount && value.borrowAmount.gt(0);
-      const hasInterestInput = value.interestRate && 
-        position && 
+      const hasInterestInput =
+        value.interestRate &&
+        position &&
         !value.interestRate.eq(getInterestRatePercentage(position));
 
       if (!hasCollateralInput && !hasBorrowInput && !hasInterestInput) {
@@ -249,7 +248,8 @@ function UpdatePosition() {
     changes,
   } = useUpdatePosition({
     position,
-    collateralAmount: collateralAmount && collateralAmount.gt(0) ? targetCollateral : undefined,
+    collateralAmount:
+      collateralAmount && collateralAmount.gt(0) ? targetCollateral : undefined,
     borrowAmount: borrowAmount && borrowAmount.gt(0) ? targetDebt : undefined,
     interestRate: interestRate ?? new Big(5),
     collateralToken: selectedCollateralToken,
@@ -271,108 +271,17 @@ function UpdatePosition() {
     navigate("/");
   }, [navigate]);
 
-  if (isPositionLoading || !position) {
-    return (
-      <>
-        <h1 className="text-2xl md:text-3xl font-medium leading-none font-sora text-neutral-800">
-          Update Position
-        </h1>
-
-        <div className="flex flex-col lg:flex-row gap-5">
-          {/* Left Panel Skeleton */}
-          <div className="flex-1 lg:flex-[2]">
-            <Card className="border border-slate-200">
-              <CardContent className="pt-6 space-y-6">
-                {/* Current Position Info Skeleton */}
-                <div className="bg-slate-50 rounded-lg p-4">
-                  <div className="h-4 w-32 bg-slate-200 rounded animate-pulse mb-3" />
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <div className="h-4 w-24 bg-slate-200 rounded animate-pulse" />
-                      <div className="h-4 w-32 bg-slate-200 rounded animate-pulse" />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="h-4 w-20 bg-slate-200 rounded animate-pulse" />
-                      <div className="h-4 w-28 bg-slate-200 rounded animate-pulse" />
-                    </div>
-                  </div>
-                  <div className="mt-3 pt-3 border-t border-slate-200">
-                    <div className="flex justify-between">
-                      <div className="h-4 w-24 bg-slate-200 rounded animate-pulse" />
-                      <div className="h-4 w-16 bg-slate-200 rounded animate-pulse" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Collateral Input Skeleton */}
-                <div className="space-y-2">
-                  <div className="h-4 w-40 bg-slate-200 rounded animate-pulse" />
-                  <div className="h-12 w-full bg-slate-100 rounded-lg animate-pulse" />
-                </div>
-
-                {/* Divider */}
-                <div className="h-10 flex items-center justify-center">
-                  <div className="h-8 w-8 bg-slate-200 rounded-full animate-pulse" />
-                </div>
-
-                {/* Debt Input Skeleton */}
-                <div className="space-y-2">
-                  <div className="h-4 w-32 bg-slate-200 rounded animate-pulse" />
-                  <div className="h-12 w-full bg-slate-100 rounded-lg animate-pulse" />
-                </div>
-
-                {/* Interest Rate Section Skeleton */}
-                <div className="space-y-4">
-                  <div className="h-4 w-24 bg-slate-200 rounded animate-pulse" />
-                  <div className="h-20 w-full bg-slate-100 rounded-lg animate-pulse" />
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <div className="h-4 w-full bg-blue-100 rounded animate-pulse" />
-                    <div className="h-3 w-3/4 bg-blue-100 rounded animate-pulse mt-2" />
-                  </div>
-                </div>
-
-                {/* Button Skeleton */}
-                <div className="h-10 w-full bg-slate-200 rounded-xl animate-pulse" />
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right Panel Skeleton */}
-          <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px]">
-            <Card className="border border-slate-200">
-              <CardContent className="pt-6 space-y-4">
-                <div className="h-5 w-32 bg-slate-200 rounded animate-pulse" />
-
-                <div className="space-y-3">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="flex justify-between">
-                      <div className="h-4 w-24 bg-slate-200 rounded animate-pulse" />
-                      <div className="h-4 w-20 bg-slate-200 rounded animate-pulse" />
-                    </div>
-                  ))}
-                </div>
-
-                <div className="pt-3 border-t border-slate-100 space-y-3">
-                  {[1, 2].map((i) => (
-                    <div key={i} className="flex justify-between">
-                      <div className="h-4 w-28 bg-slate-200 rounded animate-pulse" />
-                      <div className="h-4 w-16 bg-slate-200 rounded animate-pulse" />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </>
-    );
-  }
+  // Don't return early - always render the full form
+  // Just disable interactions while loading
+  const isLoading = isPositionLoading || !position;
 
   return (
-    <>
-      <h2 className="text-2xl md:text-3xl font-medium leading-none font-sora text-neutral-800 mb-6">
-        Update Position
-      </h2>
+    <div className="w-full mx-auto max-w-7xl py-8 lg:py-12 px-4 sm:px-6 lg:px-8 min-h-screen">
+      <div className="flex justify-between pb-6 items-baseline">
+        <h2 className="text-2xl md:text-3xl font-medium leading-none font-sora text-neutral-800">
+          Update Position
+        </h2>
+      </div>
 
       <div className="flex flex-col lg:flex-row gap-5">
         {/* Left Panel */}
@@ -578,7 +487,7 @@ function UpdatePosition() {
                   asyncDebounceMs={300}
                   validators={{
                     onChangeAsync: async ({ value, fieldApi }) => {
-                      if (!address || !value) return undefined;
+                      if (!address || !value || !position) return undefined;
 
                       const currentCollateral = position.collateralAmount;
                       const currentDebt = position.borrowedAmount;
@@ -736,7 +645,7 @@ function UpdatePosition() {
                   asyncDebounceMs={300}
                   validators={{
                     onChangeAsync: async ({ value, fieldApi }) => {
-                      if (!value) return undefined;
+                      if (!value || !position) return undefined;
 
                       const currentDebt = position.borrowedAmount;
                       const usduBal = usduBalance
@@ -897,7 +806,9 @@ function UpdatePosition() {
                 {/* Interest Rate Section */}
                 <div className="space-y-4">
                   <InterestRateSelector
-                    interestRate={interestRate ? Number(interestRate.toString()) : 5}
+                    interestRate={
+                      interestRate ? Number(interestRate.toString()) : 5
+                    }
                     onInterestRateChange={(rate) => {
                       if (!isSending && !isPending) {
                         const rateBig = new Big(rate);
@@ -916,7 +827,9 @@ function UpdatePosition() {
                     collateralType={collateralType}
                     lastInterestRateAdjTime={position?.lastInterestRateAdjTime}
                     currentInterestRate={
-                      position ? Number(getInterestRatePercentage(position).toString()) : undefined
+                      position
+                        ? Number(getInterestRatePercentage(position).toString())
+                        : undefined
                     }
                     isZombie={isZombie}
                   />
@@ -1011,34 +924,40 @@ function UpdatePosition() {
             type="update"
             changes={{
               collateral: {
-                from: position.collateralAmount,
+                from: position?.collateralAmount || new Big(0),
                 to: targetCollateral,
                 token: selectedCollateralToken.symbol,
               },
               collateralValueUSD: bitcoin?.price
                 ? {
-                    from: position.collateralAmount.times(bitcoin.price),
+                    from: position
+                      ? position.collateralAmount.times(bitcoin.price)
+                      : new Big(0),
                     to: targetCollateral.times(bitcoin.price),
                   }
                 : undefined,
               debt: {
-                from: position.borrowedAmount,
+                from: position?.borrowedAmount || new Big(0),
                 to: targetDebt,
               },
               interestRate: {
-                from: getInterestRatePercentage(position),
-                to: interestRate || getInterestRatePercentage(position),
+                from: position
+                  ? getInterestRatePercentage(position)
+                  : new Big(5),
+                to:
+                  interestRate ||
+                  (position ? getInterestRatePercentage(position) : new Big(5)),
               },
             }}
             liquidationPrice={metrics.liquidationPrice}
             previousLiquidationPrice={previousMetrics.liquidationPrice}
             collateralType={position?.collateralAsset as CollateralType}
-            troveId={extractTroveId(position?.id)}
+            troveId={position ? extractTroveId(position.id) : undefined}
           />
           <RedemptionInfo variant="inline" />
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
