@@ -2,8 +2,7 @@ import { publicProcedure, router } from "../trpc";
 import { getBitcoinprice } from "workers/services/utils";
 import { z } from "zod";
 import type { CollateralType } from "~/lib/contracts/constants";
-import * as dn from "dnum";
-import { dnum18 } from "~/lib/decimal";
+import { bigintToBig } from "~/lib/decimal";
 import Big from "big.js";
 
 export const priceRouter = router({
@@ -17,10 +16,9 @@ export const priceRouter = router({
       const price = await getBitcoinprice(
         input.collateralType as CollateralType
       );
-      const rawPrice = dnum18(price[0] as bigint);
-      // Convert to Big instance instead of number
+      // Convert bigint directly to Big to preserve full precision
       return {
-        price: new Big(dn.toNumber(rawPrice)),
+        price: bigintToBig(price[0] as bigint, 18),
       };
     }),
   getUSDUPrice: publicProcedure.query(({}) => {

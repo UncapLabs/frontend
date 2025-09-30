@@ -1,7 +1,7 @@
 import { RpcProvider } from "starknet";
 import { contractRead } from "~/lib/contracts/calls";
 import { USDU_TOKEN, type CollateralType, COLLATERAL_TO_BRANCH } from "~/lib/contracts/constants";
-import { bigintToDecimal, bigintToBig } from "~/lib/decimal";
+import { bigintToBig } from "~/lib/decimal";
 import { getAverageInterestRateForBranch } from "./interest";
 import Big from "big.js";
 
@@ -64,16 +64,23 @@ export async function calculateStabilityPoolAPR(
       contractRead.troveManager.getBranchTCR(provider, collateralType),
     ]);
 
-    const totalDepositsDecimal = bigintToDecimal(totalDeposits, USDU_TOKEN.decimals);
-    const totalDebtDecimal = bigintToDecimal(branchTotals.totalDebt, USDU_TOKEN.decimals);
+    const totalDepositsBig = bigintToBig(totalDeposits, USDU_TOKEN.decimals);
+    const totalDebtBig = bigintToBig(branchTotals.totalDebt, USDU_TOKEN.decimals);
 
     // APR formula: 75% of (average interest rate * (USDU supply / total deposits))
-    if (totalDepositsDecimal <= 0 || avgInterestRate <= 0 || totalDebtDecimal <= 0) {
+    if (totalDepositsBig.lte(0) || avgInterestRate <= 0 || totalDebtBig.lte(0)) {
       return 0;
     }
 
-    const aprDecimal = 0.75 * avgInterestRate * (totalDebtDecimal / totalDepositsDecimal);
-    return aprDecimal * 100; // Convert to percentage
+    // Convert avgInterestRate to Big for precise calculation
+    const avgInterestRateBig = new Big(avgInterestRate);
+    const aprBig = avgInterestRateBig
+      .times(totalDebtBig.div(totalDepositsBig))
+      .times(0.75)
+      .times(100); // Convert to percentage
+    
+    // Return as number for backward compatibility
+    return Number(aprBig.toString());
   } catch (error) {
     console.error(
       `Error calculating APR for ${collateralType}:`,

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "~/lib/trpc";
 import type { CollateralType } from "~/lib/contracts/constants";
+import { bigToBigint } from "~/lib/decimal";
 
 // For opening a new trove
 interface OpenTroveParams {
@@ -49,7 +50,8 @@ export function usePredictUpfrontFee(params: UsePredictUpfrontFeeParams) {
         interestRate: interestRate?.toString() || "0",
       },
       {
-        enabled: isOpenType && openEnabled && !!borrowedAmount && !!interestRate,
+        enabled:
+          isOpenType && openEnabled && !!borrowedAmount && !!interestRate,
         staleTime: 30000,
         refetchInterval: 60000,
       }
@@ -73,7 +75,11 @@ export function usePredictUpfrontFee(params: UsePredictUpfrontFeeParams) {
 
   // Return the appropriate query results
   const activeQuery = isOpenType ? openQuery : adjustQuery;
-  const upfrontFee = activeQuery.data?.upfrontFee ? BigInt(activeQuery.data.upfrontFee) : undefined;
+  
+  // Convert Big instance from API to bigint for contract calls
+  const upfrontFee = activeQuery.data?.upfrontFee
+    ? bigToBigint(activeQuery.data.upfrontFee, 18)
+    : undefined;
 
   return {
     upfrontFee,

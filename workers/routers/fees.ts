@@ -3,6 +3,8 @@ import { z } from "zod";
 import { RpcProvider } from "starknet";
 import { contractRead } from "~/lib/contracts/calls";
 import type { CollateralType } from "~/lib/contracts/constants";
+import { bigintToBig } from "~/lib/decimal";
+import Big from "big.js";
 
 export const feesRouter = router({
   predictOpenTroveUpfrontFee: publicProcedure
@@ -24,16 +26,16 @@ export const feesRouter = router({
         const interestRate = BigInt(input.interestRate);
 
         // Call the contract to get the upfront fee
-        const upfrontFee = await contractRead.hintHelpers.predictOpenTroveUpfrontFee(
-          provider,
-          input.collateralType as CollateralType,
-          borrowedAmount,
-          interestRate
-        );
+        const upfrontFee =
+          await contractRead.hintHelpers.predictOpenTroveUpfrontFee(
+            provider,
+            input.collateralType as CollateralType,
+            borrowedAmount,
+            interestRate
+          );
 
-        // Return the fee as a string for JSON serialization
         return {
-          upfrontFee: upfrontFee.toString(),
+          upfrontFee: bigintToBig(upfrontFee, 18),
         };
       } catch (error) {
         console.error("Error predicting open trove upfront fee:", error);
@@ -60,16 +62,17 @@ export const feesRouter = router({
         const debtIncrease = BigInt(input.debtIncrease);
 
         // Call the contract to get the upfront fee
-        const upfrontFee = await contractRead.hintHelpers.predictAdjustTroveUpfrontFee(
-          provider,
-          input.collateralType as CollateralType,
-          troveId,
-          debtIncrease
-        );
+        const upfrontFee =
+          await contractRead.hintHelpers.predictAdjustTroveUpfrontFee(
+            provider,
+            input.collateralType as CollateralType,
+            troveId,
+            debtIncrease
+          );
 
-        // Return the fee as a string for JSON serialization
+        // Return the fee as Big instance for precision
         return {
-          upfrontFee: upfrontFee.toString(),
+          upfrontFee: bigintToBig(upfrontFee, 18),
         };
       } catch (error) {
         console.error("Error predicting adjust trove upfront fee:", error);

@@ -4,8 +4,8 @@ import { RpcProvider } from "starknet";
 import { contractRead } from "~/lib/contracts/calls";
 import { getBitcoinprice } from "../services/utils";
 import type { CollateralType } from "~/lib/contracts/constants";
-import * as dn from "dnum";
-import { dnum18 } from "~/lib/decimal";
+import { bigintToBig } from "~/lib/decimal";
+import Big from "big.js";
 
 export const branchRouter = router({
   getTCR: publicProcedure
@@ -24,7 +24,7 @@ export const branchRouter = router({
         const priceResult = await getBitcoinprice(
           input.branchId as CollateralType
         );
-        const price = dnum18(priceResult[0] as bigint);
+        const priceBig = bigintToBig(priceResult[0] as bigint, 18);
 
         // Get branch data
         const { totalCollateral, totalDebt } =
@@ -37,38 +37,34 @@ export const branchRouter = router({
           provider,
           input.branchId as CollateralType
         );
-        const ccr = dnum18(ccrResult);
 
-        // Convert to dnum for calculations
-        const totalCollateralDnum = dnum18(totalCollateral);
-        const totalDebtDnum = dnum18(totalDebt);
+        // Convert to Big for precise calculations
+        const totalCollateralBig = bigintToBig(totalCollateral, 18);
+        const totalDebtBig = bigintToBig(totalDebt, 18);
+        const ccrBig = bigintToBig(ccrResult, 18);
 
         // Calculate TCR
         // TCR = (totalCollateral * price) / totalDebt
-        let tcr: number | null = null;
+        let tcr: Big | null = null;
         let isBelowCcr = false;
 
-        if (dn.gt(totalDebtDnum, dn.from(0, 18))) {
+        if (totalDebtBig.gt(0)) {
           // Calculate collateral value in USD
-          const collateralValueInUSD = dn.div(
-            dn.mul(totalCollateralDnum, price),
-            dn.from(1, 18)
-          );
+          const collateralValueInUSD = totalCollateralBig.times(priceBig);
 
           // TCR = collateral value / debt
-          const tcrDnum = dn.div(collateralValueInUSD, totalDebtDnum);
-          tcr = dn.toNumber(tcrDnum);
+          tcr = collateralValueInUSD.div(totalDebtBig);
 
           // Check if TCR is below CCR
-          isBelowCcr = dn.lt(tcrDnum, ccr);
+          isBelowCcr = tcr.lt(ccrBig);
         }
 
         return {
           tcr,
-          ccr: dn.toNumber(ccr),
+          ccr: ccrBig,
           isBelowCcr,
-          totalCollateral: dn.toNumber(totalCollateralDnum),
-          totalDebt: dn.toNumber(totalDebtDnum),
+          totalCollateral: totalCollateralBig,
+          totalDebt: totalDebtBig,
         };
       } catch (error) {
         console.error("Error fetching TCR:", error);
