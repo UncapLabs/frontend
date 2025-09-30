@@ -8,8 +8,10 @@ import { NumericFormat } from "react-number-format";
 import { Edit3 } from "lucide-react";
 import Big from "big.js";
 
+import { type CollateralType, COLLATERAL_TOKENS } from "~/lib/contracts/constants";
+
 interface StabilityPoolCardProps {
-  poolType: "UBTC" | "GBTC";
+  poolType: CollateralType;
   userDeposit: Big;
   poolShare: Big;
   usduRewards: Big;
@@ -27,6 +29,10 @@ export default function StabilityPoolCard({
   usduPrice,
   onManagePosition,
 }: StabilityPoolCardProps) {
+  // Get user-facing symbol (e.g., "wBTC" instead of "WMWBTC")
+  const poolSymbol =
+    COLLATERAL_TOKENS.find((t) => t.collateralType === poolType)?.symbol ||
+    poolType;
   return (
     <Card className="rounded-2xl border-0 shadow-none transition-all duration-300 gap-4 bg-white">
       <CardHeader
@@ -53,7 +59,7 @@ export default function StabilityPoolCard({
             </div>
             {/* Pool Type */}
             <span className="text-sm font-medium font-sora leading-none text-neutral-800">
-              {poolType} Pool
+              {poolSymbol} Pool
             </span>
           </div>
           {/* Edit Icon */}
@@ -159,7 +165,7 @@ export default function StabilityPoolCard({
           {/* Collateral Rewards section */}
           <div className="pl-6 py-6">
             <div className="text-xs font-medium font-sora uppercase tracking-tight mb-2 text-neutral-800">
-              {poolType} Rewards
+              {poolSymbol} Rewards
             </div>
             <div className="text-xl font-medium font-sora text-neutral-800">
               <NumericFormat

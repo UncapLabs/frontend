@@ -40,7 +40,8 @@ export default function Dashboard() {
   // Check if user has any stability pool positions
   const hasStabilityPoolPositions =
     (allStabilityPoolPositions.UBTC?.userDeposit?.gt(0) ?? false) ||
-    (allStabilityPoolPositions.GBTC?.userDeposit?.gt(0) ?? false);
+    (allStabilityPoolPositions.GBTC?.userDeposit?.gt(0) ?? false) ||
+    (allStabilityPoolPositions.WMWBTC?.userDeposit?.gt(0) ?? false);
 
   // Separate liquidated from active/zombie positions
   const liquidatedTroves = troves.filter((t) => t.status === "liquidated");
@@ -51,13 +52,13 @@ export default function Dashboard() {
   };
 
   const handleUpdatePosition = (troveId: string, collateralAsset: string) => {
-    const collateralType = collateralAsset === "GBTC" ? "GBTC" : "UBTC";
-    navigate(`/unanim/borrow/${troveId}/update?type=${collateralType}`);
+    // collateralAsset is already the CollateralType
+    navigate(`/unanim/borrow/${troveId}/update?type=${collateralAsset}`);
   };
 
   const handleClosePosition = (troveId: string, collateralAsset: string) => {
-    const collateralType = collateralAsset === "GBTC" ? "GBTC" : "UBTC";
-    navigate(`/unanim/borrow/${troveId}/close?type=${collateralType}`);
+    // collateralAsset is already the CollateralType
+    navigate(`/unanim/borrow/${troveId}/close?type=${collateralAsset}`);
   };
 
   const handleLiquidatedPosition = () => {
@@ -246,6 +247,22 @@ export default function Dashboard() {
                       usduRewards={allStabilityPoolPositions.GBTC.rewards.usdu}
                       collateralRewards={
                         allStabilityPoolPositions.GBTC.rewards.collateral
+                      }
+                      usduPrice={usdu?.price}
+                      onManagePosition={() => navigate("/unanim/earn")}
+                    />
+                  )}
+
+                {/* WMWBTC Pool Card */}
+                {allStabilityPoolPositions.WMWBTC &&
+                  allStabilityPoolPositions.WMWBTC.userDeposit.gt(0) && (
+                    <StabilityPoolCard
+                      poolType="WMWBTC"
+                      userDeposit={allStabilityPoolPositions.WMWBTC.userDeposit}
+                      poolShare={allStabilityPoolPositions.WMWBTC.poolShare}
+                      usduRewards={allStabilityPoolPositions.WMWBTC.rewards.usdu}
+                      collateralRewards={
+                        allStabilityPoolPositions.WMWBTC.rewards.collateral
                       }
                       usduPrice={usdu?.price}
                       onManagePosition={() => navigate("/unanim/earn")}

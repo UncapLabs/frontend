@@ -157,7 +157,10 @@ export const COLLATERAL_TOKENS = [UBTC_TOKEN, GBTC_TOKEN, WMWBTC_TOKEN];
 // Token lookup map by address for O(1) access
 export const COLLATERAL_TOKENS_BY_ADDRESS = Object.fromEntries(
   COLLATERAL_TOKENS.map((token) => [token.address, token])
-) as Record<string, typeof UBTC_TOKEN | typeof GBTC_TOKEN | typeof WMWBTC_TOKEN>;
+) as Record<
+  string,
+  typeof UBTC_TOKEN | typeof GBTC_TOKEN | typeof WMWBTC_TOKEN
+>;
 
 // Helper function to get contract addresses for a specific collateral type
 export function getCollateralAddresses(collateralType: CollateralType) {
@@ -171,7 +174,9 @@ export function requiresWrapping(collateralType: CollateralType): boolean {
 
 // Helper function to get the token address for balance queries
 // For wrapped tokens, returns the underlying address; otherwise returns the collateral address
-export function getBalanceTokenAddress(collateralType: CollateralType): Address {
+export function getBalanceTokenAddress(
+  collateralType: CollateralType
+): Address {
   if (collateralType === "WMWBTC") {
     return WMWBTC_TOKEN.underlyingAddress;
   }
