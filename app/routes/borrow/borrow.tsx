@@ -24,11 +24,13 @@ import { bigintToBig } from "~/lib/decimal";
 import { calculatePercentageAmountBig } from "~/lib/input-parsers";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { usePositionMetrics } from "~/hooks/use-position-metrics";
-import { useCollateral, useCollateralList } from "~/lib/collateral/hooks";
 import {
   getBalanceTokenAddress,
   getBalanceDecimals,
   TOKENS,
+  COLLATERAL_LIST,
+  DEFAULT_COLLATERAL,
+  getCollateralByAddress,
 } from "~/lib/collateral";
 
 function Borrow() {
@@ -48,9 +50,8 @@ function Borrow() {
   const [selectedTokenAddress, setSelectedTokenAddress] =
     useQueryState("collateral");
 
-  // Use the new collateral system
-  const collateral = useCollateral(selectedTokenAddress);
-  const collateralList = useCollateralList();
+  // Get the collateral based on the address in URL or use default
+  const collateral = getCollateralByAddress(selectedTokenAddress || "") || DEFAULT_COLLATERAL;
 
   // Get balance token address and decimals
   const balanceTokenAddress = getBalanceTokenAddress(collateral);
@@ -323,7 +324,7 @@ function Borrow() {
                   {(field) => (
                     <TokenInput
                       token={collateral}
-                      tokens={collateralList}
+                      tokens={COLLATERAL_LIST}
                       onTokenChange={(newToken) => {
                         // Cast back to Collateral since we know these are collaterals
                         const newCollateral = newToken as any;
