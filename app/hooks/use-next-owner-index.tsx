@@ -1,15 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import { type CollateralType } from "~/lib/contracts/constants";
+import { type CollateralId } from "~/lib/collateral";
 import { useTRPC } from "~/lib/trpc";
 
 interface UseNextOwnerIndexOptions {
   address: string | undefined;
-  collateralType?: CollateralType;
+  collateralType?: CollateralId;
   enabled?: boolean;
 }
 
 export function useNextOwnerIndex(options: UseNextOwnerIndexOptions) {
-  const { address, collateralType = "UBTC", enabled = true } = options;
+  const { address, collateralType = "UBTC" as CollateralId, enabled = true } = options;
   const trpc = useTRPC();
 
   const {
@@ -20,7 +20,7 @@ export function useNextOwnerIndex(options: UseNextOwnerIndexOptions) {
     trpc.positionsRouter.getNextOwnerIndex.queryOptions(
       {
         borrower: address as string,
-        collateralType,
+        collateralType: collateralType,
       },
       {
         enabled: !!address && enabled,

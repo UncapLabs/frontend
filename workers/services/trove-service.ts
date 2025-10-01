@@ -16,13 +16,12 @@ import {
   UBTC_TOKEN,
   GBTC_TOKEN,
   WMWBTC_TOKEN,
-  type CollateralType,
-  getBranchId,
   getCollateralType,
   type BranchId,
   USDU_TOKEN,
 } from "~/lib/contracts/constants";
-import { getMinCollateralizationRatio } from "~/lib/contracts/collateral-config";
+import { type CollateralId, getBranchIdForCollateral } from "~/lib/collateral";
+import { getCollateral } from "~/lib/collateral";
 import {
   isPrefixedTroveId,
   parsePrefixedTroveId,
@@ -304,8 +303,8 @@ export async function fetchPositionById(
     const collDecimals = collateralToken.decimals;
 
     // Calculate liquidation price using Big
-    const minCollateralizationRatio =
-      getMinCollateralizationRatio(collateralType);
+    const collateral = getCollateral(collateralType as CollateralId);
+    const minCollateralizationRatio = collateral.minCollateralizationRatio;
     const liquidationPrice =
       collateralAmount.gt(0) && borrowedAmount.gt(0)
         ? borrowedAmount.times(minCollateralizationRatio).div(collateralAmount)
@@ -427,9 +426,9 @@ export async function fetchLoansByAccount(
 export async function getNextOwnerIndex(
   graphqlClient: GraphQLClient,
   borrower: string,
-  collateralType: CollateralType
+  collateralType: CollateralId
 ): Promise<number> {
-  const branchId = getBranchId(collateralType);
+  const branchId = getBranchIdForCollateral(collateralType);
 
   try {
     const { borrowerinfo } =

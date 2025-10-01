@@ -4,15 +4,8 @@ import { contractCall } from "~/lib/contracts/calls";
 import { useNextOwnerIndex } from "./use-next-owner-index";
 import { useTransaction } from "./use-transaction";
 import { useTransactionState } from "./use-transaction-state";
-import {
-  getCollateralAddresses,
-  UBTC_TOKEN,
-  type CollateralType,
-  getBranchId,
-  requiresWrapping,
-  WMWBTC_TOKEN,
-} from "~/lib/contracts/constants";
-import type { Token } from "~/components/token-input";
+import type { Collateral, CollateralId } from "~/lib/collateral";
+import { getBalanceDecimals, requiresWrapping } from "~/lib/collateral";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
 import { getTroveId, getPrefixedTroveId } from "~/lib/utils/trove-id";
@@ -26,15 +19,11 @@ export interface BorrowFormData {
   selectedCollateralToken: string;
 }
 
-interface TokenWithCollateralType extends Token {
-  collateralType?: CollateralType;
-}
-
 interface UseBorrowParams {
   collateralAmount?: Big;
   borrowAmount?: Big;
   interestRate: Big;
-  collateralToken?: TokenWithCollateralType;
+  collateral?: Collateral;
   onSuccess?: () => void;
 }
 
@@ -42,21 +31,16 @@ export function useBorrow({
   collateralAmount,
   borrowAmount,
   interestRate,
-  collateralToken,
+  collateral,
   onSuccess,
 }: UseBorrowParams) {
   const { address } = useAccount();
   const transactionStore = useTransactionStore();
 
-  // Determine collateral type from token
-  const collateralType: CollateralType =
-    collateralToken?.collateralType ||
-    (collateralToken?.symbol === "UBTC" ? "UBTC" : "GBTC");
-
   const { nextOwnerIndex, isLoading: isLoadingNextOwnerIndex } =
     useNextOwnerIndex({
       address,
-      collateralType,
+      collateralType: collateral?.id as CollateralId,
     });
 
   // Transaction state management
@@ -65,7 +49,7 @@ export function useBorrow({
       collateralAmount: undefined,
       borrowAmount: undefined,
       interestRate: new Big(5), // Default to 5% APR as Big instance
-      selectedCollateralToken: UBTC_TOKEN.symbol,
+      selectedCollateralToken: collateral?.symbol || "UBTC",
     },
   });
 
@@ -75,50 +59,46 @@ export function useBorrow({
       !address ||
       !collateralAmount ||
       !borrowAmount ||
-      !collateralToken ||
+      !collateral ||
       isLoadingNextOwnerIndex ||
       nextOwnerIndex === undefined
     ) {
       return undefined;
     }
 
-    // Get addresses for this collateral type
-    const addresses = getCollateralAddresses(collateralType);
+    // Get addresses for this collateral
+    const addresses = collateral.addresses;
 
     // Check if this collateral needs wrapping
-    const needsWrapping = requiresWrapping(collateralType);
+    const needsWrapping = requiresWrapping(collateral);
 
-    if (needsWrapping) {
+    if (needsWrapping && collateral.underlyingToken) {
       // For wrapped collateral (WMWBTC):
       // 1. Approve underlying token (8 decimals) to CollateralWrapper
       // 2. Wrap the underlying token (converts 8 decimals -> 18 decimals)
       // 3. Approve wrapped token (18 decimals) to BorrowerOperations
       // 4. Open trove with wrapped token (18 decimals)
 
-      const underlyingAddress =
-        collateralType === "WMWBTC"
-          ? WMWBTC_TOKEN.underlyingAddress
-          : collateralToken.address;
-      const underlyingDecimals =
-        collateralType === "WMWBTC" ? WMWBTC_TOKEN.underlyingDecimals : 18;
+      const underlyingAddress = collateral.underlyingToken.address;
+      const underlyingDecimals = collateral.underlyingToken.decimals;
 
       return [
         // 1. Approve underlying token spending to CollateralWrapper
         contractCall.token.approve(
           underlyingAddress,
-          collateralToken.address, // This is the wrapper address
+          addresses.token, // This is the wrapper address
           bigToBigint(collateralAmount, underlyingDecimals)
         ),
 
         // 2. Wrap underlying token (8 decimals -> 18 decimals)
         contractCall.collateralWrapper.wrap(
-          collateralToken.address, // Wrapper address
+          addresses.token, // Wrapper address
           bigToBigint(collateralAmount, underlyingDecimals)
         ),
 
         // 3. Approve wrapped token to BorrowerOperations
         contractCall.token.approve(
-          collateralToken.address, // Wrapped token address
+          addresses.token, // Wrapped token address
           addresses.borrowerOperations,
           bigToBigint(collateralAmount, 18) // Now in 18 decimals
         ),
@@ -130,7 +110,7 @@ export function useBorrow({
           collAmount: bigToBigint(collateralAmount, 18),
           usduAmount: bigToBigint(borrowAmount, 18),
           annualInterestRate: bigToBigint(interestRate.div(100), 18),
-          collateralType: collateralType,
+          collateralType: collateral.id as CollateralId,
           maxUpfrontFee: 2n ** 256n - 1n,
         }),
       ];
@@ -140,7 +120,7 @@ export function useBorrow({
     return [
       // 1. Approve collateral token spending
       contractCall.token.approve(
-        collateralToken.address,
+        addresses.token,
         addresses.borrowerOperations,
         bigToBigint(collateralAmount, 18)
       ),
@@ -152,7 +132,7 @@ export function useBorrow({
         collAmount: bigToBigint(collateralAmount, 18),
         usduAmount: bigToBigint(borrowAmount, 18),
         annualInterestRate: bigToBigint(interestRate.div(100), 18),
-        collateralType: collateralType,
+        collateralType: collateral.id as CollateralId,
         maxUpfrontFee: 2n ** 256n - 1n,
       }),
     ];
@@ -160,11 +140,10 @@ export function useBorrow({
     address,
     collateralAmount,
     borrowAmount,
-    collateralToken,
+    collateral,
     isLoadingNextOwnerIndex,
     nextOwnerIndex,
     interestRate,
-    collateralType,
   ]);
 
   // Use the generic transaction hook
@@ -181,18 +160,18 @@ export function useBorrow({
         collateralAmount,
         borrowAmount,
         interestRate,
-        selectedCollateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
+        selectedCollateralToken: collateral?.symbol || "UBTC",
       });
       transactionState.setPending(hash);
 
       // Add to transaction store
-      if (address) {
+      if (address && collateral) {
         // Compute the troveId if we have the necessary data
         let troveId: string | undefined;
 
         if (nextOwnerIndex !== undefined) {
           const computedTroveId = getTroveId(address, nextOwnerIndex);
-          const branchId = getBranchId(collateralType);
+          const branchId = collateral.branchId;
           troveId = getPrefixedTroveId(branchId, computedTroveId);
         }
 
@@ -203,16 +182,16 @@ export function useBorrow({
             collateralAmount,
             borrowAmount,
             interestRate,
-            collateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
+            collateralToken: collateral.symbol,
           }),
           details: {
             collateralAmount,
             borrowAmount,
             interestRate,
-            collateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
+            collateralToken: collateral.symbol,
             ...(troveId && {
               troveId,
-              collateralType,
+              collateralType: collateral.id,
               ownerIndex: nextOwnerIndex?.toString(), // Convert BigInt to string for JSON serialization
             }),
           },
@@ -229,9 +208,8 @@ export function useBorrow({
     collateralAmount,
     borrowAmount,
     interestRate,
-    collateralToken,
+    collateral,
     address,
-    collateralType,
     nextOwnerIndex,
   ]);
 

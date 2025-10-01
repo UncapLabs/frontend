@@ -12,11 +12,7 @@ import {
   useInterestRateVisualizationData,
 } from "~/hooks/use-interest-rate";
 import { useStabilityPoolData } from "~/hooks/use-stability-pool-data";
-import {
-  COLLATERAL_TOKENS,
-  COLLATERAL_TO_BRANCH,
-} from "~/lib/contracts/constants";
-import { getMinCollateralizationRatio } from "~/lib/contracts/collateral-config";
+import { COLLATERALS, COLLATERAL_LIST } from "~/lib/collateral";
 import * as dn from "dnum";
 
 interface BorrowRateItem {
@@ -250,12 +246,19 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
 }
 
 export default function Stats() {
-  const ubtcInterestRate = useAverageInterestRate(0); // UBTC branch
-  const gbtcInterestRate = useAverageInterestRate(1); // GBTC branch
-  const wmwbtcInterestRate = useAverageInterestRate(2); // WMWBTC branch
-  const ubtcVisualizationData = useInterestRateVisualizationData(0); // UBTC
-  const gbtcVisualizationData = useInterestRateVisualizationData(1); // GBTC
-  const wmwbtcVisualizationData = useInterestRateVisualizationData(2); // WMWBTC
+  // Fetch interest rate and visualization data for all collaterals
+  const interestRateData = {
+    UBTC: useAverageInterestRate(COLLATERALS.UBTC.branchId),
+    GBTC: useAverageInterestRate(COLLATERALS.GBTC.branchId),
+    WMWBTC: useAverageInterestRate(COLLATERALS.WMWBTC.branchId),
+  };
+
+  const visualizationData = {
+    UBTC: useInterestRateVisualizationData(COLLATERALS.UBTC.branchId),
+    GBTC: useInterestRateVisualizationData(COLLATERALS.GBTC.branchId),
+    WMWBTC: useInterestRateVisualizationData(COLLATERALS.WMWBTC.branchId),
+  };
+
   const stabilityPoolData = useStabilityPoolData();
 
   // Helper function to format percentage from interest rate data
@@ -295,47 +298,36 @@ export default function Stats() {
     }
   };
 
-  // Build borrow rates dynamically using COLLATERAL_TOKENS
-  const borrowRates: BorrowRateItem[] = COLLATERAL_TOKENS.map((token) => {
-    const branchId = COLLATERAL_TO_BRANCH[token.collateralType];
-    const interestRateData =
-      branchId === 0
-        ? ubtcInterestRate
-        : branchId === 1
-        ? gbtcInterestRate
-        : wmwbtcInterestRate;
-    const visualizationData =
-      branchId === 0
-        ? ubtcVisualizationData
-        : branchId === 1
-        ? gbtcVisualizationData
-        : wmwbtcVisualizationData;
-    const minCollatRatio = getMinCollateralizationRatio(token.collateralType);
+  // Build borrow rates dynamically using COLLATERAL_LIST
+  const borrowRates: BorrowRateItem[] = COLLATERAL_LIST.map((collateral) => {
+    const rateData = interestRateData[collateral.id];
+    const vizData = visualizationData[collateral.id];
+    const minCollatRatio = collateral.minCollateralizationRatio.toNumber();
     const maxLTV = (1 / minCollatRatio) * 100;
 
     return {
-      collateral: token.symbol,
-      icon: token.icon,
-      borrowRate: formatRateAsPercentage(interestRateData.data),
-      totalDebt: formatCurrency(visualizationData.data?.totalDebt),
+      collateral: collateral.symbol,
+      icon: collateral.icon,
+      borrowRate: formatRateAsPercentage(rateData.data),
+      totalDebt: formatCurrency(vizData.data?.totalDebt),
       maxLTV: `${maxLTV.toFixed(2)}%`,
-      rateAvg: formatRateAsPercentage(interestRateData.data),
-      collateralAddress: token.address,
+      rateAvg: formatRateAsPercentage(rateData.data),
+      collateralAddress: collateral.address,
     };
   });
 
   // Build earn rates dynamically from stability pool
-  const earnRates: EarnRateItem[] = COLLATERAL_TOKENS.map((token) => {
-    const poolData = stabilityPoolData[token.collateralType];
+  const earnRates: EarnRateItem[] = COLLATERAL_LIST.map((collateral) => {
+    const poolData = stabilityPoolData[collateral.id];
 
     return {
-      pool: token.symbol,
-      icon: token.icon,
+      pool: collateral.symbol,
+      icon: collateral.icon,
       supplyAPR:
-        poolData.apr !== undefined ? `${poolData.apr.toFixed(2)}%` : "—",
-      totalDeposits: formatCurrency(poolData.totalDeposits),
-      // Only GBTC has a collateralParam for navigation
-      collateralParam: token.collateralType === "GBTC" ? "GBTC" : undefined,
+        poolData?.apr !== undefined ? `${poolData.apr.toFixed(2)}%` : "—",
+      totalDeposits: formatCurrency(poolData?.totalDeposits),
+      // Only GBTC has a collateralParam for navigation (for backward compatibility)
+      collateralParam: collateral.id === "GBTC" ? "GBTC" : undefined,
     };
   });
 

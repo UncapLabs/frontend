@@ -2,10 +2,11 @@ import { useCallback } from "react";
 import { useAccount } from "@starknet-react/core";
 import { useAdjustTrove } from "./use-adjust-trove";
 import { useTransactionState } from "./use-transaction-state";
-import type { Token } from "~/components/token-input";
+import type { Collateral } from "~/lib/collateral";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
-import { UBTC_TOKEN, MIN_DEBT } from "~/lib/contracts/constants";
+import { MIN_DEBT } from "~/lib/contracts/constants";
+import { DEFAULT_COLLATERAL } from "~/lib/collateral";
 import {
   getAnnualInterestRateAsBigInt,
   extractTroveId,
@@ -27,7 +28,7 @@ interface UseUpdatePositionParams {
   collateralAmount?: Big;
   borrowAmount?: Big;
   interestRate?: Big;
-  collateralToken?: Token;
+  collateralToken?: Collateral;
   onSuccess?: () => void;
 }
 
@@ -48,7 +49,7 @@ export function useUpdatePosition({
       collateralAmount: position?.collateralAmount,
       borrowAmount: position?.borrowedAmount,
       interestRate: position ? getInterestRatePercentage(position) : new Big(5),
-      selectedCollateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
+      selectedCollateralToken: collateralToken?.symbol || DEFAULT_COLLATERAL.symbol,
     },
   });
 
@@ -74,7 +75,7 @@ export function useUpdatePosition({
     newInterestRate: interestRate
       ? getAnnualInterestRate(interestRate)
       : undefined,
-    collateralToken: collateralToken || UBTC_TOKEN,
+    collateral: collateralToken || DEFAULT_COLLATERAL,
     isZombie:
       position &&
       position.status === "redeemed" &&
@@ -92,7 +93,7 @@ export function useUpdatePosition({
         collateralAmount,
         borrowAmount,
         interestRate: interestRate || new Big(5),
-        selectedCollateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
+        selectedCollateralToken: collateralToken?.symbol || DEFAULT_COLLATERAL.symbol,
       });
       transactionState.setPending(hash);
 
@@ -102,7 +103,7 @@ export function useUpdatePosition({
           hasCollateralChange: changes?.hasCollateralChange || false,
           isCollIncrease: changes?.isCollIncrease || false,
           collateralChange: changes?.collateralChange
-            ? bigintToBig(changes.collateralChange, 18)
+            ? bigintToBig(changes.collateralChange, collateralToken?.decimals || 18)
             : new Big(0),
           hasDebtChange: changes?.hasDebtChange || false,
           isDebtIncrease: changes?.isDebtIncrease || false,
@@ -111,7 +112,7 @@ export function useUpdatePosition({
             : new Big(0),
           hasInterestRateChange: changes?.hasInterestRateChange || false,
           newInterestRate: interestRate || undefined,
-          collateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
+          collateralToken: collateralToken?.symbol || DEFAULT_COLLATERAL.symbol,
         });
 
         const transactionData = {
@@ -126,7 +127,7 @@ export function useUpdatePosition({
             newDebt: borrowAmount || undefined,
             previousInterestRate: getInterestRatePercentage(position),
             newInterestRate: interestRate || undefined,
-            collateralToken: collateralToken?.symbol || UBTC_TOKEN.symbol,
+            collateralToken: collateralToken?.symbol || DEFAULT_COLLATERAL.symbol,
           },
         };
 

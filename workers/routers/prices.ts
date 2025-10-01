@@ -1,24 +1,19 @@
 import { publicProcedure, router } from "../trpc";
-import { getBitcoinprice } from "workers/services/utils";
+import { CollateralIdSchema, getBitcoinprice } from "workers/services/utils";
 import { z } from "zod";
-import {
-  CollateralTypeSchema,
-  type CollateralType,
-} from "~/lib/contracts/constants";
 import { bigintToBig } from "~/lib/decimal";
+
 import Big from "big.js";
 
 export const priceRouter = router({
   getBitcoinPrice: publicProcedure
     .input(
       z.object({
-        collateralType: CollateralTypeSchema.optional().default("UBTC"),
+        collateralType: CollateralIdSchema,
       })
     )
     .query(async ({ input }) => {
-      const price = await getBitcoinprice(
-        input.collateralType as CollateralType
-      );
+      const price = await getBitcoinprice(input.collateralType);
       return {
         price: bigintToBig(price, 18),
       };

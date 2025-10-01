@@ -8,7 +8,7 @@ import {
 } from "~/components/ui/tooltip";
 import { usePredictUpfrontFee } from "~/hooks/use-predict-upfront-fee";
 import { bigToBigint, bigintToBig } from "~/lib/decimal";
-import type { CollateralType } from "~/lib/contracts/constants";
+import type { CollateralId } from "~/lib/collateral";
 import { Skeleton } from "~/components/ui/skeleton";
 import Big from "big.js";
 
@@ -40,7 +40,7 @@ interface TransactionSummaryProps {
   className?: string;
   isValid?: boolean;
   warnings?: string[];
-  collateralType?: CollateralType;
+  collateralType?: CollateralId;
   troveId?: bigint; // For update operations
 }
 

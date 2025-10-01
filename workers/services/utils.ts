@@ -1,26 +1,24 @@
 import { Contract, RpcProvider } from "starknet";
 import { PRICE_FEED_MOCK_ABI } from "~/lib/contracts";
-import {
-  getCollateralAddresses,
-  type CollateralType,
-} from "~/lib/contracts/constants";
+import { getCollateral, type CollateralId } from "~/lib/collateral";
+import z from "zod";
 
 // Prefixed trove ID format: "branchId:troveId"
 type PrefixedTroveId = string;
-type BranchId = string; // "0" for UBTC, "1" for GBTC
+type BranchId = string; // "0" for UBTC, "1" for WMWBTC, "2" for GBTC
 
-export const getBitcoinprice = async (
-  collateralType: CollateralType = "UBTC"
-) => {
+export const CollateralIdSchema = z.enum(["UBTC", "GBTC", "WMWBTC"]);
+
+export const getBitcoinprice = async (collateralId: CollateralId = "UBTC") => {
   const myProvider = new RpcProvider({
     nodeUrl: process.env.NODE_URL,
   });
 
-  // Get the price feed for the specified collateral type
-  const addresses = getCollateralAddresses(collateralType);
+  // Get the price feed for the specified collateral
+  const collateral = getCollateral(collateralId);
   const PriceFeedContract = new Contract(
     PRICE_FEED_MOCK_ABI,
-    addresses.priceFeed,
+    collateral.addresses.priceFeed,
     myProvider
   );
 

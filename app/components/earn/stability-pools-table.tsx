@@ -1,9 +1,5 @@
 import { NumericFormat } from "react-number-format";
-import {
-  UBTC_TOKEN,
-  GBTC_TOKEN,
-  type CollateralType,
-} from "~/lib/contracts/constants";
+import { COLLATERALS, type CollateralId } from "~/lib/collateral";
 import { useAccount } from "@starknet-react/core";
 import { useAllStabilityPoolPositions } from "~/hooks/use-stability-pool";
 import { useStabilityPoolData } from "~/hooks/use-stability-pool-data";
@@ -13,28 +9,16 @@ export function StabilityPoolsTable() {
   const allPositions = useAllStabilityPoolPositions();
   const stabilityPoolData = useStabilityPoolData();
 
-  const poolsData = [
-    {
-      collateralType: "UBTC" as CollateralType,
-      token: UBTC_TOKEN,
-      totalDeposits:
-        stabilityPoolData.UBTC.totalDeposits ??
-        allPositions.UBTC?.totalDeposits ??
-        0,
-      apr: stabilityPoolData.UBTC.apr ?? 0,
-      position: allPositions.UBTC,
-    },
-    {
-      collateralType: "GBTC" as CollateralType,
-      token: GBTC_TOKEN,
-      totalDeposits:
-        stabilityPoolData.GBTC.totalDeposits ??
-        allPositions.GBTC?.totalDeposits ??
-        0,
-      apr: stabilityPoolData.GBTC.apr ?? 0,
-      position: allPositions.GBTC,
-    },
-  ];
+  const poolsData = Object.values(COLLATERALS).map((collateral) => ({
+    collateralType: collateral.id,
+    collateral,
+    totalDeposits:
+      stabilityPoolData[collateral.id]?.totalDeposits ??
+      allPositions[collateral.id]?.totalDeposits ??
+      0,
+    apr: stabilityPoolData[collateral.id]?.apr ?? 0,
+    position: allPositions[collateral.id],
+  }));
 
   return (
     <div className="bg-[#242424] rounded-lg p-6">
@@ -69,13 +53,13 @@ export function StabilityPoolsTable() {
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full overflow-hidden bg-zinc-800">
                       <img
-                        src={pool.token.icon}
-                        alt={pool.token.symbol}
+                        src={pool.collateral.icon}
+                        alt={pool.collateral.symbol}
                         className="w-full h-full object-cover"
                       />
                     </div>
                     <span className="text-white text-base font-medium font-sora">
-                      {pool.token.symbol} Pool
+                      {pool.collateral.symbol} Pool
                     </span>
                   </div>
                   <div className="text-right">
@@ -171,7 +155,7 @@ export function StabilityPoolsTable() {
                             thousandSeparator=","
                             decimalScale={6}
                             fixedDecimalScale
-                            suffix={` ${pool.token.symbol}`}
+                            suffix={` ${pool.collateral.symbol}`}
                           />
                         ) : (
                           <span className="text-[#B2B2B2]">—</span>

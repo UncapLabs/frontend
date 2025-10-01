@@ -1,0 +1,249 @@
+import type { Address } from "@starknet-react/chains";
+import Big from "big.js";
+import { z } from "zod";
+import deploymentData from "../contracts/deployment_addresses.json";
+import { USDU_ADDRESS, GAS_TOKEN_ADDRESS } from "../contracts/constants";
+
+// Define CollateralId upfront to avoid circular reference
+export type CollateralId = "UBTC" | "GBTC" | "WMWBTC";
+
+// Base Token type - can be used for any token (collateral, stablecoin, etc.)
+export interface Token {
+  address: Address;
+  symbol: string;
+  name: string;
+  decimals: number;
+  icon: string;
+}
+
+// Collateral-specific addresses
+export interface CollateralAddresses {
+  token: Address;
+  addressesRegistry: Address;
+  borrowerOperations: Address;
+  troveManager: Address;
+  troveNft: Address;
+  stabilityPool: Address;
+  sortedTroves: Address;
+  activePool: Address;
+  defaultPool: Address;
+  collSurplusPool: Address;
+  gasPool: Address;
+  interestRouter: Address;
+  liquidationManager: Address;
+  redemptionManager: Address;
+  batchManager: Address;
+  priceFeed: Address;
+  hintHelpers: Address;
+  multiTroveGetter: Address;
+  troveManagerEventsEmitter: Address;
+}
+
+export interface UnderlyingToken {
+  address: Address;
+  decimals: number;
+}
+
+// Collateral extends Token with additional properties
+export interface Collateral extends Omit<Token, 'address'> {
+  id: CollateralId;
+  branchId: number;
+  minCollateralizationRatio: Big;
+  addresses: CollateralAddresses;
+  underlyingToken?: UnderlyingToken;
+  // Helper to get the token address for compatibility
+  get address(): Address;
+}
+
+// Helper function to create a Collateral object with getter
+function createCollateral(config: Omit<Collateral, 'address'>): Collateral {
+  return {
+    ...config,
+    get address() {
+      return this.addresses.token;
+    }
+  };
+}
+
+// Main collateral definitions
+export const COLLATERALS = {
+  UBTC: createCollateral({
+    id: "UBTC",
+    symbol: "UBTC",
+    name: "Universal Bitcoin",
+    decimals: 18,
+    icon: "/bitcoin.png",
+    branchId: 0,
+    minCollateralizationRatio: new Big(1.1), // 110%
+    addresses: {
+      token: deploymentData.UBTC.collateral as Address,
+      addressesRegistry: deploymentData.UBTC.addressesRegistry as Address,
+      borrowerOperations: deploymentData.UBTC.borrowerOperations as Address,
+      troveManager: deploymentData.UBTC.troveManager as Address,
+      troveNft: deploymentData.UBTC.troveNft as Address,
+      stabilityPool: deploymentData.UBTC.stabilityPool as Address,
+      sortedTroves: deploymentData.UBTC.sortedTroves as Address,
+      activePool: deploymentData.UBTC.activePool as Address,
+      defaultPool: deploymentData.UBTC.defaultPool as Address,
+      collSurplusPool: deploymentData.UBTC.collSurplusPool as Address,
+      gasPool: deploymentData.UBTC.gasPool as Address,
+      interestRouter: deploymentData.UBTC.interestRouter as Address,
+      liquidationManager: deploymentData.UBTC.liquidationManager as Address,
+      redemptionManager: deploymentData.UBTC.redemptionManager as Address,
+      batchManager: deploymentData.UBTC.batchManager as Address,
+      priceFeed: deploymentData.UBTC.priceFeed as Address,
+      hintHelpers: deploymentData.UBTC.hintHelpers as Address,
+      multiTroveGetter: deploymentData.UBTC.multiTroveGetter as Address,
+      troveManagerEventsEmitter: deploymentData.UBTC
+        .troveManagerEventsEmitter as Address,
+    },
+  }),
+  GBTC: createCollateral({
+    id: "GBTC",
+    symbol: "GBTC",
+    name: "Grayscale Bitcoin",
+    decimals: 18,
+    icon: "/bitcoin.png",
+    branchId: 2,
+    minCollateralizationRatio: new Big(1.1), // 110%
+    addresses: {
+      token: deploymentData.GBTC.collateral as Address,
+      addressesRegistry: deploymentData.GBTC.addressesRegistry as Address,
+      borrowerOperations: deploymentData.GBTC.borrowerOperations as Address,
+      troveManager: deploymentData.GBTC.troveManager as Address,
+      troveNft: deploymentData.GBTC.troveNft as Address,
+      stabilityPool: deploymentData.GBTC.stabilityPool as Address,
+      sortedTroves: deploymentData.GBTC.sortedTroves as Address,
+      activePool: deploymentData.GBTC.activePool as Address,
+      defaultPool: deploymentData.GBTC.defaultPool as Address,
+      collSurplusPool: deploymentData.GBTC.collSurplusPool as Address,
+      gasPool: deploymentData.GBTC.gasPool as Address,
+      interestRouter: deploymentData.GBTC.interestRouter as Address,
+      liquidationManager: deploymentData.GBTC.liquidationManager as Address,
+      redemptionManager: deploymentData.GBTC.redemptionManager as Address,
+      batchManager: deploymentData.GBTC.batchManager as Address,
+      priceFeed: deploymentData.GBTC.priceFeed as Address,
+      hintHelpers: deploymentData.GBTC.hintHelpers as Address,
+      multiTroveGetter: deploymentData.GBTC.multiTroveGetter as Address,
+      troveManagerEventsEmitter: deploymentData.GBTC
+        .troveManagerEventsEmitter as Address,
+    },
+  }),
+  WMWBTC: createCollateral({
+    id: "WMWBTC",
+    symbol: "wBTC", // User-facing name
+    name: "Wrapped MWBitcoin",
+    decimals: 18, // Wrapped token decimals
+    icon: "/bitcoin.png",
+    branchId: 1,
+    minCollateralizationRatio: new Big(1.1), // 110%
+    addresses: {
+      token: deploymentData.WMWBTC.collateral as Address,
+      addressesRegistry: deploymentData.WMWBTC.addressesRegistry as Address,
+      borrowerOperations: deploymentData.WMWBTC.borrowerOperations as Address,
+      troveManager: deploymentData.WMWBTC.troveManager as Address,
+      troveNft: deploymentData.WMWBTC.troveNft as Address,
+      stabilityPool: deploymentData.WMWBTC.stabilityPool as Address,
+      sortedTroves: deploymentData.WMWBTC.sortedTroves as Address,
+      activePool: deploymentData.WMWBTC.activePool as Address,
+      defaultPool: deploymentData.WMWBTC.defaultPool as Address,
+      collSurplusPool: deploymentData.WMWBTC.collSurplusPool as Address,
+      gasPool: deploymentData.WMWBTC.gasPool as Address,
+      interestRouter: deploymentData.WMWBTC.interestRouter as Address,
+      liquidationManager: deploymentData.WMWBTC.liquidationManager as Address,
+      redemptionManager: deploymentData.WMWBTC.redemptionManager as Address,
+      batchManager: deploymentData.WMWBTC.batchManager as Address,
+      priceFeed: deploymentData.WMWBTC.priceFeed as Address,
+      hintHelpers: deploymentData.WMWBTC.hintHelpers as Address,
+      multiTroveGetter: deploymentData.WMWBTC.multiTroveGetter as Address,
+      troveManagerEventsEmitter: deploymentData.WMWBTC
+        .troveManagerEventsEmitter as Address,
+    },
+    underlyingToken: {
+      address: deploymentData.WMWBTC.underlyingAddress as Address,
+      decimals: 8,
+    },
+  }),
+} as const;
+
+// Non-collateral tokens (USDU, STRK, etc.)
+export const TOKENS = {
+  USDU: {
+    address: USDU_ADDRESS,
+    symbol: "USDU",
+    name: "USDU Stablecoin",
+    decimals: 18,
+    icon: "/usdu.png",
+  } as Token,
+  STRK: {
+    address: GAS_TOKEN_ADDRESS,
+    symbol: "STRK",
+    name: "Starknet Token",
+    decimals: 18,
+    icon: "/starknet.png",
+  } as Token,
+} as const;
+
+// Helper functions
+export function getCollateral(id: CollateralId): Collateral {
+  return COLLATERALS[id];
+}
+
+export function getBranchIdForCollateral(id: CollateralId): number {
+  return COLLATERALS[id].branchId;
+}
+
+export function getCollateralByBranchId(
+  branchId: number
+): Collateral | undefined {
+  return Object.values(COLLATERALS).find(
+    (c: Collateral) => c.branchId === branchId
+  );
+}
+
+export function getCollateralByAddress(
+  address: string
+): Collateral | undefined {
+  return Object.values(COLLATERALS).find(
+    (c: Collateral) => c.addresses.token.toLowerCase() === address.toLowerCase()
+  );
+}
+
+export function requiresWrapping(collateral: Collateral): boolean {
+  return !!collateral.underlyingToken;
+}
+
+export function getBalanceTokenAddress(collateral: Collateral): Address {
+  // For wrapped tokens, return the underlying address for balance queries
+  return collateral.underlyingToken?.address || collateral.addresses.token;
+}
+
+export function getBalanceDecimals(collateral: Collateral): number {
+  // For wrapped tokens, return the underlying decimals for balance display
+  return collateral.underlyingToken?.decimals || collateral.decimals;
+}
+
+// Export flat arrays and defaults for UI components
+export const COLLATERAL_LIST = Object.values(COLLATERALS) as Collateral[];
+export const DEFAULT_COLLATERAL = COLLATERALS.UBTC;
+
+// Backwards compatibility exports (to be removed later)
+export const COLLATERAL_TOKENS = COLLATERAL_LIST.map((c: Collateral) => {
+  const base = {
+    address: c.addresses.token,
+    symbol: c.symbol,
+    decimals: c.decimals,
+    icon: c.icon,
+    collateralType: c.id,
+  };
+
+  if ('underlyingToken' in c && c.underlyingToken) {
+    return {
+      ...base,
+      underlyingAddress: c.underlyingToken.address,
+      underlyingDecimals: c.underlyingToken.decimals,
+    };
+  }
+
+  return base;
+});

@@ -2,7 +2,6 @@ import { z } from "zod/v4";
 import { publicProcedure, router } from "../trpc";
 import { RpcProvider } from "starknet";
 import { createGraphQLClient } from "~/lib/graphql/client";
-import { CollateralTypeSchema } from "~/lib/contracts/constants";
 import {
   fetchPositionById,
   getNextOwnerIndex,
@@ -54,12 +53,11 @@ export const positionsRouter = router({
         throw new Error("Failed to fetch on-chain positions");
       }
     }),
-
   getNextOwnerIndex: publicProcedure
     .input(
       z.object({
         borrower: z.string(),
-        collateralType: CollateralTypeSchema,
+        collateralType: z.enum(["UBTC", "GBTC", "WMWBTC"]),
       })
     )
     .query(async ({ input }) => {
@@ -78,11 +76,14 @@ export const positionsRouter = router({
 
         return { nextOwnerIndex };
       } catch (error) {
-        console.error("Error fetching next owner index:", error);
+        console.error("Error fetching next owner index - full error:", error);
+        console.error(
+          "Error stack:",
+          error instanceof Error ? error.stack : "No stack"
+        );
         throw new Error("Failed to fetch next owner index");
       }
     }),
-
   getPositionById: publicProcedure
     .input(
       z.object({

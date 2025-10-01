@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "~/lib/trpc";
-import type { CollateralType } from "~/lib/contracts/constants";
+import type { CollateralId } from "~/lib/collateral";
 
 interface UseFetchPricesOptions {
-  collateralType?: CollateralType;
+  collateralType?: CollateralId | string;
   fetchBitcoin?: boolean;
   fetchUsdu?: boolean;
   enabled?: boolean;
@@ -12,14 +12,14 @@ interface UseFetchPricesOptions {
 /**
  * Hook to fetch Bitcoin and/or USDU prices
  * @param options - Configuration options for which prices to fetch
- * @param options.collateralType - The type of collateral (UBTC or GBTC), defaults to "UBTC"
+ * @param options.collateralType - The type of collateral (UBTC, GBTC, WMWBTC), defaults to "UBTC"
  * @param options.fetchBitcoin - Whether to fetch Bitcoin price, defaults to true
  * @param options.fetchUsdu - Whether to fetch USDU price, defaults to true
  * @param options.enabled - Whether to enable the queries, defaults to true
  */
 export function useFetchPrices(options: UseFetchPricesOptions = {}) {
   const {
-    collateralType = "UBTC",
+    collateralType = "UBTC" as CollateralId,
     fetchBitcoin = true,
     fetchUsdu = true,
     enabled = true,

@@ -10,13 +10,7 @@ import {
 import { MAX_LIMIT } from "~/lib/contracts/constants";
 import Big from "big.js";
 import { bigintToBig } from "~/lib/decimal";
-
-export interface Token {
-  address: string;
-  symbol: string;
-  decimals: number;
-  icon?: string;
-}
+import type { Token } from "~/lib/collateral";
 
 interface TokenInputProps {
   token: Token;

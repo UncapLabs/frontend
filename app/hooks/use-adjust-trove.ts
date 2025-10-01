@@ -2,12 +2,8 @@ import { useMemo } from "react";
 import { useAccount } from "@starknet-react/core";
 import { contractCall } from "~/lib/contracts/calls";
 import { useTransaction } from "./use-transaction";
-import {
-  getCollateralAddresses,
-  type CollateralType,
-  requiresWrapping,
-  WMWBTC_TOKEN,
-} from "~/lib/contracts/constants";
+import type { Collateral, CollateralId } from "~/lib/collateral";
+import { requiresWrapping } from "~/lib/collateral";
 import Big from "big.js";
 import { bigToBigint } from "~/lib/decimal";
 
@@ -20,7 +16,7 @@ interface UseAdjustTroveParams {
   newDebt?: Big;
   newInterestRate?: bigint;
   maxUpfrontFee?: bigint;
-  collateralToken?: { address: string; collateralType?: CollateralType };
+  collateral?: Collateral;
   isZombie?: boolean; // Add flag to identify zombie troves
 }
 
@@ -32,8 +28,7 @@ function getAdjustmentCalls(params: {
   isCollIncrease: boolean;
   isDebtIncrease: boolean;
   maxUpfrontFee: bigint;
-  collateralTokenAddress?: string;
-  collateralType: CollateralType;
+  collateral: Collateral;
   isZombie?: boolean;
 }) {
   const {
@@ -43,23 +38,26 @@ function getAdjustmentCalls(params: {
     isCollIncrease,
     isDebtIncrease,
     maxUpfrontFee,
-    collateralTokenAddress,
-    collateralType,
+    collateral,
     isZombie = false,
   } = params;
   const calls = [];
 
-  // Get contract addresses for this collateral type
-  const addresses = getCollateralAddresses(collateralType);
+  // Get addresses and collateralType from collateral object
+  const addresses = collateral.addresses;
+  const collateralType = collateral.id as CollateralId;
+  const collateralTokenAddress = collateral.address;
 
   // Special handling for zombie troves - must use adjust_zombie_trove
   if (isZombie) {
     // Need approvals for additions
     if (isCollIncrease && collateralTokenAddress) {
-      if (requiresWrapping(collateralType)) {
-        // For WMWBTC: wrap underlying token before adding
-        const underlyingAddress = WMWBTC_TOKEN.underlyingAddress;
-        const underlyingAmount = collateralChange / (10n ** 10n); // 18 - 8 = 10
+      if (requiresWrapping(collateral)) {
+        // For wrapped tokens: wrap underlying token before adding
+        const underlyingAddress = collateral.underlyingToken!.address;
+        const underlyingDecimals = collateral.underlyingToken!.decimals;
+        const decimalsDiff = 18n - BigInt(underlyingDecimals);
+        const underlyingAmount = collateralChange / (10n ** decimalsDiff);
 
         // 1. Approve underlying token to wrapper
         calls.push(
@@ -118,8 +116,8 @@ function getAdjustmentCalls(params: {
       })
     );
 
-    // For WMWBTC: unwrap after withdrawal
-    if (!isCollIncrease && collateralChange !== 0n && requiresWrapping(collateralType) && collateralTokenAddress) {
+    // For wrapped tokens: unwrap after withdrawal
+    if (!isCollIncrease && collateralChange !== 0n && requiresWrapping(collateral) && collateralTokenAddress) {
       calls.push(
         contractCall.collateralWrapper.unwrap(
           collateralTokenAddress,
@@ -135,10 +133,12 @@ function getAdjustmentCalls(params: {
   if (collateralChange !== 0n && debtChange !== 0n) {
     // Need approvals for additions
     if (isCollIncrease && collateralTokenAddress) {
-      if (requiresWrapping(collateralType)) {
-        // For WMWBTC: wrap underlying token before adding
-        const underlyingAddress = WMWBTC_TOKEN.underlyingAddress;
-        const underlyingAmount = collateralChange / (10n ** 10n); // 18 - 8 = 10
+      if (requiresWrapping(collateral)) {
+        // For wrapped tokens: wrap underlying token before adding
+        const underlyingAddress = collateral.underlyingToken!.address;
+        const underlyingDecimals = collateral.underlyingToken!.decimals;
+        const decimalsDiff = 18n - BigInt(underlyingDecimals);
+        const underlyingAmount = collateralChange / (10n ** decimalsDiff);
 
         // 1. Approve underlying token to wrapper
         calls.push(
@@ -194,8 +194,8 @@ function getAdjustmentCalls(params: {
       })
     );
 
-    // For WMWBTC: unwrap after withdrawal
-    if (!isCollIncrease && requiresWrapping(collateralType) && collateralTokenAddress) {
+    // For wrapped tokens: unwrap after withdrawal
+    if (!isCollIncrease && requiresWrapping(collateral) && collateralTokenAddress) {
       calls.push(
         contractCall.collateralWrapper.unwrap(
           collateralTokenAddress,
@@ -211,14 +211,15 @@ function getAdjustmentCalls(params: {
   if (collateralChange !== 0n) {
     if (isCollIncrease) {
       // Adding collateral
-      if (requiresWrapping(collateralType)) {
-        // For WMWBTC: wrap underlying token before adding
-        const underlyingAddress = WMWBTC_TOKEN.underlyingAddress;
-        const underlyingDecimals = WMWBTC_TOKEN.underlyingDecimals;
+      if (requiresWrapping(collateral)) {
+        // For wrapped tokens: wrap underlying token before adding
+        const underlyingAddress = collateral.underlyingToken!.address;
+        const underlyingDecimals = collateral.underlyingToken!.decimals;
 
-        // Calculate underlying amount (8 decimals) from wrapped amount (18 decimals)
+        // Calculate underlying amount from wrapped amount
         // Since we assume 1:1 ratio, just adjust decimals
-        const underlyingAmount = collateralChange / (10n ** 10n); // 18 - 8 = 10
+        const decimalsDiff = 18n - BigInt(underlyingDecimals);
+        const underlyingAmount = collateralChange / (10n ** decimalsDiff);
 
         // 1. Approve underlying token to wrapper
         calls.push(
@@ -274,11 +275,8 @@ function getAdjustmentCalls(params: {
         )
       );
 
-      // For WMWBTC: unwrap after withdrawal
-      if (requiresWrapping(collateralType) && collateralTokenAddress) {
-        // Calculate underlying amount (8 decimals) from wrapped amount (18 decimals)
-        const underlyingAmount = collateralChange / (10n ** 10n); // 18 - 8 = 10
-
+      // For wrapped tokens: unwrap after withdrawal
+      if (requiresWrapping(collateral) && collateralTokenAddress) {
         calls.push(
           contractCall.collateralWrapper.unwrap(
             collateralTokenAddress, // Wrapper address
@@ -323,7 +321,7 @@ export function useAdjustTrove({
   newDebt,
   newInterestRate,
   maxUpfrontFee = 2n ** 256n - 1n,
-  collateralToken,
+  collateral,
   isZombie = false,
 }: UseAdjustTroveParams) {
   const { address } = useAccount();
@@ -342,8 +340,11 @@ export function useAdjustTrove({
     const collateralDiff = targetCollateral.minus(currentCollateral);
     const debtDiff = targetDebt.minus(currentDebt);
 
+    // Use collateral decimals if available, otherwise default to 18
+    const collateralDecimals = collateral?.decimals || 18;
+
     return {
-      collateralChange: bigToBigint(collateralDiff.abs(), 18),
+      collateralChange: bigToBigint(collateralDiff.abs(), collateralDecimals),
       debtChange: bigToBigint(debtDiff.abs(), 18),
       isCollIncrease: collateralDiff.gt(0),
       isDebtIncrease: debtDiff.gt(0),
@@ -359,19 +360,17 @@ export function useAdjustTrove({
     newCollateral,
     newDebt,
     newInterestRate,
+    collateral,
   ]);
 
   // Prepare the calls using smart routing
   const calls = useMemo(() => {
-    if (!address || !troveId || !changes || !collateralToken) {
+    if (!address || !troveId || !changes || !collateral) {
       return undefined;
     }
 
-    const collateralType: CollateralType =
-      collateralToken.collateralType ||
-      (collateralToken.address === getCollateralAddresses("UBTC").collateral
-        ? "UBTC"
-        : "GBTC");
+    // Use the collateral ID directly - it's already properly typed
+    const collateralType = collateral.id as CollateralId;
 
     if (
       !changes.hasCollateralChange &&
@@ -408,8 +407,7 @@ export function useAdjustTrove({
       isCollIncrease: changes.isCollIncrease,
       isDebtIncrease: changes.isDebtIncrease,
       maxUpfrontFee,
-      collateralTokenAddress: collateralToken.address,
-      collateralType,
+      collateral,
       isZombie,
     });
 
@@ -428,7 +426,7 @@ export function useAdjustTrove({
     }
 
     return baseCalls;
-  }, [address, troveId, changes, maxUpfrontFee, collateralToken]);
+  }, [address, troveId, changes, maxUpfrontFee, collateral]);
 
   // Use the generic transaction hook
   const transaction = useTransaction(calls);

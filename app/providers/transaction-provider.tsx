@@ -108,6 +108,32 @@ export function TransactionStoreProvider({
             },
           });
         } else if (
+          transaction?.type === "adjust" &&
+          transaction.details?.troveId
+        ) {
+          // For adjust transactions, invalidate the specific position
+          setTimeout(() => {
+            // Invalidate user positions
+            queryClient.invalidateQueries({
+              queryKey: trpc.positionsRouter.getUserOnChainPositions.queryKey({
+                userAddress: address,
+              }),
+            });
+          }, 2000);
+        } else if (
+          transaction?.type === "close" &&
+          transaction.details?.troveId
+        ) {
+          // For close transactions, invalidate positions after a delay
+          setTimeout(() => {
+            // Invalidate user positions list
+            queryClient.invalidateQueries({
+              queryKey: trpc.positionsRouter.getUserOnChainPositions.queryKey({
+                userAddress: address,
+              }),
+            });
+          }, 2000);
+        } else if (
           transaction?.type === "deposit" ||
           transaction?.type === "withdraw"
         ) {

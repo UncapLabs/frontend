@@ -15,12 +15,7 @@ import { validators } from "~/lib/validators";
 import type { Route } from "./+types/borrow.$troveId.update";
 import { useParams, useNavigate } from "react-router";
 import { useAccount, useBalance } from "@starknet-react/core";
-import {
-  USDU_TOKEN,
-  MIN_DEBT,
-  getCollateralToken,
-  getCollateralType,
-} from "~/lib/contracts/constants";
+import { MIN_DEBT } from "~/lib/contracts/constants";
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
 import { useTroveData } from "~/hooks/use-trove-data";
@@ -32,8 +27,12 @@ import { getInterestRatePercentage } from "~/lib/utils/position-helpers";
 import { extractTroveId, extractBranchId } from "~/lib/utils/trove-id";
 import { TransactionSummary } from "~/components/transaction-summary";
 import { usePositionMetrics } from "~/hooks/use-position-metrics";
-import { getMinCollateralizationRatio } from "~/lib/contracts/collateral-config";
-import type { CollateralType } from "~/lib/contracts/constants";
+import {
+  TOKENS,
+  getCollateralByBranchId,
+  getBalanceDecimals,
+  type CollateralId
+} from "~/lib/collateral";
 import Big from "big.js";
 import { bigintToBig } from "~/lib/decimal";
 
@@ -96,11 +95,14 @@ function UpdatePosition() {
   );
   const hasBeenRedeemed = !!(position && position.status === "redeemed");
 
-  // Get collateral token based on position ID
+  // Get collateral based on position ID
   const branchId = extractBranchId(position?.id);
-  const collateralType =
-    branchId !== undefined ? getCollateralType(branchId) : "UBTC";
-  const selectedCollateralToken = getCollateralToken(collateralType);
+  const collateral = branchId !== undefined
+    ? getCollateralByBranchId(branchId)
+    : undefined;
+
+  // Use default collateral if not found
+  const selectedCollateral = collateral || getCollateralByBranchId(0)!;
 
   // Use local state for amounts with Big.js for precision
   const [collateralAmount, setCollateralAmount] = useState<Big | undefined>(
@@ -125,12 +127,11 @@ function UpdatePosition() {
   // });
 
   // Balance for selected token
-  // For WMWBTC, query the underlying token balance (8 decimals)
-  // For other tokens, query the collateral token balance (18 decimals)
-  const balanceTokenAddress =
-    "underlyingAddress" in selectedCollateralToken
-      ? selectedCollateralToken.underlyingAddress
-      : selectedCollateralToken.address;
+  // For tokens with underlying, query the underlying token balance
+  // For other tokens, query the collateral token balance
+  const balanceTokenAddress = selectedCollateral.underlyingToken
+    ? selectedCollateral.underlyingToken.address
+    : selectedCollateral.address;
 
   const { data: bitcoinBalance } = useBalance({
     token: balanceTokenAddress,
@@ -139,18 +140,17 @@ function UpdatePosition() {
   });
 
   const { data: usduBalance } = useBalance({
-    token: USDU_TOKEN.address,
+    token: TOKENS.USDU.address,
     address: address,
     refetchInterval: 30000,
   });
 
   const { bitcoin, usdu } = useFetchPrices({
-    collateralType,
+    collateralType: selectedCollateral.id,
     enabled: position !== undefined,
   });
 
-  const minCollateralizationRatio =
-    getMinCollateralizationRatio(collateralType);
+  const minCollateralizationRatio = selectedCollateral.minCollateralizationRatio;
 
   // Calculate target amounts based on user input
   const getTargetCollateral = () => {
@@ -259,7 +259,7 @@ function UpdatePosition() {
       collateralAmount && collateralAmount.gt(0) ? targetCollateral : undefined,
     borrowAmount: borrowAmount && borrowAmount.gt(0) ? targetDebt : undefined,
     interestRate: interestRate ?? new Big(5),
-    collateralToken: selectedCollateralToken,
+    collateralToken: selectedCollateral,
   });
 
   // Revalidate fields when wallet connection changes
@@ -323,7 +323,7 @@ function UpdatePosition() {
                               decimalScale={7}
                               fixedDecimalScale={false}
                             />{" "}
-                            {selectedCollateralToken.symbol}
+                            {selectedCollateral.symbol}
                           </>
                         ),
                       },
@@ -366,7 +366,7 @@ function UpdatePosition() {
               }}
             >
               {/* Show borrowing restrictions alert if TCR is below CCR */}
-              <BorrowingRestrictionsAlert collateralType={collateralType} />
+              <BorrowingRestrictionsAlert collateralType={selectedCollateral.id} />
 
               {/* Redemption History Alert - Show for all redeemed troves */}
               {hasBeenRedeemed && position && (
@@ -414,7 +414,7 @@ function UpdatePosition() {
                               decimalScale={7}
                               fixedDecimalScale={false}
                             />{" "}
-                            {selectedCollateralToken.symbol}
+                            {selectedCollateral.symbol}
                           </span>
                         </div>
                       </div>
@@ -504,10 +504,7 @@ function UpdatePosition() {
                         if (!bitcoinBalance) return undefined;
 
                         // Use underlying decimals for wrapped tokens
-                        const balanceDecimals =
-                          "underlyingDecimals" in selectedCollateralToken
-                            ? selectedCollateralToken.underlyingDecimals
-                            : selectedCollateralToken.decimals;
+                        const balanceDecimals = getBalanceDecimals(selectedCollateral);
                         const balance = bigintToBig(
                           bitcoinBalance.value,
                           balanceDecimals
@@ -516,7 +513,7 @@ function UpdatePosition() {
                         if (value.gt(balance)) {
                           return `Insufficient balance. You have ${balance.toFixed(
                             7
-                          )} ${selectedCollateralToken.symbol}`;
+                          )} ${selectedCollateral.symbol}`;
                         }
 
                         // Check max limit for total collateral
@@ -532,7 +529,7 @@ function UpdatePosition() {
                         if (value.gt(currentCollateral)) {
                           return `Cannot withdraw more than current collateral (${currentCollateral.toFixed(
                             7
-                          )} ${selectedCollateralToken.symbol})`;
+                          )} ${selectedCollateral.symbol})`;
                         }
 
                         // Check minimum collateral ratio after withdrawal
@@ -590,7 +587,7 @@ function UpdatePosition() {
                 >
                   {(field) => (
                     <TokenInput
-                      token={selectedCollateralToken}
+                      token={selectedCollateral}
                       balance={bitcoinBalance}
                       price={bitcoin}
                       value={field.state.value}
@@ -601,10 +598,7 @@ function UpdatePosition() {
                       onBalanceClick={() => {
                         if (collateralAction === "add") {
                           // Use underlying decimals for wrapped tokens
-                          const balanceDecimals =
-                            "underlyingDecimals" in selectedCollateralToken
-                              ? selectedCollateralToken.underlyingDecimals
-                              : selectedCollateralToken.decimals;
+                          const balanceDecimals = getBalanceDecimals(selectedCollateral);
                           const balanceBig = bitcoinBalance?.value
                             ? bigintToBig(bitcoinBalance.value, balanceDecimals)
                             : new Big(0);
@@ -666,7 +660,7 @@ function UpdatePosition() {
 
                       const currentDebt = position.borrowedAmount;
                       const usduBal = usduBalance
-                        ? bigintToBig(usduBalance.value, USDU_TOKEN.decimals)
+                        ? bigintToBig(usduBalance.value, TOKENS.USDU.decimals)
                         : new Big(0);
 
                       if (debtAction === "borrow") {
@@ -773,7 +767,7 @@ function UpdatePosition() {
                 >
                   {(field) => (
                     <TokenInput
-                      token={USDU_TOKEN}
+                      token={TOKENS.USDU}
                       balance={usduBalance}
                       price={usdu}
                       value={field.state.value}
@@ -787,7 +781,7 @@ function UpdatePosition() {
                           const usduBal = usduBalance?.value
                             ? bigintToBig(
                                 usduBalance.value,
-                                USDU_TOKEN.decimals
+                                TOKENS.USDU.decimals
                               )
                             : new Big(0);
                           const currentDebt =
@@ -860,7 +854,7 @@ function UpdatePosition() {
                     borrowAmount={borrowAmount}
                     collateralAmount={collateralAmount}
                     collateralPriceUSD={bitcoin?.price}
-                    collateralType={collateralType}
+                    collateralType={selectedCollateral.id}
                     lastInterestRateAdjTime={position?.lastInterestRateAdjTime}
                     currentInterestRate={
                       position
@@ -962,7 +956,7 @@ function UpdatePosition() {
               collateral: {
                 from: position?.collateralAmount || new Big(0),
                 to: targetCollateral,
-                token: selectedCollateralToken.symbol,
+                token: selectedCollateral.symbol,
               },
               collateralValueUSD: bitcoin?.price
                 ? {
@@ -987,7 +981,7 @@ function UpdatePosition() {
             }}
             liquidationPrice={metrics.liquidationPrice}
             previousLiquidationPrice={previousMetrics.liquidationPrice}
-            collateralType={position?.collateralAsset as CollateralType}
+            collateralType={selectedCollateral.id}
             troveId={position ? extractTroveId(position.id) : undefined}
           />
           <RedemptionInfo variant="inline" />

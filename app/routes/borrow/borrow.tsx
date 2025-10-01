@@ -14,11 +14,6 @@ import { MAX_LIMIT } from "~/lib/contracts/constants";
 import { validators } from "~/lib/validators";
 import type { Route } from "./+types/borrow";
 import { useAccount, useBalance } from "@starknet-react/core";
-import {
-  USDU_TOKEN,
-  COLLATERAL_TOKENS,
-  UBTC_TOKEN,
-} from "~/lib/contracts/constants";
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
 import { useBorrow } from "~/hooks/use-borrow";
@@ -28,16 +23,19 @@ import Big from "big.js";
 import { bigintToBig } from "~/lib/decimal";
 import { calculatePercentageAmountBig } from "~/lib/input-parsers";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
-import { useCollateralToken } from "~/hooks/use-collateral-token";
 import { usePositionMetrics } from "~/hooks/use-position-metrics";
-import { getMinCollateralizationRatio } from "~/lib/contracts/collateral-config";
-import type { CollateralType } from "~/lib/contracts/constants";
+import { useCollateral, useCollateralList } from "~/lib/collateral/hooks";
+import {
+  getBalanceTokenAddress,
+  getBalanceDecimals,
+  TOKENS,
+} from "~/lib/collateral";
 
 function Borrow() {
   const { address } = useAccount();
   const { connectWallet } = useWalletConnect();
 
-  // URL state for form inputs with Big.js for full precision
+  // URL state for form inputs
   const [collateralAmount, setCollateralAmount] = useQueryState(
     "amount",
     parseAsBig
@@ -49,19 +47,13 @@ function Borrow() {
   );
   const [selectedTokenAddress, setSelectedTokenAddress] =
     useQueryState("collateral");
-  const { selectedCollateralToken } = useCollateralToken(
-    selectedTokenAddress || UBTC_TOKEN.address
-  );
 
-  const collateralType = selectedCollateralToken.collateralType;
+  // Use the new collateral system
+  const collateral = useCollateral(selectedTokenAddress);
+  const collateralList = useCollateralList();
 
-  // Balance for selected token
-  // For WMWBTC, query the underlying token balance (8 decimals)
-  // For other tokens, query the collateral token balance (18 decimals)
-  const balanceTokenAddress =
-    "underlyingAddress" in selectedCollateralToken
-      ? selectedCollateralToken.underlyingAddress
-      : selectedCollateralToken.address;
+  // Get balance token address and decimals
+  const balanceTokenAddress = getBalanceTokenAddress(collateral);
 
   const { data: bitcoinBalance } = useBalance({
     token: balanceTokenAddress,
@@ -70,7 +62,7 @@ function Borrow() {
   });
 
   const { bitcoin, usdu } = useFetchPrices({
-    collateralType,
+    collateralType: collateral.id,
     enabled:
       (collateralAmount !== null &&
         collateralAmount !== undefined &&
@@ -79,8 +71,7 @@ function Borrow() {
         borrowAmount !== undefined &&
         borrowAmount.gt(0)),
   });
-  const minCollateralizationRatio =
-    getMinCollateralizationRatio(collateralType);
+  const minCollateralizationRatio = collateral.minCollateralizationRatio;
 
   const metrics = usePositionMetrics({
     collateralAmount: collateralAmount,
@@ -130,7 +121,7 @@ function Borrow() {
     collateralAmount: collateralAmount ?? undefined,
     borrowAmount: borrowAmount ?? undefined,
     interestRate: interestRate ?? new Big("5"),
-    collateralToken: selectedCollateralToken,
+    collateral: collateral,
   });
 
   // Revalidate fields when wallet connection changes
@@ -157,11 +148,8 @@ function Borrow() {
           return;
         }
 
-        // Use underlying decimals for wrapped tokens
-        const balanceDecimals =
-          "underlyingDecimals" in selectedCollateralToken
-            ? selectedCollateralToken.underlyingDecimals
-            : selectedCollateralToken.decimals;
+        // Use balance decimals for the token
+        const balanceDecimals = getBalanceDecimals(collateral);
         const newValue = calculatePercentageAmountBig(
           bitcoinBalance.value,
           balanceDecimals,
@@ -191,13 +179,7 @@ function Borrow() {
         form.validateField("borrowAmount", "change");
       }
     },
-    [
-      bitcoinBalance?.value,
-      selectedCollateralToken.decimals,
-      bitcoin?.price,
-      usdu?.price,
-      form,
-    ]
+    [bitcoinBalance?.value, collateral, bitcoin?.price, usdu?.price, form]
   );
 
   // Stable callbacks for percentage clicks
@@ -254,7 +236,7 @@ function Borrow() {
                               decimalScale={7}
                               fixedDecimalScale={false}
                             />{" "}
-                            {selectedCollateralToken.symbol}
+                            {collateral.symbol}
                           </>
                         ),
                       },
@@ -292,7 +274,7 @@ function Borrow() {
               }}
             >
               {/* Show borrowing restrictions alert if TCR is below CCR */}
-              <BorrowingRestrictionsAlert collateralType={collateralType} />
+              <BorrowingRestrictionsAlert collateralType={collateral.id} />
 
               <div
                 className={`space-y-1 ${
@@ -311,14 +293,9 @@ function Borrow() {
                       if (!bitcoinBalance) return undefined;
 
                       // Convert balance to Big for precise comparison
-                      // Use underlying decimals for wrapped tokens
-                      const balanceDecimals =
-                        "underlyingDecimals" in selectedCollateralToken
-                          ? selectedCollateralToken.underlyingDecimals
-                          : selectedCollateralToken.decimals;
                       const balance = bigintToBig(
                         bitcoinBalance.value,
-                        balanceDecimals
+                        getBalanceDecimals(collateral)
                       );
 
                       return validators.compose(
@@ -345,10 +322,16 @@ function Borrow() {
                 >
                   {(field) => (
                     <TokenInput
-                      token={selectedCollateralToken}
-                      tokens={COLLATERAL_TOKENS}
-                      onTokenChange={(token) => {
-                        setSelectedTokenAddress(token.address);
+                      token={collateral}
+                      tokens={collateralList}
+                      onTokenChange={(newToken) => {
+                        // Cast back to Collateral since we know these are collaterals
+                        const newCollateral = newToken as any;
+                        setSelectedTokenAddress(
+                          newCollateral.addresses
+                            ? newCollateral.addresses.token
+                            : newCollateral.address
+                        );
                         // Reset amount when token changes
                         field.handleChange(undefined);
                       }}
@@ -437,7 +420,7 @@ function Borrow() {
                 >
                   {(field) => (
                     <TokenInput
-                      token={USDU_TOKEN}
+                      token={TOKENS.USDU}
                       price={usdu}
                       value={field.state.value}
                       onChange={(value) => {
@@ -476,7 +459,7 @@ function Borrow() {
                   borrowAmount={borrowAmount ?? undefined}
                   collateralAmount={collateralAmount ?? undefined}
                   collateralPriceUSD={bitcoin?.price}
-                  collateralType={collateralType}
+                  collateralType={collateral.id}
                 />
 
                 {/* Borrow Button */}
@@ -549,7 +532,7 @@ function Borrow() {
             changes={{
               collateral: {
                 to: collateralAmount || new Big(0),
-                token: selectedCollateralToken.symbol,
+                token: collateral.symbol,
               },
               collateralValueUSD: {
                 to:
@@ -565,7 +548,7 @@ function Borrow() {
               },
             }}
             liquidationPrice={metrics.liquidationPrice}
-            collateralType={selectedCollateralToken.collateralType}
+            collateralType={collateral.id}
           />
           <RedemptionInfo variant="inline" />
         </div>
