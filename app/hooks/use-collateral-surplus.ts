@@ -1,10 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "~/lib/trpc";
-import {
-  UBTC_TOKEN,
-  GBTC_TOKEN,
-  type CollateralType,
-} from "~/lib/contracts/constants";
+import { COLLATERALS, type CollateralId } from "~/lib/collateral";
 
 /**
  * Hook to read collateral surplus for a borrower across all collateral types
@@ -24,21 +20,28 @@ export function useCollateralSurplus(borrower: string | undefined) {
   const formattedSurpluses = {
     UBTC: {
       formatted: query.data?.UBTC ?? 0,
-      symbol: UBTC_TOKEN.symbol,
+      symbol: COLLATERALS.UBTC.symbol,
       hasAmount: query.data?.UBTC ? query.data.UBTC.gt(0) : false,
-      collateralType: "UBTC" as CollateralType,
+      collateralType: "UBTC" as CollateralId,
     },
     GBTC: {
       formatted: query.data?.GBTC ?? 0,
-      symbol: GBTC_TOKEN.symbol,
+      symbol: COLLATERALS.GBTC.symbol,
       hasAmount: query.data?.GBTC ? query.data.GBTC.gt(0) : false,
-      collateralType: "GBTC" as CollateralType,
+      collateralType: "GBTC" as CollateralId,
+    },
+    WMWBTC: {
+      formatted: query.data?.WMWBTC ?? 0,
+      symbol: COLLATERALS.WMWBTC.symbol,
+      hasAmount: query.data?.WMWBTC ? query.data.WMWBTC.gt(0) : false,
+      collateralType: "WMWBTC" as CollateralId,
     },
   };
 
   const availableSurpluses = [
     formattedSurpluses.UBTC,
     formattedSurpluses.GBTC,
+    formattedSurpluses.WMWBTC,
   ].filter((s) => s.hasAmount);
 
   return {

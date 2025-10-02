@@ -3,7 +3,11 @@ import { useAccount } from "@starknet-react/core";
 import { contractCall } from "~/lib/contracts/calls";
 import { useTransaction } from "./use-transaction";
 import type { Collateral, CollateralId } from "~/lib/collateral";
-import { requiresWrapping } from "~/lib/collateral";
+import {
+  requiresWrapping,
+  generateDepositCallsFromBigint,
+  generateUnwrapCallFromBigint,
+} from "~/lib/collateral";
 import Big from "big.js";
 import { bigToBigint } from "~/lib/decimal";
 
@@ -52,47 +56,12 @@ function getAdjustmentCalls(params: {
   if (isZombie) {
     // Need approvals for additions
     if (isCollIncrease && collateralTokenAddress) {
-      if (requiresWrapping(collateral)) {
-        // For wrapped tokens: wrap underlying token before adding
-        const underlyingAddress = collateral.underlyingToken!.address;
-        const underlyingDecimals = collateral.underlyingToken!.decimals;
-        const decimalsDiff = 18n - BigInt(underlyingDecimals);
-        const underlyingAmount = collateralChange / (10n ** decimalsDiff);
-
-        // 1. Approve underlying token to wrapper
-        calls.push(
-          contractCall.token.approve(
-            underlyingAddress,
-            collateralTokenAddress,
-            underlyingAmount
-          )
-        );
-
-        // 2. Wrap underlying token
-        calls.push(
-          contractCall.collateralWrapper.wrap(
-            collateralTokenAddress,
-            underlyingAmount
-          )
-        );
-
-        // 3. Approve wrapped token to BorrowerOperations
-        calls.push(
-          contractCall.token.approve(
-            collateralTokenAddress,
-            addresses.borrowerOperations,
-            collateralChange
-          )
-        );
-      } else {
-        calls.push(
-          contractCall.token.approve(
-            collateralTokenAddress,
-            addresses.borrowerOperations,
-            collateralChange
-          )
-        );
-      }
+      const depositCalls = generateDepositCallsFromBigint(
+        collateral,
+        collateralChange,
+        addresses.borrowerOperations
+      );
+      calls.push(...depositCalls);
     }
     if (!isDebtIncrease && debtChange !== 0n) {
       // Repaying debt - need to approve USDU spending
@@ -117,13 +86,8 @@ function getAdjustmentCalls(params: {
     );
 
     // For wrapped tokens: unwrap after withdrawal
-    if (!isCollIncrease && collateralChange !== 0n && requiresWrapping(collateral) && collateralTokenAddress) {
-      calls.push(
-        contractCall.collateralWrapper.unwrap(
-          collateralTokenAddress,
-          collateralChange
-        )
-      );
+    if (!isCollIncrease && collateralChange !== 0n && requiresWrapping(collateral)) {
+      calls.push(generateUnwrapCallFromBigint(collateral, collateralChange));
     }
 
     return calls;
@@ -133,47 +97,12 @@ function getAdjustmentCalls(params: {
   if (collateralChange !== 0n && debtChange !== 0n) {
     // Need approvals for additions
     if (isCollIncrease && collateralTokenAddress) {
-      if (requiresWrapping(collateral)) {
-        // For wrapped tokens: wrap underlying token before adding
-        const underlyingAddress = collateral.underlyingToken!.address;
-        const underlyingDecimals = collateral.underlyingToken!.decimals;
-        const decimalsDiff = 18n - BigInt(underlyingDecimals);
-        const underlyingAmount = collateralChange / (10n ** decimalsDiff);
-
-        // 1. Approve underlying token to wrapper
-        calls.push(
-          contractCall.token.approve(
-            underlyingAddress,
-            collateralTokenAddress,
-            underlyingAmount
-          )
-        );
-
-        // 2. Wrap underlying token
-        calls.push(
-          contractCall.collateralWrapper.wrap(
-            collateralTokenAddress,
-            underlyingAmount
-          )
-        );
-
-        // 3. Approve wrapped token to BorrowerOperations
-        calls.push(
-          contractCall.token.approve(
-            collateralTokenAddress,
-            addresses.borrowerOperations,
-            collateralChange
-          )
-        );
-      } else {
-        calls.push(
-          contractCall.token.approve(
-            collateralTokenAddress,
-            addresses.borrowerOperations,
-            collateralChange
-          )
-        );
-      }
+      const depositCalls = generateDepositCallsFromBigint(
+        collateral,
+        collateralChange,
+        addresses.borrowerOperations
+      );
+      calls.push(...depositCalls);
     }
     if (!isDebtIncrease) {
       // Repaying debt - need to approve USDU spending
@@ -195,13 +124,8 @@ function getAdjustmentCalls(params: {
     );
 
     // For wrapped tokens: unwrap after withdrawal
-    if (!isCollIncrease && requiresWrapping(collateral) && collateralTokenAddress) {
-      calls.push(
-        contractCall.collateralWrapper.unwrap(
-          collateralTokenAddress,
-          collateralChange
-        )
-      );
+    if (!isCollIncrease && requiresWrapping(collateral)) {
+      calls.push(generateUnwrapCallFromBigint(collateral, collateralChange));
     }
 
     return calls;
@@ -210,54 +134,15 @@ function getAdjustmentCalls(params: {
   // Single operation - use specific functions for better gas efficiency
   if (collateralChange !== 0n) {
     if (isCollIncrease) {
-      // Adding collateral
-      if (requiresWrapping(collateral)) {
-        // For wrapped tokens: wrap underlying token before adding
-        const underlyingAddress = collateral.underlyingToken!.address;
-        const underlyingDecimals = collateral.underlyingToken!.decimals;
+      // Adding collateral - generate deposit calls (handles wrapping)
+      const depositCalls = generateDepositCallsFromBigint(
+        collateral,
+        collateralChange,
+        addresses.borrowerOperations
+      );
+      calls.push(...depositCalls);
 
-        // Calculate underlying amount from wrapped amount
-        // Since we assume 1:1 ratio, just adjust decimals
-        const decimalsDiff = 18n - BigInt(underlyingDecimals);
-        const underlyingAmount = collateralChange / (10n ** decimalsDiff);
-
-        // 1. Approve underlying token to wrapper
-        calls.push(
-          contractCall.token.approve(
-            underlyingAddress,
-            collateralTokenAddress!, // Wrapper address
-            underlyingAmount
-          )
-        );
-
-        // 2. Wrap underlying token
-        calls.push(
-          contractCall.collateralWrapper.wrap(
-            collateralTokenAddress!, // Wrapper address
-            underlyingAmount
-          )
-        );
-
-        // 3. Approve wrapped token to BorrowerOperations
-        calls.push(
-          contractCall.token.approve(
-            collateralTokenAddress!, // Wrapped token address
-            addresses.borrowerOperations,
-            collateralChange // Now in 18 decimals
-          )
-        );
-      } else if (collateralTokenAddress) {
-        // Standard collateral - just approve
-        calls.push(
-          contractCall.token.approve(
-            collateralTokenAddress,
-            addresses.borrowerOperations,
-            collateralChange
-          )
-        );
-      }
-
-      // 4. Add collateral
+      // Add collateral to trove
       calls.push(
         contractCall.borrowerOperations.addColl(
           troveId,
@@ -276,13 +161,8 @@ function getAdjustmentCalls(params: {
       );
 
       // For wrapped tokens: unwrap after withdrawal
-      if (requiresWrapping(collateral) && collateralTokenAddress) {
-        calls.push(
-          contractCall.collateralWrapper.unwrap(
-            collateralTokenAddress, // Wrapper address
-            collateralChange // Unwrap the full 18-decimal amount
-          )
-        );
+      if (requiresWrapping(collateral)) {
+        calls.push(generateUnwrapCallFromBigint(collateral, collateralChange));
       }
     }
   } else if (debtChange !== 0n) {

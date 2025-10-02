@@ -4,10 +4,11 @@ import { contractCall } from "~/lib/contracts/calls";
 import { useTransaction } from "./use-transaction";
 import { useTransactionState } from "./use-transaction-state";
 import {
-  type CollateralType,
+  type Collateral,
+  type CollateralId,
   requiresWrapping,
-  getCollateralAddresses,
-} from "~/lib/contracts/constants";
+  generateUnwrapCallFromBigint,
+} from "~/lib/collateral";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
 import { bigToBigint } from "~/lib/decimal";
@@ -15,18 +16,18 @@ import type { Call } from "starknet";
 import Big from "big.js";
 
 interface SurplusAmount {
-  collateralType: CollateralType;
+  collateral: Collateral;
   amount: Big;
 }
 
 interface UseClaimAllSurplusParams {
-  collateralTypes: CollateralType[];
+  collaterals: Collateral[];
   surplusAmounts?: SurplusAmount[];
   onSuccess?: () => void;
 }
 
 export function useClaimAllSurplus({
-  collateralTypes,
+  collaterals,
   surplusAmounts,
   onSuccess,
 }: UseClaimAllSurplusParams) {
@@ -40,7 +41,7 @@ export function useClaimAllSurplus({
 
   // Prepare the calls - one for each collateral type with surplus
   const calls = useMemo(() => {
-    if (!address || collateralTypes.length === 0) {
+    if (!address || collaterals.length === 0) {
       return undefined;
     }
 
@@ -48,34 +49,30 @@ export function useClaimAllSurplus({
 
     // Create a call for each collateral type that has surplus
     // Must use borrowerOperations.claimCollateral, not collSurplusPool directly
-    collateralTypes.forEach((collateralType) => {
+    collaterals.forEach((collateral) => {
       callList.push(
-        contractCall.borrowerOperations.claimCollateral(address, collateralType)
+        contractCall.borrowerOperations.claimCollateral(
+          address,
+          collateral.id as CollateralId
+        )
       );
 
-      // For WMWBTC: add unwrap call after claiming to return underlying wBTC
-      if (requiresWrapping(collateralType)) {
-        const addresses = getCollateralAddresses(collateralType);
+      // For wrapped collateral: add unwrap call after claiming to return underlying token
+      if (requiresWrapping(collateral)) {
         const surplus = surplusAmounts?.find(
-          (s) => s.collateralType === collateralType
+          (s) => s.collateral.id === collateral.id
         );
 
         if (surplus && surplus.amount.gt(0)) {
-          // Convert Big amount to bigint (18 decimals on-chain)
-          const surplusBigint = bigToBigint(surplus.amount, 18);
-
-          callList.push(
-            contractCall.collateralWrapper.unwrap(
-              addresses.collateral, // Wrapper address
-              surplusBigint
-            )
-          );
+          // Convert Big amount to bigint (wrapped token decimals)
+          const surplusBigint = bigToBigint(surplus.amount, collateral.decimals);
+          callList.push(generateUnwrapCallFromBigint(collateral, surplusBigint));
         }
       }
     });
 
     return callList;
-  }, [address, collateralTypes, surplusAmounts]);
+  }, [address, collaterals, surplusAmounts]);
 
   // Use the generic transaction hook
   const transaction = useTransaction(calls);
@@ -94,14 +91,14 @@ export function useClaimAllSurplus({
           hash,
           type: "claim_surplus" as const,
           description: createTransactionDescription("claim_surplus", {
-            collateralType:
-              collateralTypes.length === 1
-                ? collateralTypes[0]
-                : `${collateralTypes.length} types`,
+            collateralToken:
+              collaterals.length === 1
+                ? collaterals[0].symbol
+                : `${collaterals.length} types`,
           }),
           details: {
-            collateralTypes,
-            count: collateralTypes.length,
+            collaterals: collaterals.map((c) => c.symbol),
+            count: collaterals.length,
           },
         };
 
@@ -109,13 +106,7 @@ export function useClaimAllSurplus({
       }
     }
     // If no hash returned, transaction.send already handles the error
-  }, [
-    transaction,
-    transactionState,
-    transactionStore,
-    collateralTypes,
-    address,
-  ]);
+  }, [transaction, transactionState, transactionStore, collaterals, address]);
 
   // Check if we need to update state based on transaction status
   // This is purely derived state - no side effects

@@ -13,15 +13,14 @@ import type {
 } from "~/lib/graphql/gql/graphql";
 import type { GraphQLClient } from "graphql-request";
 import {
-  UBTC_TOKEN,
-  GBTC_TOKEN,
-  WMWBTC_TOKEN,
-  getCollateralType,
+  type CollateralId,
   type BranchId,
-  USDU_TOKEN,
-} from "~/lib/contracts/constants";
-import { type CollateralId, getBranchIdForCollateral } from "~/lib/collateral";
-import { getCollateral } from "~/lib/collateral";
+  getBranchIdForCollateral,
+  getCollateral,
+  getCollateralType,
+  COLLATERALS,
+  TOKENS,
+} from "~/lib/collateral";
 import {
   isPrefixedTroveId,
   parsePrefixedTroveId,
@@ -205,13 +204,8 @@ export async function fetchPositionById(
   const troveIdBigInt = BigInt(troveId);
 
   // Get the appropriate contracts based on branchId
-  const collateralType = getCollateralType(Number(branchId) as BranchId);
-  const collateralToken =
-    collateralType === "UBTC"
-      ? UBTC_TOKEN
-      : collateralType === "GBTC"
-        ? GBTC_TOKEN
-        : WMWBTC_TOKEN;
+  const collateralId = getCollateralType(Number(branchId) as BranchId);
+  const collateralToken = getCollateral(collateralId);
 
   try {
     // Fetch indexed trove data and on-chain data in parallel
@@ -228,7 +222,7 @@ export async function fetchPositionById(
               return null;
             }),
           contractRead.borrowerOperations
-            .getInterestBatchManagerOf(provider, troveIdBigInt, collateralType)
+            .getInterestBatchManagerOf(provider, troveIdBigInt, collateralId)
             .catch((err) => {
               console.error(
                 `[fetchPositionById] Failed to get batch manager: ${err.message}`
@@ -236,7 +230,7 @@ export async function fetchPositionById(
               throw err;
             }),
           contractRead.troveManager
-            .getLatestTroveData(provider, troveIdBigInt, collateralType)
+            .getLatestTroveData(provider, troveIdBigInt, collateralId)
             .catch((err) => {
               console.error(
                 `[fetchPositionById] Failed to get trove data: ${err.message}`
@@ -244,7 +238,7 @@ export async function fetchPositionById(
               throw err;
             }),
           contractRead.troveManager
-            .getTroveStatus(provider, troveIdBigInt, collateralType)
+            .getTroveStatus(provider, troveIdBigInt, collateralId)
             .catch((err) => {
               console.error(
                 `[fetchPositionById] Failed to get trove status: ${err.message}`
@@ -286,7 +280,7 @@ export async function fetchPositionById(
     );
     const borrowedAmount = bigintToBig(
       troveData.entire_debt,
-      USDU_TOKEN.decimals
+      TOKENS.USDU.decimals
     );
 
     // Convert interest rate from bigint (18 decimals) to percentage
@@ -303,7 +297,7 @@ export async function fetchPositionById(
     const collDecimals = collateralToken.decimals;
 
     // Calculate liquidation price using Big
-    const collateral = getCollateral(collateralType as CollateralId);
+    const collateral = getCollateral(collateralId);
     const minCollateralizationRatio = collateral.minCollateralizationRatio;
     const liquidationPrice =
       collateralAmount.gt(0) && borrowedAmount.gt(0)
@@ -322,7 +316,7 @@ export async function fetchPositionById(
         ? bigintToBig(BigInt(indexedTrove.redeemedColl), collDecimals)
         : new Big(0),
       redeemedDebt: indexedTrove?.redeemedDebt
-        ? bigintToBig(BigInt(indexedTrove.redeemedDebt), USDU_TOKEN.decimals)
+        ? bigintToBig(BigInt(indexedTrove.redeemedDebt), TOKENS.USDU.decimals)
         : new Big(0),
       interestRate,
       liquidationPrice,
@@ -463,8 +457,8 @@ export async function getCollateralSurplus(
 
     // Convert from blockchain integers to human-readable Big decimals
     return {
-      UBTC: bigintToBig(ubtcSurplusRaw, UBTC_TOKEN.decimals),
-      GBTC: bigintToBig(gbtcSurplusRaw, GBTC_TOKEN.decimals),
+      UBTC: bigintToBig(ubtcSurplusRaw, COLLATERALS.UBTC.decimals),
+      GBTC: bigintToBig(gbtcSurplusRaw, COLLATERALS.GBTC.decimals),
     };
   } catch (error) {
     console.error(`Error fetching collateral surplus for ${borrower}:`, error);

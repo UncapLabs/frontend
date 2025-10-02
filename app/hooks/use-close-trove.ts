@@ -4,36 +4,37 @@ import { useTransaction } from "~/hooks/use-transaction";
 import { useTransactionState } from "~/hooks/use-transaction-state";
 import { contractCall } from "~/lib/contracts/calls";
 import {
-  type CollateralType,
+  type Collateral,
   requiresWrapping,
-  getCollateralAddresses,
-} from "~/lib/contracts/constants";
+  generateUnwrapCallFromBigint,
+} from "~/lib/collateral";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
 import { extractTroveId } from "~/lib/utils/position-helpers";
+import { bigToBigint } from "~/lib/decimal";
 import Big from "big.js";
 
 // Close trove form data structure
 export interface CloseTroveFormData {
   troveId: string;
   debt: Big;
-  collateral: Big;
-  collateralType: CollateralType;
+  collateralAmount: Big;
+  collateralSymbol: string;
 }
 
 interface UseCloseTroveParams {
   troveId?: string;
   debt?: Big;
-  collateral?: Big;
-  collateralType?: CollateralType;
+  collateralAmount?: Big;
+  collateral?: Collateral;
   onSuccess?: () => void;
 }
 
 export function useCloseTrove({
   troveId,
   debt,
+  collateralAmount,
   collateral,
-  collateralType = "UBTC",
   onSuccess,
 }: UseCloseTroveParams) {
   const { address } = useAccount();
@@ -44,14 +45,14 @@ export function useCloseTrove({
     initialFormData: {
       troveId: troveId || "",
       debt: debt || new Big(0),
-      collateral: collateral || new Big(0),
-      collateralType,
+      collateralAmount: collateralAmount || new Big(0),
+      collateralSymbol: collateral?.symbol || "UBTC",
     },
   });
 
   // Prepare the call
   const calls = useMemo(() => {
-    if (!troveId) {
+    if (!troveId || !collateral) {
       return undefined;
     }
 
@@ -60,23 +61,14 @@ export function useCloseTrove({
       const callList = [
         contractCall.borrowerOperations.closeTrove(
           numericTroveId,
-          collateralType
+          collateral.id
         ),
       ];
 
-      // For WMWBTC: unwrap after closing to return underlying token
-      if (requiresWrapping(collateralType) && collateral) {
-        const addresses = getCollateralAddresses(collateralType);
-        const collateralBigint = BigInt(
-          collateral.times(10 ** 18).toFixed(0)
-        ); // Convert to 18 decimal bigint
-
-        callList.push(
-          contractCall.collateralWrapper.unwrap(
-            addresses.collateral, // Wrapper address
-            collateralBigint
-          )
-        );
+      // For wrapped collateral: unwrap after closing to return underlying token
+      if (requiresWrapping(collateral) && collateralAmount) {
+        const wrappedAmount = bigToBigint(collateralAmount, collateral.decimals);
+        callList.push(generateUnwrapCallFromBigint(collateral, wrappedAmount));
       }
 
       return callList;
@@ -84,7 +76,7 @@ export function useCloseTrove({
       // If we can't parse the trove ID, return undefined
       return undefined;
     }
-  }, [troveId, collateralType, collateral]);
+  }, [troveId, collateral, collateralAmount]);
 
   // Use the generic transaction hook
   const transaction = useTransaction(calls);
@@ -98,26 +90,26 @@ export function useCloseTrove({
       transactionState.updateFormData({
         troveId: troveId || "",
         debt: debt || new Big(0),
-        collateral: collateral || new Big(0),
-        collateralType,
+        collateralAmount: collateralAmount || new Big(0),
+        collateralSymbol: collateral?.symbol || "UBTC",
       });
       transactionState.setPending(hash);
 
       // Add to transaction store
-      if (address && troveId) {
+      if (address && troveId && collateral) {
         const transactionData = {
           hash,
           type: "close" as const,
           description: createTransactionDescription("close", {
             debt,
-            collateral,
-            collateralType,
+            collateral: collateralAmount,
+            collateralToken: collateral.symbol,
           }),
           details: {
             troveId,
             debt,
-            collateral,
-            collateralType,
+            collateral: collateralAmount,
+            collateralToken: collateral.symbol,
           },
         };
 
@@ -131,8 +123,8 @@ export function useCloseTrove({
     transactionStore,
     troveId,
     debt,
+    collateralAmount,
     collateral,
-    collateralType,
     address,
   ]);
 

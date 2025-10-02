@@ -2,7 +2,8 @@ import { z } from "zod";
 import { router, publicProcedure } from "../trpc";
 import { RpcProvider } from "starknet";
 import { contractRead } from "~/lib/contracts/calls";
-import { USDU_TOKEN, CollateralTypeSchema } from "~/lib/contracts/constants";
+import { CollateralTypeSchema } from "~/lib/contracts/constants";
+import { TOKENS } from "~/lib/collateral";
 import { bigintToBig } from "~/lib/decimal";
 import Big from "big.js";
 import {
@@ -52,7 +53,7 @@ export const stabilityPoolRouter = router({
           collateralType
         );
         // Return Big instance to preserve precision
-        return bigintToBig(totalDeposits, USDU_TOKEN.decimals);
+        return bigintToBig(totalDeposits, TOKENS.USDU.decimals);
       } catch (error) {
         console.error(
           `Error fetching total deposits for ${collateralType}:`,

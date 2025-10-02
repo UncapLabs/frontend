@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "~/lib/trpc";
-import type { CollateralType } from "~/lib/contracts/constants";
+import type { CollateralId } from "~/lib/collateral";
 import { bigToBigint } from "~/lib/decimal";
 
 // For opening a new trove
 interface OpenTroveParams {
   type: "open";
-  collateralType: CollateralType;
+  collateralType: CollateralId;
   borrowedAmount?: bigint;
   interestRate?: bigint;
   enabled?: boolean;
@@ -15,7 +15,7 @@ interface OpenTroveParams {
 // For adjusting an existing trove
 interface AdjustTroveParams {
   type: "adjust";
-  collateralType: CollateralType;
+  collateralType: CollateralId;
   troveId?: bigint;
   debtIncrease?: bigint;
   enabled?: boolean;

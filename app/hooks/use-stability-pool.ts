@@ -3,11 +3,12 @@ import { useAccount } from "@starknet-react/core";
 import { useQuery } from "@tanstack/react-query";
 import { contractCall } from "~/lib/contracts/calls";
 import {
-  type CollateralType,
-  USDU_TOKEN,
+  type CollateralId,
+  TOKENS,
   getCollateralAddresses,
   requiresWrapping,
-} from "~/lib/contracts/constants";
+  generateUnwrapCallFromBigint,
+} from "~/lib/collateral";
 import { useTransaction } from "~/hooks/use-transaction";
 import { useTransactionState } from "./use-transaction-state";
 import { useTransactionStore } from "~/providers/transaction-provider";
@@ -19,7 +20,7 @@ import Big from "big.js";
 // Deposit form data structure
 export interface DepositFormData {
   depositAmount?: Big;
-  collateralType: CollateralType;
+  collateralType: CollateralId;
   rewardsClaimed?: {
     usdu: Big;
     collateral: Big;
@@ -29,7 +30,7 @@ export interface DepositFormData {
 // Withdraw form data structure
 export interface WithdrawFormData {
   withdrawAmount?: Big;
-  collateralType: CollateralType;
+  collateralType: CollateralId;
   rewardsClaimed?: {
     usdu: Big;
     collateral: Big;
@@ -39,7 +40,7 @@ export interface WithdrawFormData {
 interface UseDepositToStabilityPoolParams {
   amount?: Big;
   doClaim?: boolean;
-  collateralType: CollateralType;
+  collateralType: CollateralId;
   onSuccess?: () => void;
   rewards?: {
     usdu: Big;
@@ -80,7 +81,7 @@ export function useDepositToStabilityPool({
     return [
       // 1. Approve USDU spending to Stability Pool
       contractCall.token.approve(
-        USDU_TOKEN.address,
+        TOKENS.USDU.address,
         addresses.stabilityPool,
         amountBigInt
       ),
@@ -159,7 +160,7 @@ export function useDepositToStabilityPool({
 interface UseWithdrawFromStabilityPoolParams {
   amount?: Big;
   doClaim?: boolean;
-  collateralType: CollateralType;
+  collateralType: CollateralId;
   onSuccess?: () => void;
   rewards?: {
     usdu: Big;

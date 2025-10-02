@@ -1,5 +1,5 @@
 import { TokenInput } from "~/components/token-input";
-import { USDU_TOKEN } from "~/lib/contracts/constants";
+import { TOKENS } from "~/lib/collateral";
 import Big from "big.js";
 import { bigToBigint } from "~/lib/decimal";
 
@@ -40,11 +40,11 @@ export function WithdrawSection({
         label="Withdraw"
         value={value}
         onChange={onChange}
-        token={USDU_TOKEN}
+        token={TOKENS.USDU}
         balance={
           userDeposit.gt(0)
             ? {
-                value: bigToBigint(userDeposit, USDU_TOKEN.decimals),
+                value: bigToBigint(userDeposit, TOKENS.USDU.decimals),
                 formatted: userDeposit.toFixed(),
               }
             : undefined

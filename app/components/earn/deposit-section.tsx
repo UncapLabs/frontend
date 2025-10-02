@@ -1,6 +1,6 @@
 import { Badge } from "~/components/ui/badge";
 import { TokenInput } from "~/components/token-input";
-import { USDU_TOKEN } from "~/lib/contracts/constants";
+import { TOKENS } from "~/lib/collateral";
 import Big from "big.js";
 import { calculatePercentageAmountBig } from "~/lib/input-parsers";
 
@@ -45,7 +45,7 @@ export function DepositSection({
         label="Deposit"
         value={value}
         onChange={onChange}
-        token={USDU_TOKEN}
+        token={TOKENS.USDU}
         balance={balance}
         price={price}
         onBlur={onBlur}
@@ -58,7 +58,7 @@ export function DepositSection({
           }
           const newValue = calculatePercentageAmountBig(
             balance.value,
-            USDU_TOKEN.decimals,
+            TOKENS.USDU.decimals,
             percentage * 100 // Convert to 0-100 scale
           );
           onChange(newValue);

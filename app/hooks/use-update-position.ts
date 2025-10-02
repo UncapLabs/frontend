@@ -128,6 +128,7 @@ export function useUpdatePosition({
             previousInterestRate: getInterestRatePercentage(position),
             newInterestRate: interestRate || undefined,
             collateralToken: collateralToken?.symbol || DEFAULT_COLLATERAL.symbol,
+            collateralType: collateralToken?.id || DEFAULT_COLLATERAL.id,
           },
         };
 

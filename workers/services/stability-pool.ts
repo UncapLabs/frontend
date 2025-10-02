@@ -1,6 +1,6 @@
 import { RpcProvider } from "starknet";
 import { contractRead } from "~/lib/contracts/calls";
-import { USDU_TOKEN, type CollateralType, COLLATERAL_TO_BRANCH } from "~/lib/contracts/constants";
+import { TOKENS, type CollateralId, COLLATERAL_TO_BRANCH } from "~/lib/collateral";
 import { bigintToBig } from "~/lib/decimal";
 import { getAverageInterestRateForBranch } from "./interest";
 import Big from "big.js";
@@ -8,7 +8,7 @@ import Big from "big.js";
 export async function fetchPoolPosition(
   provider: RpcProvider,
   userAddress: string,
-  collateralType: CollateralType
+  collateralType: CollateralId
 ) {
   try {
     const position = await contractRead.stabilityPool.getUserPosition(
@@ -17,12 +17,12 @@ export async function fetchPoolPosition(
       collateralType
     );
 
-    const userDeposit = bigintToBig(position.deposit, USDU_TOKEN.decimals);
-    const usduRewards = bigintToBig(position.usduGain, USDU_TOKEN.decimals);
+    const userDeposit = bigintToBig(position.deposit, TOKENS.USDU.decimals);
+    const usduRewards = bigintToBig(position.usduGain, TOKENS.USDU.decimals);
     const collateralRewards = bigintToBig(position.collateralGain, 18);
     const totalDeposits = bigintToBig(
       position.totalDeposits,
-      USDU_TOKEN.decimals
+      TOKENS.USDU.decimals
     );
 
     const poolShare = totalDeposits.gt(0) 
@@ -49,7 +49,7 @@ export async function fetchPoolPosition(
 
 export async function calculateStabilityPoolAPR(
   provider: RpcProvider,
-  collateralType: CollateralType
+  collateralType: CollateralId
 ): Promise<number> {
   try {
     const branchId = COLLATERAL_TO_BRANCH[collateralType];
@@ -64,8 +64,8 @@ export async function calculateStabilityPoolAPR(
       contractRead.troveManager.getBranchTCR(provider, collateralType),
     ]);
 
-    const totalDepositsBig = bigintToBig(totalDeposits, USDU_TOKEN.decimals);
-    const totalDebtBig = bigintToBig(branchTotals.totalDebt, USDU_TOKEN.decimals);
+    const totalDepositsBig = bigintToBig(totalDeposits, TOKENS.USDU.decimals);
+    const totalDebtBig = bigintToBig(branchTotals.totalDebt, TOKENS.USDU.decimals);
 
     // APR formula: 75% of (average interest rate * (USDU supply / total deposits))
     if (totalDepositsBig.lte(0) || avgInterestRate <= 0 || totalDebtBig.lte(0)) {

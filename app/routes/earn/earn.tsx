@@ -11,13 +11,7 @@ import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { useEffect, useCallback } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useAccount, useBalance } from "@starknet-react/core";
-import {
-  USDU_TOKEN,
-  UBTC_TOKEN,
-  GBTC_TOKEN,
-  WMWBTC_TOKEN,
-  type CollateralType,
-} from "~/lib/contracts/constants";
+import { TOKENS, COLLATERALS, type CollateralId } from "~/lib/collateral";
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
 import { useAllStabilityPoolPositions } from "~/hooks/use-stability-pool";
@@ -47,7 +41,7 @@ function Earn() {
   const [selectedCollateral, setSelectedCollateral] = useQueryState(
     "collateral",
     parseAsString.withDefault("UBTC")
-  ) as [CollateralType, (value: CollateralType | null) => void];
+  ) as [CollateralId, (value: CollateralId | null) => void];
   const [claimRewards, setClaimRewards] = useQueryState(
     "claim",
     parseAsBoolean.withDefault(true)
@@ -76,7 +70,7 @@ function Earn() {
   });
 
   const { data: usduBalance } = useBalance({
-    token: USDU_TOKEN.address,
+    token: TOKENS.USDU.address,
     address: address,
     refetchInterval: 30000,
   });
@@ -305,7 +299,7 @@ function Earn() {
                         }`}
                       >
                         <img
-                          src={UBTC_TOKEN.icon}
+                          src={COLLATERALS.UBTC.icon}
                           alt="UBTC"
                           className="w-8 h-8 object-contain"
                         />
@@ -335,7 +329,7 @@ function Earn() {
                         }`}
                       >
                         <img
-                          src={GBTC_TOKEN.icon}
+                          src={COLLATERALS.GBTC.icon}
                           alt="GBTC"
                           className="w-8 h-8 object-contain"
                         />
@@ -365,7 +359,7 @@ function Earn() {
                         }`}
                       >
                         <img
-                          src={WMWBTC_TOKEN.icon}
+                          src={COLLATERALS.WMWBTC.icon}
                           alt="wBTC"
                           className="w-8 h-8 object-contain"
                         />
@@ -429,7 +423,7 @@ function Earn() {
                               if (!usduBalance) return undefined;
                               const balance = bigintToBig(
                                 usduBalance.value,
-                                USDU_TOKEN.decimals
+                                TOKENS.USDU.decimals
                               );
                               return validators.compose(
                                 validators.insufficientBalance(value, balance)

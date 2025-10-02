@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "~/lib/trpc";
-import type { CollateralType } from "~/lib/contracts/constants";
+import type { CollateralId } from "~/lib/collateral";
 
-export function useBranchTCR(collateralType: CollateralType) {
+export function useBranchTCR(collateralType: CollateralId) {
   const trpc = useTRPC();
 
   return useQuery({

@@ -6,7 +6,7 @@ import { Label } from "~/components/ui/label";
 import { Separator } from "~/components/ui/separator";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { useSendTransaction, useAccount } from "@starknet-react/core";
-import { COLLATERAL_ADDRESSES } from "~/lib/contracts/constants";
+import { COLLATERALS } from "~/lib/collateral";
 import { toast } from "sonner";
 import { DollarSign, AlertCircle } from "lucide-react";
 import { NumericFormat } from "react-number-format";
@@ -41,7 +41,7 @@ function PriceManagement() {
       
       const calls = [
         {
-          contractAddress: COLLATERAL_ADDRESSES.GBTC.priceFeed,
+          contractAddress: COLLATERALS.GBTC.addresses.priceFeed,
           entrypoint: "set_price",
           calldata: [low.toString(), high.toString()], // Price as u256 (low, high)
         },

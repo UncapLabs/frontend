@@ -7,7 +7,8 @@ import {
 import { NumericFormat } from "react-number-format";
 import { truncateTroveId } from "~/lib/utils/trove-id";
 import { Edit3, X } from "lucide-react";
-import { MIN_DEBT, UBTC_TOKEN, GBTC_TOKEN } from "~/lib/contracts/constants";
+import { MIN_DEBT } from "~/lib/contracts/constants";
+import { COLLATERALS } from "~/lib/collateral";
 import Big from "big.js";
 
 interface BorrowCardProps {
@@ -219,8 +220,8 @@ export default function BorrowCard(props: Props) {
                   <img
                     src={
                       trove.collateralAsset === "GBTC"
-                        ? GBTC_TOKEN.icon
-                        : UBTC_TOKEN.icon
+                        ? COLLATERALS.GBTC.icon
+                        : COLLATERALS.UBTC.icon
                     }
                     alt={trove.collateralAsset}
                     className="w-5 h-5 object-contain"

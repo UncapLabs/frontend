@@ -31,7 +31,6 @@ import {
   TOKENS,
   getCollateralByBranchId,
   getBalanceDecimals,
-  type CollateralId
 } from "~/lib/collateral";
 import Big from "big.js";
 import { bigintToBig } from "~/lib/decimal";
@@ -79,7 +78,7 @@ function UpdatePosition() {
   const { connectWallet } = useWalletConnect();
 
   // Fetch existing position data
-  const { position, isLoading: isPositionLoading } = useTroveData(troveId);
+  const { position } = useTroveData(troveId);
 
   // Zombie trove detection
   const isZombie = !!(
@@ -97,9 +96,8 @@ function UpdatePosition() {
 
   // Get collateral based on position ID
   const branchId = extractBranchId(position?.id);
-  const collateral = branchId !== undefined
-    ? getCollateralByBranchId(branchId)
-    : undefined;
+  const collateral =
+    branchId !== undefined ? getCollateralByBranchId(branchId) : undefined;
 
   // Use default collateral if not found
   const selectedCollateral = collateral || getCollateralByBranchId(0)!;
@@ -109,7 +107,7 @@ function UpdatePosition() {
     undefined
   );
   const [borrowAmount, setBorrowAmount] = useState<Big | undefined>(undefined);
-  const [interestRate, setInterestRate] = useQueryState("rate", parseAsBig);
+  const [interestRate, setInterestRate] = useState<Big | undefined>(undefined);
 
   // Action state for collateral and debt
   const [collateralAction, setCollateralAction] = useQueryState(
@@ -150,7 +148,8 @@ function UpdatePosition() {
     enabled: position !== undefined,
   });
 
-  const minCollateralizationRatio = selectedCollateral.minCollateralizationRatio;
+  const minCollateralizationRatio =
+    selectedCollateral.minCollateralizationRatio;
 
   // Calculate target amounts based on user input
   const getTargetCollateral = () => {
@@ -236,9 +235,9 @@ function UpdatePosition() {
     },
   });
 
-  // Update interest rate to current position's rate if user hasn't changed it
+  // Initialize interest rate from position when it loads
   useEffect(() => {
-    if (position && interestRate === null) {
+    if (position && interestRate === undefined) {
       setInterestRate(getInterestRatePercentage(position));
     }
   }, [position, interestRate]);
@@ -277,10 +276,6 @@ function UpdatePosition() {
   const handleComplete = useCallback(() => {
     navigate("/");
   }, [navigate]);
-
-  // Don't return early - always render the full form
-  // Just disable interactions while loading
-  const isLoading = isPositionLoading || !position;
 
   return (
     <div className="w-full mx-auto max-w-7xl py-8 lg:py-12 px-4 sm:px-6 lg:px-8 min-h-screen">
@@ -366,7 +361,9 @@ function UpdatePosition() {
               }}
             >
               {/* Show borrowing restrictions alert if TCR is below CCR */}
-              <BorrowingRestrictionsAlert collateralType={selectedCollateral.id} />
+              <BorrowingRestrictionsAlert
+                collateralType={selectedCollateral.id}
+              />
 
               {/* Redemption History Alert - Show for all redeemed troves */}
               {hasBeenRedeemed && position && (
@@ -504,7 +501,8 @@ function UpdatePosition() {
                         if (!bitcoinBalance) return undefined;
 
                         // Use underlying decimals for wrapped tokens
-                        const balanceDecimals = getBalanceDecimals(selectedCollateral);
+                        const balanceDecimals =
+                          getBalanceDecimals(selectedCollateral);
                         const balance = bigintToBig(
                           bitcoinBalance.value,
                           balanceDecimals
@@ -598,7 +596,8 @@ function UpdatePosition() {
                       onBalanceClick={() => {
                         if (collateralAction === "add") {
                           // Use underlying decimals for wrapped tokens
-                          const balanceDecimals = getBalanceDecimals(selectedCollateral);
+                          const balanceDecimals =
+                            getBalanceDecimals(selectedCollateral);
                           const balanceBig = bitcoinBalance?.value
                             ? bigintToBig(bitcoinBalance.value, balanceDecimals)
                             : new Big(0);
@@ -760,7 +759,10 @@ function UpdatePosition() {
                         currentCollateralAmount !== undefined &&
                         currentCollateralAmount.gt(0)
                       ) {
-                        fieldApi.form.validateField("collateralAmount", "change");
+                        fieldApi.form.validateField(
+                          "collateralAmount",
+                          "change"
+                        );
                       }
                     },
                   }}

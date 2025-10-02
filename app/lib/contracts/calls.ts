@@ -2,9 +2,9 @@ import { Contract, type RpcProvider } from "starknet";
 import {
   getCollateralAddresses,
   getBranchId,
-  type CollateralType,
-  USDU_TOKEN,
-} from "./constants";
+  type CollateralId,
+  TOKENS,
+} from "~/lib/collateral";
 import {
   BORROWER_OPERATIONS_ABI,
   UBTC_ABI,
@@ -60,7 +60,7 @@ export const contractCall = {
       addManager?: string;
       removeManager?: string;
       receiver?: string;
-      collateralType: CollateralType;
+      collateralType: CollateralId;
     }) => {
       const addresses = getCollateralAddresses(params.collateralType);
       const contract = new Contract(
@@ -89,7 +89,7 @@ export const contractCall = {
     addColl: (
       troveId: bigint,
       collAmount: bigint,
-      collateralType: CollateralType
+      collateralType: CollateralId
     ) => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(
@@ -105,7 +105,7 @@ export const contractCall = {
     withdrawColl: (
       troveId: bigint,
       collWithdrawal: bigint,
-      collateralType: CollateralType
+      collateralType: CollateralId
     ) => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(
@@ -122,7 +122,7 @@ export const contractCall = {
       troveId: bigint,
       usduAmount: bigint,
       maxUpfrontFee: bigint,
-      collateralType: CollateralType
+      collateralType: CollateralId
     ) => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(
@@ -142,7 +142,7 @@ export const contractCall = {
     repayUsdu: (
       troveId: bigint,
       usduAmount: bigint,
-      collateralType: CollateralType
+      collateralType: CollateralId
     ) => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(
@@ -155,7 +155,7 @@ export const contractCall = {
     /**
      * Close a trove
      */
-    closeTrove: (troveId: bigint, collateralType: CollateralType) => {
+    closeTrove: (troveId: bigint, collateralType: CollateralId) => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(
         BORROWER_OPERATIONS_ABI,
@@ -174,7 +174,7 @@ export const contractCall = {
       debtChange: bigint;
       isDebtIncrease: boolean;
       maxUpfrontFee: bigint;
-      collateralType: CollateralType;
+      collateralType: CollateralId;
     }) => {
       const addresses = getCollateralAddresses(params.collateralType);
       const contract = new Contract(
@@ -196,7 +196,7 @@ export const contractCall = {
      */
     interestBatchManagerOf: (
       troveId: bigint,
-      collateralType: CollateralType
+      collateralType: CollateralId
     ) => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(
@@ -215,7 +215,7 @@ export const contractCall = {
       upperHint?: bigint;
       lowerHint?: bigint;
       maxUpfrontFee?: bigint;
-      collateralType: CollateralType;
+      collateralType: CollateralId;
     }) => {
       const addresses = getCollateralAddresses(params.collateralType);
       const contract = new Contract(
@@ -244,7 +244,7 @@ export const contractCall = {
       upperHint?: bigint;
       lowerHint?: bigint;
       maxUpfrontFee?: bigint;
-      collateralType: CollateralType;
+      collateralType: CollateralId;
     }) => {
       const addresses = getCollateralAddresses(params.collateralType);
       const contract = new Contract(
@@ -268,7 +268,7 @@ export const contractCall = {
      * This is called by borrowers to claim any excess collateral
      * from liquidated positions
      */
-    claimCollateral: (borrower: string, collateralType: CollateralType) => {
+    claimCollateral: (borrower: string, collateralType: CollateralId) => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(
         BORROWER_OPERATIONS_ABI,
@@ -283,7 +283,7 @@ export const contractCall = {
      * Approve spending of USDU tokens
      */
     approve: (spender: string, amount: bigint) => {
-      const contract = new Contract(USDU_ABI, USDU_TOKEN.address);
+      const contract = new Contract(USDU_ABI, TOKENS.USDU.address);
       return contract.populate("approve", [spender, amount]);
     },
   },
@@ -314,7 +314,7 @@ export const contractCall = {
     /**
      * Fetch the current BTC price
      */
-    fetchPrice: (collateralType: CollateralType) => {
+    fetchPrice: (collateralType: CollateralId) => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(PRICE_FEED_MOCK_ABI, addresses.priceFeed);
       return contract.populate("get_price", []);
@@ -325,7 +325,7 @@ export const contractCall = {
     /**
      * Get the latest trove data
      */
-    getLatestTroveData: (troveId: bigint, collateralType: CollateralType) => {
+    getLatestTroveData: (troveId: bigint, collateralType: CollateralId) => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(TROVE_MANAGER_ABI, addresses.troveManager);
       return contract.populate("get_latest_trove_data", [troveId]);
@@ -342,7 +342,7 @@ export const contractCall = {
     deposit: (
       amount: bigint,
       doClaim: boolean,
-      collateralType: CollateralType
+      collateralType: CollateralId
     ) => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(
@@ -361,7 +361,7 @@ export const contractCall = {
     withdraw: (
       amount: bigint,
       doClaim: boolean,
-      collateralType: CollateralType
+      collateralType: CollateralId
     ) => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(
@@ -377,7 +377,7 @@ export const contractCall = {
      * Get the collateral surplus for a borrower
      * This returns the amount of collateral available to claim
      */
-    getCollateral: (borrower: string, collateralType: CollateralType) => {
+    getCollateral: (borrower: string, collateralType: CollateralId) => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(
         COLL_SURPLUS_POOL_ABI,
@@ -400,7 +400,7 @@ export const contractRead = {
     getInterestBatchManagerOf: async (
       provider: RpcProvider,
       troveId: bigint,
-      collateralType: CollateralType
+      collateralType: CollateralId
     ): Promise<string> => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(
@@ -422,7 +422,7 @@ export const contractRead = {
     getLatestTroveData: async (
       provider: RpcProvider,
       troveId: bigint,
-      collateralType: CollateralType
+      collateralType: CollateralId
     ) => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(
@@ -455,7 +455,7 @@ export const contractRead = {
     getTroveStatus: async (
       provider: RpcProvider,
       troveId: bigint,
-      collateralType: CollateralType
+      collateralType: CollateralId
     ): Promise<bigint> => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(
@@ -473,7 +473,7 @@ export const contractRead = {
      */
     getBranchTCR: async (
       provider: RpcProvider,
-      collateralType: CollateralType
+      collateralType: CollateralId
     ) => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(
@@ -501,7 +501,7 @@ export const contractRead = {
      */
     getCcr: async (
       provider: RpcProvider,
-      collateralType: CollateralType
+      collateralType: CollateralId
     ): Promise<bigint> => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(
@@ -521,7 +521,7 @@ export const contractRead = {
     getCollateral: async (
       provider: RpcProvider,
       borrower: string,
-      collateralType: CollateralType
+      collateralType: CollateralId
     ): Promise<bigint> => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(
@@ -540,7 +540,7 @@ export const contractRead = {
      */
     predictOpenTroveUpfrontFee: async (
       provider: RpcProvider,
-      collateralType: CollateralType,
+      collateralType: CollateralId,
       borrowedAmount: bigint,
       interestRate: bigint
     ): Promise<bigint> => {
@@ -567,7 +567,7 @@ export const contractRead = {
      */
     predictAdjustTroveUpfrontFee: async (
       provider: RpcProvider,
-      collateralType: CollateralType,
+      collateralType: CollateralId,
       troveId: bigint,
       debtIncrease: bigint
     ): Promise<bigint> => {
@@ -596,7 +596,7 @@ export const contractRead = {
      */
     getTotalDeposits: async (
       provider: RpcProvider,
-      collateralType: CollateralType
+      collateralType: CollateralId
     ): Promise<bigint> => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(
@@ -614,7 +614,7 @@ export const contractRead = {
     getUserPosition: async (
       provider: RpcProvider,
       userAddress: string,
-      collateralType: CollateralType
+      collateralType: CollateralId
     ) => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract(
@@ -648,7 +648,7 @@ export const contractRead = {
  * Use these when you need to pass a provider for actual calls
  */
 export const createContracts = (
-  collateralType: CollateralType,
+  collateralType: CollateralId,
   provider?: any
 ) => {
   const addresses = getCollateralAddresses(collateralType);
@@ -656,7 +656,7 @@ export const createContracts = (
   return {
     collateral: new Contract(
       UBTC_ABI, // Assuming all collaterals use same ERC20 ABI
-      addresses.collateral,
+      addresses.token,
       provider
     ),
     borrowerOperations: new Contract(
@@ -664,7 +664,7 @@ export const createContracts = (
       addresses.borrowerOperations,
       provider
     ),
-    usdu: new Contract(USDU_ABI, USDU_TOKEN.address, provider),
+    usdu: new Contract(USDU_ABI, TOKENS.USDU.address, provider),
     priceFeed: new Contract(PRICE_FEED_ABI, addresses.priceFeed, provider),
     troveManager: new Contract(
       TROVE_MANAGER_ABI,

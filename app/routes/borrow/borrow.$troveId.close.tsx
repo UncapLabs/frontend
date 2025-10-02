@@ -6,18 +6,12 @@ import { ArrowIcon } from "~/components/icons/arrow-icon";
 import type { Route } from "./+types/borrow.$troveId.close";
 import { useParams, useNavigate } from "react-router";
 import { useAccount, useBalance } from "@starknet-react/core";
-import {
-  USDU_TOKEN,
-  type CollateralType,
-  MIN_DEBT,
-  getCollateralToken,
-  getCollateralType,
-} from "~/lib/contracts/constants";
+import { MIN_DEBT } from "~/lib/contracts/constants";
+import { TOKENS, getCollateral, getCollateralType } from "~/lib/collateral";
 import { extractBranchId } from "~/lib/utils/trove-id";
 import { NumericFormat } from "react-number-format";
 import { useTroveData } from "~/hooks/use-trove-data";
 import { useCloseTrove } from "~/hooks/use-close-trove";
-import { useQueryState } from "nuqs";
 import { useCallback } from "react";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { toast } from "sonner";
@@ -41,10 +35,10 @@ function ClosePosition() {
   const branchId = extractBranchId(position?.id);
   const collateralType =
     branchId !== undefined ? getCollateralType(branchId) : "UBTC";
-  const selectedCollateralToken = getCollateralToken(collateralType);
+  const selectedCollateral = getCollateral(collateralType);
 
   const { data: usduBalance } = useBalance({
-    token: USDU_TOKEN.address,
+    token: TOKENS.USDU.address,
     address: address,
     refetchInterval: 30000,
   });
@@ -67,13 +61,13 @@ function ClosePosition() {
   } = useCloseTrove({
     troveId: position?.id,
     debt: position?.borrowedAmount,
-    collateral: position?.collateralAmount,
-    collateralType: collateralType,
+    collateralAmount: position?.collateralAmount,
+    collateral: selectedCollateral,
   });
 
   // Check if user has enough USDU to repay
   const usduBal = usduBalance
-    ? bigintToBig(usduBalance.value, USDU_TOKEN.decimals)
+    ? bigintToBig(usduBalance.value, TOKENS.USDU.decimals)
     : new Big(0);
   const hasEnoughBalance = position
     ? usduBal.gte(position.borrowedAmount)
@@ -200,7 +194,7 @@ function ClosePosition() {
               details={
                 currentState === "success" &&
                 formData.debt &&
-                formData.collateral
+                formData.collateralAmount
                   ? [
                       {
                         label: "Debt Repaid",
@@ -223,12 +217,12 @@ function ClosePosition() {
                           <>
                             <NumericFormat
                               displayType="text"
-                              value={formData.collateral.toString()}
+                              value={formData.collateralAmount.toString()}
                               thousandSeparator=","
                               decimalScale={7}
                               fixedDecimalScale={false}
                             />{" "}
-                            {selectedCollateralToken.symbol}
+                            {formData.collateralSymbol}
                           </>
                         ),
                       },
@@ -273,7 +267,7 @@ function ClosePosition() {
                   {/* Token selector on the left */}
                   <div className="flex items-center gap-2 p-2.5 bg-token-bg-red/10 rounded-lg">
                     <img
-                      src={USDU_TOKEN.icon}
+                      src={TOKENS.USDU.icon}
                       alt="USDU"
                       className="w-5 h-5 object-contain"
                     />
@@ -370,12 +364,12 @@ function ClosePosition() {
                   {/* Token selector on the left */}
                   <div className="flex items-center gap-2 p-2.5 bg-token-bg rounded-lg">
                     <img
-                      src={selectedCollateralToken.icon}
-                      alt={selectedCollateralToken.symbol}
+                      src={selectedCollateral.icon}
+                      alt={selectedCollateral.symbol}
                       className="w-5 h-5 object-contain"
                     />
                     <span className="text-token-orange text-xs font-medium font-sora">
-                      {selectedCollateralToken.symbol}
+                      {selectedCollateral.symbol}
                     </span>
                   </div>
 
@@ -449,7 +443,7 @@ function ClosePosition() {
                   You will receive back{" "}
                   <strong>
                     {position?.collateralAmount.toFixed(7)}{" "}
-                    {selectedCollateralToken.symbol}
+                    {selectedCollateral.symbol}
                   </strong>
                 </li>
                 <li className="text-sm font-normal leading-relaxed">

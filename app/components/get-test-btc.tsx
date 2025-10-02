@@ -18,26 +18,26 @@ import {
 } from "~/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { UBTC_ABI } from "~/lib/contracts";
-import { GBTC_TOKEN, UBTC_TOKEN, WMWBTC_TOKEN, type CollateralType } from "~/lib/contracts/constants";
+import { COLLATERALS, type CollateralId } from "~/lib/collateral";
 
 export function GetTestBtc() {
   const { address } = useAccount();
-  const [selectedToken, setSelectedToken] = useState<CollateralType>("UBTC");
+  const [selectedToken, setSelectedToken] = useState<CollateralId>("UBTC");
   const [amount, setAmount] = useState<string>("1");
 
   // For WMWBTC, we mint the underlying token (8 decimals)
   const tokenConfig =
     selectedToken === "UBTC"
-      ? UBTC_TOKEN
+      ? COLLATERALS.UBTC
       : selectedToken === "GBTC"
-      ? GBTC_TOKEN
+      ? COLLATERALS.GBTC
       : selectedToken === "WMWBTC"
       ? {
-          address: WMWBTC_TOKEN.underlyingAddress,
+          address: COLLATERALS.WMWBTC.underlyingToken!.address,
           symbol: "wBTC",
-          decimals: WMWBTC_TOKEN.underlyingDecimals,
+          decimals: COLLATERALS.WMWBTC.underlyingToken!.decimals,
         }
-      : UBTC_TOKEN;
+      : COLLATERALS.UBTC;
   
   const { data: balance } = useBalance({
     address,
@@ -106,7 +106,7 @@ export function GetTestBtc() {
           <Label htmlFor="token">Select Token</Label>
           <Select
             value={selectedToken}
-            onValueChange={(value) => setSelectedToken(value as CollateralType)}
+            onValueChange={(value) => setSelectedToken(value as CollateralId)}
           >
             <SelectTrigger id="token">
               <SelectValue />

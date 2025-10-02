@@ -5,7 +5,7 @@ import { useNextOwnerIndex } from "./use-next-owner-index";
 import { useTransaction } from "./use-transaction";
 import { useTransactionState } from "./use-transaction-state";
 import type { Collateral, CollateralId } from "~/lib/collateral";
-import { getBalanceDecimals, requiresWrapping } from "~/lib/collateral";
+import { generateDepositCallsFromBigint } from "~/lib/collateral";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
 import { getTroveId, getPrefixedTroveId } from "~/lib/utils/trove-id";
@@ -69,67 +69,31 @@ export function useBorrow({
     // Get addresses for this collateral
     const addresses = collateral.addresses;
 
-    // Check if this collateral needs wrapping
-    const needsWrapping = requiresWrapping(collateral);
+    // Convert to bigint for contract calls
+    // For wrapped tokens, user input is in underlying decimals (e.g., 8)
+    // For standard tokens, use collateral decimals (18)
+    const inputDecimals = collateral.underlyingToken?.decimals || collateral.decimals;
+    const collAmountBigint = bigToBigint(collateralAmount, inputDecimals);
 
-    if (needsWrapping && collateral.underlyingToken) {
-      // For wrapped collateral (WMWBTC):
-      // 1. Approve underlying token (8 decimals) to CollateralWrapper
-      // 2. Wrap the underlying token (converts 8 decimals -> 18 decimals)
-      // 3. Approve wrapped token (18 decimals) to BorrowerOperations
-      // 4. Open trove with wrapped token (18 decimals)
+    // Convert to wrapped decimals (18) for contract
+    const wrappedAmount = collateral.underlyingToken
+      ? collAmountBigint * (10n ** (BigInt(collateral.decimals) - BigInt(inputDecimals)))
+      : collAmountBigint;
 
-      const underlyingAddress = collateral.underlyingToken.address;
-      const underlyingDecimals = collateral.underlyingToken.decimals;
+    // Generate deposit calls (handles wrapping if needed)
+    const depositCalls = generateDepositCallsFromBigint(
+      collateral,
+      wrappedAmount,
+      addresses.borrowerOperations
+    );
 
-      return [
-        // 1. Approve underlying token spending to CollateralWrapper
-        contractCall.token.approve(
-          underlyingAddress,
-          addresses.token, // This is the wrapper address
-          bigToBigint(collateralAmount, underlyingDecimals)
-        ),
-
-        // 2. Wrap underlying token (8 decimals -> 18 decimals)
-        contractCall.collateralWrapper.wrap(
-          addresses.token, // Wrapper address
-          bigToBigint(collateralAmount, underlyingDecimals)
-        ),
-
-        // 3. Approve wrapped token to BorrowerOperations
-        contractCall.token.approve(
-          addresses.token, // Wrapped token address
-          addresses.borrowerOperations,
-          bigToBigint(collateralAmount, 18) // Now in 18 decimals
-        ),
-
-        // 4. Open trove
-        contractCall.borrowerOperations.openTrove({
-          owner: address,
-          ownerIndex: nextOwnerIndex,
-          collAmount: bigToBigint(collateralAmount, 18),
-          usduAmount: bigToBigint(borrowAmount, 18),
-          annualInterestRate: bigToBigint(interestRate.div(100), 18),
-          collateralType: collateral.id as CollateralId,
-          maxUpfrontFee: 2n ** 256n - 1n,
-        }),
-      ];
-    }
-
-    // For standard collateral (UBTC, GBTC):
+    // Add the openTrove call
     return [
-      // 1. Approve collateral token spending
-      contractCall.token.approve(
-        addresses.token,
-        addresses.borrowerOperations,
-        bigToBigint(collateralAmount, 18)
-      ),
-
-      // 2. Open trove
+      ...depositCalls,
       contractCall.borrowerOperations.openTrove({
         owner: address,
         ownerIndex: nextOwnerIndex,
-        collAmount: bigToBigint(collateralAmount, 18),
+        collAmount: wrappedAmount,
         usduAmount: bigToBigint(borrowAmount, 18),
         annualInterestRate: bigToBigint(interestRate.div(100), 18),
         collateralType: collateral.id as CollateralId,
@@ -189,9 +153,9 @@ export function useBorrow({
             borrowAmount,
             interestRate,
             collateralToken: collateral.symbol,
+            collateralType: collateral.id,
             ...(troveId && {
               troveId,
-              collateralType: collateral.id,
               ownerIndex: nextOwnerIndex?.toString(), // Convert BigInt to string for JSON serialization
             }),
           },

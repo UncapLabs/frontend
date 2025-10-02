@@ -1,5 +1,5 @@
 import { NumericFormat } from "react-number-format";
-import { type CollateralType, COLLATERAL_TOKENS } from "~/lib/contracts/constants";
+import { type CollateralId, getCollateral } from "~/lib/collateral";
 import Big from "big.js";
 
 interface StabilityPoolPosition {
@@ -14,7 +14,7 @@ interface StabilityPoolPosition {
 
 interface ClaimRewardsSectionProps {
   selectedPosition: StabilityPoolPosition | null;
-  selectedCollateral: CollateralType;
+  selectedCollateral: CollateralId;
   usduPrice: Big;
   collateralPrice: Big;
 }
@@ -33,9 +33,8 @@ export function ClaimRewardsSection({
   const totalUSD = usduRewardsUSD.plus(collateralRewardsUSD);
 
   // Get user-facing symbol (e.g., "wBTC" instead of "WMWBTC")
-  const collateralSymbol =
-    COLLATERAL_TOKENS.find((t) => t.collateralType === selectedCollateral)
-      ?.symbol || selectedCollateral;
+  const collateral = getCollateral(selectedCollateral);
+  const collateralSymbol = collateral.symbol;
 
   return (
     <div className="bg-white rounded-2xl p-6 space-y-6">

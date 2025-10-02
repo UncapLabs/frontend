@@ -3,7 +3,7 @@ import {
   useDepositToStabilityPool,
   useWithdrawFromStabilityPool,
 } from "~/hooks/use-stability-pool";
-import type { CollateralType } from "~/lib/contracts/constants";
+import type { CollateralId } from "~/lib/collateral";
 import Big from "big.js";
 
 type ActionType = "deposit" | "withdraw" | "claim";
@@ -12,7 +12,7 @@ interface UseStabilityPoolTransactionParams {
   action: ActionType;
   amount: Big | undefined;
   doClaim: boolean;
-  collateralType: CollateralType;
+  collateralType: CollateralId;
   rewards?: {
     usdu: Big;
     collateral: Big;

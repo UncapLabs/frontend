@@ -11,7 +11,7 @@ import {
 } from "~/hooks/use-interest-rate";
 import { useCalculatedRebate } from "~/hooks/use-rebate-config";
 import { useInterestRateCooldown } from "~/hooks/use-interest-rate-cooldown";
-import { getBranchId, type CollateralType } from "~/lib/contracts/constants";
+import { getBranchId, type CollateralId } from "~/lib/collateral";
 import * as dn from "dnum";
 import { RateModeSelector, type RateMode } from "./rate-mode-selector";
 export type { RateMode } from "./rate-mode-selector";
@@ -26,7 +26,7 @@ interface InterestRateSelectorProps {
   borrowAmount?: Big;
   collateralAmount?: Big;
   collateralPriceUSD?: Big;
-  collateralType?: CollateralType;
+  collateralType?: CollateralId;
   onRateModeChange?: (mode: RateMode) => void;
   lastInterestRateAdjTime?: number;
   currentInterestRate?: number;

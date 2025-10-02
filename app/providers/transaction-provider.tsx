@@ -7,6 +7,7 @@ import {
 } from "~/lib/transaction-store";
 import { useTRPC } from "~/lib/trpc";
 import type { TransactionStatus } from "~/types/transaction";
+import { getBranchId, type CollateralId } from "~/lib/collateral";
 
 // Only allow a single instance of the store to exist at once
 // so that multiple provider instances can share the same store.
@@ -104,6 +105,19 @@ export function TransactionStoreProvider({
                     collateralType: transaction.details.collateralType,
                   }),
                 });
+
+                // Invalidate interest rate data (visualization and chart)
+                const branchId = getBranchId(transaction.details.collateralType as CollateralId);
+                queryClient.invalidateQueries({
+                  queryKey: trpc.interestRouter.getInterestRateVisualizationData.queryKey({
+                    branchId,
+                  }),
+                });
+                queryClient.invalidateQueries({
+                  queryKey: trpc.interestRouter.getInterestRateChartData.queryKey({
+                    branchId,
+                  }),
+                });
               }
             },
           });
@@ -113,12 +127,37 @@ export function TransactionStoreProvider({
         ) {
           // For adjust transactions, invalidate the specific position
           setTimeout(() => {
-            // Invalidate user positions
+            // Invalidate user positions list
             queryClient.invalidateQueries({
               queryKey: trpc.positionsRouter.getUserOnChainPositions.queryKey({
                 userAddress: address,
               }),
             });
+
+            // Invalidate the specific position by ID
+            if (transaction.details?.troveId) {
+              console.log("[Transaction Provider] Invalidating position:", transaction.details.troveId);
+              queryClient.invalidateQueries({
+                queryKey: trpc.positionsRouter.getPositionById.queryKey({
+                  troveId: transaction.details.troveId,
+                }),
+              });
+            }
+
+            // Invalidate interest rate data if collateral type is known
+            if (transaction.details?.collateralType) {
+              const branchId = getBranchId(transaction.details.collateralType as CollateralId);
+              queryClient.invalidateQueries({
+                queryKey: trpc.interestRouter.getInterestRateVisualizationData.queryKey({
+                  branchId,
+                }),
+              });
+              queryClient.invalidateQueries({
+                queryKey: trpc.interestRouter.getInterestRateChartData.queryKey({
+                  branchId,
+                }),
+              });
+            }
           }, 2000);
         } else if (
           transaction?.type === "close" &&

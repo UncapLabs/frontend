@@ -9,7 +9,7 @@ import { useClaimAllSurplus } from "~/hooks/use-claim-surplus";
 import { useCollateralSurplus } from "~/hooks/use-collateral-surplus";
 import { useCallback } from "react";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
-import { UBTC_TOKEN, GBTC_TOKEN, WMWBTC_TOKEN } from "~/lib/contracts/constants";
+import { getCollateral } from "~/lib/collateral";
 
 export function CollateralSurplusCard() {
   const { address } = useAccount();
@@ -29,10 +29,10 @@ export function CollateralSurplusCard() {
     currentState,
     reset,
   } = useClaimAllSurplus({
-    collateralTypes: availableSurpluses.map((s) => s.collateralType),
+    collaterals: availableSurpluses.map((s) => getCollateral(s.collateralType)),
     surplusAmounts: availableSurpluses.map((s) => ({
-      collateralType: s.collateralType,
-      amount: s.formatted, // Pass the formatted Big amount
+      collateral: getCollateral(s.collateralType),
+      amount: s.formatted,
     })),
     onSuccess: () => {
       // Refetch surplus data after successful claim
@@ -100,14 +100,6 @@ export function CollateralSurplusCard() {
     );
   }
 
-  // Get token icon based on symbol
-  const getTokenIcon = (symbol: string) => {
-    if (symbol === "WBTC" || symbol === "UBTC") return UBTC_TOKEN.icon;
-    if (symbol === "GBTC") return GBTC_TOKEN.icon;
-    if (symbol === "wBTC") return WMWBTC_TOKEN.icon; // WMWBTC shows as "wBTC" to users
-    return UBTC_TOKEN.icon; // fallback
-  };
-
   return (
     <div className="flex flex-col lg:flex-row gap-5">
       {/* Left Panel */}
@@ -123,21 +115,24 @@ export function CollateralSurplusCard() {
             successSubtitle="Your collateral surpluses have been successfully claimed."
             details={
               currentState === "success" && availableSurpluses.length > 0
-                ? availableSurpluses.map((surplus) => ({
-                    label: `${surplus.symbol} Claimed`,
-                    value: (
-                      <>
-                        <NumericFormat
-                          displayType="text"
-                          value={surplus.formatted.toString()}
-                          thousandSeparator=","
-                          decimalScale={7}
-                          fixedDecimalScale={false}
-                        />{" "}
-                        {surplus.symbol}
-                      </>
-                    ),
-                  }))
+                ? availableSurpluses.map((surplus) => {
+                    const collateral = getCollateral(surplus.collateralType);
+                    return {
+                      label: `${collateral.symbol} Claimed`,
+                      value: (
+                        <>
+                          <NumericFormat
+                            displayType="text"
+                            value={surplus.formatted.toString()}
+                            thousandSeparator=","
+                            decimalScale={7}
+                            fixedDecimalScale={false}
+                          />{" "}
+                          {collateral.symbol}
+                        </>
+                      ),
+                    };
+                  })
                 : undefined
             }
             onComplete={handleComplete}
@@ -147,44 +142,47 @@ export function CollateralSurplusCard() {
           />
         ) : (
           <>
-            {availableSurpluses.map((surplus) => (
-              <div
-                key={surplus.collateralType}
-                className="bg-white rounded-2xl p-6 border border-neutral-200"
-              >
-                <h3 className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight mb-4">
-                  COLLATERAL TO CLAIM
-                </h3>
+            {availableSurpluses.map((surplus) => {
+              const collateral = getCollateral(surplus.collateralType);
+              return (
+                <div
+                  key={surplus.collateralType}
+                  className="bg-white rounded-2xl p-6 border border-neutral-200"
+                >
+                  <h3 className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight mb-4">
+                    COLLATERAL TO CLAIM
+                  </h3>
 
-                {/* Token Display matching close position style */}
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 px-3 py-2 bg-token-bg rounded-lg">
-                    <img
-                      src={getTokenIcon(surplus.symbol)}
-                      alt={surplus.symbol}
-                      className="w-6 h-6 object-contain"
-                    />
-                    <span className="text-sm font-medium text-token-orange font-sora">
-                      {surplus.symbol}
-                    </span>
-                  </div>
-                  <div className="text-right flex-1">
-                    <div className="text-xl font-semibold text-neutral-800 font-sora">
-                      <NumericFormat
-                        displayType="text"
-                        value={surplus.formatted.toString()}
-                        thousandSeparator=","
-                        decimalScale={7}
-                        fixedDecimalScale={false}
+                  {/* Token Display matching close position style */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 px-3 py-2 bg-token-bg rounded-lg">
+                      <img
+                        src={collateral.icon}
+                        alt={collateral.symbol}
+                        className="w-6 h-6 object-contain"
                       />
+                      <span className="text-sm font-medium text-token-orange font-sora">
+                        {collateral.symbol}
+                      </span>
                     </div>
-                    <div className="text-xs text-neutral-500">
-                      Surplus from liquidation
+                    <div className="text-right flex-1">
+                      <div className="text-xl font-semibold text-neutral-800 font-sora">
+                        <NumericFormat
+                          displayType="text"
+                          value={surplus.formatted.toString()}
+                          thousandSeparator=","
+                          decimalScale={7}
+                          fixedDecimalScale={false}
+                        />
+                      </div>
+                      <div className="text-xs text-neutral-500">
+                        Surplus from liquidation
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             <Button
               onClick={handleButtonClick}

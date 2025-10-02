@@ -1,12 +1,12 @@
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { useBranchTCR } from "~/hooks/use-branch-tcr";
-import type { CollateralType } from "~/lib/contracts/constants";
+import type { CollateralId } from "~/lib/collateral";
 import { AlertTriangle, ExternalLink } from "lucide-react";
 
 export function BorrowingRestrictionsAlert({
   collateralType,
 }: {
-  collateralType: CollateralType;
+  collateralType: CollateralId;
 }) {
   const { data, isLoading } = useBranchTCR(collateralType);
 

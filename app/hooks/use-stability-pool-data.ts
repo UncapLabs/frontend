@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "~/lib/trpc";
-import { type CollateralType } from "~/lib/contracts/constants";
+import { type CollateralId } from "~/lib/collateral";
 
 export interface StabilityPoolDataQuery {
   totalDeposits: number | undefined;
@@ -79,7 +79,7 @@ export function useStabilityPoolData(): UseStabilityPoolDataResult {
 }
 
 export function useStabilityPoolDataByType(
-  collateralType: CollateralType
+  collateralType: CollateralId
 ): StabilityPoolDataQuery {
   const data = useStabilityPoolData();
   return data[collateralType];

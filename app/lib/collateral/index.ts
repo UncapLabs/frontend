@@ -1,6 +1,5 @@
 import type { Address } from "@starknet-react/chains";
 import Big from "big.js";
-import { z } from "zod";
 import deploymentData from "../contracts/deployment_addresses.json";
 import { USDU_ADDRESS, GAS_TOKEN_ADDRESS } from "../contracts/constants";
 
@@ -184,6 +183,21 @@ export const TOKENS = {
   } as Token,
 } as const;
 
+// Branch ID mappings (for contract interactions)
+export const COLLATERAL_TO_BRANCH = {
+  UBTC: 0,
+  WMWBTC: 1,
+  GBTC: 2,
+} as const;
+
+export const BRANCH_TO_COLLATERAL = {
+  0: "UBTC",
+  1: "WMWBTC",
+  2: "GBTC",
+} as const;
+
+export type BranchId = 0 | 1 | 2;
+
 // Helper functions
 export function getCollateral(id: CollateralId): Collateral {
   return COLLATERALS[id];
@@ -191,6 +205,11 @@ export function getCollateral(id: CollateralId): Collateral {
 
 export function getBranchIdForCollateral(id: CollateralId): number {
   return COLLATERALS[id].branchId;
+}
+
+// Alias for consistency with constants.ts (to be deprecated)
+export function getBranchId(collateralId: CollateralId): BranchId {
+  return COLLATERAL_TO_BRANCH[collateralId];
 }
 
 export function getCollateralByBranchId(
@@ -201,6 +220,11 @@ export function getCollateralByBranchId(
   );
 }
 
+// Alias for consistency with constants.ts (to be deprecated)
+export function getCollateralType(branchId: BranchId): CollateralId {
+  return BRANCH_TO_COLLATERAL[branchId];
+}
+
 export function getCollateralByAddress(
   address: string
 ): Collateral | undefined {
@@ -209,41 +233,20 @@ export function getCollateralByAddress(
   );
 }
 
-export function requiresWrapping(collateral: Collateral): boolean {
-  return !!collateral.underlyingToken;
+// Get all addresses for a specific collateral (helper for contract calls)
+export function getCollateralAddresses(collateralId: CollateralId) {
+  return COLLATERALS[collateralId].addresses;
 }
 
-export function getBalanceTokenAddress(collateral: Collateral): Address {
-  // For wrapped tokens, return the underlying address for balance queries
-  return collateral.underlyingToken?.address || collateral.addresses.token;
-}
-
-export function getBalanceDecimals(collateral: Collateral): number {
-  // For wrapped tokens, return the underlying decimals for balance display
-  return collateral.underlyingToken?.decimals || collateral.decimals;
-}
+// Re-export wrapping utilities from the wrapping module
+export {
+  requiresWrapping,
+  getBalanceTokenAddress,
+  getBalanceDecimals,
+  generateDepositCallsFromBigint,
+  generateUnwrapCallFromBigint,
+} from "./wrapping";
 
 // Export flat arrays and defaults for UI components
 export const COLLATERAL_LIST = Object.values(COLLATERALS) as Collateral[];
 export const DEFAULT_COLLATERAL = COLLATERALS.UBTC;
-
-// Backwards compatibility exports (to be removed later)
-export const COLLATERAL_TOKENS = COLLATERAL_LIST.map((c: Collateral) => {
-  const base = {
-    address: c.addresses.token,
-    symbol: c.symbol,
-    decimals: c.decimals,
-    icon: c.icon,
-    collateralType: c.id,
-  };
-
-  if ('underlyingToken' in c && c.underlyingToken) {
-    return {
-      ...base,
-      underlyingAddress: c.underlyingToken.address,
-      underlyingDecimals: c.underlyingToken.decimals,
-    };
-  }
-
-  return base;
-});

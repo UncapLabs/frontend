@@ -2,7 +2,8 @@ import { publicProcedure, router } from "../trpc";
 import { z } from "zod";
 import { RpcProvider } from "starknet";
 import { contractRead } from "~/lib/contracts/calls";
-import { CollateralTypeSchema, type CollateralType } from "~/lib/contracts/constants";
+import { CollateralTypeSchema } from "~/lib/contracts/constants";
+import { type CollateralId } from "~/lib/collateral";
 import { bigintToBig } from "~/lib/decimal";
 
 export const feesRouter = router({
@@ -28,7 +29,7 @@ export const feesRouter = router({
         const upfrontFee =
           await contractRead.hintHelpers.predictOpenTroveUpfrontFee(
             provider,
-            input.collateralType as CollateralType,
+            input.collateralType as CollateralId,
             borrowedAmount,
             interestRate
           );
@@ -64,7 +65,7 @@ export const feesRouter = router({
         const upfrontFee =
           await contractRead.hintHelpers.predictAdjustTroveUpfrontFee(
             provider,
-            input.collateralType as CollateralType,
+            input.collateralType as CollateralId,
             troveId,
             debtIncrease
           );
