@@ -40,7 +40,7 @@
     "liquidationManager": "0x2c796bfd1a525e9601ffa3f98353a31f5b369c20a477e684badfb6d76d9b43f",
     "redemptionManager": "0x30fa22e89beae4470faf09a9c687002c76b08e2f340ba680a62e03f7ab11cb",
     "batchManager": "0xd36c20f8c7f1b7378a44688d371cae4d17d655a182c0e00e7bd6b51ff2bd00",
-    "priceFeed": "0x04db2d64007dc9bc074b5e944e514360054bc315fa205425537dd84d505b7177",
+    "priceFeed": "0x073be5d8d70a3dbfbb2ba8451503863d7af3e46a730aa8671fbc7d8b383dc686",
     "hintHelpers": "0x48a7715ac8358ca6d8547d0ea205db22763453ff2aa2dc8394605bbb9c66dd9",
     "multiTroveGetter": "0xf6ecd522e5fdf0e39ccdac4837f280a577b5681fd2590aed6ef978e688b31e",
     "troveManagerEventsEmitter": "0x6f5725b6ce9098f1491c474517c5640d32dc11e513e7744caec9259a080377a",
