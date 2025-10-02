@@ -14,10 +14,9 @@ import type {
 import type { GraphQLClient } from "graphql-request";
 import {
   type CollateralId,
-  type BranchId,
   getBranchIdForCollateral,
   getCollateral,
-  getCollateralType,
+  getCollateralByBranchId,
   COLLATERALS,
   TOKENS,
 } from "~/lib/collateral";
@@ -204,8 +203,8 @@ export async function fetchPositionById(
   const troveIdBigInt = BigInt(troveId);
 
   // Get the appropriate contracts based on branchId
-  const collateralId = getCollateralType(Number(branchId) as BranchId);
-  const collateralToken = getCollateral(collateralId);
+  const collateralToken = getCollateralByBranchId(Number(branchId))!;
+  const collateralId = collateralToken.id;
 
   try {
     // Fetch indexed trove data and on-chain data in parallel

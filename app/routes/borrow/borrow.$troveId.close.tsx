@@ -7,7 +7,7 @@ import type { Route } from "./+types/borrow.$troveId.close";
 import { useParams, useNavigate } from "react-router";
 import { useAccount, useBalance } from "@starknet-react/core";
 import { MIN_DEBT } from "~/lib/contracts/constants";
-import { TOKENS, getCollateral, getCollateralType } from "~/lib/collateral";
+import { TOKENS, getCollateralByBranchId, DEFAULT_COLLATERAL } from "~/lib/collateral";
 import { extractBranchId } from "~/lib/utils/trove-id";
 import { NumericFormat } from "react-number-format";
 import { useTroveData } from "~/hooks/use-trove-data";
@@ -31,11 +31,10 @@ function ClosePosition() {
   // Fetch existing trove data
   const { position, isLoading: isTroveLoading } = useTroveData(troveId);
 
-  // Get collateral type from position ID
+  // Get collateral from position ID
   const branchId = extractBranchId(position?.id);
-  const collateralType =
-    branchId !== undefined ? getCollateralType(branchId) : "UBTC";
-  const selectedCollateral = getCollateral(collateralType);
+  const selectedCollateral =
+    branchId !== undefined ? getCollateralByBranchId(branchId)! : DEFAULT_COLLATERAL;
 
   const { data: usduBalance } = useBalance({
     token: TOKENS.USDU.address,
@@ -45,7 +44,7 @@ function ClosePosition() {
 
   // Fetch prices for display
   const { bitcoin, usdu } = useFetchPrices({
-    collateralType,
+    collateralType: selectedCollateral.id,
     enabled: !!position,
   });
 
@@ -237,7 +236,7 @@ function ClosePosition() {
           ) : (
             <div className="space-y-1">
               {/* Borrowing Restrictions Alert */}
-              <BorrowingRestrictionsAlert collateralType={collateralType} />
+              <BorrowingRestrictionsAlert collateralType={selectedCollateral.id} />
 
               {/* Special Status Alert */}
               {(isZombie || isRedeemed) && (

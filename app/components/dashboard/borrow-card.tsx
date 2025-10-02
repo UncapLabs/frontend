@@ -8,7 +8,7 @@ import { NumericFormat } from "react-number-format";
 import { truncateTroveId } from "~/lib/utils/trove-id";
 import { Edit3, X } from "lucide-react";
 import { MIN_DEBT } from "~/lib/contracts/constants";
-import { COLLATERALS } from "~/lib/collateral";
+import { COLLATERAL_LIST } from "~/lib/collateral";
 import Big from "big.js";
 
 interface BorrowCardProps {
@@ -43,6 +43,11 @@ export default function BorrowCard(props: Props) {
   // Otherwise, render the actual card
   const { trove, collateralPrice, onUpdatePosition, onClosePosition } =
     props as BorrowCardProps;
+
+  // Get collateral config - match by symbol or id
+  const collateral = COLLATERAL_LIST.find(
+    (c) => c.symbol === trove.collateralAsset || c.id === trove.collateralAsset
+  )!;
 
   // Zombie = redeemed trove with debt < MIN_DEBT
   const isZombie =
@@ -218,12 +223,8 @@ export default function BorrowCard(props: Props) {
                   }`}
                 >
                   <img
-                    src={
-                      trove.collateralAsset === "GBTC"
-                        ? COLLATERALS.GBTC.icon
-                        : COLLATERALS.UBTC.icon
-                    }
-                    alt={trove.collateralAsset}
+                    src={collateral.icon}
+                    alt={collateral.symbol}
                     className="w-5 h-5 object-contain"
                   />
                   <span
@@ -233,7 +234,7 @@ export default function BorrowCard(props: Props) {
                         : "text-token-orange"
                     }`}
                   >
-                    {trove.collateralAsset}
+                    {collateral.symbol}
                   </span>
                 </div>
               </div>

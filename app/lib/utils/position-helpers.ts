@@ -1,7 +1,6 @@
 import type { Position } from "workers/services/trove-service";
 import Big from "big.js";
 import { bigToBigint } from "~/lib/decimal";
-import type { CollateralId } from "../collateral";
 
 /**
  * Convert position interest rate to BigInt format for contracts
@@ -29,11 +28,4 @@ export function getInterestRatePercentage(position: Position): Big {
 export function extractTroveId(positionId: string): bigint {
   const hexPart = positionId.split(":")[1] || "0";
   return BigInt(hexPart);
-}
-
-/**
- * Get collateral type from position
- */
-export function getCollateralType(position: Position): CollateralId {
-  return position.collateralAsset as CollateralId;
 }

@@ -44,7 +44,7 @@ export interface UnderlyingToken {
 }
 
 // Collateral extends Token with additional properties
-export interface Collateral extends Omit<Token, 'address'> {
+export interface Collateral extends Omit<Token, "address"> {
   id: CollateralId;
   branchId: number;
   minCollateralizationRatio: Big;
@@ -55,12 +55,12 @@ export interface Collateral extends Omit<Token, 'address'> {
 }
 
 // Helper function to create a Collateral object with getter
-function createCollateral(config: Omit<Collateral, 'address'>): Collateral {
+function createCollateral(config: Omit<Collateral, "address">): Collateral {
   return {
     ...config,
     get address() {
       return this.addresses.token;
-    }
+    },
   };
 }
 
@@ -102,7 +102,7 @@ export const COLLATERALS = {
     symbol: "GBTC",
     name: "Grayscale Bitcoin",
     decimals: 18,
-    icon: "/bitcoin.png",
+    icon: "/starknet.png",
     branchId: 2,
     minCollateralizationRatio: new Big(1.1), // 110%
     addresses: {
@@ -218,11 +218,6 @@ export function getCollateralByBranchId(
   return Object.values(COLLATERALS).find(
     (c: Collateral) => c.branchId === branchId
   );
-}
-
-// Alias for consistency with constants.ts (to be deprecated)
-export function getCollateralType(branchId: BranchId): CollateralId {
-  return BRANCH_TO_COLLATERAL[branchId];
 }
 
 export function getCollateralByAddress(
