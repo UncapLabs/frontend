@@ -126,7 +126,7 @@ export function STRKRewardsCard() {
             <Card className="rounded-2xl border-0 shadow-none bg-white">
               <CardContent className="pt-6">
                 <div className="text-center space-y-4 py-8">
-                  <Sparkles className="h-12 w-12 text-purple-400 mx-auto animate-pulse" />
+                  <Sparkles className="h-12 w-12 text-token-strk mx-auto animate-pulse" />
                   <p className="text-sm font-sora text-neutral-600">
                     Loading STRK rewards data...
                   </p>
@@ -136,7 +136,7 @@ export function STRKRewardsCard() {
           ) : !hasRewards ? (
             <div className="bg-white rounded-2xl p-8">
               <div className="text-center space-y-6">
-                <div className="w-20 h-20 bg-purple-50 rounded-2xl mx-auto flex items-center justify-center">
+                <div className="w-20 h-20 bg-token-bg-strk/10 rounded-2xl mx-auto flex items-center justify-center">
                   <img
                     src="/starknet.png"
                     alt="STRK"
@@ -149,11 +149,11 @@ export function STRKRewardsCard() {
                   </h3>
                   <p className="text-sm font-sora text-neutral-600 max-w-lg mx-auto leading-relaxed">
                     Start earning STRK rewards by borrowing USDU. You'll receive{" "}
-                    <span className="font-medium text-purple-700">
+                    <span className="font-medium text-token-strk">
                       40% of your interest payments
                     </span>{" "}
                     back, plus an additional{" "}
-                    <span className="font-medium text-purple-700">
+                    <span className="font-medium text-token-strk">
                       2% of your collateral value
                     </span>{" "}
                     annually, all paid out weekly in STRK tokens.
@@ -162,19 +162,19 @@ export function STRKRewardsCard() {
 
                 {/* Two reward cards side by side */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto mt-6">
-                  <div className="bg-purple-50 rounded-xl p-4 border border-purple-100">
-                    <div className="text-2xl font-medium font-sora text-purple-700 mb-1">
+                  <div className="bg-token-bg-strk/10 rounded-xl p-4 border border-token-strk/20">
+                    <div className="text-2xl font-medium font-sora text-token-strk mb-1">
                       40%
                     </div>
-                    <div className="text-xs font-sora text-purple-600">
+                    <div className="text-xs font-sora text-token-strk/80">
                       Interest Rebate
                     </div>
                   </div>
-                  <div className="bg-purple-50 rounded-xl p-4 border border-purple-100">
-                    <div className="text-2xl font-medium font-sora text-purple-700 mb-1">
+                  <div className="bg-token-bg-strk/10 rounded-xl p-4 border border-token-strk/20">
+                    <div className="text-2xl font-medium font-sora text-token-strk mb-1">
                       2%
                     </div>
-                    <div className="text-xs font-sora text-purple-600">
+                    <div className="text-xs font-sora text-token-strk/80">
                       Collateral Rewards
                     </div>
                   </div>
@@ -184,7 +184,7 @@ export function STRKRewardsCard() {
                 <div className="bg-neutral-50 rounded-xl p-5 max-w-md mx-auto">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                      <TrendingUp className="h-4 w-4 text-purple-600" />
+                      <TrendingUp className="h-4 w-4 text-token-strk" />
                     </div>
                     <span className="text-sm font-medium font-sora text-neutral-800">
                       Start Earning in 3 Steps
@@ -192,7 +192,7 @@ export function STRKRewardsCard() {
                   </div>
                   <div className="space-y-2 text-left">
                     <div className="flex items-start gap-3">
-                      <span className="text-xs font-medium font-sora text-purple-600 mt-0.5">
+                      <span className="text-xs font-medium font-sora text-token-strk mt-0.5">
                         1
                       </span>
                       <span className="text-xs font-sora text-neutral-700">
@@ -200,7 +200,7 @@ export function STRKRewardsCard() {
                       </span>
                     </div>
                     <div className="flex items-start gap-3">
-                      <span className="text-xs font-medium font-sora text-purple-600 mt-0.5">
+                      <span className="text-xs font-medium font-sora text-token-strk mt-0.5">
                         2
                       </span>
                       <span className="text-xs font-sora text-neutral-700">
@@ -209,7 +209,7 @@ export function STRKRewardsCard() {
                       </span>
                     </div>
                     <div className="flex items-start gap-3">
-                      <span className="text-xs font-medium font-sora text-purple-600 mt-0.5">
+                      <span className="text-xs font-medium font-sora text-token-strk mt-0.5">
                         3
                       </span>
                       <span className="text-xs font-sora text-neutral-700">
@@ -242,13 +242,13 @@ export function STRKRewardsCard() {
                 <div className="flex items-center gap-6">
                   {/* Token selector on the left */}
                   <div className="flex flex-col gap-2">
-                    <div className="p-2.5 bg-purple-50 rounded-lg inline-flex justify-start items-center gap-2">
+                    <div className="p-2.5 bg-token-bg-strk/10 rounded-lg inline-flex justify-start items-center gap-2">
                       <img
                         src="/starknet.png"
                         alt="STRK"
                         className="w-5 h-5 object-contain"
                       />
-                      <span className="text-purple-700 text-xs font-medium font-sora">
+                      <span className="text-token-strk text-xs font-medium font-sora">
                         STRK
                       </span>
                     </div>
@@ -351,11 +351,10 @@ export function STRKRewardsCard() {
               <Card className="rounded-2xl border-0 shadow-none bg-white">
                 <CardHeader className="border-b border-[#F5F3EE]">
                   <CardTitle className="text-lg font-medium font-sora text-neutral-800 flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-neutral-600" />
                     Weekly Rewards History
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="pt-6">
+                <CardContent className="">
                   {weeklyRewards.length > 0 ? (
                     <Table>
                       <TableHeader>
@@ -406,7 +405,7 @@ export function STRKRewardsCard() {
                                   Claimed
                                 </Badge>
                               ) : reward.status === "claimable" ? (
-                                <Badge className="gap-1 bg-purple-100 text-purple-700 hover:bg-purple-100">
+                                <Badge className="gap-1 bg-token-bg-strk/10 text-token-strk hover:bg-token-bg-strk/10">
                                   <Sparkles className="h-3 w-3" />
                                   Claimable
                                 </Badge>
@@ -440,28 +439,27 @@ export function STRKRewardsCard() {
 
         {/* Right Panel - Info */}
         <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px]">
-          <Card className="rounded-2xl border-0 shadow-none bg-white lg:sticky lg:top-8">
+          <Card className="rounded-2xl border-0 shadow-none bg-white">
             <CardHeader className="border-b border-[#F5F3EE]">
               <CardTitle className="text-lg font-medium font-sora text-neutral-800 flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-purple-600" />
                 Your STRK Rewards
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 pt-6">
+            <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-purple-50 rounded-lg p-3 text-center">
-                  <div className="text-xl font-medium font-sora text-purple-700">
+                <div className="bg-token-bg-strk/10 rounded-lg p-3 text-center">
+                  <div className="text-xl font-medium font-sora text-token-strk">
                     40%
                   </div>
-                  <div className="text-xs font-sora text-purple-600 mt-1">
+                  <div className="text-xs font-sora text-token-strk/80 mt-1">
                     Interest Rebate
                   </div>
                 </div>
-                <div className="bg-purple-50 rounded-lg p-3 text-center">
-                  <div className="text-xl font-medium font-sora text-purple-700">
+                <div className="bg-token-bg-strk/10 rounded-lg p-3 text-center">
+                  <div className="text-xl font-medium font-sora text-token-strk">
                     2%
                   </div>
-                  <div className="text-xs font-sora text-purple-600 mt-1">
+                  <div className="text-xs font-sora text-token-strk/80 mt-1">
                     Collateral APR
                   </div>
                 </div>
@@ -502,13 +500,13 @@ export function STRKRewardsCard() {
                     </div>
                   </div>
                 </div>
-                <div className="bg-purple-50 rounded-lg p-3">
+                <div className="bg-token-bg-strk/10 rounded-lg p-3">
                   <div className="space-y-2 text-sm font-sora">
                     <div className="flex justify-between">
                       <span className="text-neutral-600">
                         Interest Rebate (40%):
                       </span>
-                      <span className="font-medium text-purple-700">
+                      <span className="font-medium text-token-strk">
                         $1,000/yr
                       </span>
                     </div>
@@ -516,15 +514,15 @@ export function STRKRewardsCard() {
                       <span className="text-neutral-600">
                         Collateral Rewards (2%):
                       </span>
-                      <span className="font-medium text-purple-700">
+                      <span className="font-medium text-token-strk">
                         $2,000/yr
                       </span>
                     </div>
-                    <div className="flex justify-between pt-2 border-t border-purple-200">
+                    <div className="flex justify-between pt-2 border-t border-token-strk/20">
                       <span className="text-neutral-700 font-medium">
                         Total STRK/Week:
                       </span>
-                      <span className="font-medium text-purple-700">
+                      <span className="font-medium text-token-strk">
                         ~$57.69
                       </span>
                     </div>

@@ -1,4 +1,4 @@
-import { CheckCircle2, XCircle, Loader2, ExternalLink } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, ExternalLink, Clock } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
@@ -59,15 +59,18 @@ function formatTransactionDetails(
   switch (type) {
     case "borrow":
       return (
-        <div className="space-y-1">
-          <div className="text-xs font-sora text-neutral-500">
-            Deposited: {details.collateralAmount} {details.collateralToken}
+        <div className="space-y-0.5">
+          <div className="text-xs font-sora text-neutral-600">
+            <span className="text-neutral-500">Deposited:</span>{" "}
+            <span className="font-medium text-neutral-800">{details.collateralAmount} {details.collateralToken}</span>
           </div>
-          <div className="text-xs font-sora text-neutral-500">
-            Borrowed: {details.borrowAmount} USDU
+          <div className="text-xs font-sora text-neutral-600">
+            <span className="text-neutral-500">Borrowed:</span>{" "}
+            <span className="font-medium text-neutral-800">{details.borrowAmount} USDU</span>
           </div>
-          <div className="text-xs font-sora text-neutral-500">
-            Rate: {details.interestRate}% APR
+          <div className="text-xs font-sora text-neutral-600">
+            <span className="text-neutral-500">Rate:</span>{" "}
+            <span className="font-medium text-neutral-800">{details.interestRate}% APR</span>
           </div>
         </div>
       );
@@ -114,35 +117,37 @@ function formatTransactionDetails(
           ) > 0.001);
 
       return (
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           {/* Show collateral changes if any */}
           {hasCollateralChange && collateralChange !== undefined && (
-            <div className="text-xs font-sora text-neutral-500">
-              {isCollateralIncrease ? "Added collateral" : "Removed collateral"}
-              : {isCollateralIncrease ? "+" : ""}
-              {Math.abs(collateralChange).toFixed(7)}{" "}
-              {details.collateralToken || "BTC"}
+            <div className="text-xs font-sora text-neutral-600">
+              <span className="text-neutral-500">{isCollateralIncrease ? "Added collateral:" : "Removed collateral:"}</span>{" "}
+              <span className="font-medium text-neutral-800">
+                {isCollateralIncrease ? "+" : ""}
+                {Math.abs(collateralChange).toFixed(7)}{" "}
+                {details.collateralToken || "BTC"}
+              </span>
             </div>
           )}
 
           {/* Show debt changes if any */}
           {hasDebtChange && debtChange !== undefined && (
-            <div className="text-xs font-sora text-neutral-500">
-              {isDebtIncrease ? "Borrowed more" : "Repaid debt"}:{" "}
-              {isDebtIncrease ? "+" : "-"}
-              {Math.abs(debtChange).toFixed(2)} USDU
+            <div className="text-xs font-sora text-neutral-600">
+              <span className="text-neutral-500">{isDebtIncrease ? "Borrowed more:" : "Repaid debt:"}</span>{" "}
+              <span className="font-medium text-neutral-800">
+                {isDebtIncrease ? "+" : "-"}
+                {Math.abs(debtChange).toFixed(2)} USDU
+              </span>
             </div>
           )}
 
           {/* Show interest rate changes if any */}
           {hasInterestRateChange && (
-            <div className="text-xs font-sora text-neutral-500">
-              {(details.newInterestRate || details.interestRate || 0) >
-              (details.previousInterestRate || details.interestRate || 0)
-                ? "Increased rate"
-                : "Decreased rate"}
-              : {details.previousInterestRate || details.interestRate || "—"}% →{" "}
-              {details.newInterestRate || details.interestRate || "—"}% APR
+            <div className="text-xs font-sora text-neutral-600">
+              <span className="text-neutral-500">Rate:</span>{" "}
+              <span className="font-medium text-neutral-800">
+                {details.previousInterestRate || details.interestRate || "—"}% → {details.newInterestRate || details.interestRate || "—"}%
+              </span>
             </div>
           )}
 
@@ -150,19 +155,21 @@ function formatTransactionDetails(
           {!hasCollateralChange && !hasDebtChange && !hasInterestRateChange && (
             <>
               {details.newCollateral !== undefined && (
-                <div className="text-xs font-sora text-neutral-500">
-                  Collateral: {details.newCollateral}{" "}
-                  {details.collateralToken || "BTC"}
+                <div className="text-xs font-sora text-neutral-600">
+                  <span className="text-neutral-500">Collateral:</span>{" "}
+                  <span className="font-medium text-neutral-800">{details.newCollateral} {details.collateralToken || "BTC"}</span>
                 </div>
               )}
               {details.newDebt !== undefined && (
-                <div className="text-xs font-sora text-neutral-500">
-                  Debt: {details.newDebt} USDU
+                <div className="text-xs font-sora text-neutral-600">
+                  <span className="text-neutral-500">Debt:</span>{" "}
+                  <span className="font-medium text-neutral-800">{details.newDebt} USDU</span>
                 </div>
               )}
               {details.newInterestRate !== undefined && (
-                <div className="text-xs font-sora text-neutral-500">
-                  Rate: {details.newInterestRate}% APR
+                <div className="text-xs font-sora text-neutral-600">
+                  <span className="text-neutral-500">Rate:</span>{" "}
+                  <span className="font-medium text-neutral-800">{details.newInterestRate}% APR</span>
                 </div>
               )}
             </>
@@ -172,55 +179,59 @@ function formatTransactionDetails(
 
     case "close":
       return (
-        <div className="space-y-1">
-          <div className="text-xs font-sora text-neutral-500">
-            Repaid: {details.debt} USDU
+        <div className="space-y-0.5">
+          <div className="text-xs font-sora text-neutral-600">
+            <span className="text-neutral-500">Repaid:</span>{" "}
+            <span className="font-medium text-neutral-800">{details.debt} USDU</span>
           </div>
-          <div className="text-xs font-sora text-neutral-500">
-            Recovered: {details.collateral} {details.collateralType || "BTC"}
+          <div className="text-xs font-sora text-neutral-600">
+            <span className="text-neutral-500">Recovered:</span>{" "}
+            <span className="font-medium text-neutral-800">{details.collateral} {details.collateralType || "BTC"}</span>
           </div>
         </div>
       );
 
     case "claim":
       return (
-        <div className="space-y-1">
-          <div className="text-xs font-sora text-neutral-500">
-            Claimed: {details.amount} {details.token}
+        <div className="space-y-0.5">
+          <div className="text-xs font-sora text-neutral-600">
+            <span className="text-neutral-500">Claimed:</span>{" "}
+            <span className="font-medium text-neutral-800">{details.amount} {details.token}</span>
           </div>
         </div>
       );
 
     case "claim_surplus":
       return (
-        <div className="space-y-1">
-          <div className="text-xs font-sora text-neutral-500">
-            Recovered: {details.amount} {details.token || "BTC"}
+        <div className="space-y-0.5">
+          <div className="text-xs font-sora text-neutral-600">
+            <span className="text-neutral-500">Recovered:</span>{" "}
+            <span className="font-medium text-neutral-800">{details.amount} {details.token || "BTC"}</span>
           </div>
         </div>
       );
 
     case "adjust_rate":
       return (
-        <div className="space-y-1">
-          <div className="text-xs font-sora text-neutral-500">
-            Previous rate: {details.oldRate}% APR
-          </div>
-          <div className="text-xs font-sora text-neutral-500">
-            New rate: {details.newRate}% APR
+        <div className="space-y-0.5">
+          <div className="text-xs font-sora text-neutral-600">
+            <span className="text-neutral-500">Rate:</span>{" "}
+            <span className="font-medium text-neutral-800">{details.oldRate}% → {details.newRate}%</span>
           </div>
         </div>
       );
 
     case "deposit":
       return (
-        <div className="space-y-1">
-          <div className="text-xs font-sora text-neutral-500">
-            Deposited: {details.amount} USDU
+        <div className="space-y-0.5">
+          <div className="text-xs font-sora text-neutral-600">
+            <span className="text-neutral-500">Deposited:</span>{" "}
+            <span className="font-medium text-neutral-800">{details.amount} USDU</span>
           </div>
           {details.pool && (
-            <div className="text-xs font-sora text-neutral-500">
-              Pool: {details.pool}
+            <div className="text-xs font-sora text-neutral-600">
+              <span className="text-neutral-500">Pool:</span>{" "}
+              <span className="font-medium text-neutral-800">{details.pool}</span>
             </div>
           )}
         </div>
@@ -228,13 +239,15 @@ function formatTransactionDetails(
 
     case "withdraw":
       return (
-        <div className="space-y-1">
-          <div className="text-xs font-sora text-neutral-500">
-            Withdrawn: {details.amount} USDU
+        <div className="space-y-0.5">
+          <div className="text-xs font-sora text-neutral-600">
+            <span className="text-neutral-500">Withdrawn:</span>{" "}
+            <span className="font-medium text-neutral-800">{details.amount} USDU</span>
           </div>
           {details.pool && (
-            <div className="text-xs font-sora text-neutral-500">
-              Pool: {details.pool}
+            <div className="text-xs font-sora text-neutral-600">
+              <span className="text-neutral-500">Pool:</span>{" "}
+              <span className="font-medium text-neutral-800">{details.pool}</span>
             </div>
           )}
         </div>
@@ -254,10 +267,10 @@ function TransactionCard({
   const details = formatTransactionDetails(transaction);
 
   return (
-    <Card className="p-4 hover:shadow-md transition-shadow">
-      <div className="space-y-2">
+    <Card className="rounded-xl border-0 shadow-none bg-white hover:bg-neutral-50 transition-colors">
+      <div className="p-3 space-y-2">
         {/* Header row: Type and Status Badge */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-3">
           <h4 className="font-medium text-sm font-sora text-neutral-800">
             {TRANSACTION_TYPE_LABELS[transaction.type]}
           </h4>
@@ -265,10 +278,10 @@ function TransactionCard({
         </div>
 
         {/* Transaction Details */}
-        {details && <div className="text-sm text-neutral-600">{details}</div>}
+        {details && <div>{details}</div>}
 
         {/* Bottom row: Time and Explorer link */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between pt-1.5 border-t border-neutral-100">
           <div className="text-xs font-sora text-neutral-500">
             {formatDistance(transaction.timestamp, new Date(), {
               addSuffix: true,
@@ -278,15 +291,17 @@ function TransactionCard({
           {/* View on Explorer */}
           <Button
             variant="ghost"
-            size="icon"
+            size="sm"
             asChild
-            className="h-6 w-6 flex-shrink-0"
+            className="h-6 px-2 text-xs font-sora text-neutral-600 hover:text-token-bg-blue"
           >
             <a
               href={`https://voyager.online/tx/${transaction.hash}`}
               target="_blank"
               rel="noopener noreferrer"
+              className="flex items-center gap-1"
             >
+              <span>View</span>
               <ExternalLink className="h-3 w-3" />
             </a>
           </Button>
@@ -309,11 +324,16 @@ export function TransactionHistoryTable() {
 
   if (transactions.length === 0) {
     return (
-      <div className="text-center py-12 text-neutral-500">
-        <p className="text-sm font-sora">No transactions yet</p>
-        <p className="text-xs font-sora mt-1">
-          Your transaction history will appear here
-        </p>
+      <div className="bg-white rounded-2xl p-8">
+        <div className="text-center py-8">
+          <div className="w-16 h-16 bg-neutral-100 rounded-2xl mx-auto flex items-center justify-center mb-4">
+            <Clock className="h-8 w-8 text-neutral-400" />
+          </div>
+          <p className="text-sm font-medium font-sora text-neutral-800">No transactions yet</p>
+          <p className="text-xs font-sora text-neutral-500 mt-2">
+            Your transaction history will appear here
+          </p>
+        </div>
       </div>
     );
   }
@@ -322,7 +342,7 @@ export function TransactionHistoryTable() {
     <div className="space-y-4">
       {/* Header with clear button */}
       <div className="flex items-center justify-between">
-        <p className="text-sm font-sora text-neutral-600">
+        <p className="text-sm font-medium font-sora text-neutral-800">
           {transactions.length} transaction
           {transactions.length !== 1 ? "s" : ""}
         </p>
@@ -330,14 +350,14 @@ export function TransactionHistoryTable() {
           variant="ghost"
           size="sm"
           onClick={clearHistory}
-          className="text-xs font-sora hover:text-red-600"
+          className="text-xs font-sora text-neutral-600 hover:text-token-bg-red"
         >
           Clear History
         </Button>
       </div>
 
       {/* Transaction cards */}
-      <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+      <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
         {transactions.map((transaction) => (
           <TransactionCard key={transaction.hash} transaction={transaction} />
         ))}
