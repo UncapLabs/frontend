@@ -6,6 +6,7 @@ import {
   type CollateralId,
   TOKENS,
   getCollateralAddresses,
+  getCollateral,
   requiresWrapping,
   generateUnwrapCallFromBigint,
 } from "~/lib/collateral";
@@ -16,6 +17,7 @@ import { createTransactionDescription } from "~/lib/transaction-descriptions";
 import { bigToBigint } from "~/lib/decimal";
 import { useTRPC } from "~/lib/trpc";
 import Big from "big.js";
+import type { Call } from "starknet";
 
 // Deposit form data structure
 export interface DepositFormData {
@@ -77,8 +79,9 @@ export function useDepositToStabilityPool({
 
     const amountBigInt = bigToBigint(amount, 18);
     const addresses = getCollateralAddresses(collateralType);
+    const collateral = getCollateral(collateralType);
 
-    return [
+    const callList: Call[] = [
       // 1. Approve USDU spending to Stability Pool
       contractCall.token.approve(
         TOKENS.USDU.address,
@@ -88,7 +91,22 @@ export function useDepositToStabilityPool({
       // 2. Deposit to Stability Pool
       contractCall.stabilityPool.deposit(amountBigInt, doClaim, collateralType),
     ];
-  }, [address, amount, doClaim, collateralType]);
+
+    // For wrapped collateral: add unwrap call after claiming to return underlying token
+    if (doClaim && requiresWrapping(collateral) && rewards?.collateral) {
+      const collateralRewardsBigint = bigToBigint(
+        rewards.collateral,
+        collateral.decimals
+      );
+      if (collateralRewardsBigint > 0n) {
+        callList.push(
+          generateUnwrapCallFromBigint(collateral, collateralRewardsBigint)
+        );
+      }
+    }
+
+    return callList;
+  }, [address, amount, doClaim, collateralType, rewards]);
 
   // Use the generic transaction hook
   const transaction = useTransaction(calls);
@@ -197,14 +215,31 @@ export function useWithdrawFromStabilityPool({
     }
 
     const amountBigInt = bigToBigint(amount, 18);
-    return [
+    const collateral = getCollateral(collateralType);
+
+    const callList: Call[] = [
       contractCall.stabilityPool.withdraw(
         amountBigInt,
         doClaim,
         collateralType
       ),
     ];
-  }, [address, amount, doClaim, collateralType]);
+
+    // For wrapped collateral: add unwrap call after claiming to return underlying token
+    if (doClaim && requiresWrapping(collateral) && rewards?.collateral) {
+      const collateralRewardsBigint = bigToBigint(
+        rewards.collateral,
+        collateral.decimals
+      );
+      if (collateralRewardsBigint > 0n) {
+        callList.push(
+          generateUnwrapCallFromBigint(collateral, collateralRewardsBigint)
+        );
+      }
+    }
+
+    return callList;
+  }, [address, amount, doClaim, collateralType, rewards]);
 
   // Use the generic transaction hook
   const transaction = useTransaction(calls);

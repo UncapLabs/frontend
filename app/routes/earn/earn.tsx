@@ -614,7 +614,7 @@ function Earn() {
                                       htmlFor="claim-rewards"
                                       className="text-sm font-medium cursor-pointer select-none flex items-center gap-2 text-neutral-700"
                                     >
-                                      Claim USDU rewards
+                                      Claim all rewards
                                       <Tooltip>
                                         <TooltipTrigger asChild>
                                           <HelpCircle className="h-3.5 w-3.5 text-neutral-400 hover:text-neutral-600" />
@@ -625,19 +625,20 @@ function Earn() {
                                         >
                                           <div className="space-y-2">
                                             <p className="text-xs">
-                                              If checked, rewards will be sent
-                                              to your wallet
+                                              If checked, both USDU and {selectedCollateral} rewards
+                                              will be claimed and sent to your wallet
                                             </p>
                                             <p className="font-medium mt-2"></p>
                                             <p className="text-xs">
                                               If left unchecked, USDU rewards
                                               will be automatically re-deposited
-                                              (compounded) for higher yields
+                                              (compounded) and collateral rewards will
+                                              remain unclaimed in the pool
                                             </p>
                                             {action === "withdraw" && (
                                               <p className="text-xs text-amber-300 mt-2">
-                                                ⚠️ Must be checked to fully exit
-                                                the pool
+                                                ⚠️ Must be checked to claim all rewards
+                                                when exiting the pool
                                               </p>
                                             )}
                                           </div>
@@ -647,8 +648,8 @@ function Earn() {
                                   </div>
                                   <p className="text-xs text-neutral-500 mt-1 ml-7">
                                     {claimRewards
-                                      ? "Rewards will be sent to your wallet"
-                                      : "USDU rewards will be re-deposited to the pool"}
+                                      ? "Both USDU and collateral rewards will be sent to your wallet"
+                                      : "USDU will be re-deposited; collateral rewards will remain unclaimed"}
                                   </p>
                                 </div>
 
