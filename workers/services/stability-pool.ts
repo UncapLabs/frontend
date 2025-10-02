@@ -19,7 +19,8 @@ export async function fetchPoolPosition(
 
     const userDeposit = bigintToBig(position.deposit, TOKENS.USDU.decimals);
     const usduRewards = bigintToBig(position.usduGain, TOKENS.USDU.decimals);
-    const collateralRewards = bigintToBig(position.collateralGain, 18);
+    // CRITICAL: Total collateral rewards = pending gains + stashed from previous compounds
+    const collateralRewards = bigintToBig(position.collateralGain + position.stashedColl, 18);
     const totalDeposits = bigintToBig(
       position.totalDeposits,
       TOKENS.USDU.decimals

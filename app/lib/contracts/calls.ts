@@ -625,11 +625,13 @@ export const contractRead = {
 
       // Fetch all data in parallel
       // Use get_depositor_yield_gain_with_pending to include pending rewards
-      const [deposit, usduGain, collateralGain, totalDeposits] =
+      // CRITICAL: Must fetch both collateralGain (pending) and stashedColl (from previous compounds)
+      const [deposit, usduGain, collateralGain, stashedColl, totalDeposits] =
         await Promise.all([
           contract.call("get_deposits", [userAddress]),
           contract.call("get_depositor_yield_gain_with_pending", [userAddress]),
           contract.call("get_depositor_coll_gain", [userAddress]),
+          contract.call("get_stashed_coll", [userAddress]),
           contract.call("get_total_usdu_deposits", []),
         ]);
 
@@ -637,6 +639,7 @@ export const contractRead = {
         deposit: deposit as bigint,
         usduGain: usduGain as bigint,
         collateralGain: collateralGain as bigint,
+        stashedColl: stashedColl as bigint,
         totalDeposits: totalDeposits as bigint,
       };
     },
