@@ -21,7 +21,6 @@ import { NumericFormat } from "react-number-format";
 import { useTroveData } from "~/hooks/use-trove-data";
 import { useUpdatePosition } from "~/hooks/use-update-position";
 import { useQueryState, parseAsString } from "nuqs";
-import { parseAsBig } from "~/lib/url-parsers";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { getInterestRatePercentage } from "~/lib/utils/position-helpers";
 import { extractTroveId, extractBranchId } from "~/lib/utils/trove-id";

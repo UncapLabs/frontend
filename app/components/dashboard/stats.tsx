@@ -13,7 +13,7 @@ import {
 } from "~/hooks/use-interest-rate";
 import { useStabilityPoolData } from "~/hooks/use-stability-pool-data";
 import { COLLATERALS, COLLATERAL_LIST } from "~/lib/collateral";
-import * as dn from "dnum";
+import Big from "big.js";
 
 interface BorrowRateItem {
   collateral: string;
@@ -262,37 +262,19 @@ export default function Stats() {
   const stabilityPoolData = useStabilityPoolData();
 
   // Helper function to format percentage from interest rate data
-  const formatRateAsPercentage = (rateData: any): string => {
+  const formatRateAsPercentage = (rateData: Big | undefined): string => {
     if (!rateData) return "—";
-
-    try {
-      // If it's an object with averageInterestRate property (JSON Dnum format)
-      if (rateData.averageInterestRate !== undefined) {
-        const rateDnum = dn.from(rateData.averageInterestRate, 18);
-        const percentage = dn.toNumber(rateDnum) * 100;
-        return `${percentage.toFixed(2)}%`;
-      }
-
-      // If it's already a number (percentage as decimal)
-      if (typeof rateData === "number") {
-        const percentage = rateData * 100;
-        return `${percentage.toFixed(2)}%`;
-      }
-    } catch {
-      return "—";
-    }
-
-    return "—";
+    return `${rateData.times(100).toFixed(2)}%`;
   };
 
   // Helper function to format currency values
-  const formatCurrency = (value: number | undefined): string => {
+  const formatCurrency = (value: Big | undefined): string => {
     if (value === undefined || value === null) return "—";
 
-    if (value >= 1_000_000) {
-      return `$${(value / 1_000_000).toFixed(1)}M`;
-    } else if (value >= 1_000) {
-      return `$${(value / 1_000).toFixed(1)}K`;
+    if (value.gte(1_000_000)) {
+      return `$${value.div(1_000_000).toFixed(1)}M`;
+    } else if (value.gte(1_000)) {
+      return `$${value.div(1_000).toFixed(1)}K`;
     } else {
       return `$${value.toFixed(0)}`;
     }

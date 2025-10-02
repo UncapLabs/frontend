@@ -1,22 +1,19 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "~/lib/trpc";
-import * as dn from "dnum";
 import {
-  INTEREST_RATE_PRECISE_UNTIL,
-  INTEREST_RATE_INCREMENT_PRECISE,
-  INTEREST_RATE_INCREMENT_NORMAL,
-  type Dnum,
+  INTEREST_RATE_PRECISE_UNTIL_BIG,
+  INTEREST_RATE_INCREMENT_PRECISE_BIG,
+  INTEREST_RATE_INCREMENT_NORMAL_BIG,
 } from "~/lib/interest-rate-utils";
-import { DNUM_0 } from "~/lib/decimal";
+import Big from "big.js";
 
-// Types matching our loan structure
 type PositionLoanCommitted = {
   id: string;
   branchId?: number;
-  interestRate: Dnum;
-  recordedDebt: Dnum;
-  updatedAt: number; // timestamp in ms
+  interestRate: Big;
+  recordedDebt: Big;
+  updatedAt: number;
 };
 
 // Get chart data (calls tRPC which has our calculation logic)
@@ -31,8 +28,8 @@ export function useInterestRateChartData(
       excludedLoan: excludedLoan
         ? {
             id: excludedLoan.id,
-            interestRate: dn.toJSON(excludedLoan.interestRate),
-            recordedDebt: dn.toJSON(excludedLoan.recordedDebt),
+            interestRate: excludedLoan.interestRate.times(1e18).toFixed(0),
+            recordedDebt: excludedLoan.recordedDebt.times(1e18).toFixed(0),
             updatedAt: excludedLoan.updatedAt,
           }
         : undefined,
@@ -54,8 +51,8 @@ export function useInterestRateVisualizationData(
       excludedLoan: excludedLoan
         ? {
             id: excludedLoan.id,
-            interestRate: dn.toJSON(excludedLoan.interestRate),
-            recordedDebt: dn.toJSON(excludedLoan.recordedDebt),
+            interestRate: excludedLoan.interestRate.times(1e18).toFixed(0),
+            recordedDebt: excludedLoan.recordedDebt.times(1e18).toFixed(0),
             updatedAt: excludedLoan.updatedAt,
           }
         : undefined,
@@ -68,7 +65,7 @@ export function useInterestRateVisualizationData(
 // Calculate debt in front of interest rate
 export function useDebtInFrontOfInterestRate(
   branchId: number,
-  interestRate: Dnum | null,
+  interestRate: Big | null,
   loan?: PositionLoanCommitted
 ) {
   const chartData = useInterestRateChartData(branchId, loan);
@@ -78,50 +75,22 @@ export function useDebtInFrontOfInterestRate(
 
     // Find the bracket containing this rate
     const bracket = chartData.data.find((b: any) => {
-      // b.rate is a JSON string like '["5000000000000000",18]', parse it properly
-      let bRate: Dnum;
-      if (typeof b.rate === "string") {
-        const parsed = JSON.parse(b.rate);
-        // Convert the first element to bigint if it's not already
-        bRate = [BigInt(parsed[0]), parsed[1]] as Dnum;
-      } else {
-        bRate = b.rate;
-      }
+      const bRate = b.rate;
+      const increment = bRate.lt(INTEREST_RATE_PRECISE_UNTIL_BIG)
+        ? INTEREST_RATE_INCREMENT_PRECISE_BIG
+        : INTEREST_RATE_INCREMENT_NORMAL_BIG;
 
-      const increment = dn.lt(bRate, INTEREST_RATE_PRECISE_UNTIL)
-        ? INTEREST_RATE_INCREMENT_PRECISE
-        : INTEREST_RATE_INCREMENT_NORMAL;
-
-      return (
-        dn.gte(interestRate, bRate) &&
-        dn.lt(interestRate, dn.add(bRate, increment))
-      );
+      return interestRate.gte(bRate) && interestRate.lt(bRate.plus(increment));
     });
 
-    const totalDebt = chartData.data.reduce((sum: Dnum, b: any) => {
-      // b.debt is a JSON string like '["0",18]', parse it properly
-      let debt: Dnum;
-      if (typeof b.debt === "string") {
-        const parsed = JSON.parse(b.debt);
-        // Convert the first element to bigint if it's not already
-        debt = [BigInt(parsed[0]), parsed[1]] as Dnum;
-      } else {
-        debt = b.debt;
-      }
-      return dn.add(sum, debt);
-    }, DNUM_0);
+    const totalDebt = chartData.data.reduce(
+      (sum: Big, b: any) => sum.plus(b.debt),
+      new Big(0)
+    );
 
     return {
       data: {
-        debtInFront: bracket
-          ? (() => {
-              if (typeof bracket.debtInFront === "string") {
-                const parsed = JSON.parse(bracket.debtInFront);
-                return [BigInt(parsed[0]), parsed[1]] as Dnum;
-              }
-              return bracket.debtInFront;
-            })()
-          : DNUM_0,
+        debtInFront: bracket ? bracket.debtInFront : new Big(0),
         totalDebt,
       },
     };
@@ -131,7 +100,7 @@ export function useDebtInFrontOfInterestRate(
 // Get redemption risk
 export function useRedemptionRiskOfInterestRate(
   branchId: number,
-  interestRate: Dnum | null,
+  interestRate: Big | null,
   loan?: PositionLoanCommitted
 ) {
   const debtInFront = useDebtInFrontOfInterestRate(
@@ -143,14 +112,14 @@ export function useRedemptionRiskOfInterestRate(
   return useMemo(() => {
     if (!debtInFront.data) return { data: null };
 
-    const totalDebt = dn.toNumber(debtInFront.data.totalDebt);
+    const totalDebt = debtInFront.data.totalDebt;
 
     // Avoid division by zero - if no debt exists, risk is low
-    if (totalDebt === 0) {
+    if (totalDebt.eq(0)) {
       return { data: "Low" };
     }
 
-    const ratio = dn.toNumber(debtInFront.data.debtInFront) / totalDebt;
+    const ratio = debtInFront.data.debtInFront.div(totalDebt).toNumber();
 
     // IMPORTANT: Lower debt in front = HIGHER risk (you're more likely to be redeemed)
     // Higher debt in front = LOWER risk (many others would be redeemed before you)

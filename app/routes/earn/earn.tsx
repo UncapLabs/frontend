@@ -77,6 +77,7 @@ function Earn() {
 
   const allPositions = useAllStabilityPoolPositions();
   const selectedPosition = allPositions[selectedCollateral];
+  const selectedCollateralSymbol = COLLATERALS[selectedCollateral].symbol;
 
   const { usdu: usduPrice, bitcoin: bitcoinPrice } = useFetchPrices({
     collateralType: selectedCollateral,
@@ -522,28 +523,32 @@ function Earn() {
                             <div className="flex-1">
                               <div className="flex items-center gap-3">
                                 <Checkbox
-                                  id="compound-rewards"
-                                  checked={!claimRewards} // Note: inverted because claimRewards=false means compound
+                                  id="claim-all-rewards"
+                                  checked={claimRewards}
                                   onCheckedChange={(checked) =>
-                                    setClaimRewards(!checked)
+                                    setClaimRewards(!!checked)
                                   }
                                   disabled={
                                     isSending ||
                                     isPending ||
-                                    !selectedPosition?.rewards?.usdu ||
-                                    selectedPosition.rewards.usdu.eq(0)
+                                    (!selectedPosition?.rewards?.usdu ||
+                                      selectedPosition.rewards.usdu.eq(0)) &&
+                                    (!selectedPosition?.rewards?.collateral ||
+                                      selectedPosition.rewards.collateral.eq(0))
                                   }
                                 />
                                 <Label
-                                  htmlFor="compound-rewards"
+                                  htmlFor="claim-all-rewards"
                                   className={`text-sm font-medium select-none flex items-center gap-2 ${
-                                    !selectedPosition?.rewards?.usdu ||
-                                    selectedPosition.rewards.usdu.eq(0)
+                                    (!selectedPosition?.rewards?.usdu ||
+                                      selectedPosition.rewards.usdu.eq(0)) &&
+                                    (!selectedPosition?.rewards?.collateral ||
+                                      selectedPosition.rewards.collateral.eq(0))
                                       ? "text-neutral-400"
                                       : "text-neutral-700 cursor-pointer"
                                   }`}
                                 >
-                                  Auto-compound USDU rewards
+                                  Claim all rewards to wallet
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <HelpCircle className="h-3.5 w-3.5 text-neutral-400 hover:text-neutral-600" />
@@ -554,13 +559,13 @@ function Earn() {
                                     >
                                       <div className="space-y-2">
                                         <p className="text-xs">
-                                          If checked, USDU rewards will be
-                                          automatically re-deposited for
-                                          compound growth
+                                          If checked, both USDU and {selectedCollateralSymbol} rewards
+                                          will be claimed and sent to your wallet
                                         </p>
                                         <p className="text-xs">
-                                          If left unchecked, all rewards will be
-                                          sent to your wallet
+                                          If left unchecked, USDU rewards
+                                          will be compounded and {selectedCollateralSymbol} rewards will
+                                          stay in pool and can be claimed later
                                         </p>
                                       </div>
                                     </TooltipContent>
@@ -568,29 +573,44 @@ function Earn() {
                                 </Label>
                               </div>
                               <p className="text-xs text-neutral-500 mt-1 ml-7">
-                                {!selectedPosition?.rewards?.usdu ||
-                                selectedPosition.rewards.usdu.eq(0)
-                                  ? "No USDU rewards available to compound"
-                                  : !claimRewards
-                                  ? "USDU rewards will be re-deposited to the pool"
-                                  : "All rewards will be sent to your wallet"}
+                                {(!selectedPosition?.rewards?.usdu ||
+                                  selectedPosition.rewards.usdu.eq(0)) &&
+                                (!selectedPosition?.rewards?.collateral ||
+                                  selectedPosition.rewards.collateral.eq(0))
+                                  ? "No rewards available"
+                                  : claimRewards
+                                  ? `USDU and ${selectedCollateralSymbol} rewards will be sent to your wallet`
+                                  : `USDU rewards will be compounded; ${selectedCollateralSymbol} rewards stay in pool and can be claimed later`}
                               </p>
                             </div>
 
                             <div className="text-right space-y-1">
-                              <div className="text-sm font-medium text-neutral-700">
-                                <NumericFormat
-                                  displayType="text"
-                                  value={
-                                    selectedPosition?.rewards?.usdu?.toString() ||
-                                    "0"
-                                  }
-                                  thousandSeparator=","
-                                  decimalScale={2}
-                                  fixedDecimalScale
-                                />{" "}
-                                USDU
-                              </div>
+                              {selectedPosition?.rewards?.usdu &&
+                                selectedPosition.rewards.usdu.gt(0) && (
+                                <div className="text-sm font-medium text-neutral-700">
+                                  <NumericFormat
+                                    displayType="text"
+                                    value={selectedPosition.rewards.usdu.toString()}
+                                    thousandSeparator=","
+                                    decimalScale={2}
+                                    fixedDecimalScale
+                                  />{" "}
+                                  USDU
+                                </div>
+                              )}
+                              {selectedPosition?.rewards?.collateral &&
+                                selectedPosition.rewards.collateral.gt(0) && (
+                                <div className="text-sm font-medium text-neutral-700">
+                                  <NumericFormat
+                                    displayType="text"
+                                    value={selectedPosition.rewards.collateral.toString()}
+                                    thousandSeparator=","
+                                    decimalScale={6}
+                                    fixedDecimalScale
+                                  />{" "}
+                                  {selectedCollateralSymbol}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -614,7 +634,9 @@ function Earn() {
                                       htmlFor="claim-rewards"
                                       className="text-sm font-medium cursor-pointer select-none flex items-center gap-2 text-neutral-700"
                                     >
-                                      Claim all rewards
+                                      {action === "deposit"
+                                        ? "Claim rewards while depositing"
+                                        : "Claim rewards while withdrawing"}
                                       <Tooltip>
                                         <TooltipTrigger asChild>
                                           <HelpCircle className="h-3.5 w-3.5 text-neutral-400 hover:text-neutral-600" />
@@ -625,20 +647,18 @@ function Earn() {
                                         >
                                           <div className="space-y-2">
                                             <p className="text-xs">
-                                              If checked, both USDU and {selectedCollateral} rewards
+                                              If checked, both USDU and {selectedCollateralSymbol} rewards
                                               will be claimed and sent to your wallet
                                             </p>
                                             <p className="font-medium mt-2"></p>
                                             <p className="text-xs">
                                               If left unchecked, USDU rewards
-                                              will be automatically re-deposited
-                                              (compounded) and collateral rewards will
-                                              remain unclaimed in the pool
+                                              will be compounded and {selectedCollateralSymbol} rewards will
+                                              stay in pool and can be claimed later
                                             </p>
                                             {action === "withdraw" && (
                                               <p className="text-xs text-amber-300 mt-2">
-                                                ⚠️ Must be checked to claim all rewards
-                                                when exiting the pool
+                                                ⚠️ To fully exit, check this box to claim all rewards
                                               </p>
                                             )}
                                           </div>
@@ -648,8 +668,8 @@ function Earn() {
                                   </div>
                                   <p className="text-xs text-neutral-500 mt-1 ml-7">
                                     {claimRewards
-                                      ? "Both USDU and collateral rewards will be sent to your wallet"
-                                      : "USDU will be re-deposited; collateral rewards will remain unclaimed"}
+                                      ? `USDU and ${selectedCollateralSymbol} rewards will be sent to your wallet`
+                                      : `USDU rewards will be compounded; ${selectedCollateralSymbol} rewards stay in pool and can be claimed later`}
                                   </p>
                                 </div>
 
@@ -677,7 +697,7 @@ function Earn() {
                                         decimalScale={6}
                                         fixedDecimalScale
                                       />{" "}
-                                      {selectedCollateral}
+                                      {selectedCollateralSymbol}
                                     </div>
                                   )}
                                 </div>
@@ -728,7 +748,7 @@ function Earn() {
                                   0.00 USDU
                                 </div>
                                 <div className="text-sm font-medium text-neutral-400">
-                                  0.000000 {selectedCollateral}
+                                  0.000000 {selectedCollateralSymbol}
                                 </div>
                               </div>
                             </div>
@@ -747,40 +767,53 @@ function Earn() {
                       })}
                     >
                       {({ canSubmit, errors }) => {
-                        let buttonText =
-                          action === "deposit"
-                            ? "Deposit USDU"
-                            : action === "withdraw"
-                            ? "Withdraw USDU"
-                            : !claimRewards
-                            ? "Claim & Compound Rewards"
-                            : "Claim All Rewards";
+                        // Determine if user has rewards
+                        const hasRewards =
+                          selectedPosition?.rewards &&
+                          (selectedPosition.rewards.usdu.gt(0) ||
+                            selectedPosition.rewards.collateral.gt(0));
+
+                        let buttonText = "";
 
                         if (!address) {
                           buttonText = "Connect Wallet";
-                        } else if (action !== "claim" && errors.length > 0) {
-                          buttonText = errors[0];
-                        } else if (
-                          action !== "claim" &&
-                          !form.state.values.amount
-                        ) {
-                          buttonText =
-                            action === "deposit"
-                              ? "Enter deposit amount"
-                              : "Enter withdraw amount";
-                        } else if (
-                          action === "withdraw" &&
-                          (!selectedPosition?.userDeposit ||
-                            selectedPosition.userDeposit.eq(0))
-                        ) {
-                          buttonText = "No deposit in this pool";
-                        } else if (
-                          action === "claim" &&
-                          (!selectedPosition?.rewards ||
-                            (selectedPosition.rewards.usdu.eq(0) &&
-                              selectedPosition.rewards.collateral.eq(0)))
-                        ) {
-                          buttonText = "No rewards to claim";
+                        } else if (action === "deposit") {
+                          if (errors.length > 0) {
+                            buttonText = errors[0];
+                          } else if (!form.state.values.amount) {
+                            buttonText = "Enter deposit amount";
+                          } else if (hasRewards && claimRewards) {
+                            buttonText = "Deposit & Claim Rewards";
+                          } else if (hasRewards && !claimRewards) {
+                            buttonText = "Deposit & Compound USDU";
+                          } else {
+                            buttonText = "Deposit USDU";
+                          }
+                        } else if (action === "withdraw") {
+                          if (errors.length > 0) {
+                            buttonText = errors[0];
+                          } else if (!form.state.values.amount) {
+                            buttonText = "Enter withdraw amount";
+                          } else if (
+                            !selectedPosition?.userDeposit ||
+                            selectedPosition.userDeposit.eq(0)
+                          ) {
+                            buttonText = "No deposit in this pool";
+                          } else if (hasRewards && claimRewards) {
+                            buttonText = "Withdraw & Claim Rewards";
+                          } else if (hasRewards && !claimRewards) {
+                            buttonText = "Withdraw & Compound USDU";
+                          } else {
+                            buttonText = "Withdraw USDU";
+                          }
+                        } else if (action === "claim") {
+                          if (!hasRewards) {
+                            buttonText = "No Rewards Available";
+                          } else if (claimRewards) {
+                            buttonText = "Claim All Rewards";
+                          } else {
+                            buttonText = "Compound USDU Only";
+                          }
                         }
 
                         return (

@@ -12,7 +12,6 @@ import {
 import { useCalculatedRebate } from "~/hooks/use-rebate-config";
 import { useInterestRateCooldown } from "~/hooks/use-interest-rate-cooldown";
 import { getBranchId, type CollateralId } from "~/lib/collateral";
-import * as dn from "dnum";
 import { RateModeSelector, type RateMode } from "./rate-mode-selector";
 export type { RateMode } from "./rate-mode-selector";
 import { ManagedStrategy } from "./managed-strategy";
@@ -51,13 +50,13 @@ export function InterestRateSelector({
     parseAsStringEnum<RateMode>(["manual", "managed"]).withDefault("manual")
   );
   const branchId = getBranchId(collateralType);
-  const interestRateDnum = dn.from(interestRate / 100, 18); // Convert percentage to decimal
+  const interestRateBig = new Big(interestRate).div(100);
 
   const rebateData = useCalculatedRebate(borrowAmount, interestRate);
   const visualizationData = useInterestRateVisualizationData(branchId);
   const redemptionRisk = useRedemptionRiskOfInterestRate(
     branchId,
-    interestRateDnum
+    interestRateBig
   );
   const averageRate = useAverageInterestRate(branchId);
 
@@ -82,27 +81,26 @@ export function InterestRateSelector({
   // Use the data extraction function from ManualRateControls for debt statistics
   const { debtInFront } = useMemo(() => {
     if (!visualizationData.data) {
-      return { debtInFront: 0, totalDebt: 0 };
+      return { debtInFront: new Big(0), totalDebt: new Big(0) };
     }
 
-    const currentRateDecimal = dn.toNumber(interestRateDnum);
     const currentBar = visualizationData.data.chartBars?.find(
       (bar: any, index: number) => {
         const nextBar = visualizationData.data.chartBars[index + 1];
         if (!nextBar) {
-          return currentRateDecimal >= bar.rate;
+          return interestRateBig.gte(bar.rate);
         }
         return (
-          currentRateDecimal >= bar.rate && currentRateDecimal < nextBar.rate
+          interestRateBig.gte(bar.rate) && interestRateBig.lt(nextBar.rate)
         );
       }
     );
 
     return {
-      debtInFront: currentBar ? currentBar.debtInFront : 0,
-      totalDebt: visualizationData.data.totalDebt || 0,
+      debtInFront: currentBar ? currentBar.debtInFront : new Big(0),
+      totalDebt: visualizationData.data.totalDebt || new Big(0),
     };
-  }, [visualizationData.data, interestRateDnum]);
+  }, [visualizationData.data, interestRateBig]);
 
   return (
     <div className="bg-white rounded-2xl p-6 mt-4">
@@ -115,9 +113,9 @@ export function InterestRateSelector({
             </h3>
             <RedemptionInfo variant="modal" />
           </div>
-          {averageRate.data !== undefined && averageRate.data !== null && (
+          {averageRate.data && (
             <span className="text-xs text-neutral-500 font-sora leading-3">
-              avg: {(averageRate.data * 100).toFixed(2)}%
+              avg: {averageRate.data.times(100).toFixed(2)}%
             </span>
           )}
         </div>
@@ -191,8 +189,8 @@ export function InterestRateSelector({
                         <span className="sm:hidden">Ahead:</span>
                       </span>
                       <span className="text-xs font-medium text-neutral-800 font-sora">
-                        {debtInFront > 0
-                          ? `$${(debtInFront / 1000000).toFixed(2)}M`
+                        {debtInFront.gt(0)
+                          ? `$${debtInFront.div(1000000).toFixed(2)}M`
                           : "—"}
                       </span>
                     </div>

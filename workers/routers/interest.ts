@@ -1,35 +1,22 @@
 import { z } from "zod";
 import { publicProcedure, router } from "../trpc";
-import * as dn from "dnum";
 import {
-  INTEREST_RATE_START,
-  INTEREST_RATE_END,
-  INTEREST_RATE_PRECISE_UNTIL,
-  INTEREST_RATE_INCREMENT_PRECISE,
-  INTEREST_RATE_INCREMENT_NORMAL,
-  ONE_YEAR_D18,
-  calculatePendingInterest,
-  type Dnum,
+  INTEREST_RATE_START_BIG,
+  INTEREST_RATE_END_BIG,
+  INTEREST_RATE_PRECISE_UNTIL_BIG,
+  INTEREST_RATE_INCREMENT_PRECISE_BIG,
+  INTEREST_RATE_INCREMENT_NORMAL_BIG,
 } from "~/lib/interest-rate-utils";
 import {
   fetchAllInterestRateBrackets,
   getAverageInterestRateForBranch,
 } from "../services/interest";
-import { dnum18, DNUM_0 } from "~/lib/decimal";
-
-type InterestRateBracket = {
-  branchId: number;
-  rate: Dnum;
-  totalDebt: bigint;
-  sumDebtTimesRateD36: bigint;
-  pendingDebtTimesOneYearD36: bigint;
-  updatedAt: bigint;
-};
+import Big from "big.js";
 
 type ChartDataPoint = {
-  debt: string;
-  debtInFront: string;
-  rate: string;
+  debt: Big;
+  debtInFront: Big;
+  rate: Big;
   size: number;
 };
 
@@ -43,18 +30,12 @@ function calculateRiskZones(chartData: ChartDataPoint[]): {
   }
 
   // Calculate total debt - properly parse the JSON Dnum format
-  const totalDebt = chartData.reduce((sum: Dnum, item: ChartDataPoint) => {
-    let debt: Dnum;
-    if (typeof item.debt === "string") {
-      const parsed = JSON.parse(item.debt);
-      debt = [BigInt(parsed[0]), parsed[1]] as Dnum;
-    } else {
-      debt = item.debt as any;
-    }
-    return dn.add(sum, debt);
-  }, DNUM_0);
+  const totalDebt = chartData.reduce(
+    (sum, item) => sum.plus(item.debt),
+    new Big(0)
+  );
 
-  if (dn.eq(totalDebt, DNUM_0)) {
+  if (totalDebt.eq(0)) {
     return { highRiskThreshold: 0.1, mediumRiskThreshold: 0.25 };
   }
 
@@ -67,15 +48,7 @@ function calculateRiskZones(chartData: ChartDataPoint[]): {
   // We're looking for the position where cumulative debt crosses 10% and 25%
   for (let i = 0; i < chartData.length; i++) {
     const item = chartData[i];
-    let debtInFront: Dnum;
-    if (typeof item.debtInFront === "string") {
-      const parsed = JSON.parse(item.debtInFront);
-      debtInFront = [BigInt(parsed[0]), parsed[1]] as Dnum;
-    } else {
-      debtInFront = item.debtInFront as any;
-    }
-
-    const ratio = dn.toNumber(dn.div(debtInFront, totalDebt));
+    const ratio = item.debtInFront.div(totalDebt).toNumber();
     // Use the center of the bar for more accurate positioning
     const position = (i + 0.5) / Math.max(1, chartData.length);
 
@@ -111,7 +84,7 @@ async function calculateChartData(
   const data = await fetchAllInterestRateBrackets();
 
   const filteredBrackets = data.brackets.filter(
-    (bracket: InterestRateBracket) => bracket.branchId === branchId
+    (bracket) => bracket.branchId === branchId
   );
 
   // Calculate effective timestamp
@@ -127,12 +100,12 @@ async function calculateChartData(
     )
   );
 
-  const debtByRate = new Map<string, Dnum>();
+  const debtByRate = new Map<string, Big>();
 
   for (const bracket of filteredBrackets) {
     const rate = bracket.rate;
 
-    if (dn.gte(rate, INTEREST_RATE_START) && dn.lte(rate, INTEREST_RATE_END)) {
+    if (rate.gte(INTEREST_RATE_START_BIG) && rate.lte(INTEREST_RATE_END_BIG)) {
       // Calculate totalDebt with pending interest
       const effectiveTimestamp =
         timestamp < data.lastUpdatedAt ? data.lastUpdatedAt : timestamp;
@@ -140,79 +113,77 @@ async function calculateChartData(
       const totalDebt = bracket.totalDebt;
       const updatedAt = bracket.updatedAt;
 
-      const ONE_YEAR_D36 = ONE_YEAR_D18 * 10n ** 18n;
-      const pendingDebt =
-        (bracket.pendingDebtTimesOneYearD36 +
-          bracket.sumDebtTimesRateD36 * (effectiveTimestamp - updatedAt)) /
-        ONE_YEAR_D36;
+      const timeDelta = new Big((effectiveTimestamp - updatedAt).toString());
+      const oneYearSeconds = new Big(365 * 24 * 60 * 60);
 
-      const totalWithPending: Dnum = [totalDebt + pendingDebt, 18];
-      debtByRate.set(dn.toJSON(rate), totalWithPending);
+      const pendingDebt = bracket.pendingDebtTimesOneYearD36
+        .plus(bracket.sumDebtTimesRateD36.times(timeDelta))
+        .div(oneYearSeconds);
+
+      const totalWithPending = totalDebt.plus(pendingDebt);
+      debtByRate.set(rate.toString(), totalWithPending);
     }
   }
 
   const chartData: ChartDataPoint[] = [];
-  let currentRate = INTEREST_RATE_START;
-  let debtInFront = DNUM_0;
-  let highestDebt = DNUM_0;
+  let currentRate = INTEREST_RATE_START_BIG;
+  let debtInFront = new Big(0);
+  let highestDebt = new Big(0);
 
-  while (dn.lte(currentRate, INTEREST_RATE_END)) {
-    const nextRate = dn.add(
-      currentRate,
-      dn.lt(currentRate, INTEREST_RATE_PRECISE_UNTIL)
-        ? INTEREST_RATE_INCREMENT_PRECISE
-        : INTEREST_RATE_INCREMENT_NORMAL
+  while (currentRate.lte(INTEREST_RATE_END_BIG)) {
+    const nextRate = currentRate.plus(
+      currentRate.lt(INTEREST_RATE_PRECISE_UNTIL_BIG)
+        ? INTEREST_RATE_INCREMENT_PRECISE_BIG
+        : INTEREST_RATE_INCREMENT_NORMAL_BIG
     );
 
-    let aggregatedDebt = DNUM_0;
+    let aggregatedDebt = new Big(0);
 
     for (const [rateKey, debt] of debtByRate.entries()) {
-      const rateData = JSON.parse(rateKey);
-      const rate: Dnum = [BigInt(rateData[0]), rateData[1]];
-      if (dn.gte(rate, currentRate) && dn.lt(rate, nextRate)) {
-        aggregatedDebt = dn.add(aggregatedDebt, debt);
+      const rate = new Big(rateKey);
+      if (rate.gte(currentRate) && rate.lt(nextRate)) {
+        aggregatedDebt = aggregatedDebt.plus(debt);
       }
     }
 
     // Exclude user's own debt from calculation
     if (excludedLoan) {
-      const loanRate = dn.from(excludedLoan.interestRate, 18);
-      if (dn.gte(loanRate, currentRate) && dn.lt(loanRate, nextRate)) {
+      const loanRate = new Big(excludedLoan.interestRate).div(1e18);
+      if (loanRate.gte(currentRate) && loanRate.lt(nextRate)) {
         const loanUpdatedAt = BigInt(excludedLoan.updatedAt / 1000);
-        const recordedDebt = dn.from(excludedLoan.recordedDebt, 18);
+        const recordedDebt = new Big(excludedLoan.recordedDebt).div(1e18);
 
         // Calculate pending debt: pendingInterest = debt * rate * timeDelta / ONE_YEAR
-        const pendingInterest = calculatePendingInterest(
-          recordedDebt[0],
-          loanRate,
-          timestamp - loanUpdatedAt
-        );
-        const pendingDebt = dnum18(pendingInterest);
+        const timeDelta = new Big((timestamp - loanUpdatedAt).toString());
+        const oneYearSeconds = new Big(365 * 24 * 60 * 60);
+        const pendingInterest = recordedDebt
+          .times(loanRate)
+          .times(timeDelta)
+          .div(oneYearSeconds);
 
-        const excludedDebt = dn.add(recordedDebt, pendingDebt);
-        aggregatedDebt = dn.sub(aggregatedDebt, excludedDebt);
+        const excludedDebt = recordedDebt.plus(pendingInterest);
+        aggregatedDebt = aggregatedDebt.minus(excludedDebt);
       }
     }
 
     chartData.push({
-      debt: dn.toJSON(aggregatedDebt),
-      debtInFront: dn.toJSON(debtInFront),
-      rate: dn.toJSON(currentRate),
-      size: dn.toNumber(aggregatedDebt),
+      debt: aggregatedDebt,
+      debtInFront: debtInFront,
+      rate: currentRate,
+      size: aggregatedDebt.toNumber(),
     });
 
-    debtInFront = dn.add(debtInFront, aggregatedDebt);
+    debtInFront = debtInFront.plus(aggregatedDebt);
     currentRate = nextRate;
-    if (dn.gt(aggregatedDebt, highestDebt)) {
+    if (aggregatedDebt.gt(highestDebt)) {
       highestDebt = aggregatedDebt;
     }
   }
 
   // Normalize sizes between 0 and 1
-  if (highestDebt[0] !== 0n) {
-    const divisor = dn.toNumber(highestDebt);
+  if (highestDebt.gt(0)) {
     for (const datum of chartData) {
-      datum.size /= divisor;
+      datum.size = datum.debt.div(highestDebt).toNumber();
     }
   }
 
@@ -220,54 +191,6 @@ async function calculateChartData(
 }
 
 export const interestRouter = router({
-  getAllInterestRateBrackets: publicProcedure.query(async () => {
-    try {
-      const data = await fetchAllInterestRateBrackets();
-
-      return {
-        lastUpdatedAt: data.lastUpdatedAt.toString(),
-        brackets: data.brackets.map((bracket) => ({
-          branchId: bracket.branchId,
-          rate: dn.toJSON(bracket.rate),
-          totalDebt: bracket.totalDebt.toString(),
-          sumDebtTimesRateD36: bracket.sumDebtTimesRateD36.toString(),
-          pendingDebtTimesOneYearD36:
-            bracket.pendingDebtTimesOneYearD36.toString(),
-          updatedAt: bracket.updatedAt.toString(),
-        })),
-      };
-    } catch (error) {
-      console.error("Error fetching interest rate brackets:", error);
-      throw new Error("Failed to fetch interest rate brackets");
-    }
-  }),
-  getInterestRateBrackets: publicProcedure
-    .input(
-      z.object({
-        branchId: z.number().optional().default(0),
-      })
-    )
-    .query(async ({ input }) => {
-      const data = await fetchAllInterestRateBrackets();
-
-      const filteredBrackets = data.brackets.filter(
-        (bracket: InterestRateBracket) => bracket.branchId === input.branchId
-      );
-
-      return {
-        lastUpdatedAt: data.lastUpdatedAt.toString(),
-        brackets: filteredBrackets.map((bracket) => ({
-          branchId: bracket.branchId,
-          rate: dn.toJSON(bracket.rate),
-          // Return the raw data needed for totalDebt calculation
-          totalDebt: bracket.totalDebt.toString(),
-          pendingDebtTimesOneYearD36:
-            bracket.pendingDebtTimesOneYearD36.toString(),
-          sumDebtTimesRateD36: bracket.sumDebtTimesRateD36.toString(),
-          updatedAt: bracket.updatedAt.toString(),
-        })),
-      };
-    }),
   getInterestRateChartData: publicProcedure
     .input(
       z.object({
@@ -275,9 +198,9 @@ export const interestRouter = router({
         excludedLoan: z
           .object({
             id: z.string(),
-            interestRate: z.string(), // Dnum as JSON
-            recordedDebt: z.string(), // Dnum as JSON
-            updatedAt: z.number(), // timestamp in ms
+            interestRate: z.string(),
+            recordedDebt: z.string(),
+            updatedAt: z.number(),
           })
           .optional(),
       })
@@ -310,48 +233,17 @@ export const interestRouter = router({
       // Calculate risk zones
       const riskZones = calculateRiskZones(chartData);
 
-      // Convert chart data to cleaner format with plain numbers
-      const chartBars = chartData.map((point) => {
-        // Parse Dnum JSON strings and convert to regular numbers
-        let rate: number;
-        let debt: number;
-        let debtInFront: number;
+      const chartBars = chartData.map((point) => ({
+        rate: point.rate,
+        debt: point.debt,
+        debtInFront: point.debtInFront,
+        normalized: point.size,
+      }));
 
-        if (typeof point.rate === "string") {
-          const parsed = JSON.parse(point.rate);
-          // The value is already in 18 decimal format as [bigint, decimals]
-          const rateDnum: Dnum = [BigInt(parsed[0]), parsed[1]];
-          rate = dn.toNumber(rateDnum);
-        } else {
-          rate = dn.toNumber(point.rate);
-        }
-
-        if (typeof point.debt === "string") {
-          const parsed = JSON.parse(point.debt);
-          const debtDnum: Dnum = [BigInt(parsed[0]), parsed[1]];
-          debt = dn.toNumber(debtDnum);
-        } else {
-          debt = dn.toNumber(point.debt);
-        }
-
-        if (typeof point.debtInFront === "string") {
-          const parsed = JSON.parse(point.debtInFront);
-          const debtInFrontDnum: Dnum = [BigInt(parsed[0]), parsed[1]];
-          debtInFront = dn.toNumber(debtInFrontDnum);
-        } else {
-          debtInFront = dn.toNumber(point.debtInFront);
-        }
-
-        return {
-          rate, // Plain number (decimal rate)
-          debt, // Plain number
-          debtInFront, // Plain number
-          normalized: point.size, // Already normalized 0-1
-        };
-      });
-
-      // Calculate total debt for statistics
-      const totalDebt = chartBars.reduce((sum, bar) => sum + bar.debt, 0);
+      const totalDebt = chartBars.reduce(
+        (sum, bar) => sum.plus(bar.debt),
+        new Big(0)
+      );
 
       return {
         chartBars,

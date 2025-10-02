@@ -1,25 +1,8 @@
-import type { Dnum } from "dnum";
-import * as dn from "dnum";
 import Big from "big.js";
 
 // Configure Big.js to handle crypto precision (up to 50 decimal places)
 Big.DP = 50; // Decimal places
 Big.RM = Big.roundDown; // Rounding mode
-
-// Keep dnum exports for files that still need them (workers, interest-rate)
-export const DNUM_0 = dn.from(0, 18);
-
-export function dnum18(value: null | undefined): null;
-export function dnum18(value: string | bigint | number): Dnum;
-export function dnum18(
-  value: string | bigint | number | null | undefined
-): Dnum | null;
-export function dnum18(
-  value: string | bigint | number | null | undefined
-): Dnum | null {
-  return value === undefined || value === null ? null : [BigInt(value), 18];
-}
-
 
 /**
  * Convert a bigint to Big for precise decimal operations

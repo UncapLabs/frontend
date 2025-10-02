@@ -1,27 +1,7 @@
-import * as dn from "dnum";
+import Big from "big.js";
 
-// Types
-export type Dnum = dn.Dnum;
-
-// Interest rate constants
-export const INTEREST_RATE_START = dn.from(0.005, 18); // 0.5%
-export const INTEREST_RATE_END = dn.from(0.2, 18); // 20%
-export const INTEREST_RATE_PRECISE_UNTIL = dn.from(0.05, 18); // 5%
-export const INTEREST_RATE_INCREMENT_PRECISE = dn.from(0.001, 18); // 0.1%
-export const INTEREST_RATE_INCREMENT_NORMAL = dn.from(0.005, 18); // 0.5%
-
-// Time constants
-export const ONE_YEAR_D18 = 365n * 24n * 60n * 60n * 10n ** 18n;
-// Calculate pending interest
-export function calculatePendingInterest(
-  debt: bigint,
-  rate: Dnum,
-  timeDelta: bigint
-): bigint {
-  // pendingInterest = debt * rate * timeDelta / ONE_YEAR
-  const debtDnum = dn.from(debt, 18);
-  const interest = dn.mul(debtDnum, rate);
-  const timeAdjusted = dn.mul(interest, dn.from(timeDelta, 18));
-  const yearAdjusted = dn.div(timeAdjusted, dn.from(ONE_YEAR_D18, 18));
-  return yearAdjusted[0]; // Return the bigint value
-}
+export const INTEREST_RATE_START_BIG = new Big(0.005);
+export const INTEREST_RATE_END_BIG = new Big(0.2);
+export const INTEREST_RATE_PRECISE_UNTIL_BIG = new Big(0.05);
+export const INTEREST_RATE_INCREMENT_PRECISE_BIG = new Big(0.001);
+export const INTEREST_RATE_INCREMENT_NORMAL_BIG = new Big(0.005);

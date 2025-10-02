@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "~/lib/trpc";
 import { type CollateralId } from "~/lib/collateral";
+import Big from "big.js";
 
 export interface StabilityPoolDataQuery {
-  totalDeposits: number | undefined;
+  totalDeposits: Big | undefined;
   apr: number | undefined;
   isLoading: boolean;
 }

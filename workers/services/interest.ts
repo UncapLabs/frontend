@@ -1,14 +1,13 @@
 import { createGraphQLClient } from "~/lib/graphql/client";
 import { ALL_INTEREST_RATE_BRACKETS } from "~/lib/graphql/documents";
-import * as dn from "dnum";
-import { type Dnum } from "~/lib/interest-rate-utils";
+import Big from "big.js";
 
 type InterestRateBracket = {
   branchId: number;
-  rate: Dnum;
-  totalDebt: bigint;
-  sumDebtTimesRateD36: bigint;
-  pendingDebtTimesOneYearD36: bigint;
+  rate: Big;
+  totalDebt: Big;
+  sumDebtTimesRateD36: Big;
+  pendingDebtTimesOneYearD36: Big;
   updatedAt: bigint;
 };
 
@@ -33,16 +32,16 @@ export async function fetchAllInterestRateBrackets(): Promise<{
   const brackets: InterestRateBracket[] = result.interestratebrackets
     .map((bracket: any) => ({
       branchId: bracket.collateral.collIndex,
-      rate: [BigInt(bracket.rate), 18] as Dnum,
-      totalDebt: BigInt(bracket.totalDebt),
-      sumDebtTimesRateD36: BigInt(bracket.sumDebtTimesRateD36 || "0"),
-      pendingDebtTimesOneYearD36: BigInt(
+      rate: new Big(bracket.rate).div(1e18),
+      totalDebt: new Big(bracket.totalDebt).div(1e18),
+      sumDebtTimesRateD36: new Big(bracket.sumDebtTimesRateD36 || "0").div(1e36),
+      pendingDebtTimesOneYearD36: new Big(
         bracket.pendingDebtTimesOneYearD36 || "0"
-      ),
+      ).div(1e36),
       updatedAt: BigInt(bracket.updatedAt || "0"),
     }))
     .sort((a: InterestRateBracket, b: InterestRateBracket) =>
-      dn.compare(a.rate, b.rate)
+      a.rate.cmp(b.rate)
     );
 
   const lastUpdatedAt =
@@ -60,41 +59,34 @@ export async function fetchAllInterestRateBrackets(): Promise<{
 
 export async function getAverageInterestRateForBranch(
   branchId: number
-): Promise<number> {
+): Promise<Big> {
   try {
     const data = await fetchAllInterestRateBrackets();
 
-    // Calculate the average interest rate for the specific branch
     const branchBrackets = data.brackets.filter((b) => b.branchId === branchId);
-    
+
     if (branchBrackets.length === 0) {
-      return 0;
+      return new Big(0);
     }
 
-    let totalDebt = 0n;
-    let weightedSum = 0n;
+    let totalDebt = new Big(0);
+    let weightedSum = new Big(0);
 
     for (const bracket of branchBrackets) {
-      const debt = bracket.totalDebt;
-      const rate = bracket.rate;
-      totalDebt += debt;
-      // rate is already a Dnum with 18 decimals, just get the bigint value
-      weightedSum += debt * rate[0];
+      totalDebt = totalDebt.plus(bracket.totalDebt);
+      weightedSum = weightedSum.plus(bracket.totalDebt.times(bracket.rate));
     }
 
-    if (totalDebt === 0n) {
-      return 0;
+    if (totalDebt.eq(0)) {
+      return new Big(0);
     }
 
-    // Return average rate as decimal (e.g., 0.05 for 5%)
-    return totalDebt > 0n
-      ? Number(weightedSum / totalDebt) / 1e18
-      : 0;
+    return weightedSum.div(totalDebt);
   } catch (error) {
     console.error(
       `Error fetching average interest rate for branch ${branchId}:`,
       error
     );
-    return 0;
+    return new Big(0);
   }
 }
