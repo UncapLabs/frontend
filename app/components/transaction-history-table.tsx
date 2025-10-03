@@ -1,4 +1,10 @@
-import { CheckCircle2, XCircle, Loader2, ExternalLink, Clock } from "lucide-react";
+import {
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  ExternalLink,
+  Clock,
+} from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
@@ -7,6 +13,8 @@ import { useAccount } from "@starknet-react/core";
 import type { StarknetTransaction, TransactionType } from "~/types/transaction";
 import { formatDistance } from "date-fns";
 import { useTransactionStoreData } from "~/hooks/use-transaction-store-data";
+import { COLLATERALS, type CollateralId } from "~/lib/collateral";
+import { NumericFormat } from "react-number-format";
 
 // Transaction type labels
 const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
@@ -20,6 +28,19 @@ const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
   withdraw: "Withdraw from Stability Pool",
   unknown: "Transaction",
 };
+
+// Helper component to format numbers
+function FormattedNumber({ value }: { value: string | number }) {
+  return (
+    <NumericFormat
+      displayType="text"
+      value={value}
+      thousandSeparator=","
+      decimalScale={4}
+      fixedDecimalScale
+    />
+  );
+}
 
 // Status icons and colors
 function StatusBadge({ status }: { status: StarknetTransaction["status"] }) {
@@ -62,15 +83,22 @@ function formatTransactionDetails(
         <div className="space-y-0.5">
           <div className="text-xs font-sora text-neutral-600">
             <span className="text-neutral-500">Deposited:</span>{" "}
-            <span className="font-medium text-neutral-800">{details.collateralAmount} {details.collateralToken}</span>
+            <span className="font-medium text-neutral-800">
+              <FormattedNumber value={details.collateralAmount} />{" "}
+              {details.collateralToken}
+            </span>
           </div>
           <div className="text-xs font-sora text-neutral-600">
             <span className="text-neutral-500">Borrowed:</span>{" "}
-            <span className="font-medium text-neutral-800">{details.borrowAmount} USDU</span>
+            <span className="font-medium text-neutral-800">
+              <FormattedNumber value={details.borrowAmount} /> USDU
+            </span>
           </div>
           <div className="text-xs font-sora text-neutral-600">
             <span className="text-neutral-500">Rate:</span>{" "}
-            <span className="font-medium text-neutral-800">{details.interestRate}% APR</span>
+            <span className="font-medium text-neutral-800">
+              {details.interestRate}% APR
+            </span>
           </div>
         </div>
       );
@@ -121,10 +149,14 @@ function formatTransactionDetails(
           {/* Show collateral changes if any */}
           {hasCollateralChange && collateralChange !== undefined && (
             <div className="text-xs font-sora text-neutral-600">
-              <span className="text-neutral-500">{isCollateralIncrease ? "Added collateral:" : "Removed collateral:"}</span>{" "}
+              <span className="text-neutral-500">
+                {isCollateralIncrease
+                  ? "Added collateral:"
+                  : "Removed collateral:"}
+              </span>{" "}
               <span className="font-medium text-neutral-800">
                 {isCollateralIncrease ? "+" : ""}
-                {Math.abs(collateralChange).toFixed(7)}{" "}
+                <FormattedNumber value={Math.abs(collateralChange)} />{" "}
                 {details.collateralToken || "BTC"}
               </span>
             </div>
@@ -133,10 +165,12 @@ function formatTransactionDetails(
           {/* Show debt changes if any */}
           {hasDebtChange && debtChange !== undefined && (
             <div className="text-xs font-sora text-neutral-600">
-              <span className="text-neutral-500">{isDebtIncrease ? "Borrowed more:" : "Repaid debt:"}</span>{" "}
+              <span className="text-neutral-500">
+                {isDebtIncrease ? "Borrowed more:" : "Repaid debt:"}
+              </span>{" "}
               <span className="font-medium text-neutral-800">
                 {isDebtIncrease ? "+" : "-"}
-                {Math.abs(debtChange).toFixed(2)} USDU
+                <FormattedNumber value={Math.abs(debtChange)} /> USDU
               </span>
             </div>
           )}
@@ -146,7 +180,8 @@ function formatTransactionDetails(
             <div className="text-xs font-sora text-neutral-600">
               <span className="text-neutral-500">Rate:</span>{" "}
               <span className="font-medium text-neutral-800">
-                {details.previousInterestRate || details.interestRate || "—"}% → {details.newInterestRate || details.interestRate || "—"}%
+                {details.previousInterestRate || details.interestRate || "—"}% →{" "}
+                {details.newInterestRate || details.interestRate || "—"}%
               </span>
             </div>
           )}
@@ -157,19 +192,26 @@ function formatTransactionDetails(
               {details.newCollateral !== undefined && (
                 <div className="text-xs font-sora text-neutral-600">
                   <span className="text-neutral-500">Collateral:</span>{" "}
-                  <span className="font-medium text-neutral-800">{details.newCollateral} {details.collateralToken || "BTC"}</span>
+                  <span className="font-medium text-neutral-800">
+                    <FormattedNumber value={details.newCollateral} />{" "}
+                    {details.collateralToken || "BTC"}
+                  </span>
                 </div>
               )}
               {details.newDebt !== undefined && (
                 <div className="text-xs font-sora text-neutral-600">
                   <span className="text-neutral-500">Debt:</span>{" "}
-                  <span className="font-medium text-neutral-800">{details.newDebt} USDU</span>
+                  <span className="font-medium text-neutral-800">
+                    <FormattedNumber value={details.newDebt} /> USDU
+                  </span>
                 </div>
               )}
               {details.newInterestRate !== undefined && (
                 <div className="text-xs font-sora text-neutral-600">
                   <span className="text-neutral-500">Rate:</span>{" "}
-                  <span className="font-medium text-neutral-800">{details.newInterestRate}% APR</span>
+                  <span className="font-medium text-neutral-800">
+                    {details.newInterestRate}% APR
+                  </span>
                 </div>
               )}
             </>
@@ -182,11 +224,16 @@ function formatTransactionDetails(
         <div className="space-y-0.5">
           <div className="text-xs font-sora text-neutral-600">
             <span className="text-neutral-500">Repaid:</span>{" "}
-            <span className="font-medium text-neutral-800">{details.debt} USDU</span>
+            <span className="font-medium text-neutral-800">
+              <FormattedNumber value={details.debt} /> USDU
+            </span>
           </div>
           <div className="text-xs font-sora text-neutral-600">
             <span className="text-neutral-500">Recovered:</span>{" "}
-            <span className="font-medium text-neutral-800">{details.collateral} {details.collateralType || "BTC"}</span>
+            <span className="font-medium text-neutral-800">
+              <FormattedNumber value={details.collateral} />{" "}
+              {details.collateralType || "BTC"}
+            </span>
           </div>
         </div>
       );
@@ -196,7 +243,9 @@ function formatTransactionDetails(
         <div className="space-y-0.5">
           <div className="text-xs font-sora text-neutral-600">
             <span className="text-neutral-500">Claimed:</span>{" "}
-            <span className="font-medium text-neutral-800">{details.amount} {details.token}</span>
+            <span className="font-medium text-neutral-800">
+              <FormattedNumber value={details.amount} /> {details.token}
+            </span>
           </div>
         </div>
       );
@@ -206,7 +255,10 @@ function formatTransactionDetails(
         <div className="space-y-0.5">
           <div className="text-xs font-sora text-neutral-600">
             <span className="text-neutral-500">Recovered:</span>{" "}
-            <span className="font-medium text-neutral-800">{details.amount} {details.token || "BTC"}</span>
+            <span className="font-medium text-neutral-800">
+              <FormattedNumber value={details.amount} />{" "}
+              {details.token || "BTC"}
+            </span>
           </div>
         </div>
       );
@@ -216,7 +268,9 @@ function formatTransactionDetails(
         <div className="space-y-0.5">
           <div className="text-xs font-sora text-neutral-600">
             <span className="text-neutral-500">Rate:</span>{" "}
-            <span className="font-medium text-neutral-800">{details.oldRate}% → {details.newRate}%</span>
+            <span className="font-medium text-neutral-800">
+              {details.oldRate}% → {details.newRate}%
+            </span>
           </div>
         </div>
       );
@@ -226,12 +280,17 @@ function formatTransactionDetails(
         <div className="space-y-0.5">
           <div className="text-xs font-sora text-neutral-600">
             <span className="text-neutral-500">Deposited:</span>{" "}
-            <span className="font-medium text-neutral-800">{details.amount} USDU</span>
+            <span className="font-medium text-neutral-800">
+              <FormattedNumber value={details.amount} /> USDU
+            </span>
           </div>
           {details.pool && (
             <div className="text-xs font-sora text-neutral-600">
               <span className="text-neutral-500">Pool:</span>{" "}
-              <span className="font-medium text-neutral-800">{details.pool}</span>
+              <span className="font-medium text-neutral-800">
+                {COLLATERALS[details.pool as CollateralId]?.symbol ||
+                  details.pool}
+              </span>
             </div>
           )}
         </div>
@@ -242,12 +301,17 @@ function formatTransactionDetails(
         <div className="space-y-0.5">
           <div className="text-xs font-sora text-neutral-600">
             <span className="text-neutral-500">Withdrawn:</span>{" "}
-            <span className="font-medium text-neutral-800">{details.amount} USDU</span>
+            <span className="font-medium text-neutral-800">
+              <FormattedNumber value={details.amount} /> USDU
+            </span>
           </div>
           {details.pool && (
             <div className="text-xs font-sora text-neutral-600">
               <span className="text-neutral-500">Pool:</span>{" "}
-              <span className="font-medium text-neutral-800">{details.pool}</span>
+              <span className="font-medium text-neutral-800">
+                {COLLATERALS[details.pool as CollateralId]?.symbol ||
+                  details.pool}
+              </span>
             </div>
           )}
         </div>
@@ -329,7 +393,9 @@ export function TransactionHistoryTable() {
           <div className="w-16 h-16 bg-neutral-100 rounded-2xl mx-auto flex items-center justify-center mb-4">
             <Clock className="h-8 w-8 text-neutral-400" />
           </div>
-          <p className="text-sm font-medium font-sora text-neutral-800">No transactions yet</p>
+          <p className="text-sm font-medium font-sora text-neutral-800">
+            No transactions yet
+          </p>
           <p className="text-xs font-sora text-neutral-500 mt-2">
             Your transaction history will appear here
           </p>

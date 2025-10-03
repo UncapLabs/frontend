@@ -68,7 +68,9 @@ export function StabilityPoolsTable() {
                         <NumericFormat
                           displayType="text"
                           value={pool.apr}
+                          thousandSeparator=","
                           decimalScale={2}
+                          fixedDecimalScale
                         />
                         %
                       </span>

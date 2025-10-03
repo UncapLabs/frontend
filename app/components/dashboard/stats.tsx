@@ -14,21 +14,22 @@ import {
 import { useStabilityPoolData } from "~/hooks/use-stability-pool-data";
 import { COLLATERALS, COLLATERAL_LIST } from "~/lib/collateral";
 import Big from "big.js";
+import { NumericFormat } from "react-number-format";
 
 interface BorrowRateItem {
   collateral: string;
   icon: string;
-  borrowRate: string;
+  borrowRate: Big | undefined;
   totalDebt: string;
   maxLTV: string;
-  rateAvg: string;
+  rateAvg: Big | undefined;
   collateralAddress?: string;
 }
 
 interface EarnRateItem {
   pool: string;
   icon: string;
-  supplyAPR: string;
+  supplyAPR: Big | undefined;
   totalDeposits: string;
   collateralParam?: string;
 }
@@ -118,7 +119,20 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                   </div>
                 </TableCell>
                 <TableCell className="text-white text-sm font-normal font-sora text-right py-3 pl-6">
-                  {rate.rateAvg}
+                  {rate.rateAvg ? (
+                    <>
+                      <NumericFormat
+                        displayType="text"
+                        value={rate.rateAvg.times(100).toString()}
+                        thousandSeparator=","
+                        decimalScale={2}
+                        fixedDecimalScale
+                      />
+                      %
+                    </>
+                  ) : (
+                    "—"
+                  )}
                 </TableCell>
                 <TableCell className="text-white text-sm font-normal font-sora text-right py-3">
                   {rate.maxLTV}
@@ -212,7 +226,20 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                   </div>
                 </TableCell>
                 <TableCell className="text-white text-sm font-normal font-sora text-right py-3 pl-6">
-                  {rate.supplyAPR}
+                  {rate.supplyAPR ? (
+                    <>
+                      <NumericFormat
+                        displayType="text"
+                        value={rate.supplyAPR.toString()}
+                        thousandSeparator=","
+                        decimalScale={2}
+                        fixedDecimalScale
+                      />
+                      %
+                    </>
+                  ) : (
+                    "—"
+                  )}
                 </TableCell>
                 <TableCell className="text-white text-sm font-normal font-sora text-right py-3">
                   {rate.totalDeposits}
@@ -261,12 +288,6 @@ export default function Stats() {
 
   const stabilityPoolData = useStabilityPoolData();
 
-  // Helper function to format percentage from interest rate data
-  const formatRateAsPercentage = (rateData: Big | undefined): string => {
-    if (!rateData) return "—";
-    return `${rateData.times(100).toFixed(2)}%`;
-  };
-
   // Helper function to format currency values
   const formatCurrency = (value: Big | undefined): string => {
     if (value === undefined || value === null) return "—";
@@ -290,10 +311,10 @@ export default function Stats() {
     return {
       collateral: collateral.symbol,
       icon: collateral.icon,
-      borrowRate: formatRateAsPercentage(rateData.data),
+      borrowRate: rateData.data,
       totalDebt: formatCurrency(vizData.data?.totalDebt),
       maxLTV: `${maxLTV.toFixed(2)}%`,
-      rateAvg: formatRateAsPercentage(rateData.data),
+      rateAvg: rateData.data,
       collateralAddress: collateral.address,
     };
   });
@@ -306,7 +327,7 @@ export default function Stats() {
       pool: collateral.symbol,
       icon: collateral.icon,
       supplyAPR:
-        poolData?.apr !== undefined ? `${poolData.apr.toFixed(2)}%` : "—",
+        poolData?.apr !== undefined ? new Big(poolData.apr) : undefined,
       totalDeposits: formatCurrency(poolData?.totalDeposits),
       // Only GBTC has a collateralParam for navigation (for backward compatibility)
       collateralParam: collateral.id === "GBTC" ? "GBTC" : undefined,
