@@ -51,7 +51,8 @@ function Borrow() {
     useQueryState("collateral");
 
   // Get the collateral based on the address in URL or use default
-  const collateral = getCollateralByAddress(selectedTokenAddress || "") || DEFAULT_COLLATERAL;
+  const collateral =
+    getCollateralByAddress(selectedTokenAddress || "") || DEFAULT_COLLATERAL;
 
   // Get balance token address and decimals
   const balanceTokenAddress = getBalanceTokenAddress(collateral);
@@ -275,7 +276,9 @@ function Borrow() {
               }}
             >
               {/* Show borrowing restrictions alert if TCR is below CCR */}
-              <BorrowingRestrictionsAlert collateralType={collateral.id} />
+              <div className="pb-3">
+                <BorrowingRestrictionsAlert collateralType={collateral.id} />
+              </div>
 
               <div
                 className={`space-y-1 ${

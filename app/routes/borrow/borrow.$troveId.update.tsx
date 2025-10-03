@@ -360,9 +360,11 @@ function UpdatePosition() {
               }}
             >
               {/* Show borrowing restrictions alert if TCR is below CCR */}
-              <BorrowingRestrictionsAlert
-                collateralType={selectedCollateral.id}
-              />
+              <div className="pb-3">
+                <BorrowingRestrictionsAlert
+                  collateralType={selectedCollateral.id}
+                />
+              </div>
 
               {/* Redemption History Alert - Show for all redeemed troves */}
               {hasBeenRedeemed && position && (

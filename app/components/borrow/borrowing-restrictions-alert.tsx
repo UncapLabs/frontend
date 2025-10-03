@@ -1,4 +1,3 @@
-import { Alert, AlertDescription } from "~/components/ui/alert";
 import { useBranchTCR } from "~/hooks/use-branch-tcr";
 import type { CollateralId } from "~/lib/collateral";
 import { AlertTriangle, ExternalLink } from "lucide-react";
@@ -15,80 +14,93 @@ export function BorrowingRestrictionsAlert({
     return null;
   }
 
-  const tcrPercentage = (data.tcr * 100).toFixed(1);
-  const ccrPercentage = (data.ccr * 100).toFixed(0);
+  const tcrPercentage = data.tcr.times(100).toFixed(1);
+  const ccrPercentage = data.ccr.times(100).toFixed(0);
 
   return (
-    <Alert className="border-amber-200 bg-amber-50 rounded-xl">
-      <AlertTriangle className="h-4 w-4 text-amber-600" />
-      <AlertDescription className="space-y-4">
-        <div className="flex items-center gap-2">
-          <h3 className="text-amber-800 font-semibold font-sora text-base">
+    <div className="bg-white rounded-2xl p-5 border border-amber-200/50">
+      <div className="flex items-start gap-3 mb-4">
+        <div className="w-9 h-9 bg-amber-50 rounded-lg flex items-center justify-center flex-shrink-0">
+          <AlertTriangle className="h-4 w-4 text-amber-600" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-neutral-800 font-medium font-sora text-base mb-1">
             Borrowing Restrictions Active
           </h3>
+          <p className="text-sm font-sora text-neutral-600">
+            TCR has fallen below the critical threshold.
+          </p>
         </div>
-        
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-amber-700 font-sora uppercase tracking-tight">
-              Current TCR:
-            </span>
-            <span className="text-base font-bold text-amber-900 font-sora">
-              {tcrPercentage}%
-            </span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="bg-amber-50 rounded-lg p-3 border border-amber-200/50">
+          <div className="text-xs font-medium font-sora uppercase tracking-tight text-amber-700 mb-1">
+            Current TCR
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-amber-700 font-sora uppercase tracking-tight">
-              Critical Threshold:
-            </span>
-            <span className="text-base font-bold text-amber-900 font-sora">
-              {ccrPercentage}%
-            </span>
+          <div className="text-xl font-medium font-sora text-amber-900">
+            {tcrPercentage}%
           </div>
         </div>
+        <div className="bg-amber-50 rounded-lg p-3 border border-amber-200/50">
+          <div className="text-xs font-medium font-sora uppercase tracking-tight text-amber-700 mb-1">
+            Threshold
+          </div>
+          <div className="text-xl font-medium font-sora text-amber-900">
+            {ccrPercentage}%
+          </div>
+        </div>
+      </div>
 
-        <p className="text-sm text-amber-700 font-normal leading-relaxed">
-          The Total Collateralization Ratio has fallen below the Critical
-          Collateral Ratio. The following restrictions apply:
-        </p>
+      <div className="space-y-2 mb-4">
+        <div className="text-xs font-medium font-sora uppercase tracking-tight text-neutral-800 mb-3">
+          What you can do:
+        </div>
+        <div className="flex items-start gap-2 text-sm">
+          <span className="text-green-600 mt-0.5">✓</span>
+          <span className="text-neutral-700 font-sora">
+            Repay debt and close positions (if final TCR stays above {ccrPercentage}%)
+          </span>
+        </div>
+        <div className="flex items-start gap-2 text-sm">
+          <span className="text-green-600 mt-0.5">✓</span>
+          <span className="text-neutral-700 font-sora">
+            Add collateral without borrowing more
+          </span>
+        </div>
 
-        <ul className="space-y-2 text-sm text-amber-700">
-          <li className="flex items-start gap-2">
-            <span className="text-amber-600 mt-1.5 text-xs">•</span>
-            <span className="font-normal">
-              <span className="font-medium">Opening positions:</span> only if resulting TCR exceeds {ccrPercentage}%
-            </span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-amber-600 mt-1.5 text-xs">•</span>
-            <span className="font-normal">
-              <span className="font-medium">New borrowing:</span> must bring TCR above {ccrPercentage}%
-            </span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-amber-600 mt-1.5 text-xs">•</span>
-            <span className="font-normal">
-              <span className="font-medium">Collateral withdrawal:</span> requires matching debt repayment
-            </span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-amber-600 mt-1.5 text-xs">•</span>
-            <span className="font-normal">
-              <span className="font-medium">Closing positions:</span> only if resulting TCR exceeds {ccrPercentage}%
-            </span>
-          </li>
-        </ul>
+        <div className="text-xs font-medium font-sora uppercase tracking-tight text-neutral-800 mb-3 mt-4">
+          What you can't do:
+        </div>
+        <div className="flex items-start gap-2 text-sm">
+          <span className="text-red-600 mt-0.5">✕</span>
+          <span className="text-neutral-700 font-sora">
+            Borrow more (unless it brings TCR above {ccrPercentage}%)
+          </span>
+        </div>
+        <div className="flex items-start gap-2 text-sm">
+          <span className="text-red-600 mt-0.5">✕</span>
+          <span className="text-neutral-700 font-sora">
+            Withdraw collateral (unless you repay equal amount of debt)
+          </span>
+        </div>
+        <div className="flex items-start gap-2 text-sm">
+          <span className="text-red-600 mt-0.5">✕</span>
+          <span className="text-neutral-700 font-sora">
+            Open new positions (unless it brings TCR above {ccrPercentage}%)
+          </span>
+        </div>
+      </div>
 
-        <a
-          href="https://uncap.finance/docs"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-amber-700 hover:text-amber-900 transition-colors group"
-        >
-          Learn more about restrictions
-          <ExternalLink className="h-3.5 w-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-        </a>
-      </AlertDescription>
-    </Alert>
+      <a
+        href="https://uncap.finance/docs"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1.5 text-sm font-medium font-sora text-amber-700 hover:text-amber-900 transition-colors group"
+      >
+        Learn more
+        <ExternalLink className="h-3.5 w-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+      </a>
+    </div>
   );
 }

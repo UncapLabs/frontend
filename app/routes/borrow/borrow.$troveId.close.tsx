@@ -7,7 +7,11 @@ import type { Route } from "./+types/borrow.$troveId.close";
 import { useParams, useNavigate } from "react-router";
 import { useAccount, useBalance } from "@starknet-react/core";
 import { MIN_DEBT } from "~/lib/contracts/constants";
-import { TOKENS, getCollateralByBranchId, DEFAULT_COLLATERAL } from "~/lib/collateral";
+import {
+  TOKENS,
+  getCollateralByBranchId,
+  DEFAULT_COLLATERAL,
+} from "~/lib/collateral";
 import { extractBranchId } from "~/lib/utils/trove-id";
 import { NumericFormat } from "react-number-format";
 import { useTroveData } from "~/hooks/use-trove-data";
@@ -34,7 +38,9 @@ function ClosePosition() {
   // Get collateral from position ID
   const branchId = extractBranchId(position?.id);
   const selectedCollateral =
-    branchId !== undefined ? getCollateralByBranchId(branchId)! : DEFAULT_COLLATERAL;
+    branchId !== undefined
+      ? getCollateralByBranchId(branchId)!
+      : DEFAULT_COLLATERAL;
 
   const { data: usduBalance } = useBalance({
     token: TOKENS.USDU.address,
@@ -234,9 +240,11 @@ function ClosePosition() {
               }
             />
           ) : (
-            <div className="space-y-1">
+            <div className="space-y-3">
               {/* Borrowing Restrictions Alert */}
-              <BorrowingRestrictionsAlert collateralType={selectedCollateral.id} />
+              <BorrowingRestrictionsAlert
+                collateralType={selectedCollateral.id}
+              />
 
               {/* Special Status Alert */}
               {(isZombie || isRedeemed) && (

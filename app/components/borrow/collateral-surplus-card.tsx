@@ -1,7 +1,6 @@
 import { Button } from "~/components/ui/button";
 import { Info, RefreshCw } from "lucide-react";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
-import { InfoBox } from "~/components/ui/info-box";
 import { useNavigate } from "react-router";
 import { useAccount } from "@starknet-react/core";
 import { NumericFormat } from "react-number-format";
@@ -10,6 +9,7 @@ import { useCollateralSurplus } from "~/hooks/use-collateral-surplus";
 import { useCallback } from "react";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { getCollateral } from "~/lib/collateral";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 export function CollateralSurplusCard() {
   const { address } = useAccount();
@@ -60,16 +60,52 @@ export function CollateralSurplusCard() {
     }
   }, [currentState, reset, refetch, navigate]);
 
-  // Don't render anything if:
-  // 1. Still loading
-  // 2. No surplus available (after loading)
-  // 3. No address connected (after loading)
-  if (
-    isLoading ||
-    (!address && !isLoading) ||
-    (!isLoading && totalSurplusesCount === 0)
-  ) {
-    return null;
+  // Show loading state
+  if (isLoading) {
+    return (
+      <Card className="rounded-2xl border-0 shadow-none bg-white">
+        <CardHeader className="border-b border-[#F5F3EE]">
+          <CardTitle className="text-lg font-medium font-sora text-neutral-800">
+            Collateral Surplus
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="py-8">
+          <div className="text-center text-sm text-neutral-500 font-sora">
+            Loading surplus data...
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show empty state if no surplus
+  if (!address || totalSurplusesCount === 0) {
+    return (
+      <Card className="rounded-2xl border-0 shadow-none bg-white">
+        <CardHeader className="border-b border-[#F5F3EE]">
+          <CardTitle className="text-lg font-medium font-sora text-neutral-800">
+            Collateral Surplus
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="py-8">
+          <div className="text-center space-y-3">
+            <div className="w-16 h-16 bg-neutral-100 rounded-2xl mx-auto flex items-center justify-center">
+              <Info className="h-8 w-8 text-neutral-400" />
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium font-sora text-neutral-800">
+                No Surplus Available
+              </p>
+              <p className="text-sm font-sora text-neutral-600 max-w-md mx-auto">
+                {!address
+                  ? "Connect your wallet to check for collateral surplus"
+                  : "No excess collateral was recovered from your liquidation"}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   if (error) {
@@ -101,9 +137,13 @@ export function CollateralSurplusCard() {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-5">
-      {/* Left Panel */}
-      <div className="flex-1 lg:flex-[2] space-y-6">
+    <Card className="rounded-2xl border-0 shadow-none bg-white">
+      <CardHeader className="border-b border-[#F5F3EE]">
+        <CardTitle className="text-lg font-medium font-sora text-neutral-800">
+          Collateral Surplus
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
         {/* Show transaction status if in progress */}
         {["pending", "success", "error"].includes(currentState) ? (
           <TransactionStatus
@@ -142,52 +182,72 @@ export function CollateralSurplusCard() {
           />
         ) : (
           <>
-            {availableSurpluses.map((surplus) => {
-              const collateral = getCollateral(surplus.collateralType);
-              return (
-                <div
-                  key={surplus.collateralType}
-                  className="bg-white rounded-2xl p-6 border border-neutral-200"
-                >
-                  <h3 className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight mb-4">
-                    COLLATERAL TO CLAIM
-                  </h3>
+            {/* Info Banner */}
+            <div className="bg-green-50 rounded-xl p-4 border border-green-200/50">
+              <div className="flex items-start gap-3">
+                <Info className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium font-sora text-neutral-800 mb-1">
+                    Surplus Available
+                  </p>
+                  <p className="text-sm font-sora text-neutral-600">
+                    Excess collateral from your liquidation is ready to claim.
+                    {totalSurplusesCount > 1 &&
+                      " All surpluses can be claimed in one transaction."}
+                  </p>
+                </div>
+              </div>
+            </div>
 
-                  {/* Token Display matching close position style */}
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 px-3 py-2 bg-token-bg rounded-lg">
-                      <img
-                        src={collateral.icon}
-                        alt={collateral.symbol}
-                        className="w-6 h-6 object-contain"
-                      />
-                      <span className="text-sm font-medium text-token-orange font-sora">
-                        {collateral.symbol}
-                      </span>
-                    </div>
-                    <div className="text-right flex-1">
-                      <div className="text-xl font-semibold text-neutral-800 font-sora">
-                        <NumericFormat
-                          displayType="text"
-                          value={surplus.formatted.toString()}
-                          thousandSeparator=","
-                          decimalScale={7}
-                          fixedDecimalScale={false}
-                        />
+            {/* Surplus Items */}
+            <div className="space-y-3">
+              {availableSurpluses.map((surplus) => {
+                const collateral = getCollateral(surplus.collateralType);
+                return (
+                  <div
+                    key={surplus.collateralType}
+                    className="bg-neutral-50 rounded-xl p-4"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-white rounded-lg border border-neutral-200">
+                          <img
+                            src={collateral.icon}
+                            alt={collateral.symbol}
+                            className="w-6 h-6 object-contain"
+                          />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium font-sora text-neutral-800">
+                            {collateral.symbol}
+                          </div>
+                          <div className="text-xs text-neutral-500 font-sora">
+                            Available to claim
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-xs text-neutral-500">
-                        Surplus from liquidation
+                      <div className="text-right">
+                        <div className="text-lg font-medium text-neutral-800 font-sora">
+                          <NumericFormat
+                            displayType="text"
+                            value={surplus.formatted.toString()}
+                            thousandSeparator=","
+                            decimalScale={7}
+                            fixedDecimalScale={false}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
 
+            {/* Claim Button */}
             <Button
               onClick={handleButtonClick}
               disabled={address && (isPending || isSending)}
-              className="w-full h-12 bg-green-500 hover:bg-green-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all whitespace-nowrap"
+              className="w-full h-12 bg-green-500 hover:bg-green-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all"
             >
               {!address
                 ? "Connect Wallet"
@@ -201,24 +261,7 @@ export function CollateralSurplusCard() {
             </Button>
           </>
         )}
-      </div>
-
-      {/* Right Panel - Info Box */}
-      <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px]">
-        <InfoBox title="Collateral Surplus Available" variant="green">
-          <div className="space-y-3">
-            <p className="text-sm font-normal leading-relaxed">
-              This is the excess collateral value after your debt was covered
-              during liquidation. You can claim this surplus now.
-            </p>
-            {totalSurplusesCount > 1 && (
-              <p className="text-sm font-normal leading-relaxed">
-                All surpluses can be claimed in a single transaction.
-              </p>
-            )}
-          </div>
-        </InfoBox>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
