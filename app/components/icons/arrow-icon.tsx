@@ -19,11 +19,6 @@ export const ArrowIcon = memo(function ArrowIcon({
   direction = "down",
   onClick,
 }: ArrowIconProps) {
-  // Calculate proportional sizes based on original 70px design
-  const scale = size / 70;
-  const innerCircleSize = 56 * scale;
-  const innerCircleOffset = 7 * scale;
-
   // Rotation for different arrow directions
   const rotation = {
     down: 0,

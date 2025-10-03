@@ -1,5 +1,5 @@
 import { NumericFormat } from "react-number-format";
-import { COLLATERALS, type CollateralId } from "~/lib/collateral";
+import { COLLATERALS } from "~/lib/collateral";
 import { useAccount } from "@starknet-react/core";
 import { useAllStabilityPoolPositions } from "~/hooks/use-stability-pool";
 import { useStabilityPoolData } from "~/hooks/use-stability-pool-data";

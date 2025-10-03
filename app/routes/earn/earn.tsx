@@ -117,7 +117,7 @@ function Earn() {
   return (
     <div className="w-full mx-auto max-w-7xl py-8 lg:py-12 px-4 sm:px-6 lg:px-8 min-h-screen">
       <div className="flex justify-between pb-6 items-baseline">
-        <h1 className="text-2xl md:text-3xl font-medium leading-none font-sora text-neutral-800">
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-medium leading-10 font-sora text-[#242424]">
           Stability Pool
         </h1>
       </div>
@@ -238,7 +238,7 @@ function Earn() {
               <>
                 {/* Combined Action Tabs and Pool Selection */}
                 <div className="bg-white rounded-2xl mb-2">
-                  <div className="p-4 pb-2">
+                  <div className="p-6 pb-2">
                     <Label className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight mb-3 block">
                       Choose Action & Pool
                     </Label>
@@ -531,10 +531,12 @@ function Earn() {
                                   disabled={
                                     isSending ||
                                     isPending ||
-                                    (!selectedPosition?.rewards?.usdu ||
+                                    ((!selectedPosition?.rewards?.usdu ||
                                       selectedPosition.rewards.usdu.eq(0)) &&
-                                    (!selectedPosition?.rewards?.collateral ||
-                                      selectedPosition.rewards.collateral.eq(0))
+                                      (!selectedPosition?.rewards?.collateral ||
+                                        selectedPosition.rewards.collateral.eq(
+                                          0
+                                        )))
                                   }
                                 />
                                 <Label
@@ -559,13 +561,17 @@ function Earn() {
                                     >
                                       <div className="space-y-2">
                                         <p className="text-xs">
-                                          If checked, both USDU and {selectedCollateralSymbol} rewards
-                                          will be claimed and sent to your wallet
+                                          If checked, both USDU and{" "}
+                                          {selectedCollateralSymbol} rewards
+                                          will be claimed and sent to your
+                                          wallet
                                         </p>
                                         <p className="text-xs">
-                                          If left unchecked, USDU rewards
-                                          will be compounded and {selectedCollateralSymbol} rewards will
-                                          stay in pool and can be claimed later
+                                          If left unchecked, USDU rewards will
+                                          be compounded and{" "}
+                                          {selectedCollateralSymbol} rewards
+                                          will stay in pool and can be claimed
+                                          later
                                         </p>
                                       </div>
                                     </TooltipContent>
@@ -587,30 +593,30 @@ function Earn() {
                             <div className="text-right space-y-1">
                               {selectedPosition?.rewards?.usdu &&
                                 selectedPosition.rewards.usdu.gt(0) && (
-                                <div className="text-sm font-medium text-neutral-700">
-                                  <NumericFormat
-                                    displayType="text"
-                                    value={selectedPosition.rewards.usdu.toString()}
-                                    thousandSeparator=","
-                                    decimalScale={2}
-                                    fixedDecimalScale
-                                  />{" "}
-                                  USDU
-                                </div>
-                              )}
+                                  <div className="text-sm font-medium text-neutral-700">
+                                    <NumericFormat
+                                      displayType="text"
+                                      value={selectedPosition.rewards.usdu.toString()}
+                                      thousandSeparator=","
+                                      decimalScale={2}
+                                      fixedDecimalScale
+                                    />{" "}
+                                    USDU
+                                  </div>
+                                )}
                               {selectedPosition?.rewards?.collateral &&
                                 selectedPosition.rewards.collateral.gt(0) && (
-                                <div className="text-sm font-medium text-neutral-700">
-                                  <NumericFormat
-                                    displayType="text"
-                                    value={selectedPosition.rewards.collateral.toString()}
-                                    thousandSeparator=","
-                                    decimalScale={6}
-                                    fixedDecimalScale
-                                  />{" "}
-                                  {selectedCollateralSymbol}
-                                </div>
-                              )}
+                                  <div className="text-sm font-medium text-neutral-700">
+                                    <NumericFormat
+                                      displayType="text"
+                                      value={selectedPosition.rewards.collateral.toString()}
+                                      thousandSeparator=","
+                                      decimalScale={6}
+                                      fixedDecimalScale
+                                    />{" "}
+                                    {selectedCollateralSymbol}
+                                  </div>
+                                )}
                             </div>
                           </div>
                         </div>
@@ -647,18 +653,23 @@ function Earn() {
                                         >
                                           <div className="space-y-2">
                                             <p className="text-xs">
-                                              If checked, both USDU and {selectedCollateralSymbol} rewards
-                                              will be claimed and sent to your wallet
+                                              If checked, both USDU and{" "}
+                                              {selectedCollateralSymbol} rewards
+                                              will be claimed and sent to your
+                                              wallet
                                             </p>
                                             <p className="font-medium mt-2"></p>
                                             <p className="text-xs">
                                               If left unchecked, USDU rewards
-                                              will be compounded and {selectedCollateralSymbol} rewards will
-                                              stay in pool and can be claimed later
+                                              will be compounded and{" "}
+                                              {selectedCollateralSymbol} rewards
+                                              will stay in pool and can be
+                                              claimed later
                                             </p>
                                             {action === "withdraw" && (
                                               <p className="text-xs text-amber-300 mt-2">
-                                                ⚠️ To fully exit, check this box to claim all rewards
+                                                ⚠️ To fully exit, check this box
+                                                to claim all rewards
                                               </p>
                                             )}
                                           </div>

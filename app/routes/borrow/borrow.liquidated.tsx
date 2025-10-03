@@ -4,11 +4,10 @@ import { CollateralSurplusCard } from "~/components/borrow/collateral-surplus-ca
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
 function LiquidatedPositionsPage() {
-
   return (
     <div className="w-full mx-auto max-w-7xl py-8 lg:py-12 px-4 sm:px-6 lg:px-8 min-h-screen">
       <div className="flex justify-between pb-6 items-baseline">
-        <h1 className="text-2xl md:text-3xl font-medium leading-none font-sora text-neutral-800">
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-medium leading-10 font-sora text-[#242424]">
           Liquidated Positions
         </h1>
       </div>
@@ -52,19 +51,22 @@ function LiquidatedPositionsPage() {
                 <div className="flex items-start gap-2 text-sm">
                   <span className="text-red-600 mt-0.5">•</span>
                   <span className="text-neutral-700 font-sora">
-                    A liquidator repaid your debt and received your collateral at a discount
+                    A liquidator repaid your debt and received your collateral
+                    at a discount
                   </span>
                 </div>
                 <div className="flex items-start gap-2 text-sm">
                   <span className="text-red-600 mt-0.5">•</span>
                   <span className="text-neutral-700 font-sora">
-                    Any excess collateral value may be available as surplus below
+                    Any excess collateral value may be available as surplus
+                    below
                   </span>
                 </div>
                 <div className="flex items-start gap-2 text-sm">
                   <span className="text-red-600 mt-0.5">•</span>
                   <span className="text-neutral-700 font-sora">
-                    This process protects the protocol and other users from bad debt
+                    This process protects the protocol and other users from bad
+                    debt
                   </span>
                 </div>
               </div>
@@ -85,7 +87,8 @@ function LiquidatedPositionsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm font-sora text-neutral-600">
-                To prevent future liquidations, keep your LTV well below the 90.91% threshold.
+                To prevent future liquidations, keep your LTV well below the
+                90.91% threshold.
               </p>
 
               <div className="bg-neutral-50 rounded-lg p-3 space-y-2">

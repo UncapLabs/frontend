@@ -25,22 +25,12 @@ export function RateModeSelector({
       onValueChange={(value) => onModeChange(value as RateMode)}
       disabled={disabled}
     >
-      <SelectTrigger className="h-8 border border-neutral-800/10 rounded-lg text-xs text-neutral-800 font-medium font-sora leading-3">
+      <SelectTrigger className="h-8 w-44 border border-neutral-800/10 rounded-lg">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem
-          className="text-xs text-neutral-800 font-medium font-sora leading-3"
-          value="manual"
-        >
-          Advanced
-        </SelectItem>
-        <SelectItem
-          className="text-xs text-neutral-800 font-medium font-sora leading-3"
-          value="managed"
-        >
-          Managed by Telos
-        </SelectItem>
+        <SelectItem value="manual">Advanced</SelectItem>
+        <SelectItem value="managed">Managed by Telos</SelectItem>
       </SelectContent>
     </Select>
   );

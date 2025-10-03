@@ -12,7 +12,7 @@ export default function LiquidationWarning({
   if (liquidatedCount === 0) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[20px_-13px_34px_0px_rgba(0,0,0,0.03)] border-t border-neutral-100 z-50">
+    <div className="sticky bottom-0 left-0 right-0 bg-white shadow-[20px_-13px_34px_0px_rgba(0,0,0,0.03)] border-t border-neutral-100 z-50">
       <div className="w-full mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
           <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">

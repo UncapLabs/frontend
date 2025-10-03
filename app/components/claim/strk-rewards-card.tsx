@@ -4,7 +4,6 @@ import { Separator } from "~/components/ui/separator";
 import { Badge } from "~/components/ui/badge";
 import {
   Sparkles,
-  Calendar,
   TrendingUp,
   Clock,
   CheckCircle2,
@@ -112,9 +111,9 @@ export function STRKRewardsCard() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-baseline">
-        <h1 className="text-2xl md:text-3xl font-medium leading-none font-sora text-neutral-800">
+    <>
+      <div className="flex justify-between pb-6 items-baseline">
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-medium leading-10 font-sora text-[#242424]">
           STRK Rewards
         </h1>
       </div>
@@ -539,6 +538,6 @@ export function STRKRewardsCard() {
           </Card>
         </div>
       </div>
-    </div>
+    </>
   );
 }

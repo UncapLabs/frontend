@@ -279,9 +279,9 @@ function UpdatePosition() {
   return (
     <>
       <div className="flex justify-between pb-6 items-baseline">
-        <h2 className="text-2xl md:text-3xl font-medium leading-none font-sora text-neutral-800">
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-medium leading-10 font-sora text-[#242424]">
           Update Position
-        </h2>
+        </h1>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-5">

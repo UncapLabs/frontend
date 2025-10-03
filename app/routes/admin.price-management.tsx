@@ -4,7 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Separator } from "~/components/ui/separator";
-import { Alert, AlertDescription } from "~/components/ui/alert";
+import {
+  Alert,
+  AlertIcon,
+  AlertDescription,
+  AlertContent,
+} from "~/components/ui/alert";
 import { useSendTransaction, useAccount } from "@starknet-react/core";
 import { COLLATERALS } from "~/lib/collateral";
 import { toast } from "sonner";
@@ -33,12 +38,12 @@ function PriceManagement() {
 
     try {
       setIsPendingGBTC(true);
-      
+
       // Convert price to wei (18 decimals) and split into low/high for u256
       const priceValue = BigInt(Math.floor(parseFloat(gbtcPrice) * 10 ** 18));
       const low = priceValue & BigInt("0xffffffffffffffffffffffffffffffff");
       const high = priceValue >> BigInt(128);
-      
+
       const calls = [
         {
           contractAddress: COLLATERALS.GBTC.addresses.priceFeed,
@@ -67,12 +72,19 @@ function PriceManagement() {
       </div>
       <Separator className="mb-8 bg-slate-200" />
 
-      <Alert className="mb-6 border-orange-200 bg-orange-50">
-        <AlertCircle className="h-4 w-4 text-orange-600" />
-        <AlertDescription className="text-orange-800">
-          <strong>Testing Only</strong>: This page allows manual GBTC price updates for testing liquidations.
-          In production, prices are fetched from oracles.
-        </AlertDescription>
+      <Alert variant="warning" className="mb-6">
+        <AlertIcon variant="warning">
+          <AlertCircle className="w-4 h-4 text-[#FF9300]" />
+        </AlertIcon>
+        <AlertContent>
+          <AlertDescription>
+            <strong>Testing Only</strong>
+            <p>
+              This page allows manual GBTC price updates for testing
+              liquidations. In production, prices are fetched from oracles.
+            </p>
+          </AlertDescription>
+        </AlertContent>
       </Alert>
 
       <div className="max-w-md mx-auto">
@@ -100,7 +112,8 @@ function PriceManagement() {
                 prefix="$"
               />
               <p className="text-sm text-slate-600">
-                Set a lower price to trigger liquidations on under-collateralized positions.
+                Set a lower price to trigger liquidations on
+                under-collateralized positions.
               </p>
             </div>
             <Button
@@ -115,10 +128,16 @@ function PriceManagement() {
       </div>
 
       {!address && (
-        <Alert className="mt-6">
-          <AlertDescription>
-            Please connect your wallet to update prices.
-          </AlertDescription>
+        <Alert variant="info" className="mt-6">
+          <AlertIcon variant="info">
+            <AlertCircle className="w-4 h-4 text-blue-600" />
+          </AlertIcon>
+          <AlertContent>
+            <AlertDescription>
+              <strong>Testing Only</strong>
+              <p>Please connect your wallet to update prices.</p>
+            </AlertDescription>
+          </AlertContent>
         </Alert>
       )}
     </div>
@@ -130,6 +149,9 @@ export default PriceManagement;
 export function meta() {
   return [
     { title: "GBTC Price Management - Uncap Admin" },
-    { name: "description", content: "Manage GBTC price for testing liquidations" },
+    {
+      name: "description",
+      content: "Manage GBTC price for testing liquidations",
+    },
   ];
 }

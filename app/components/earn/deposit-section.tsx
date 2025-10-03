@@ -1,4 +1,3 @@
-import { Badge } from "~/components/ui/badge";
 import { TokenInput } from "~/components/token-input";
 import { TOKENS } from "~/lib/collateral";
 import Big from "big.js";

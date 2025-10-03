@@ -19,7 +19,7 @@ import { useCloseTrove } from "~/hooks/use-close-trove";
 import { useCallback } from "react";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { toast } from "sonner";
-import { Alert, AlertDescription } from "~/components/ui/alert";
+import { Alert, AlertIcon, AlertDescription, AlertContent } from "~/components/ui/alert";
 import { BorrowingRestrictionsAlert } from "~/components/borrow/borrowing-restrictions-alert";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
 import { Skeleton } from "~/components/ui/skeleton";
@@ -178,7 +178,7 @@ function ClosePosition() {
   return (
     <>
       <div className="flex justify-between pb-6 items-baseline">
-        <h1 className="text-2xl md:text-3xl font-medium leading-none font-sora text-neutral-800">
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-medium leading-10 font-sora text-[#242424]">
           Close Position
         </h1>
       </div>
@@ -248,18 +248,22 @@ function ClosePosition() {
 
               {/* Special Status Alert */}
               {(isZombie || isRedeemed) && (
-                <Alert className="border-amber-200 bg-amber-50 rounded-xl">
-                  <Info className="h-4 w-4 text-amber-600" />
-                  <AlertDescription className="text-amber-700">
-                    <p className="font-medium">
-                      {isZombie ? "Zombie Position" : "Redeemed Position"}
-                    </p>
-                    <p className="text-sm mt-1">
-                      {isZombie
-                        ? "This position has fallen below the minimum debt threshold. Closing it will return any remaining collateral."
-                        : "This position has been partially redeemed."}
-                    </p>
-                  </AlertDescription>
+                <Alert variant="warning">
+                  <AlertIcon variant="warning">
+                    <Info className="w-4 h-4 text-[#FF9300]" />
+                  </AlertIcon>
+                  <AlertContent>
+                    <AlertDescription>
+                      <strong>
+                        {isZombie ? "Zombie Position" : "Redeemed Position"}
+                      </strong>
+                      <p>
+                        {isZombie
+                          ? "This position has fallen below the minimum debt threshold. Closing it will return any remaining collateral."
+                          : "This position has been partially redeemed."}
+                      </p>
+                    </AlertDescription>
+                  </AlertContent>
                 </Alert>
               )}
 

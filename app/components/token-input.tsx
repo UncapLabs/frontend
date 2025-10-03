@@ -112,7 +112,7 @@ export const TokenInput = memo(function TokenInput({
 
   return (
     <div className="bg-white rounded-2xl p-6 space-y-6 group">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-start">
         <Label
           htmlFor={`${token.symbol}-input`}
           className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight"

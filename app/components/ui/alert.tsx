@@ -4,16 +4,33 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "~/lib/utils"
 
 const alertVariants = cva(
-  "relative w-full rounded-xl border px-5 py-4 text-sm grid has-[>svg]:grid-cols-[calc(var(--spacing)*4)_1fr] grid-cols-[0_1fr] has-[>svg]:gap-x-3 gap-y-1 items-start [&>svg]:size-4 [&>svg]:translate-y-0.5 [&>svg]:text-current shadow-sm transition-all",
+  "relative w-full rounded-2xl border bg-white p-6 text-sm flex gap-3 items-start shadow-sm transition-all",
   {
     variants: {
       variant: {
-        default: "bg-white border-neutral-200 text-neutral-700",
-        info: "bg-blue-50 border-blue-200 text-blue-700 [&>svg]:text-blue-600",
-        warning: "bg-amber-50 border-amber-200 text-amber-700 [&>svg]:text-amber-600",
-        success: "bg-green-50 border-green-200 text-green-700 [&>svg]:text-green-600",
-        destructive:
-          "bg-red-50 border-red-200 text-red-700 [&>svg]:text-red-600 *:data-[slot=alert-description]:text-red-700",
+        default: "border-neutral-200 text-neutral-700",
+        info: "border-blue-500 text-blue-700",
+        warning: "border-[#FF9300] text-amber-700",
+        success: "border-green-500 text-green-700",
+        destructive: "border-red-500 text-red-700",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
+
+const alertIconVariants = cva(
+  "w-8 h-8 rounded-lg flex justify-center items-center shrink-0",
+  {
+    variants: {
+      variant: {
+        default: "bg-neutral-100",
+        info: "bg-blue-50",
+        warning: "bg-[#FFF4E5]",
+        success: "bg-green-50",
+        destructive: "bg-red-50",
       },
     },
     defaultVariants: {
@@ -37,12 +54,29 @@ function Alert({
   )
 }
 
-function AlertTitle({ className, ...props }: React.ComponentProps<"div">) {
+function AlertIcon({
+  className,
+  variant,
+  children,
+  ...props
+}: React.ComponentProps<"div"> & VariantProps<typeof alertIconVariants>) {
   return (
     <div
+      data-slot="alert-icon"
+      className={cn(alertIconVariants({ variant }), className)}
+      {...props}
+    >
+      {children}
+    </div>
+  )
+}
+
+function AlertTitle({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <strong
       data-slot="alert-title"
       className={cn(
-        "col-start-2 font-semibold font-sora text-base tracking-tight",
+        "font-medium font-sora text-sm text-[#242424] leading-tight",
         className
       )}
       {...props}
@@ -58,7 +92,7 @@ function AlertDescription({
     <div
       data-slot="alert-description"
       className={cn(
-        "col-start-2 grid justify-items-start gap-2 text-sm [&_p]:leading-relaxed",
+        "flex flex-col gap-1 text-xs font-normal font-sora text-[#AAA28E] leading-normal [&_p]:leading-normal [&_p]:text-xs [&_p]:text-[#AAA28E] [&_strong]:font-medium [&_strong]:text-sm [&_strong]:text-[#242424]",
         className
       )}
       {...props}
@@ -66,4 +100,17 @@ function AlertDescription({
   )
 }
 
-export { Alert, AlertTitle, AlertDescription }
+function AlertContent({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="alert-content"
+      className={cn("flex-1", className)}
+      {...props}
+    />
+  )
+}
+
+export { Alert, AlertIcon, AlertTitle, AlertDescription, AlertContent }
