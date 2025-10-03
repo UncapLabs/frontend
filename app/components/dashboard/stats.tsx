@@ -84,7 +84,7 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
               <TableHead className="text-[#B2B2B2] text-[7px] leading-[7px] font-normal font-sora uppercase h-6 px-0">
                 Collateral
               </TableHead>
-              <TableHead className="text-[#B2B2B2] text-[7px] leading-[7px] font-normal font-sora uppercase h-6 text-right pl-6">
+              <TableHead className="text-[#B2B2B2] text-[7px] leading-[7px] font-normal font-sora uppercase h-6 text-right">
                 Rate AVG.
               </TableHead>
               <TableHead className="text-[#B2B2B2] text-[7px] leading-[7px] font-normal font-sora uppercase h-6 text-right">
@@ -93,7 +93,7 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
               <TableHead className="text-[#B2B2B2] text-[7px] leading-[7px] font-normal font-sora uppercase h-6 text-right">
                 Total debt
               </TableHead>
-              <TableHead className="text-[#B2B2B2] text-[7px] leading-[7px] font-normal font-sora uppercase h-6 text-right pl-6 pr-0">
+              <TableHead className="text-[#B2B2B2] text-[7px] leading-[7px] font-normal font-sora uppercase h-6 text-right">
                 Borrow
               </TableHead>
             </TableRow>
@@ -118,7 +118,7 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                     </span>
                   </div>
                 </TableCell>
-                <TableCell className="text-white text-sm font-normal font-sora text-right py-3 pl-6">
+                <TableCell className="text-white text-sm font-normal font-sora text-right tabular-nums min-w-[70px]">
                   {rate.rateAvg ? (
                     <>
                       <NumericFormat
@@ -134,13 +134,13 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                     "—"
                   )}
                 </TableCell>
-                <TableCell className="text-white text-sm font-normal font-sora text-right py-3">
+                <TableCell className="text-white text-sm font-normal font-sora text-right tabular-nums min-w-[70px]">
                   {rate.maxLTV}
                 </TableCell>
-                <TableCell className="text-white text-sm font-normal font-sora text-right py-3">
+                <TableCell className="text-white text-sm font-normal font-sora text-right tabular-nums min-w-[70px]">
                   {rate.totalDebt}
                 </TableCell>
-                <TableCell className="text-right pl-6 pr-0 py-3">
+                <TableCell className="text-right pr-0 py-3">
                   <button
                     onClick={() => handleBorrowClick(rate.collateralAddress)}
                     className="inline-flex items-center justify-center px-3 py-1 rounded border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 transition-colors"
@@ -194,13 +194,13 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
               <TableHead className="text-[#B2B2B2] text-[7px] leading-[7px] font-normal font-sora uppercase h-6 px-0">
                 Pool
               </TableHead>
-              <TableHead className="text-[#B2B2B2] text-[7px] leading-[7px] font-normal font-sora uppercase h-6 text-right pl-6">
+              <TableHead className="text-[#B2B2B2] text-[7px] leading-[7px] font-normal font-sora uppercase h-6 text-right">
                 Supply APR
               </TableHead>
               <TableHead className="text-[#B2B2B2] text-[7px] leading-[7px] font-normal font-sora uppercase h-6 text-right">
                 Total Deposits
               </TableHead>
-              <TableHead className="text-[#B2B2B2] text-[7px] leading-[7px] font-normal font-sora uppercase h-6 text-right pl-6 pr-0">
+              <TableHead className="text-[#B2B2B2] text-[7px] leading-[7px] font-normal font-sora uppercase h-6 text-right">
                 Earn
               </TableHead>
             </TableRow>
@@ -225,7 +225,7 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                     </span>
                   </div>
                 </TableCell>
-                <TableCell className="text-white text-sm font-normal font-sora text-right py-3 pl-6">
+                <TableCell className="text-white text-sm font-normal font-sora text-right tabular-nums min-w-[100px]">
                   {rate.supplyAPR ? (
                     <>
                       <NumericFormat
@@ -241,10 +241,10 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                     "—"
                   )}
                 </TableCell>
-                <TableCell className="text-white text-sm font-normal font-sora text-right py-3">
+                <TableCell className="text-white text-sm font-normal font-sora text-right tabular-nums min-w-[90px]">
                   {rate.totalDeposits}
                 </TableCell>
-                <TableCell className="text-right pl-6 pr-0 py-3">
+                <TableCell className="text-right pr-0 py-3">
                   <button
                     onClick={() => handleEarnClick(rate.collateralParam)}
                     className="inline-flex items-center justify-center px-3 py-1 rounded border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 transition-colors"
