@@ -3,10 +3,9 @@ import { z } from "zod";
 import { RpcProvider } from "starknet";
 import { contractRead } from "~/lib/contracts/calls";
 import { getBitcoinprice } from "../services/utils";
-import {
-  CollateralTypeSchema,
-  type CollateralType,
-} from "~/lib/contracts/constants";
+import { CollateralTypeSchema } from "~/lib/contracts/constants";
+
+type CollateralType = z.infer<typeof CollateralTypeSchema>;
 import { bigintToBig } from "~/lib/decimal";
 import Big from "big.js";
 

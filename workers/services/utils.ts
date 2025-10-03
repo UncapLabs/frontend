@@ -5,9 +5,9 @@ import z from "zod";
 
 // Prefixed trove ID format: "branchId:troveId"
 type PrefixedTroveId = string;
-type BranchId = string; // "0" for UBTC, "1" for WMWBTC, "2" for GBTC
+type BranchId = string; // "0" for WMWBTC, "1" for UBTC, "2" for GBTC
 
-export const CollateralIdSchema = z.enum(["UBTC", "GBTC", "WMWBTC"]);
+export const CollateralIdSchema = z.enum(["WMWBTC", "UBTC", "GBTC"]);
 
 export const getBitcoinprice = async (collateralId: CollateralId = "UBTC") => {
   const myProvider = new RpcProvider({

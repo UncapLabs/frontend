@@ -26,6 +26,6 @@ export function getInterestRatePercentage(position: Position): Big {
  * Position IDs are in format "branchId:hexId"
  */
 export function extractTroveId(positionId: string): bigint {
-  const hexPart = positionId.split(":")[1] || "0";
+  const hexPart = positionId.split(":")[1] || positionId;
   return BigInt(hexPart);
 }

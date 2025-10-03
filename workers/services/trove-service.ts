@@ -192,8 +192,6 @@ export async function fetchPositionById(
   fullId: PrefixedTroveId | null,
   maybeIndexedTrove?: IndexedTrove
 ): Promise<Position | null> {
-  // console.log(`[fetchPositionById] Starting fetch for: ${fullId}`);
-
   if (!isPrefixedTroveId(fullId)) {
     console.error(`[fetchPositionById] Invalid prefixed trove ID: ${fullId}`);
     return null;
@@ -450,11 +448,16 @@ export async function getCollateralSurplus(
 }> {
   try {
     // Fetch surplus for all collateral types in parallel
-    const [ubtcSurplusRaw, gbtcSurplusRaw, wmwbtcSurplusRaw] = await Promise.all([
-      contractRead.collSurplusPool.getCollateral(provider, borrower, "UBTC"),
-      contractRead.collSurplusPool.getCollateral(provider, borrower, "GBTC"),
-      contractRead.collSurplusPool.getCollateral(provider, borrower, "WMWBTC"),
-    ]);
+    const [ubtcSurplusRaw, gbtcSurplusRaw, wmwbtcSurplusRaw] =
+      await Promise.all([
+        contractRead.collSurplusPool.getCollateral(provider, borrower, "UBTC"),
+        contractRead.collSurplusPool.getCollateral(provider, borrower, "GBTC"),
+        contractRead.collSurplusPool.getCollateral(
+          provider,
+          borrower,
+          "WMWBTC"
+        ),
+      ]);
 
     // Convert from blockchain integers to human-readable Big decimals
     return {
