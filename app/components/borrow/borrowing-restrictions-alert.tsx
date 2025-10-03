@@ -18,7 +18,7 @@ export function BorrowingRestrictionsAlert({
   const ccrPercentage = data.ccr.times(100).toFixed(0);
 
   return (
-    <div className="bg-white rounded-2xl p-5 border border-amber-200/50">
+    <div className="bg-white rounded-2xl p-5 border border-amber-200/50 pb-2">
       <div className="flex items-start gap-3 mb-4">
         <div className="w-9 h-9 bg-amber-50 rounded-lg flex items-center justify-center flex-shrink-0">
           <AlertTriangle className="h-4 w-4 text-amber-600" />
@@ -59,7 +59,8 @@ export function BorrowingRestrictionsAlert({
         <div className="flex items-start gap-2 text-sm">
           <span className="text-green-600 mt-0.5">✓</span>
           <span className="text-neutral-700 font-sora">
-            Repay debt and close positions (if final TCR stays above {ccrPercentage}%)
+            Repay debt and close positions (if final TCR stays above{" "}
+            {ccrPercentage}%)
           </span>
         </div>
         <div className="flex items-start gap-2 text-sm">

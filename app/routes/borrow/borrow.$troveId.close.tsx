@@ -240,7 +240,7 @@ function ClosePosition() {
               }
             />
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-1">
               {/* Borrowing Restrictions Alert */}
               <BorrowingRestrictionsAlert
                 collateralType={selectedCollateral.id}

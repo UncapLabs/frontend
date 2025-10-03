@@ -277,7 +277,7 @@ function UpdatePosition() {
   }, [navigate]);
 
   return (
-    <div className="w-full mx-auto max-w-7xl py-8 lg:py-12 px-4 sm:px-6 lg:px-8 min-h-screen">
+    <>
       <div className="flex justify-between pb-6 items-baseline">
         <h2 className="text-2xl md:text-3xl font-medium leading-none font-sora text-neutral-800">
           Update Position
@@ -360,11 +360,10 @@ function UpdatePosition() {
               }}
             >
               {/* Show borrowing restrictions alert if TCR is below CCR */}
-              <div className="pb-3">
-                <BorrowingRestrictionsAlert
-                  collateralType={selectedCollateral.id}
-                />
-              </div>
+
+              <BorrowingRestrictionsAlert
+                collateralType={selectedCollateral.id}
+              />
 
               {/* Redemption History Alert - Show for all redeemed troves */}
               {hasBeenRedeemed && position && (
@@ -990,7 +989,7 @@ function UpdatePosition() {
           <RedemptionInfo variant="inline" />
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

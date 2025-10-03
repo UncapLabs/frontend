@@ -80,9 +80,14 @@ export const TokenInput = memo(function TokenInput({
   const handleValueChange = (values: NumberFormatValues) => {
     if (disabled) return;
 
-    if (values.floatValue === undefined || values.floatValue === 0) {
+    // Handle empty input - only set to undefined if truly empty
+    if (!values.value || values.value === "") {
       onChange(undefined);
-    } else if (values.value && values.value !== "") {
+      return;
+    }
+
+    // Handle valid numeric input
+    else {
       // Use the actual string value to preserve full precision!
       try {
         const bigValue = new Big(values.value);
@@ -95,10 +100,6 @@ export const TokenInput = memo(function TokenInput({
           onChange(undefined);
         }
       }
-    } else if (values.floatValue !== undefined) {
-      onChange(new Big(values.floatValue.toString()));
-    } else {
-      onChange(undefined);
     }
   };
 
@@ -272,9 +273,7 @@ export const TokenInput = memo(function TokenInput({
                 <NumericFormat
                   className="text-neutral-800 text-base font-medium font-sora leading-none"
                   displayType="text"
-                  value={
-                    balance.formatted ?? balanceAsBig?.toString() ?? "0"
-                  }
+                  value={balance.formatted ?? balanceAsBig?.toString() ?? "0"}
                   thousandSeparator=","
                   decimalScale={6}
                   fixedDecimalScale

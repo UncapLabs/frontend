@@ -85,9 +85,9 @@ function Borrow() {
 
   const form = useForm({
     defaultValues: {
-      collateralAmount: collateralAmount ?? (undefined as Big | undefined),
-      borrowAmount: borrowAmount ?? (undefined as Big | undefined),
-      interestRate: interestRate ?? new Big("5"),
+      collateralAmount: undefined as Big | undefined,
+      borrowAmount: undefined as Big | undefined,
+      interestRate: new Big("5"),
     },
     onSubmit: async ({ value }) => {
       if (!isReady) {
@@ -146,6 +146,7 @@ function Borrow() {
     (percentage: number, type: "collateral" | "borrow") => {
       if (type === "collateral") {
         if (!bitcoinBalance?.value) {
+          setCollateralAmount(null);
           form.setFieldValue("collateralAmount", undefined);
           return;
         }
@@ -157,14 +158,16 @@ function Borrow() {
           balanceDecimals,
           percentage * 100 // Convert to 0-100 scale
         );
+        setCollateralAmount(newValue);
         form.setFieldValue("collateralAmount", newValue);
         // Manually trigger validation after setting value
         form.validateField("collateralAmount", "change");
       } else {
         // For borrow, percentage represents LTV (Loan-to-Value)
         // If collateral is worth $100k and user clicks 50%, they want to borrow $50k
-        const collateral = form.getFieldValue("collateralAmount");
-        if (!collateral) {
+        const currentCollateral = collateralAmount ?? undefined;
+        if (!currentCollateral) {
+          setBorrowAmount(null);
           form.setFieldValue("borrowAmount", undefined);
           return;
         }
@@ -172,16 +175,26 @@ function Borrow() {
         const btcPrice = bitcoin?.price || new Big(0);
         const usduPrice = usdu?.price || new Big(1);
 
-        const collateralValueUSD = collateral.times(btcPrice);
+        const collateralValueUSD = currentCollateral.times(btcPrice);
         const borrowAmountUSD = collateralValueUSD.times(percentage);
         const newValue = borrowAmountUSD.div(usduPrice);
 
+        setBorrowAmount(newValue);
         form.setFieldValue("borrowAmount", newValue);
         // Manually trigger validation after setting value
         form.validateField("borrowAmount", "change");
       }
     },
-    [bitcoinBalance?.value, collateral, bitcoin?.price, usdu?.price, form]
+    [
+      bitcoinBalance?.value,
+      collateral,
+      bitcoin?.price,
+      usdu?.price,
+      form,
+      collateralAmount,
+      setCollateralAmount,
+      setBorrowAmount,
+    ]
   );
 
   // Stable callbacks for percentage clicks
@@ -276,9 +289,7 @@ function Borrow() {
               }}
             >
               {/* Show borrowing restrictions alert if TCR is below CCR */}
-              <div className="pb-3">
-                <BorrowingRestrictionsAlert collateralType={collateral.id} />
-              </div>
+              <BorrowingRestrictionsAlert collateralType={collateral.id} />
 
               <div
                 className={`space-y-1 ${
@@ -341,11 +352,12 @@ function Borrow() {
                       }}
                       balance={bitcoinBalance}
                       price={bitcoin}
-                      value={field.state.value}
+                      value={collateralAmount ?? undefined}
                       onChange={(value) => {
-                        field.handleChange(value);
-                        // Update URL - value is already a Big instance
+                        // Update URL state directly - nuqs updates React state instantly
                         setCollateralAmount(value ?? null);
+                        // Also update form for validation
+                        field.handleChange(value);
                       }}
                       onBlur={field.handleBlur}
                       label="Deposit Amount"
@@ -426,10 +438,12 @@ function Borrow() {
                     <TokenInput
                       token={TOKENS.USDU}
                       price={usdu}
-                      value={field.state.value}
+                      value={borrowAmount ?? undefined}
                       onChange={(value) => {
-                        field.handleChange(value);
+                        // Update URL state directly - nuqs updates React state instantly
                         setBorrowAmount(value ?? null);
+                        // Also update form for validation
+                        field.handleChange(value);
                       }}
                       onBlur={field.handleBlur}
                       label="Borrow Amount"
