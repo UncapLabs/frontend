@@ -26,7 +26,6 @@ interface TokenInputProps {
   onBlur?: () => void;
   label: string | ReactNode;
   placeholder?: string;
-  decimals?: number;
   percentageButtons?: boolean;
   percentageButtonsOnHover?: boolean;
   onPercentageClick?: (percentage: number) => void;
@@ -36,6 +35,7 @@ interface TokenInputProps {
   error?: string;
   helperText?: string;
   showBalance?: boolean;
+  balanceLabel?: string; // Label for balance display (default: "Balance")
   maxValue?: number;
   includeMax?: boolean;
   tokenSelectorBgColor?: string;
@@ -53,7 +53,6 @@ export const TokenInput = memo(function TokenInput({
   onBlur,
   label,
   placeholder = "0",
-  decimals = 7,
   percentageButtons = false,
   percentageButtonsOnHover = false,
   onPercentageClick,
@@ -63,6 +62,7 @@ export const TokenInput = memo(function TokenInput({
   error,
   helperText,
   showBalance = true,
+  balanceLabel = "Balance",
   maxValue = MAX_LIMIT,
   includeMax = false,
   tokenSelectorBgColor = "bg-token-bg",
@@ -223,7 +223,7 @@ export const TokenInput = memo(function TokenInput({
             placeholder={placeholder}
             inputMode="decimal"
             allowNegative={false}
-            // decimalScale={decimals}
+            decimalScale={token.decimals}
             value={displayValue}
             onValueChange={handleValueChange}
             onBlur={onBlur}
@@ -257,7 +257,7 @@ export const TokenInput = memo(function TokenInput({
             onClick={onBalanceClick}
             disabled={!onBalanceClick || disabled || !balance?.value}
             className={`
-              flex items-end gap-1 
+              flex items-end gap-1
               ${
                 onBalanceClick && balance?.value && !disabled
                   ? "cursor-pointer hover:opacity-70 transition-opacity"
@@ -266,7 +266,7 @@ export const TokenInput = memo(function TokenInput({
             `}
           >
             <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
-              Balance:
+              {balanceLabel}:
             </span>
             {balance ? (
               <>

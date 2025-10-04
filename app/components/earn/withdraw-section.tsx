@@ -53,10 +53,10 @@ export function WithdrawSection({
         onBlur={onBlur}
         error={error}
         disabled={userDeposit.eq(0)}
-        decimals={18}
         percentageButtons
         onPercentageClick={onPercentageClick}
         includeMax={true}
+        balanceLabel="Available"
       />
 
       <div className="flex items-center justify-between text-sm">

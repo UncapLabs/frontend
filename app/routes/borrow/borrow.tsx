@@ -447,7 +447,6 @@ function Borrow() {
                       }}
                       onBlur={field.handleBlur}
                       label="Borrow Amount"
-                      decimals={2}
                       percentageButtons
                       percentageButtonsOnHover
                       onPercentageClick={handleBorrowPercentageClick}

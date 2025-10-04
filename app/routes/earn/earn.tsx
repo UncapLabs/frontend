@@ -49,7 +49,7 @@ function Earn() {
 
   const form = useForm({
     defaultValues: {
-      amount: new Big(0) as Big | undefined,
+      amount: undefined as Big | undefined,
     },
     onSubmit: async ({ value }) => {
       // For claim action, we don't need an amount
@@ -139,8 +139,8 @@ function Earn() {
                 }
                 successSubtitle={
                   action === "deposit"
-                    ? `Your USDU has been deposited into the ${selectedCollateral} Stability Pool.`
-                    : `Your USDU has been withdrawn from the ${selectedCollateral} Stability Pool.`
+                    ? `Your USDU has been deposited into the ${selectedCollateralSymbol} Stability Pool.`
+                    : `Your USDU has been withdrawn from the ${selectedCollateralSymbol} Stability Pool.`
                 }
                 details={
                   ((action === "deposit" &&

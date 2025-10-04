@@ -296,12 +296,45 @@ function UpdatePosition() {
               successTitle="Position Updated!"
               successSubtitle="Your position has been updated successfully."
               details={
-                changes &&
                 formData.collateralAmount &&
                 formData.borrowAmount &&
                 transactionHash
                   ? ([
-                      changes.hasCollateralChange && {
+                      {
+                        label: "Final Collateral",
+                        value: (
+                          <>
+                            <NumericFormat
+                              displayType="text"
+                              value={formData.collateralAmount.toString()}
+                              thousandSeparator=","
+                              decimalScale={7}
+                              fixedDecimalScale={false}
+                            />{" "}
+                            {selectedCollateral.symbol}
+                          </>
+                        ),
+                      },
+                      {
+                        label: "Final Debt",
+                        value: (
+                          <>
+                            <NumericFormat
+                              displayType="text"
+                              value={formData.borrowAmount.toString()}
+                              thousandSeparator=","
+                              decimalScale={2}
+                              fixedDecimalScale
+                            />{" "}
+                            USDU
+                          </>
+                        ),
+                      },
+                      {
+                        label: "Interest Rate (APR)",
+                        value: `${formData.interestRate.toString()}%`,
+                      },
+                      changes?.hasCollateralChange && {
                         label: changes.isCollIncrease
                           ? "Collateral Added"
                           : "Collateral Withdrawn",
@@ -321,7 +354,7 @@ function UpdatePosition() {
                           </>
                         ),
                       },
-                      changes.hasDebtChange && {
+                      changes?.hasDebtChange && {
                         label: changes.isDebtIncrease
                           ? "Borrowed More"
                           : "Debt Repaid",
@@ -340,10 +373,6 @@ function UpdatePosition() {
                             USDU
                           </>
                         ),
-                      },
-                      {
-                        label: "Interest Rate (APR)",
-                        value: `${interestRate}%`,
                       },
                     ].filter(Boolean) as any)
                   : undefined
@@ -593,24 +622,23 @@ function UpdatePosition() {
                         field.handleChange(value);
                         setCollateralAmount(value);
                       }}
-                      onBalanceClick={() => {
-                        if (collateralAction === "add") {
-                          // Use underlying decimals for wrapped tokens
-                          const balanceDecimals =
-                            getBalanceDecimals(selectedCollateral);
-                          const balanceBig = bitcoinBalance?.value
-                            ? bigintToBig(bitcoinBalance.value, balanceDecimals)
-                            : new Big(0);
-                          field.handleChange(balanceBig);
-                          setCollateralAmount(balanceBig);
-                        } else {
-                          // Set to current position amount (max withdrawable)
-                          const currentCollateral =
-                            position?.collateralAmount || new Big(0);
-                          field.handleChange(currentCollateral);
-                          setCollateralAmount(currentCollateral);
-                        }
-                      }}
+                      onBalanceClick={
+                        collateralAction === "add"
+                          ? () => {
+                              // Use underlying decimals for wrapped tokens
+                              const balanceDecimals =
+                                getBalanceDecimals(selectedCollateral);
+                              const balanceBig = bitcoinBalance?.value
+                                ? bigintToBig(
+                                    bitcoinBalance.value,
+                                    balanceDecimals
+                                  )
+                                : new Big(0);
+                              field.handleChange(balanceBig);
+                              setCollateralAmount(balanceBig);
+                            }
+                          : undefined
+                      }
                       onBlur={field.handleBlur}
                       label={
                         collateralAction === "add"
@@ -985,6 +1013,25 @@ function UpdatePosition() {
             previousLiquidationPrice={previousMetrics.liquidationPrice}
             collateralType={selectedCollateral.id}
             troveId={position ? extractTroveId(position.id) : undefined}
+            warnings={
+              collateralAction === "withdraw" &&
+              collateralAmount &&
+              position &&
+              collateralAmount.gte(position.collateralAmount)
+                ? [
+                    <>
+                      You're withdrawing all your collateral. Consider{" "}
+                      <a
+                        href={`/unanim/borrow/${troveId}/close`}
+                        className="underline hover:text-amber-900 font-semibold"
+                      >
+                        closing your position
+                      </a>{" "}
+                      instead.
+                    </>,
+                  ]
+                : []
+            }
           />
           <RedemptionInfo variant="inline" />
         </div>

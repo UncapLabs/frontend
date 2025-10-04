@@ -89,9 +89,10 @@ export function useUpdatePosition({
 
     if (hash) {
       // Transaction was sent successfully, move to pending
+      // Use the final values (either updated or original from position)
       transactionState.updateFormData({
-        collateralAmount,
-        borrowAmount,
+        collateralAmount: collateralAmount || position?.collateralAmount,
+        borrowAmount: borrowAmount || position?.borrowedAmount,
         interestRate: interestRate || new Big(5),
         selectedCollateralToken: collateralToken?.symbol || DEFAULT_COLLATERAL.symbol,
       });
