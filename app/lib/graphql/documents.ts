@@ -56,6 +56,7 @@ export const TROVES_AS_PREVIOUS_OWNER = graphql(/* GraphQL */ `
       updatedAt
       mightBeLeveraged
       previousOwner
+      liquidationTx
     }
   }
 `);
@@ -73,6 +74,7 @@ export const TROVE_BY_ID = graphql(/* GraphQL */ `
       redemptionCount
       redeemedColl
       redeemedDebt
+      liquidationTx
     }
   }
 `);

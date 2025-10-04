@@ -81,7 +81,7 @@ export async function calculateStabilityPoolAPR(
     // APR formula: 75% of (average interest rate * (USDU supply / total deposits))
     if (
       totalDepositsBig.lte(0) ||
-      avgInterestRate.gte(0) ||
+      avgInterestRate.lte(0) ||
       totalDebtBig.lte(0)
     ) {
       return 0;

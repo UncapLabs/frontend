@@ -215,7 +215,7 @@ export default function BorrowCard(props: Props) {
                     displayType="text"
                     value={trove.collateralAmount.toString()}
                     thousandSeparator=","
-                    decimalScale={6}
+                    decimalScale={5}
                     fixedDecimalScale={true}
                   />
                 </div>
@@ -253,7 +253,9 @@ export default function BorrowCard(props: Props) {
                     $
                     <NumericFormat
                       displayType="text"
-                      value={trove.collateralAmount.times(collateralPrice.price).toString()}
+                      value={trove.collateralAmount
+                        .times(collateralPrice.price)
+                        .toString()}
                       thousandSeparator=","
                       decimalScale={2}
                       fixedDecimalScale

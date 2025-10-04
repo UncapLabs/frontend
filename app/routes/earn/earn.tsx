@@ -216,7 +216,7 @@ function Earn() {
                                           decimalScale={6}
                                           fixedDecimalScale
                                         />{" "}
-                                        {selectedCollateral}
+                                        {selectedCollateralSymbol}
                                       </div>
                                     )}
                                   </div>
@@ -228,11 +228,7 @@ function Earn() {
                     : undefined
                 }
                 onComplete={handleComplete}
-                completeButtonText={
-                  action === "deposit"
-                    ? "Make Another Deposit"
-                    : "Make Another Withdrawal"
-                }
+                completeButtonText={"Go back to Stability Pool"}
               />
             ) : (
               <>

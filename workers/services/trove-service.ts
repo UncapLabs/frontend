@@ -89,6 +89,7 @@ export interface IndexedTrove {
   redemptionCount?: number;
   redeemedColl?: string;
   redeemedDebt?: string;
+  // liquidationTx?: string;
 }
 
 export interface Position {
@@ -134,6 +135,7 @@ export async function getIndexedTroveById(
         redemptionCount: trove.redemptionCount || 0,
         redeemedColl: trove.redeemedColl || "0",
         redeemedDebt: trove.redeemedDebt || "0",
+        // liquidationTx: trove.liquidationTx || undefined,
       };
 }
 
@@ -177,6 +179,7 @@ export async function getIndexedTrovesByAccount(
     redemptionCount: trove.redemptionCount || 0,
     redeemedColl: trove.redeemedColl || "0",
     redeemedDebt: trove.redeemedDebt || "0",
+    // liquidationTx: trove.liquidationTx || undefined,
   }));
 
   console.log(

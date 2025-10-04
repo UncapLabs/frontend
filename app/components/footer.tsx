@@ -19,9 +19,14 @@ export default function Footer() {
           >
             Support
           </a>
-          <Link className="hover:text-white/90" to="/docs">
-            Documentation
-          </Link>
+          <a
+            className="hover:text-white/90"
+            href="https://t.me/UncapSupport_bot"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Support
+          </a>
           <Link className="hover:text-white/90" to="/terms-and-conditions">
             Terms & conditions
           </Link>
