@@ -19,18 +19,18 @@ export function useCollateralSurplus(borrower: string | undefined) {
 
   // Convert to readable format
   const formattedSurpluses = {
-    UBTC: {
-      formatted: query.data?.UBTC ?? Big(0),
-      symbol: COLLATERALS.UBTC.symbol,
-      hasAmount: query.data?.UBTC ? query.data.UBTC.gt(0) : false,
-      collateralType: "UBTC" as CollateralId,
-    },
-    GBTC: {
-      formatted: query.data?.GBTC ?? Big(0),
-      symbol: COLLATERALS.GBTC.symbol,
-      hasAmount: query.data?.GBTC ? query.data.GBTC.gt(0) : false,
-      collateralType: "GBTC" as CollateralId,
-    },
+    // UBTC: {
+    //   formatted: query.data?.UBTC ?? Big(0),
+    //   symbol: COLLATERALS.UBTC.symbol,
+    //   hasAmount: query.data?.UBTC ? query.data.UBTC.gt(0) : false,
+    //   collateralType: "UBTC" as CollateralId,
+    // },
+    // GBTC: {
+    //   formatted: query.data?.GBTC ?? Big(0),
+    //   symbol: COLLATERALS.GBTC.symbol,
+    //   hasAmount: query.data?.GBTC ? query.data.GBTC.gt(0) : false,
+    //   collateralType: "GBTC" as CollateralId,
+    // },
     WMWBTC: {
       formatted: query.data?.WMWBTC ?? Big(0),
       symbol: COLLATERALS.WMWBTC.symbol,
@@ -40,8 +40,8 @@ export function useCollateralSurplus(borrower: string | undefined) {
   };
 
   const availableSurpluses = [
-    formattedSurpluses.UBTC,
-    formattedSurpluses.GBTC,
+    // formattedSurpluses.UBTC,
+    // formattedSurpluses.GBTC,
     formattedSurpluses.WMWBTC,
   ].filter((s) => s.hasAmount);
 

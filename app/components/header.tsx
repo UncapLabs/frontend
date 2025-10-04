@@ -168,11 +168,11 @@ function Header() {
       href: "/unanim/earn",
       icon: <EarnIcon />,
     },
-    {
-      name: "Claim",
-      href: "/unanim/claim",
-      icon: <EarnIcon />,
-    },
+    // {
+    //   name: "STRK Rewards",
+    //   href: "/unanim/claim",
+    //   icon: <EarnIcon />,
+    // },
   ];
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();

@@ -10,41 +10,41 @@ export interface StabilityPoolDataQuery {
 }
 
 export interface UseStabilityPoolDataResult {
-  UBTC: StabilityPoolDataQuery;
-  GBTC: StabilityPoolDataQuery;
+  // UBTC: StabilityPoolDataQuery;
+  // GBTC: StabilityPoolDataQuery;
   WMWBTC: StabilityPoolDataQuery;
 }
 
 export function useStabilityPoolData(): UseStabilityPoolDataResult {
   const trpc = useTRPC();
 
-  const ubtcTotalDepositsQuery = useQuery({
-    ...trpc.stabilityPoolRouter.getTotalDeposits.queryOptions({
-      collateralType: "UBTC",
-    }),
-    refetchInterval: 30000,
-  });
+  // const ubtcTotalDepositsQuery = useQuery({
+  //   ...trpc.stabilityPoolRouter.getTotalDeposits.queryOptions({
+  //     collateralType: "UBTC",
+  //   }),
+  //   refetchInterval: 30000,
+  // });
 
-  const gbtcTotalDepositsQuery = useQuery({
-    ...trpc.stabilityPoolRouter.getTotalDeposits.queryOptions({
-      collateralType: "GBTC",
-    }),
-    refetchInterval: 30000,
-  });
+  // const gbtcTotalDepositsQuery = useQuery({
+  //   ...trpc.stabilityPoolRouter.getTotalDeposits.queryOptions({
+  //     collateralType: "GBTC",
+  //   }),
+  //   refetchInterval: 30000,
+  // });
 
-  const ubtcAprQuery = useQuery({
-    ...trpc.stabilityPoolRouter.getPoolApr.queryOptions({
-      collateralType: "UBTC",
-    }),
-    refetchInterval: 30000,
-  });
+  // const ubtcAprQuery = useQuery({
+  //   ...trpc.stabilityPoolRouter.getPoolApr.queryOptions({
+  //     collateralType: "UBTC",
+  //   }),
+  //   refetchInterval: 30000,
+  // });
 
-  const gbtcAprQuery = useQuery({
-    ...trpc.stabilityPoolRouter.getPoolApr.queryOptions({
-      collateralType: "GBTC",
-    }),
-    refetchInterval: 30000,
-  });
+  // const gbtcAprQuery = useQuery({
+  //   ...trpc.stabilityPoolRouter.getPoolApr.queryOptions({
+  //     collateralType: "GBTC",
+  //   }),
+  //   refetchInterval: 30000,
+  // });
 
   const wmwbtcTotalDepositsQuery = useQuery({
     ...trpc.stabilityPoolRouter.getTotalDeposits.queryOptions({
@@ -61,16 +61,16 @@ export function useStabilityPoolData(): UseStabilityPoolDataResult {
   });
 
   return {
-    UBTC: {
-      totalDeposits: ubtcTotalDepositsQuery.data,
-      apr: ubtcAprQuery.data,
-      isLoading: ubtcTotalDepositsQuery.isLoading || ubtcAprQuery.isLoading,
-    },
-    GBTC: {
-      totalDeposits: gbtcTotalDepositsQuery.data,
-      apr: gbtcAprQuery.data,
-      isLoading: gbtcTotalDepositsQuery.isLoading || gbtcAprQuery.isLoading,
-    },
+    // UBTC: {
+    //   totalDeposits: ubtcTotalDepositsQuery.data,
+    //   apr: ubtcAprQuery.data,
+    //   isLoading: ubtcTotalDepositsQuery.isLoading || ubtcAprQuery.isLoading,
+    // },
+    // GBTC: {
+    //   totalDeposits: gbtcTotalDepositsQuery.data,
+    //   apr: gbtcAprQuery.data,
+    //   isLoading: gbtcTotalDepositsQuery.isLoading || gbtcAprQuery.isLoading,
+    // },
     WMWBTC: {
       totalDeposits: wmwbtcTotalDepositsQuery.data,
       apr: wmwbtcAprQuery.data,

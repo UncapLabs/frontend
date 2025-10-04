@@ -1,6 +1,10 @@
 import { RpcProvider } from "starknet";
 import { contractRead } from "~/lib/contracts/calls";
-import { TOKENS, type CollateralId, COLLATERAL_TO_BRANCH } from "~/lib/collateral";
+import {
+  TOKENS,
+  type CollateralId,
+  COLLATERAL_TO_BRANCH,
+} from "~/lib/collateral";
 import { bigintToBig } from "~/lib/decimal";
 import { getAverageInterestRateForBranch } from "./interest";
 import Big from "big.js";
@@ -20,13 +24,16 @@ export async function fetchPoolPosition(
     const userDeposit = bigintToBig(position.deposit, TOKENS.USDU.decimals);
     const usduRewards = bigintToBig(position.usduGain, TOKENS.USDU.decimals);
     // CRITICAL: Total collateral rewards = pending gains + stashed from previous compounds
-    const collateralRewards = bigintToBig(position.collateralGain + position.stashedColl, 18);
+    const collateralRewards = bigintToBig(
+      position.collateralGain + position.stashedColl,
+      18
+    );
     const totalDeposits = bigintToBig(
       position.totalDeposits,
       TOKENS.USDU.decimals
     );
 
-    const poolShare = totalDeposits.gt(0) 
+    const poolShare = totalDeposits.gt(0)
       ? userDeposit.div(totalDeposits).times(100)
       : new Big(0);
 
@@ -66,10 +73,17 @@ export async function calculateStabilityPoolAPR(
     ]);
 
     const totalDepositsBig = bigintToBig(totalDeposits, TOKENS.USDU.decimals);
-    const totalDebtBig = bigintToBig(branchTotals.totalDebt, TOKENS.USDU.decimals);
+    const totalDebtBig = bigintToBig(
+      branchTotals.totalDebt,
+      TOKENS.USDU.decimals
+    );
 
     // APR formula: 75% of (average interest rate * (USDU supply / total deposits))
-    if (totalDepositsBig.lte(0) || avgInterestRate <= 0 || totalDebtBig.lte(0)) {
+    if (
+      totalDepositsBig.lte(0) ||
+      avgInterestRate.gte(0) ||
+      totalDebtBig.lte(0)
+    ) {
       return 0;
     }
 
@@ -79,14 +93,11 @@ export async function calculateStabilityPoolAPR(
       .times(totalDebtBig.div(totalDepositsBig))
       .times(0.75)
       .times(100); // Convert to percentage
-    
+
     // Return as number for backward compatibility
     return Number(aprBig.toString());
   } catch (error) {
-    console.error(
-      `Error calculating APR for ${collateralType}:`,
-      error
-    );
+    console.error(`Error calculating APR for ${collateralType}:`, error);
     return 0;
   }
 }

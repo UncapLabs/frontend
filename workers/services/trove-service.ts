@@ -442,34 +442,40 @@ export async function getCollateralSurplus(
   provider: RpcProvider,
   borrower: string
 ): Promise<{
-  UBTC: Big;
-  GBTC: Big;
+  // UBTC: Big;
+  // GBTC: Big;
   WMWBTC: Big;
 }> {
   try {
     // Fetch surplus for all collateral types in parallel
-    const [ubtcSurplusRaw, gbtcSurplusRaw, wmwbtcSurplusRaw] =
-      await Promise.all([
-        contractRead.collSurplusPool.getCollateral(provider, borrower, "UBTC"),
-        contractRead.collSurplusPool.getCollateral(provider, borrower, "GBTC"),
-        contractRead.collSurplusPool.getCollateral(
-          provider,
-          borrower,
-          "WMWBTC"
-        ),
-      ]);
+    // const [ubtcSurplusRaw, gbtcSurplusRaw, wmwbtcSurplusRaw] =
+    //   await Promise.all([
+    //     contractRead.collSurplusPool.getCollateral(provider, borrower, "UBTC"),
+    //     contractRead.collSurplusPool.getCollateral(provider, borrower, "GBTC"),
+    //     contractRead.collSurplusPool.getCollateral(
+    //       provider,
+    //       borrower,
+    //       "WMWBTC"
+    //     ),
+    //   ]);
+
+    const wmwbtcSurplusRaw = await contractRead.collSurplusPool.getCollateral(
+      provider,
+      borrower,
+      "WMWBTC"
+    );
 
     // Convert from blockchain integers to human-readable Big decimals
     return {
-      UBTC: bigintToBig(ubtcSurplusRaw, COLLATERALS.UBTC.decimals),
-      GBTC: bigintToBig(gbtcSurplusRaw, COLLATERALS.GBTC.decimals),
+      // UBTC: bigintToBig(ubtcSurplusRaw, COLLATERALS.UBTC.decimals),
+      // GBTC: bigintToBig(gbtcSurplusRaw, COLLATERALS.GBTC.decimals),
       WMWBTC: bigintToBig(wmwbtcSurplusRaw, COLLATERALS.WMWBTC.decimals),
     };
   } catch (error) {
     console.error(`Error fetching collateral surplus for ${borrower}:`, error);
     return {
-      UBTC: new Big(0),
-      GBTC: new Big(0),
+      // UBTC: new Big(0),
+      // GBTC: new Big(0),
       WMWBTC: new Big(0),
     };
   }

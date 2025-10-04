@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "~/lib/trpc";
-import type { CollateralId } from "~/lib/collateral";
+import { DEFAULT_COLLATERAL, type CollateralId } from "~/lib/collateral";
 
 interface UseFetchPricesOptions {
-  collateralType?: CollateralId | string;
+  collateralType?: CollateralId;
   fetchBitcoin?: boolean;
   fetchUsdu?: boolean;
   enabled?: boolean;
@@ -12,14 +12,14 @@ interface UseFetchPricesOptions {
 /**
  * Hook to fetch Bitcoin and/or USDU prices
  * @param options - Configuration options for which prices to fetch
- * @param options.collateralType - The type of collateral (UBTC, GBTC, WMWBTC), defaults to "UBTC"
+ * @param options.collateralType - The type of collateral (UBTC, GBTC, WMWBTC)
  * @param options.fetchBitcoin - Whether to fetch Bitcoin price, defaults to true
  * @param options.fetchUsdu - Whether to fetch USDU price, defaults to true
  * @param options.enabled - Whether to enable the queries, defaults to true
  */
 export function useFetchPrices(options: UseFetchPricesOptions = {}) {
   const {
-    collateralType = "UBTC" as CollateralId,
+    collateralType = DEFAULT_COLLATERAL.id,
     fetchBitcoin = true,
     fetchUsdu = true,
     enabled = true,
@@ -44,8 +44,8 @@ export function useFetchPrices(options: UseFetchPricesOptions = {}) {
   return {
     bitcoin: bitcoinQuery.data,
     usdu: usduQuery.data,
-    isLoading: 
-      (fetchBitcoin && bitcoinQuery.isLoading) || 
+    isLoading:
+      (fetchBitcoin && bitcoinQuery.isLoading) ||
       (fetchUsdu && usduQuery.isLoading),
     refetchBitcoin: bitcoinQuery.refetch,
     refetchUsdu: usduQuery.refetch,

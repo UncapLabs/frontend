@@ -1,7 +1,7 @@
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Label } from "~/components/ui/label";
-import { ArrowIcon } from "~/components/icons/arrow-icon";
+// import { ArrowIcon } from "~/components/icons/arrow-icon";
 import {
   Tooltip,
   TooltipContent,
@@ -40,7 +40,7 @@ function Earn() {
   ) as [ActionType, (value: ActionType | null) => void];
   const [selectedCollateral, setSelectedCollateral] = useQueryState(
     "collateral",
-    parseAsString.withDefault("UBTC")
+    parseAsString.withDefault("WMWBTC")
   ) as [CollateralId, (value: CollateralId | null) => void];
   const [claimRewards, setClaimRewards] = useQueryState(
     "claim",
@@ -181,7 +181,7 @@ function Earn() {
                         },
                         {
                           label: "Pool",
-                          value: `${selectedCollateral} Stability Pool`,
+                          value: `${selectedCollateralSymbol} Stability Pool`,
                         },
                         // Add rewards claimed if applicable
                         ...(claimRewards &&
@@ -240,7 +240,7 @@ function Earn() {
                 <div className="bg-white rounded-2xl mb-2">
                   <div className="p-6 pb-2">
                     <Label className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight mb-3 block">
-                      Choose Action & Pool
+                      Choose Action
                     </Label>
                   </div>
 
@@ -287,7 +287,7 @@ function Earn() {
                   </div>
 
                   {/* Pool Selection Row */}
-                  <div className="border-t border-neutral-100 p-4 pt-3">
+                  {/* <div className="border-t border-neutral-100 p-4 pt-3">
                     <div className="flex gap-3">
                       <button
                         type="button"
@@ -380,10 +380,10 @@ function Earn() {
                         </div>
                       </button>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
 
-                <div className="relative flex justify-center items-center">
+                {/* <div className="relative flex justify-center items-center">
                   <div className="absolute z-10">
                     <ArrowIcon
                       size={40}
@@ -392,7 +392,7 @@ function Earn() {
                       direction="down"
                     />
                   </div>
-                </div>
+                </div> */}
 
                 <form
                   onSubmit={(e) => {

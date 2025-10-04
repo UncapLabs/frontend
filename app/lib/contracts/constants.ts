@@ -11,4 +11,4 @@ export const USDU_ADDRESS = deploymentData.USDU as Address;
 export const GAS_TOKEN_ADDRESS = deploymentData.gasToken as Address;
 
 // Zod schema for CollateralId validation (used in tRPC routers)
-export const CollateralTypeSchema = z.enum(["UBTC", "GBTC", "WMWBTC"]);
+export const CollateralTypeSchema = z.enum(["WMWBTC"]); // "UBTC", "GBTC"

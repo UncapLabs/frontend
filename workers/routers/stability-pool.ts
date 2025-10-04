@@ -26,15 +26,20 @@ export const stabilityPoolRouter = router({
       const { userAddress } = input;
 
       // Fetch positions for all collateral types in parallel
-      const [ubtcPosition, gbtcPosition, wmwbtcPosition] = await Promise.all([
-        fetchPoolPosition(provider, userAddress, "UBTC"),
-        fetchPoolPosition(provider, userAddress, "GBTC"),
-        fetchPoolPosition(provider, userAddress, "WMWBTC"),
-      ]);
+      // const [ubtcPosition, gbtcPosition, wmwbtcPosition] = await Promise.all([
+      //   fetchPoolPosition(provider, userAddress, "UBTC"),
+      //   fetchPoolPosition(provider, userAddress, "GBTC"),
+      //   fetchPoolPosition(provider, userAddress, "WMWBTC"),
+      // ]);
 
+      const wmwbtcPosition = await fetchPoolPosition(
+        provider,
+        userAddress,
+        "WMWBTC"
+      );
       return {
-        UBTC: ubtcPosition,
-        GBTC: gbtcPosition,
+        // UBTC: ubtcPosition,
+        // GBTC: gbtcPosition,
         WMWBTC: wmwbtcPosition,
       };
     }),

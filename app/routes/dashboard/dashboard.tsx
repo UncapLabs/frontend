@@ -44,14 +44,18 @@ export default function Dashboard() {
 
   const allStabilityPoolPositions = useAllStabilityPoolPositions();
 
-  const { bitcoin: ubtcPrice } = useFetchPrices({
-    collateralType: "UBTC",
+  const { bitcoin: wbtcPrice } = useFetchPrices({
+    collateralType: "WMWBTC",
     fetchUsdu: false,
   });
-  const { bitcoin: gbtcPrice } = useFetchPrices({
-    collateralType: "GBTC",
-    fetchUsdu: false,
-  });
+  // const { bitcoin: ubtcPrice } = useFetchPrices({
+  //   collateralType: "UBTC",
+  //   fetchUsdu: false,
+  // });
+  // const { bitcoin: gbtcPrice } = useFetchPrices({
+  //   collateralType: "GBTC",
+  //   fetchUsdu: false,
+  // });
   const { usdu } = useFetchPrices({ fetchBitcoin: false, fetchUsdu: true });
 
   // Separate liquidated from active/zombie positions
@@ -226,9 +230,7 @@ export default function Dashboard() {
                     <BorrowCard
                       key={trove.id}
                       trove={trove}
-                      collateralPrice={
-                        trove.collateralAsset === "GBTC" ? gbtcPrice : ubtcPrice
-                      }
+                      collateralPrice={wbtcPrice}
                       onUpdatePosition={handleUpdatePosition}
                       onClosePosition={handleClosePosition}
                     />
@@ -237,7 +239,7 @@ export default function Dashboard() {
                 {/* Stability Pool Positions */}
                 {address && filter !== "borrow" && (
                   <>
-                    {allStabilityPoolPositions.UBTC &&
+                    {/* {allStabilityPoolPositions.UBTC &&
                       allStabilityPoolPositions.UBTC.userDeposit.gt(0) && (
                         <StabilityPoolCard
                           poolType="UBTC"
@@ -254,9 +256,9 @@ export default function Dashboard() {
                           usduPrice={usdu?.price}
                           onManagePosition={() => navigate("/unanim/earn")}
                         />
-                      )}
+                      )} */}
 
-                    {allStabilityPoolPositions.GBTC &&
+                    {/* {allStabilityPoolPositions.GBTC &&
                       allStabilityPoolPositions.GBTC.userDeposit.gt(0) && (
                         <StabilityPoolCard
                           poolType="GBTC"
@@ -275,7 +277,7 @@ export default function Dashboard() {
                             navigate("/unanim/earn?collateral=GBTC")
                           }
                         />
-                      )}
+                      )} */}
 
                     {allStabilityPoolPositions.WMWBTC &&
                       allStabilityPoolPositions.WMWBTC.userDeposit.gt(0) && (

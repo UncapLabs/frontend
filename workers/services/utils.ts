@@ -7,9 +7,11 @@ import z from "zod";
 type PrefixedTroveId = string;
 type BranchId = string; // "0" for WMWBTC, "1" for UBTC, "2" for GBTC
 
-export const CollateralIdSchema = z.enum(["WMWBTC", "UBTC", "GBTC"]);
+export const CollateralIdSchema = z.enum(["WMWBTC"]); //, "UBTC", "GBTC"]);
 
-export const getBitcoinprice = async (collateralId: CollateralId = "UBTC") => {
+export const getBitcoinprice = async (
+  collateralId: CollateralId = "WMWBTC"
+) => {
   const myProvider = new RpcProvider({
     nodeUrl: process.env.NODE_URL,
   });

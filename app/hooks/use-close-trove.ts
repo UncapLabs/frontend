@@ -7,6 +7,7 @@ import {
   type Collateral,
   requiresWrapping,
   generateUnwrapCallFromBigint,
+  DEFAULT_COLLATERAL,
 } from "~/lib/collateral";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
@@ -46,7 +47,7 @@ export function useCloseTrove({
       troveId: troveId || "",
       debt: debt || new Big(0),
       collateralAmount: collateralAmount || new Big(0),
-      collateralSymbol: collateral?.symbol || "UBTC",
+      collateralSymbol: collateral?.symbol || DEFAULT_COLLATERAL.id,
     },
   });
 
@@ -67,7 +68,10 @@ export function useCloseTrove({
 
       // For wrapped collateral: unwrap after closing to return underlying token
       if (requiresWrapping(collateral) && collateralAmount) {
-        const wrappedAmount = bigToBigint(collateralAmount, collateral.decimals);
+        const wrappedAmount = bigToBigint(
+          collateralAmount,
+          collateral.decimals
+        );
         callList.push(generateUnwrapCallFromBigint(collateral, wrappedAmount));
       }
 
@@ -91,7 +95,7 @@ export function useCloseTrove({
         troveId: troveId || "",
         debt: debt || new Big(0),
         collateralAmount: collateralAmount || new Big(0),
-        collateralSymbol: collateral?.symbol || "UBTC",
+        collateralSymbol: collateral?.symbol || DEFAULT_COLLATERAL.id,
       });
       transactionState.setPending(hash);
 

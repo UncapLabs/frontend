@@ -326,8 +326,8 @@ export function useAllStabilityPoolPositions() {
   // Return default structure if no data
   if (!data) {
     return {
-      UBTC: null,
-      GBTC: null,
+      // UBTC: null,
+      // GBTC: null,
       WMWBTC: null,
     };
   }

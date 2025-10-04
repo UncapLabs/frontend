@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { type CollateralId } from "~/lib/collateral";
+import { DEFAULT_COLLATERAL, type CollateralId } from "~/lib/collateral";
 import { useTRPC } from "~/lib/trpc";
 
 interface UseNextOwnerIndexOptions {
@@ -9,7 +9,11 @@ interface UseNextOwnerIndexOptions {
 }
 
 export function useNextOwnerIndex(options: UseNextOwnerIndexOptions) {
-  const { address, collateralType = "UBTC" as CollateralId, enabled = true } = options;
+  const {
+    address,
+    collateralType = DEFAULT_COLLATERAL.id,
+    enabled = true,
+  } = options;
   const trpc = useTRPC();
 
   const {

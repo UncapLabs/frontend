@@ -40,7 +40,7 @@ export function getTroveId(
 
 /**
  * Creates a prefixed troveId with branchId
- * @param branchId The branch ID (0 for UBTC, 1 for GBTC)
+ * @param branchId The branch ID
  * @param troveId The computed trove ID
  * @returns The prefixed trove ID in format "branchId:troveId"
  */

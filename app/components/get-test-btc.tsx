@@ -18,32 +18,27 @@ import {
 } from "~/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { UBTC_ABI } from "~/lib/contracts";
-import { COLLATERALS, type CollateralId } from "~/lib/collateral";
+import {
+  COLLATERALS,
+  DEFAULT_COLLATERAL,
+  type CollateralId,
+} from "~/lib/collateral";
 
 export function GetTestBtc() {
   const { address } = useAccount();
-  const [selectedToken, setSelectedToken] = useState<CollateralId>("UBTC");
+  const [selectedToken, setSelectedToken] = useState<CollateralId>(
+    DEFAULT_COLLATERAL.id
+  );
   const [amount, setAmount] = useState<string>("1");
 
   // For WMWBTC, we mint the underlying token (8 decimals)
   const tokenConfig =
-    selectedToken === "UBTC"
-      ? COLLATERALS.UBTC
-      : selectedToken === "GBTC"
-      ? COLLATERALS.GBTC
-      : selectedToken === "WMWBTC"
-      ? {
-          address: COLLATERALS.WMWBTC.underlyingToken!.address,
-          symbol: "wBTC",
-          decimals: COLLATERALS.WMWBTC.underlyingToken!.decimals,
-        }
-      : COLLATERALS.UBTC;
-  
+    selectedToken === "WMWBTC" ? COLLATERALS.WMWBTC : DEFAULT_COLLATERAL;
   const { data: balance } = useBalance({
     address,
     token: tokenConfig.address,
   });
-  
+
   const { contract } = useContract({
     abi: UBTC_ABI,
     address: tokenConfig.address,
@@ -112,8 +107,8 @@ export function GetTestBtc() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="UBTC">UBTC</SelectItem>
-              <SelectItem value="GBTC">GBTC</SelectItem>
+              {/* <SelectItem value="UBTC">UBTC</SelectItem> */}
+              {/* <SelectItem value="GBTC">GBTC</SelectItem> */}
               <SelectItem value="WMWBTC">wBTC (8 decimals)</SelectItem>
             </SelectContent>
           </Select>
@@ -136,10 +131,14 @@ export function GetTestBtc() {
 
         <Button
           onClick={handleMint}
-          disabled={!contract || isPending || !amount || parseFloat(amount) <= 0}
+          disabled={
+            !contract || isPending || !amount || parseFloat(amount) <= 0
+          }
           className="w-full bg-blue-600 hover:bg-blue-700 text-white"
         >
-          {isPending ? `Minting ${displayTokenName}...` : `Mint ${amount} ${displayTokenName}`}
+          {isPending
+            ? `Minting ${displayTokenName}...`
+            : `Mint ${amount} ${displayTokenName}`}
         </Button>
       </CardContent>
     </Card>

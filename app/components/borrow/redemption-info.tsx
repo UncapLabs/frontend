@@ -20,18 +20,25 @@ export function RedemptionInfo({
 }: RedemptionInfoProps) {
   const content = (
     <>
-      <p className="text-[#004BB2] text-sm font-normal leading-relaxed font-sora">
-        You control your loan's interest rate: lower rates mean less annual cost but higher redemption risk, while higher rates cost more but provide better protection.
-      </p>
-      <p className="text-[#004BB2] text-sm font-normal leading-relaxed font-sora">
-        Redemptions occur when USDU trades below $1. Your debt and collateral are reduced equally (no net loss), with loans redeemed from lowest to highest rate.
+      <div className="text-[#004BB2] text-sm font-normal leading-relaxed font-sora">
+        <p className="mb-2">You control your loan's interest rate:</p>
+        <ul className="list-disc list-inside space-y-1 ml-2">
+          <li>Lower rates cost less but carry higher redemption risk</li>
+          <li>
+            Higher rates cost more but provide better redemption protection
+          </li>
+        </ul>
+      </div>
+      <p className="text-[#004BB2] text-sm font-normal leading-relaxed font-sora mt-4">
+        When redeemed, your debt and collateral are reduced equally, so no net
+        loss is incurred.
       </p>
       <div className="grid grid-cols-3 gap-4 mt-6">
         <div className="flex flex-col items-start">
           <div className="w-12 h-12 rounded-full bg-[#f5f3ee] flex items-center justify-center mb-2">
             <TrendingDown className="h-6 w-6 text-[#004BB2]" />
           </div>
-          <p className="text-xs font-normal leading-relaxed">
+          <p className="text-xs font-normal leading-relaxed text-[#004BB2]">
             Redemptions occur when USDU drops below $1
           </p>
         </div>
@@ -39,15 +46,15 @@ export function RedemptionInfo({
           <div className="w-12 h-12 rounded-full bg-[#f5f3ee] flex items-center justify-center mb-2">
             <Shield className="h-6 w-6 text-[#004BB2]" />
           </div>
-          <p className="text-xs font-normal leading-relaxed">
-            Redemptions first affect loans with the lowest interest rate
+          <p className="text-xs font-normal leading-relaxed text-[#004BB2]">
+            Loans with the lowest interest rate are affected first
           </p>
         </div>
         <div className="flex flex-col items-start">
           <div className="w-12 h-12 rounded-full bg-[#f5f3ee] flex items-center justify-center mb-2">
             <TrendingUp className="h-6 w-6 text-[#004BB2]" />
           </div>
-          <p className="text-xs font-normal leading-relaxed">
+          <p className="text-xs font-normal leading-relaxed text-[#004BB2]">
             Raising the interest rate reduces your redemption risk
           </p>
         </div>
@@ -82,7 +89,7 @@ export function RedemptionInfo({
       title="Setting Your Interest Rate"
       variant="blue"
       className={className}
-      learnMoreUrl="https://docs.uncap.finance/interest-rates"
+      learnMoreUrl="https://uncap.finance/docs/FAQ/redemptions-and-delegations"
       learnMoreText="Learn more about interest rates and redemptions"
     >
       {content}

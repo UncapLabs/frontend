@@ -8,7 +8,7 @@ import {
 } from "~/components/ui/tooltip";
 import { usePredictUpfrontFee } from "~/hooks/use-predict-upfront-fee";
 import { bigToBigint, bigintToBig } from "~/lib/decimal";
-import type { CollateralId } from "~/lib/collateral";
+import { DEFAULT_COLLATERAL, type CollateralId } from "~/lib/collateral";
 import { Skeleton } from "~/components/ui/skeleton";
 import Big from "big.js";
 
@@ -78,7 +78,7 @@ export function TransactionSummary({
     type === "open"
       ? {
           type: "open",
-          collateralType: collateralType || "UBTC",
+          collateralType: collateralType || DEFAULT_COLLATERAL.id,
           borrowedAmount: changes.debt?.to
             ? bigToBigint(changes.debt.to, 18)
             : undefined,
@@ -92,7 +92,7 @@ export function TransactionSummary({
         }
       : {
           type: "adjust",
-          collateralType: collateralType || "UBTC",
+          collateralType: collateralType || DEFAULT_COLLATERAL.id,
           troveId: troveId,
           debtIncrease:
             isDebtIncrease &&

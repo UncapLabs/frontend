@@ -5,7 +5,10 @@ import { useNextOwnerIndex } from "./use-next-owner-index";
 import { useTransaction } from "./use-transaction";
 import { useTransactionState } from "./use-transaction-state";
 import type { Collateral, CollateralId } from "~/lib/collateral";
-import { generateDepositCallsFromBigint } from "~/lib/collateral";
+import {
+  DEFAULT_COLLATERAL,
+  generateDepositCallsFromBigint,
+} from "~/lib/collateral";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
 import { getTroveId, getPrefixedTroveId } from "~/lib/utils/trove-id";
@@ -49,7 +52,7 @@ export function useBorrow({
       collateralAmount: undefined,
       borrowAmount: undefined,
       interestRate: new Big(5), // Default to 5% APR as Big instance
-      selectedCollateralToken: collateral?.symbol || "UBTC",
+      selectedCollateralToken: collateral?.symbol || DEFAULT_COLLATERAL.id,
     },
   });
 
@@ -72,12 +75,14 @@ export function useBorrow({
     // Convert to bigint for contract calls
     // For wrapped tokens, user input is in underlying decimals (e.g., 8)
     // For standard tokens, use collateral decimals (18)
-    const inputDecimals = collateral.underlyingToken?.decimals || collateral.decimals;
+    const inputDecimals =
+      collateral.underlyingToken?.decimals || collateral.decimals;
     const collAmountBigint = bigToBigint(collateralAmount, inputDecimals);
 
     // Convert to wrapped decimals (18) for contract
     const wrappedAmount = collateral.underlyingToken
-      ? collAmountBigint * (10n ** (BigInt(collateral.decimals) - BigInt(inputDecimals)))
+      ? collAmountBigint *
+        10n ** (BigInt(collateral.decimals) - BigInt(inputDecimals))
       : collAmountBigint;
 
     // Generate deposit calls (handles wrapping if needed)
@@ -124,7 +129,7 @@ export function useBorrow({
         collateralAmount,
         borrowAmount,
         interestRate,
-        selectedCollateralToken: collateral?.symbol || "UBTC",
+        selectedCollateralToken: collateral?.symbol || DEFAULT_COLLATERAL.id,
       });
       transactionState.setPending(hash);
 

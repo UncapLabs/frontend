@@ -275,14 +275,14 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
 export default function Stats() {
   // Fetch interest rate and visualization data for all collaterals
   const interestRateData = {
-    UBTC: useAverageInterestRate(COLLATERALS.UBTC.branchId),
-    GBTC: useAverageInterestRate(COLLATERALS.GBTC.branchId),
+    // UBTC: useAverageInterestRate(COLLATERALS.UBTC.branchId),
+    // GBTC: useAverageInterestRate(COLLATERALS.GBTC.branchId),
     WMWBTC: useAverageInterestRate(COLLATERALS.WMWBTC.branchId),
   };
 
   const visualizationData = {
-    UBTC: useInterestRateVisualizationData(COLLATERALS.UBTC.branchId),
-    GBTC: useInterestRateVisualizationData(COLLATERALS.GBTC.branchId),
+    // UBTC: useInterestRateVisualizationData(COLLATERALS.UBTC.branchId),
+    // GBTC: useInterestRateVisualizationData(COLLATERALS.GBTC.branchId),
     WMWBTC: useInterestRateVisualizationData(COLLATERALS.WMWBTC.branchId),
   };
 
@@ -329,8 +329,6 @@ export default function Stats() {
       supplyAPR:
         poolData?.apr !== undefined ? new Big(poolData.apr) : undefined,
       totalDeposits: formatCurrency(poolData?.totalDeposits),
-      // Only GBTC has a collateralParam for navigation (for backward compatibility)
-      collateralParam: collateral.id === "GBTC" ? "GBTC" : undefined,
     };
   });
 
