@@ -245,7 +245,7 @@ function Earn() {
                   </div>
 
                   {/* Action Tabs Row */}
-                  <div className="px-4 pb-3">
+                  <div className="px-6 pb-6">
                     <div className="flex gap-1">
                       <button
                         type="button"

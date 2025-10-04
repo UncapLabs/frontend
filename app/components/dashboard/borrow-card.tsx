@@ -114,7 +114,7 @@ export default function BorrowCard(props: Props) {
           <div className="flex items-center gap-1">
             <button
               onClick={() => onClosePosition(trove.id, trove.collateralAsset)}
-              className={`w-8 h-8 rounded-lg border transition-all flex items-center justify-center ${
+              className={`w-8 h-8 rounded-lg border transition-all flex items-center justify-center cursor-pointer ${
                 isZombie || isFullyRedeemed
                   ? "border-white/20 hover:bg-white/20"
                   : "border-neutral-800/10 hover:bg-[#F5F3EE]"
@@ -135,8 +135,8 @@ export default function BorrowCard(props: Props) {
                 isZombie || isFullyRedeemed
                   ? isFullyRedeemed
                     ? "border-white/10 bg-white/5 cursor-not-allowed"
-                    : "border-white/20 hover:bg-white/20"
-                  : "border-neutral-800/10 hover:bg-[#F5F3EE]"
+                    : "border-white/20 hover:bg-white/20 cursor-pointer"
+                  : "border-neutral-800/10 hover:bg-[#F5F3EE] cursor-pointer"
               }`}
             >
               <Edit3
@@ -153,7 +153,10 @@ export default function BorrowCard(props: Props) {
         </div>
       </CardHeader>
       <CardContent className="flex flex-col flex-1">
-        <div className="flex flex-col flex-1">
+        <div
+          className="flex flex-col flex-1 cursor-pointer"
+          onClick={() => onUpdatePosition(trove.id, trove.collateralAsset)}
+        >
           <div className="flex justify-between items-center mb-4 lg:mb-8">
             <div
               className={`text-xs font-medium font-sora uppercase tracking-tight ${
@@ -270,7 +273,10 @@ export default function BorrowCard(props: Props) {
           isZombie || isFullyRedeemed ? "border-white/20" : "border-[#F5F3EE]"
         }`}
       >
-        <div className="w-full grid grid-cols-2 relative -my-6">
+        <div
+          className="w-full grid grid-cols-2 relative -my-6 cursor-pointer"
+          onClick={() => onUpdatePosition(trove.id, trove.collateralAsset)}
+        >
           {/* Full-height divider */}
           {!(isZombie || isFullyRedeemed) && (
             <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-px bg-[#F5F3EE]" />

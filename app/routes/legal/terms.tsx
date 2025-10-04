@@ -82,14 +82,19 @@ export default function Terms({ loaderData }: Route.ComponentProps) {
                   </p>
                 ),
                 ul: ({ children }) => (
-                  <ul className="list-disc list-inside space-y-2 mb-4 text-gray-700">
+                  <ul className="list-disc space-y-2 mb-4 text-gray-700 ml-6">
                     {children}
                   </ul>
                 ),
                 ol: ({ children }) => (
-                  <ol className="list-decimal list-inside space-y-2 mb-4 text-gray-700">
+                  <ol className="list-decimal space-y-2 mb-4 text-gray-700 ml-6">
                     {children}
                   </ol>
+                ),
+                li: ({ children }) => (
+                  <li className="text-gray-700">
+                    {children}
+                  </li>
                 ),
                 strong: ({ children }) => (
                   <strong className="font-semibold text-[#004BB2]">

@@ -297,6 +297,12 @@ export default function Dashboard() {
                           onManagePosition={() =>
                             navigate("/unanim/earn?collateral=WMWBTC")
                           }
+                          onDepositClick={() =>
+                            navigate("/unanim/earn?collateral=WMWBTC&action=deposit")
+                          }
+                          onRewardsClick={() =>
+                            navigate("/unanim/earn?collateral=WMWBTC&action=claim")
+                          }
                         />
                       )}
                   </>

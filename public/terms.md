@@ -14,11 +14,11 @@ Uncap Labs's services offered through the Site are limited to the following ("Se
 
   - The Site acts merely as an off-chain interface, whereby the functionalities are limited to visualizing and displaying information obtained from the Protocol (or from other sources) and proposing interactions based entirely on the User's own input. Users interact by connecting a compatible address (using third party software) and, using their own private keys, signing interactions visualized by the interface.
 
-  - The Protocol is entirely separate from the interaction offered via the Site, and as the Site is an off-chain component, remains unaffected and is not in any way dependent on the Site. By controlling the Site, Uncap Labs does not exercise control over the Protocol.
+  * The Protocol is entirely separate from the interaction offered via the Site, and as the Site is an off-chain component, remains unaffected and is not in any way dependent on the Site. By controlling the Site, Uncap Labs does not exercise control over the Protocol.
 
-  - Your use of the Site to interact with the Protocol is without any sort of remuneration, fee, or other form of compensation to Uncap Labs. Uncap Labs does not intend to construe or enter into any sort of (permanent) business relationship with You relating to Your use of the Site.
+  * Your use of the Site to interact with the Protocol is without any sort of remuneration, fee, or other form of compensation to Uncap Labs. Uncap Labs does not intend to construe or enter into any sort of (permanent) business relationship with You relating to Your use of the Site.
 
-  - Your use of the Site to interact with the Protocol is entirely optional, and You are entirely free to access the Protocol in any other way such as using any third party interface.
+  * Your use of the Site to interact with the Protocol is entirely optional, and You are entirely free to access the Protocol in any other way such as using any third party interface.
 
 These Terms and Your use of the Services are not intended to create any fiduciary duties between Uncap Labs and You or any third party. Uncap Labs never takes possession, custody, control, or ownership of any crypto assets or other property transmitted by You. Uncap Labs is not a provider of financial services, and specifically does not grant loans, mint stablecoins, or offer any sort of payment, trading, asset management, or similar services.
 

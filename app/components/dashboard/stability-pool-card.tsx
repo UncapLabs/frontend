@@ -18,6 +18,8 @@ interface StabilityPoolCardProps {
   collateralRewards: Big;
   usduPrice?: Big;
   onManagePosition: () => void;
+  onDepositClick?: () => void;
+  onRewardsClick?: () => void;
 }
 
 export default function StabilityPoolCard({
@@ -28,6 +30,8 @@ export default function StabilityPoolCard({
   collateralRewards,
   usduPrice,
   onManagePosition,
+  onDepositClick,
+  onRewardsClick,
 }: StabilityPoolCardProps) {
   // Get user-facing symbol (e.g., "wBTC" instead of "WMWBTC")
   const collateral = getCollateral(poolType);
@@ -65,7 +69,7 @@ export default function StabilityPoolCard({
           <div className="flex items-center gap-1">
             <button
               onClick={onManagePosition}
-              className="w-8 h-8 rounded-lg border transition-all flex items-center justify-center border-neutral-800/10 hover:bg-[#F5F3EE]"
+              className="w-8 h-8 rounded-lg border transition-all flex items-center justify-center border-neutral-800/10 hover:bg-[#F5F3EE] cursor-pointer"
             >
               <Edit3 className="h-4 w-4 text-neutral-800" />
             </button>
@@ -73,7 +77,10 @@ export default function StabilityPoolCard({
         </div>
       </CardHeader>
       <CardContent className="flex flex-col flex-1">
-        <div className="flex flex-col flex-1">
+        <div
+          className="flex flex-col flex-1 cursor-pointer"
+          onClick={onDepositClick}
+        >
           <div className="flex justify-between items-center mb-4 lg:mb-8">
             <div className="text-xs font-medium font-sora uppercase tracking-tight text-neutral-800">
               Your deposit
@@ -141,7 +148,10 @@ export default function StabilityPoolCard({
       </CardContent>
       {/* Card Footer with Rewards */}
       <CardFooter className="border-t border-[#F5F3EE]">
-        <div className="w-full grid grid-cols-2 relative -my-6">
+        <div
+          className="w-full grid grid-cols-2 relative -my-6 cursor-pointer"
+          onClick={onRewardsClick}
+        >
           {/* Full-height divider */}
           <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-px bg-[#F5F3EE]" />
 
