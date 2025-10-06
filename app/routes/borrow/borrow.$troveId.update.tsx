@@ -749,6 +749,7 @@ function UpdatePosition() {
                       }
                       tokenSelectorBgColor="bg-token-bg-red/10"
                       tokenSelectorTextColor="text-token-bg-red"
+                      maxValue={100000000}
                     />
                   )}
                 </form.Field>

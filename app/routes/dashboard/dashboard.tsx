@@ -8,6 +8,7 @@ import {
 import { useNavigate } from "react-router";
 import { useAccount } from "@starknet-react/core";
 import { useUserTroves } from "~/hooks/use-user-troves";
+import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { Plus, AlertCircle } from "lucide-react";
 import { useAllStabilityPoolPositions } from "~/hooks/use-stability-pool";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
@@ -15,6 +16,7 @@ import BorrowCard from "~/components/dashboard/borrow-card";
 import StabilityPoolCard from "~/components/dashboard/stability-pool-card";
 import Stats from "~/components/dashboard/stats";
 import LiquidationWarning from "~/components/dashboard/liquidation-warning";
+import WalletNotConnectedCTA from "~/components/dashboard/wallet-not-connected-cta";
 import {
   Select,
   SelectContent,
@@ -29,6 +31,7 @@ type FilterType = "all" | "borrow" | "earn";
 export default function Dashboard() {
   const navigate = useNavigate();
   const { address } = useAccount();
+  const { connectWallet } = useWalletConnect();
   const [filter, setFilter] = useQueryState("filter", {
     defaultValue: "all" as FilterType,
   });
@@ -214,7 +217,9 @@ export default function Dashboard() {
             )}
 
             {/* Position Cards */}
-            {isLoading ? (
+            {!address ? (
+              <WalletNotConnectedCTA onConnectWallet={connectWallet} />
+            ) : isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Loading skeletons */}
                 {[1, 2, 3, 4].map((i) => (
@@ -224,8 +229,7 @@ export default function Dashboard() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Show active positions when wallet is connected */}
-                {address &&
-                  filter !== "earn" &&
+                {filter !== "earn" &&
                   activeTroves.map((trove) => (
                     <BorrowCard
                       key={trove.id}
@@ -237,7 +241,7 @@ export default function Dashboard() {
                   ))}
 
                 {/* Stability Pool Positions */}
-                {address && filter !== "borrow" && (
+                {filter !== "borrow" && (
                   <>
                     {/* {allStabilityPoolPositions.UBTC &&
                       allStabilityPoolPositions.UBTC.userDeposit.gt(0) && (
