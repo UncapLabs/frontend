@@ -23,5 +23,6 @@ export default [
     route("privacy-policy", "routes/legal/privacy.tsx"),
     // route("unanim/claim", "routes/claim/claim.tsx"),
     route("mint-btc", "routes/admin.mint-btc.tsx"),
+    route("admin/price-management", "routes/admin.price-management.tsx"),
   ]),
 ] satisfies RouteConfig;
