@@ -8,13 +8,21 @@ import { Alert, AlertDescription } from "~/components/ui/alert";
 import { useSendTransaction, useAccount } from "@starknet-react/core";
 import { COLLATERALS } from "~/lib/collateral";
 import { toast } from "sonner";
-import { DollarSign, AlertCircle } from "lucide-react";
+import { DollarSign, AlertCircle, TrendingUp, RefreshCcw } from "lucide-react";
 import { NumericFormat } from "react-number-format";
+import { useFetchPrices } from "~/hooks/use-fetch-prices";
+import { Skeleton } from "~/components/ui/skeleton";
 
 function PriceManagement() {
   const { address } = useAccount();
   const [wbtcPrice, setWbtcPrice] = useState("");
   const [isPendingWBTC, setIsPendingWBTC] = useState(false);
+
+  const { bitcoin, isLoading, refetchBitcoin } = useFetchPrices({
+    collateralType: "WMWBTC",
+    fetchBitcoin: true,
+    fetchUsdu: false,
+  });
 
   const { send: sendWBTC } = useSendTransaction({
     calls: undefined,
@@ -76,7 +84,42 @@ function PriceManagement() {
         </AlertDescription>
       </Alert>
 
-      <div className="max-w-md mx-auto">
+      <div className="max-w-md mx-auto space-y-6">
+        {/* Current Price Display */}
+        <Card className="border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Current wBTC Price
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-sm text-slate-600">From Price Feed</p>
+                {isLoading ? (
+                  <Skeleton className="h-8 w-32" />
+                ) : (
+                  <p className="text-2xl font-bold text-slate-800">
+                    ${bitcoin?.price.toFixed(2) || "0.00"}
+                  </p>
+                )}
+              </div>
+              <Button
+                onClick={() => refetchBitcoin()}
+                variant="ghost"
+                size="icon"
+                disabled={isLoading}
+                className="h-8 w-8"
+              >
+                <RefreshCcw
+                  className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+                />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* wBTC Price Update */}
         <Card className="border border-slate-200">
           <CardHeader>
