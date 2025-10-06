@@ -34,18 +34,28 @@ export function GetTestBtc() {
   // For WMWBTC, we mint the underlying token (8 decimals)
   const tokenConfig =
     selectedToken === "WMWBTC" ? COLLATERALS.WMWBTC : DEFAULT_COLLATERAL;
+
+  // Get the actual token to mint (underlying for wrapped tokens)
+  const mintTokenAddress = tokenConfig.underlyingToken
+    ? tokenConfig.underlyingToken.address
+    : tokenConfig.address;
+
+  const mintTokenDecimals = tokenConfig.underlyingToken
+    ? tokenConfig.underlyingToken.decimals
+    : tokenConfig.decimals;
+
   const { data: balance } = useBalance({
     address,
-    token: tokenConfig.address,
+    token: mintTokenAddress,
   });
 
   const { contract } = useContract({
     abi: UBTC_ABI,
-    address: tokenConfig.address,
+    address: mintTokenAddress,
   });
 
   // Use correct decimals for minting
-  const decimals = tokenConfig.decimals;
+  const decimals = mintTokenDecimals;
   const mintAmount = amount
     ? BigInt(Math.floor(parseFloat(amount) * 10 ** decimals))
     : 0n;
