@@ -70,7 +70,7 @@ export const COLLATERALS = {
     symbol: "wBTC", // User-facing name
     name: "Wrapped MWBitcoin",
     decimals: 18, // Wrapped token decimals
-    icon: "/bitcoin.png",
+    icon: "/wbtc.webp",
     branchId: 0,
     minCollateralizationRatio: new Big(1.1), // 110%
     addresses: {

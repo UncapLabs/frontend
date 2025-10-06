@@ -220,6 +220,8 @@ export const TokenInput = memo(function TokenInput({
           <NumericFormat
             id={`${token.symbol}-input`}
             thousandSeparator=","
+            decimalSeparator="."
+            allowedDecimalSeparators={[",", "."]}
             placeholder={placeholder}
             inputMode="decimal"
             allowNegative={false}

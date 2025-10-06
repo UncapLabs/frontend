@@ -109,7 +109,10 @@ export function ManualRateControls({
           style={{ width: `${(interestRate.toFixed(2).length + 1) * 0.65}em` }}
           className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal font-sora leading-10 text-neutral-800 bg-transparent border-none focus:outline-none text-left p-0"
           placeholder="0.50"
+          inputMode="decimal"
           decimalScale={2}
+          decimalSeparator="."
+          allowedDecimalSeparators={[",", "."]}
           fixedDecimalScale={true}
           allowNegative={false}
           suffix={"%"}

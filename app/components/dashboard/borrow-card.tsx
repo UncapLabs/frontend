@@ -154,8 +154,14 @@ export default function BorrowCard(props: Props) {
       </CardHeader>
       <CardContent className="flex flex-col flex-1">
         <div
-          className="flex flex-col flex-1 cursor-pointer"
-          onClick={() => onUpdatePosition(trove.id, trove.collateralAsset)}
+          className={`flex flex-col flex-1 ${
+            isFullyRedeemed ? "cursor-default" : "cursor-pointer"
+          }`}
+          onClick={
+            isFullyRedeemed
+              ? undefined
+              : () => onUpdatePosition(trove.id, trove.collateralAsset)
+          }
         >
           <div className="flex justify-between items-center mb-4 lg:mb-8">
             <div
@@ -276,8 +282,14 @@ export default function BorrowCard(props: Props) {
         }`}
       >
         <div
-          className="w-full grid grid-cols-2 relative -my-6 cursor-pointer"
-          onClick={() => onUpdatePosition(trove.id, trove.collateralAsset)}
+          className={`w-full grid grid-cols-2 relative -my-6 ${
+            isFullyRedeemed ? "cursor-default" : "cursor-pointer"
+          }`}
+          onClick={
+            isFullyRedeemed
+              ? undefined
+              : () => onUpdatePosition(trove.id, trove.collateralAsset)
+          }
         >
           {/* Full-height divider */}
           {!(isZombie || isFullyRedeemed) && (

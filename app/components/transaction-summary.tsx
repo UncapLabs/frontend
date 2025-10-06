@@ -9,7 +9,6 @@ import {
 import { usePredictUpfrontFee } from "~/hooks/use-predict-upfront-fee";
 import { bigToBigint, bigintToBig } from "~/lib/decimal";
 import { DEFAULT_COLLATERAL, type CollateralId } from "~/lib/collateral";
-import { Skeleton } from "~/components/ui/skeleton";
 import Big from "big.js";
 
 interface PositionChange {
@@ -74,7 +73,7 @@ export function TransactionSummary({
     changes.debt.to.gt(changes.debt.from);
 
   // Calculate upfront fee using the unified hook
-  const { upfrontFee, isLoading: isFeeLoading } = usePredictUpfrontFee(
+  const { upfrontFee } = usePredictUpfrontFee(
     type === "open"
       ? {
           type: "open",
@@ -257,21 +256,15 @@ export function TransactionSummary({
                 {/* Show fee for debt increase */}
                 {isDebtIncrease && (
                   <div className="text-xs text-neutral-800/70 font-sora">
-                    {isFeeLoading ? (
-                      <Skeleton className="h-3 w-24 ml-auto" />
-                    ) : upfrontFeeBig ? (
-                      <>
-                        Incl.{" "}
-                        <NumericFormat
-                          displayType="text"
-                          value={upfrontFeeBig.toString()}
-                          thousandSeparator=","
-                          decimalScale={2}
-                          fixedDecimalScale
-                        />{" "}
-                        USDU fee
-                      </>
-                    ) : null}
+                    Incl.{" "}
+                    <NumericFormat
+                      displayType="text"
+                      value={upfrontFeeBig?.toString() ?? "0"}
+                      thousandSeparator=","
+                      decimalScale={2}
+                      fixedDecimalScale
+                    />{" "}
+                    USDU fee
                   </div>
                 )}
               </div>
@@ -290,21 +283,15 @@ export function TransactionSummary({
                 {/* Show fee for new loan */}
                 {type === "open" && (
                   <div className="text-xs text-neutral-800/70 font-sora">
-                    {isFeeLoading ? (
-                      <Skeleton className="h-3 w-24 ml-auto" />
-                    ) : upfrontFeeBig ? (
-                      <>
-                        Incl.{" "}
-                        <NumericFormat
-                          displayType="text"
-                          value={upfrontFeeBig.toString()}
-                          thousandSeparator=","
-                          decimalScale={2}
-                          fixedDecimalScale
-                        />{" "}
-                        USDU creation fee
-                      </>
-                    ) : null}
+                    Incl.{" "}
+                    <NumericFormat
+                      displayType="text"
+                      value={upfrontFeeBig?.toString() ?? "0"}
+                      thousandSeparator=","
+                      decimalScale={2}
+                      fixedDecimalScale
+                    />{" "}
+                    USDU creation fee
                   </div>
                 )}
               </div>
@@ -345,36 +332,32 @@ export function TransactionSummary({
                     {changes.interestRate.to.toFixed(2)}%
                   </span>
                 </div>
-                {annualInterestCost.gt(0) && (
-                  <div className="text-xs text-neutral-800/70 font-sora">
-                    <NumericFormat
-                      displayType="text"
-                      value={annualInterestCost.toString()}
-                      thousandSeparator=","
-                      decimalScale={2}
-                      fixedDecimalScale
-                    />{" "}
-                    USDU per year
-                  </div>
-                )}
+                <div className="text-xs text-neutral-800/70 font-sora">
+                  <NumericFormat
+                    displayType="text"
+                    value={annualInterestCost.toString()}
+                    thousandSeparator=","
+                    decimalScale={2}
+                    fixedDecimalScale
+                  />{" "}
+                  USDU per year
+                </div>
               </div>
             ) : (
               <div className="space-y-0.5">
                 <div className="text-neutral-800 text-base font-medium font-sora">
                   {changes.interestRate?.to?.toFixed(2) ?? "5.00"}%
                 </div>
-                {annualInterestCost.gt(0) && (
-                  <div className="text-xs text-neutral-800/70 font-sora">
-                    <NumericFormat
-                      displayType="text"
-                      value={annualInterestCost.toString()}
-                      thousandSeparator=","
-                      decimalScale={2}
-                      fixedDecimalScale
-                    />{" "}
-                    USDU per year
-                  </div>
-                )}
+                <div className="text-xs text-neutral-800/70 font-sora">
+                  <NumericFormat
+                    displayType="text"
+                    value={annualInterestCost.toString()}
+                    thousandSeparator=","
+                    decimalScale={2}
+                    fixedDecimalScale
+                  />{" "}
+                  USDU per year
+                </div>
               </div>
             )}
           </div>

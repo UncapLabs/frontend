@@ -1,6 +1,12 @@
 import { Button } from "~/components/ui/button";
-import { AlertTriangle, Info } from "lucide-react";
+import { Info, AlertTriangle } from "lucide-react";
 import { ArrowIcon } from "~/components/icons/arrow-icon";
+import {
+  Alert,
+  AlertIcon,
+  AlertDescription,
+  AlertContent,
+} from "~/components/ui/alert";
 import { InterestRateSelector } from "~/components/borrow/interest-rate-selector";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { BorrowingRestrictionsAlert } from "~/components/borrow/borrowing-restrictions-alert";
@@ -47,12 +53,12 @@ const ActionToggle = ({
   disabled?: boolean;
 }) => {
   const activeStyle =
-    "flex-1 py-2 px-3 rounded-lg text-sm font-medium font-sora bg-token-bg-blue text-white transition-all";
+    "w-24 py-2 px-3 rounded-lg text-sm font-medium font-sora bg-token-bg-blue text-white transition-all shadow-sm text-center";
   const inactiveStyle =
-    "flex-1 py-2 px-3 rounded-lg text-sm font-medium font-sora text-neutral-600 hover:text-neutral-800 hover:bg-neutral-50 transition-all";
+    "w-24 py-2 px-3 rounded-lg text-sm font-medium font-sora text-neutral-600 hover:text-neutral-800 transition-all text-center";
 
   return (
-    <div className="flex gap-1">
+    <div className="flex gap-1 px-1 bg-neutral-100 rounded-lg">
       {actions.map((action) => (
         <button
           key={action.value}
@@ -389,125 +395,9 @@ function UpdatePosition() {
               }}
             >
               {/* Show borrowing restrictions alert if TCR is below CCR */}
-
               <BorrowingRestrictionsAlert
                 collateralType={selectedCollateral.id}
               />
-
-              {/* Redemption History Alert - Show for all redeemed troves */}
-              {hasBeenRedeemed && position && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                  <div className="flex items-start gap-3">
-                    <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-blue-900 mb-2">
-                        Position Has Been Partially Redeemed
-                      </h3>
-                      <div className="space-y-2 text-sm text-blue-800">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <span className="text-blue-700">Redemptions: </span>
-                            <span className="font-medium">
-                              {position.redemptionCount?.toString() || "0"} time
-                              {position.redemptionCount !== 1 ? "s" : ""}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-blue-700">
-                              Total Redeemed Debt:{" "}
-                            </span>
-                            <span className="font-medium">
-                              <NumericFormat
-                                displayType="text"
-                                value={position.redeemedDebt?.toString() || "0"}
-                                thousandSeparator=","
-                                decimalScale={2}
-                                fixedDecimalScale
-                              />{" "}
-                              USDU
-                            </span>
-                          </div>
-                        </div>
-                        <div>
-                          <span className="text-blue-700">
-                            Total Redeemed Collateral:{" "}
-                          </span>
-                          <span className="font-medium">
-                            <NumericFormat
-                              displayType="text"
-                              value={position.redeemedColl?.toString() || "0"}
-                              thousandSeparator=","
-                              decimalScale={7}
-                              fixedDecimalScale={false}
-                            />{" "}
-                            {selectedCollateral.symbol}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Zombie Trove Warning - Only for zombie troves */}
-              {isZombie && position && (
-                <div className="bg-amber-50 border border-amber-300 rounded-lg p-4 mb-4">
-                  <div className="flex items-start gap-3">
-                    <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-amber-900 mb-2">
-                        🧟 Zombie Position - Update Restrictions
-                      </h3>
-                      <p className="text-sm text-amber-800 mb-3">
-                        Your position is below the minimum debt threshold due to
-                        redemptions. You have limited options:
-                      </p>
-                      <ul className="text-sm text-amber-800 space-y-1 ml-4 list-disc">
-                        <li>
-                          Borrow at least{" "}
-                          <span className="font-semibold">
-                            {new Big(MIN_DEBT)
-                              .minus(position.borrowedAmount)
-                              .toFixed(2)}{" "}
-                            USDU
-                          </span>{" "}
-                          to restore normal status
-                        </li>
-                        <li>
-                          Add or remove collateral (maintaining valid
-                          collateralization)
-                        </li>
-                        <li>Close the position entirely</li>
-                      </ul>
-                      <div className="mt-3 pt-3 border-t border-amber-200">
-                        <p className="text-xs text-amber-700">
-                          <strong>Note:</strong> You cannot reduce debt below{" "}
-                          {MIN_DEBT} USDU. Interest rate changes are allowed
-                          when increasing debt to {MIN_DEBT}+ USDU.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Fully Redeemed Notice */}
-              {isFullyRedeemed && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                  <div className="flex items-start gap-3">
-                    <Info className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-yellow-800 mb-2">
-                        Position Fully Redeemed
-                      </h3>
-                      <p className="text-sm text-yellow-700">
-                        Your position has no remaining debt and can be closed to
-                        withdraw your collateral.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
 
               <div
                 className={`space-y-1 ${
@@ -879,7 +769,10 @@ function UpdatePosition() {
                     disabled={
                       isSending ||
                       isPending ||
-                      (isZombie && borrowAmount && borrowAmount.lt(MIN_DEBT))
+                      (isZombie &&
+                        (!borrowAmount ||
+                          borrowAmount.eq(0) ||
+                          targetDebt.lt(MIN_DEBT)))
                     }
                     borrowAmount={borrowAmount}
                     collateralAmount={collateralAmount}
@@ -893,28 +786,6 @@ function UpdatePosition() {
                     }
                     isZombie={isZombie}
                   />
-
-                  {/* Interest Rate Lock Notice for Zombie Troves */}
-                  {isZombie && (!borrowAmount || borrowAmount.lt(MIN_DEBT)) && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                      <p className="text-xs text-amber-700">
-                        <strong>Interest rate is locked</strong> - To change the
-                        interest rate, increase your debt to at least {MIN_DEBT}{" "}
-                        USDU in the field above.
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Interest Rate Unlock Notice for Zombie Troves restoring debt */}
-                  {isZombie && borrowAmount && borrowAmount.gte(MIN_DEBT) && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                      <p className="text-xs text-green-700">
-                        <strong>Interest rate unlocked!</strong> - You can now
-                        change your interest rate since you're restoring debt
-                        above {MIN_DEBT} USDU.
-                      </p>
-                    </div>
-                  )}
                 </div>
 
                 {/* Update Button */}
@@ -974,6 +845,65 @@ function UpdatePosition() {
                   </form.Subscribe>
                 </div>
               </div>
+
+              {/* Zombie Trove Warnings */}
+              {isZombie && position && (
+                <Alert variant="warning" className="mt-4">
+                  <AlertIcon variant="warning">
+                    <AlertTriangle className="w-4 h-4 text-amber-600" />
+                  </AlertIcon>
+                  <AlertContent>
+                    <AlertDescription>
+                      <strong>🧟 Zombie Position - Restricted Actions</strong>
+                      <p>
+                        Your position fell below the {MIN_DEBT} USDU minimum
+                        debt due to redemptions. While in zombie status, you
+                        cannot repay debt or change your interest rate.
+                      </p>
+                      <div className="mt-4 space-y-2">
+                        <li>
+                          To restore your position, use the "Borrow" action
+                          below to borrow at least{" "}
+                          {new Big(MIN_DEBT)
+                            .minus(position.borrowedAmount)
+                            .round(0, Big.roundUp)
+                            .toString()}{" "}
+                          USDU more. This will bring your total debt to{" "}
+                          {MIN_DEBT} USDU and unlock all features.
+                        </li>
+                        <li>
+                          Alternatively, you can{" "}
+                          <a
+                            href={`/unanim/borrow/${troveId}/close`}
+                            className="underline hover:opacity-80 font-medium"
+                          >
+                            close your position
+                          </a>{" "}
+                          to withdraw your remaining collateral.
+                        </li>
+                      </div>
+                    </AlertDescription>
+                  </AlertContent>
+                </Alert>
+              )}
+
+              {/* Fully Redeemed Notice */}
+              {isFullyRedeemed && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
+                  <div className="flex items-start gap-3">
+                    <Info className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-yellow-800 mb-2">
+                        Position Fully Redeemed
+                      </h3>
+                      <p className="text-sm text-yellow-700">
+                        Your position has no remaining debt and can be closed to
+                        withdraw your collateral.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </form>
           )}
         </div>
@@ -1033,7 +963,51 @@ function UpdatePosition() {
                 : []
             }
           />
-          <RedemptionInfo variant="inline" />
+
+          <RedemptionInfo variant="inline">
+            {hasBeenRedeemed && position && (
+              <div className="text-[#004BB2] text-sm font-normal leading-relaxed font-sora">
+                <p className="mb-2 font-medium">
+                  Your position was redeemed{" "}
+                  {position.redemptionCount?.toString() || "0"} time
+                  {position.redemptionCount !== 1 ? "s" : ""}:
+                </p>
+                <ul className="list-disc list-inside space-y-1 ml-2">
+                  <li>
+                    Your interest rate was lower than others, so you were first
+                    in line for redemptions
+                  </li>
+                  <li>
+                    Your debt was reduced by{" "}
+                    <strong>
+                      <NumericFormat
+                        displayType="text"
+                        value={position.redeemedDebt?.toString() || "0"}
+                        thousandSeparator=","
+                        decimalScale={2}
+                        fixedDecimalScale
+                      />{" "}
+                      USDU
+                    </strong>{" "}
+                    and collateral by{" "}
+                    <strong>
+                      <NumericFormat
+                        displayType="text"
+                        value={position.redeemedColl?.abs().toString() || "0"}
+                        thousandSeparator=","
+                        decimalScale={7}
+                        fixedDecimalScale={false}
+                      />{" "}
+                      {selectedCollateral.symbol}
+                    </strong>
+                  </li>
+                  <li>
+                    Your collateralization ratio stayed the same — no net loss
+                  </li>
+                </ul>
+              </div>
+            )}
+          </RedemptionInfo>
         </div>
       </div>
     </>

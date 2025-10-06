@@ -12,16 +12,20 @@ import { Info, TrendingDown, Shield, TrendingUp } from "lucide-react";
 interface RedemptionInfoProps {
   variant?: "inline" | "modal";
   className?: string;
+  children?: React.ReactNode;
 }
 
 export function RedemptionInfo({
   variant = "inline",
   className,
+  children,
 }: RedemptionInfoProps) {
   const content = (
     <>
       <div className="text-[#004BB2] text-sm font-normal leading-relaxed font-sora">
-        <p className="mb-2">You control your loan's interest rate:</p>
+        <p className="mb-2 font-medium">
+          You control your loan's interest rate:
+        </p>
         <ul className="list-disc list-inside space-y-1 ml-2">
           <li>Lower rates cost less but carry higher redemption risk</li>
           <li>
@@ -92,6 +96,9 @@ export function RedemptionInfo({
       learnMoreUrl="https://uncap.finance/docs/FAQ/redemptions-and-delegations"
       learnMoreText="Learn more about interest rates and redemptions"
     >
+      {children && (
+        <div className="mb-4 pb-4 border-b border-blue-200">{children}</div>
+      )}
       {content}
     </InfoBox>
   );
