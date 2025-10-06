@@ -63,6 +63,7 @@ export function DepositSection({
           onChange(newValue);
         }}
         includeMax={true}
+        maxValue={100000000}
       />
 
       <div className="flex items-center justify-between text-sm">

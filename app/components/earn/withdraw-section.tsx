@@ -57,6 +57,7 @@ export function WithdrawSection({
         onPercentageClick={onPercentageClick}
         includeMax={true}
         balanceLabel="Available"
+        maxValue={100000000}
       />
 
       <div className="flex items-center justify-between text-sm">
