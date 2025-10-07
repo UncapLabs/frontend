@@ -1,4 +1,3 @@
-import type { Route } from "./+types/claim";
 import { STRKRewardsCard } from "~/components/claim/strk-rewards-card";
 
 function ClaimPage() {
@@ -11,7 +10,7 @@ function ClaimPage() {
 
 export default ClaimPage;
 
-export function meta({}: Route.MetaArgs) {
+export function meta() {
   return [
     { title: "STRK Rewards - USDU" },
     {

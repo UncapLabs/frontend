@@ -49,7 +49,8 @@ export const parseAsBigWithDefault = (defaultValue: string) =>
       if (!isValid) return new Big(defaultValue);
 
       try {
-        return new Big(cleaned);
+        // Round to 2 decimal places to avoid floating-point precision issues
+        return new Big(cleaned).round(2);
       } catch {
         return new Big(defaultValue);
       }
@@ -57,12 +58,12 @@ export const parseAsBigWithDefault = (defaultValue: string) =>
     serialize: (value: Big | null): string => {
       if (value === null || value === undefined) return "";
 
-      const str = value.toString();
+      // Round to 2 decimal places when serializing to URL
+      const rounded = value.round(2);
 
       // Don't serialize default values to keep URL clean
-      if (str === defaultValue) return "";
+      if (rounded.eq(new Big(defaultValue))) return "";
 
-      // IMPORTANT: Preserve full precision - don't remove trailing zeros!
-      return str;
+      return rounded.toString();
     },
   }).withDefault(new Big(defaultValue));

@@ -759,7 +759,7 @@ function UpdatePosition() {
                     }
                     onInterestRateChange={(rate) => {
                       if (!isSending && !isPending) {
-                        const rateBig = new Big(rate);
+                        const rateBig = new Big(rate).round(2);
                         form.setFieldValue("interestRate", rateBig);
                         setInterestRate(rateBig);
                       }
