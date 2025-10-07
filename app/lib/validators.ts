@@ -80,9 +80,7 @@ export const validators = {
    * Validates debt limit
    */
   debtLimit: (value: Big, maxDebt: Big) => {
-    return value.gt(maxDebt)
-      ? "Exceeds maximum borrowable amount"
-      : undefined;
+    return value.gt(maxDebt) ? "Exceeds maximum borrowable amount" : undefined;
   },
 
   /**
@@ -100,14 +98,16 @@ export const validators = {
   minimumCollateralRatio: (
     newCollateralValue: Big,
     debtValue: Big,
-    minRatio: Big = new Big(1.1) // 110% minimum
+    minRatio: Big = new Big(1.15) // 115% minimum
   ) => {
     const zeroBig = new Big(0);
     if (debtValue.lte(zeroBig)) return undefined;
-    
+
     const ratio = newCollateralValue.div(debtValue);
     return ratio.lt(minRatio)
-      ? `Must maintain at least ${minRatio.times(100).toFixed(0)}% collateral ratio`
+      ? `Must maintain at least ${minRatio
+          .times(100)
+          .toFixed(0)}% collateral ratio`
       : undefined;
   },
 
@@ -123,7 +123,7 @@ export const validators = {
   percentage: (value: Big) => {
     const zeroBig = new Big(0);
     const hundredBig = new Big(100);
-    
+
     if (value.lt(zeroBig)) return "Percentage must be positive";
     if (value.gt(hundredBig)) return "Percentage cannot exceed 100%";
     return undefined;
@@ -133,7 +133,8 @@ export const validators = {
    * Validates interest rate
    */
   interestRate: (value: Big, min: Big, max: Big) => {
-    if (value.lt(min)) return `Interest rate must be at least ${min.toFixed()}%`;
+    if (value.lt(min))
+      return `Interest rate must be at least ${min.toFixed()}%`;
     if (value.gt(max)) return `Interest rate cannot exceed ${max.toFixed()}%`;
     return undefined;
   },

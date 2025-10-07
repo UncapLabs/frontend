@@ -72,7 +72,7 @@ export const COLLATERALS = {
     decimals: 18, // Wrapped token decimals
     icon: "/wbtc.webp",
     branchId: 0,
-    minCollateralizationRatio: new Big(1.1), // 110%
+    minCollateralizationRatio: new Big(1.15), // 115%
     addresses: {
       token: deploymentData.WMWBTC.collateral as Address,
       addressesRegistry: deploymentData.WMWBTC.addressesRegistry as Address,

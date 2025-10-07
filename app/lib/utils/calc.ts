@@ -5,7 +5,7 @@ import { bigToBigint } from "~/lib/decimal";
  * Computes the debt limit based on the collateral amount, the collateral price and the minimum collateral ratio
  * @param collateralAmount - The amount of collateral in BTC
  * @param bitcoinPrice - The price of Bitcoin in USD
- * @param minCollateralRatio - The minimum collateralization ratio (e.g., 1.1 = 110%)
+ * @param minCollateralRatio - The minimum collateralization ratio (e.g., 1.15 = 115%)
  * @returns The debt limit in USD as a Big instance
  */
 export function computeDebtLimit(

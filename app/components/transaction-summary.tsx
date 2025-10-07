@@ -445,7 +445,7 @@ export function TransactionSummary({
               </TooltipTrigger>
               <TooltipContent>
                 <p>
-                  Bitcoin price at which your position will be liquidated (110%
+                  Bitcoin price at which your position will be liquidated (115%
                   collateral ratio)
                 </p>
               </TooltipContent>
@@ -509,7 +509,9 @@ export function TransactionSummary({
                 className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg"
               >
                 <AlertCircle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                <div className="text-xs text-amber-700 font-medium">{warning}</div>
+                <div className="text-xs text-amber-700 font-medium">
+                  {warning}
+                </div>
               </div>
             ))}
           </div>
