@@ -1,4 +1,4 @@
-import z from "zod";
+import * as z from "zod";
 import { router, publicProcedure } from "../trpc";
 
 // Use the ASSETS binding to fetch static files from the public directory

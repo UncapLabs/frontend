@@ -1,6 +1,6 @@
 import { publicProcedure, router } from "../trpc";
 import { CollateralIdSchema, getBitcoinprice } from "workers/services/utils";
-import { z } from "zod";
+import * as z from "zod";
 import { bigintToBig } from "~/lib/decimal";
 
 import Big from "big.js";

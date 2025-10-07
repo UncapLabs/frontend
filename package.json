@@ -29,9 +29,8 @@
     "@radix-ui/react-slot": "^1.2.2",
     "@radix-ui/react-tabs": "^1.1.12",
     "@radix-ui/react-tooltip": "^1.2.7",
-    "@starknet-io/get-starknet-core": "4.0.6",
-    "@starknet-react/chains": "4.0.1-beta.3",
-    "@starknet-react/core": "4.0.1-beta.4",
+    "@starknet-react/chains": "^5.0.3",
+    "@starknet-react/core": "^5.0.3",
     "@tanstack/form-core": "^1.12.3",
     "@tanstack/pacer": "^0.15.1",
     "@tanstack/react-form": "^1.12.3",
@@ -61,13 +60,13 @@
     "react-router": "^7.5.3",
     "react-scan": "^0.4.3",
     "sonner": "^2.0.3",
-    "starknet": "^7.2.0",
-    "starknetkit": "^2.10.4",
+    "starknet": "^8.0.0",
+    "starknetkit": "^3.2.0",
     "superjson": "^2.2.2",
     "tailwind-merge": "^3.2.0",
     "usehooks-ts": "^3.1.1",
     "vaul": "^1.1.2",
-    "zod": "3.25.0-beta.20250516T044623"
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.7.5",

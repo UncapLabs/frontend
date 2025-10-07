@@ -1,7 +1,7 @@
 import { Contract, RpcProvider } from "starknet";
 import { PRICE_FEED_MOCK_ABI } from "~/lib/contracts";
 import { getCollateral, type CollateralId } from "~/lib/collateral";
-import z from "zod";
+import * as z from "zod";
 
 // Prefixed trove ID format: "branchId:troveId"
 type PrefixedTroveId = string;
@@ -18,11 +18,11 @@ export const getBitcoinprice = async (
 
   // Get the price feed for the specified collateral
   const collateral = getCollateral(collateralId);
-  const PriceFeedContract = new Contract(
-    PRICE_FEED_MOCK_ABI,
-    collateral.addresses.priceFeed,
-    myProvider
-  );
+  const PriceFeedContract = new Contract({
+    abi: PRICE_FEED_MOCK_ABI,
+    address: collateral.addresses.priceFeed,
+    providerOrAccount: myProvider,
+  });
 
   const result = await PriceFeedContract.get_price();
 

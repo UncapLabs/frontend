@@ -1,7 +1,7 @@
 // Import deployment configuration
 import deploymentData from "./deployment_addresses.json";
 import type { Address } from "@starknet-react/chains";
-import { z } from "zod";
+import * as z from "zod";
 
 export const MIN_DEBT = 200; // Minimum debt threshold in USDU
 export const MAX_LIMIT = 1000000; // Maximum amount limit for UI inputs

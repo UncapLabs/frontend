@@ -8,7 +8,6 @@ import {
 import { useNavigate } from "react-router";
 import { useAccount } from "@starknet-react/core";
 import { useUserTroves } from "~/hooks/use-user-troves";
-import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { Plus, AlertCircle } from "lucide-react";
 import { useAllStabilityPoolPositions } from "~/hooks/use-stability-pool";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
@@ -31,7 +30,6 @@ type FilterType = "all" | "borrow" | "earn";
 export default function Dashboard() {
   const navigate = useNavigate();
   const { address } = useAccount();
-  const { connectWallet } = useWalletConnect();
   const [filter, setFilter] = useQueryState("filter", {
     defaultValue: "all" as FilterType,
   });
@@ -64,6 +62,13 @@ export default function Dashboard() {
   // Separate liquidated from active/zombie positions
   const liquidatedTroves = troves.filter((t) => t.status === "liquidated");
   const activeTroves = troves.filter((t) => t.status !== "liquidated");
+
+  // Check if user has any stability pool positions
+  const hasStabilityPoolPositions =
+    allStabilityPoolPositions.WMWBTC?.userDeposit.gt(0);
+
+  // Check if user has no positions at all
+  const noPositions = activeTroves.length === 0 && !hasStabilityPoolPositions;
 
   const handleCreateNew = () => {
     navigate("/unanim/borrow");
@@ -217,8 +222,8 @@ export default function Dashboard() {
             )}
 
             {/* Position Cards */}
-            {!address ? (
-              <WalletNotConnectedCTA onConnectWallet={connectWallet} />
+            {!address || (!isLoading && noPositions) ? (
+              <WalletNotConnectedCTA />
             ) : isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Loading skeletons */}

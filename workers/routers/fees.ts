@@ -1,5 +1,5 @@
 import { publicProcedure, router } from "../trpc";
-import { z } from "zod";
+import * as z from "zod";
 import { RpcProvider } from "starknet";
 import { contractRead } from "~/lib/contracts/calls";
 import { CollateralTypeSchema } from "~/lib/contracts/constants";

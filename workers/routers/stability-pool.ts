@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 import { router, publicProcedure } from "../trpc";
 import { RpcProvider } from "starknet";
 import { contractRead } from "~/lib/contracts/calls";

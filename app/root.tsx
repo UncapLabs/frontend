@@ -24,6 +24,41 @@ import "./app.css";
 import { StarknetProvider } from "./providers/starknet-provider";
 import { PHProvider } from "./providers/posthog-provider";
 
+export const meta: Route.MetaFunction = () => {
+  return [
+    { title: "Uncap Finance - Do More With Bitcoin" },
+    {
+      name: "description",
+      content:
+        "Unlock the potential of your bitcoin. Borrow against bitcoin and earn yield on stables with Uncap Finance.",
+    },
+
+    // Open Graph
+    { property: "og:title", content: "Uncap Finance - Do More With Bitcoin" },
+    {
+      property: "og:description",
+      content:
+        "Unlock the potential of your bitcoin. Borrow against bitcoin and earn yield on stables with Uncap Finance",
+    },
+    { property: "og:type", content: "website" },
+    { property: "og:url", content: "https://uncap.finance" },
+    { property: "og:image", content: "https://uncap.finance/og-image.jpg" },
+    { property: "og:image:width", content: "1200" },
+    { property: "og:image:height", content: "630" },
+
+    // Twitter Card
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:site", content: "@UncapFinance" },
+    { name: "twitter:title", content: "Uncap Finance - Do More With Bitcoin" },
+    {
+      name: "twitter:description",
+      content:
+        "Unlock the potential of your bitcoin. Borrow against bitcoin and earn yield on stables with Uncap Finance",
+    },
+    { name: "twitter:image", content: "https://uncap.finance/og-image.jpg" },
+  ];
+};
+
 // Register Big.js with superjson for serialization (must match server)
 superjson.registerCustom<Big, string>(
   {

@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from "react";
+import { useMemo } from "react";
 import { RedemptionInfo } from "./redemption-info";
 import { InterestRateSkeleton } from "./interest-rate-skeleton";
 import { ManualRateControls } from "./manual-rate-controls";
@@ -12,10 +12,9 @@ import {
 import { useCalculatedRebate } from "~/hooks/use-rebate-config";
 import { useInterestRateCooldown } from "~/hooks/use-interest-rate-cooldown";
 import { getBranchId, type CollateralId } from "~/lib/collateral";
-import { RateModeSelector, type RateMode } from "./rate-mode-selector";
+import { type RateMode } from "./rate-mode-selector";
 export type { RateMode } from "./rate-mode-selector";
 // import { ManagedStrategy } from "./managed-strategy";
-import { useQueryState, parseAsStringEnum } from "nuqs";
 import Big from "big.js";
 
 interface InterestRateSelectorProps {
@@ -221,7 +220,7 @@ export function InterestRateSelector({
         </div>
 
         {/* STRK Rebate Information */}
-        {borrowAmount && borrowAmount.gt(0) && rebateData && (
+        {/* {borrowAmount && borrowAmount.gt(0) && rebateData && (
           <STRKRebateInfo
             yearlyInterestUSD={rebateData.yearlyInterestUSD}
             yearlyRebateUSD={rebateData.yearlyRebateUSD}
@@ -236,7 +235,7 @@ export function InterestRateSelector({
                 : undefined
             }
           />
-        )}
+        )} */}
 
         {/* Interest Rate Cooldown Warning - Only show in manual mode */}
         {hasInterestRateChange && interestRateCooldown.isInCooldown && (

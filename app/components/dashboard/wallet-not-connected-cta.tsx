@@ -1,13 +1,7 @@
 import { Button } from "~/components/ui/button";
 import { useNavigate } from "react-router";
 
-interface WalletNotConnectedCTAProps {
-  onConnectWallet?: () => void;
-}
-
-export default function WalletNotConnectedCTA({
-  onConnectWallet,
-}: WalletNotConnectedCTAProps) {
+export default function WalletNotConnectedCTA() {
   const navigate = useNavigate();
 
   return (
@@ -92,19 +86,19 @@ export default function WalletNotConnectedCTA({
             Dashboard
           </p>
           <h2 className="text-[#242424] text-2xl font-medium font-sora leading-7 py-2 mb-2">
-            Manage
+            Liquidity
             <br />
-            your positions
+            opportunities
           </h2>
           <p className="text-[#94938D] text-xs font-medium font-sora leading-3 mb-4">
-            Connect your wallet.
+            Browse LP opportunities.
           </p>
 
           <Button
-            onClick={onConnectWallet}
+            onClick={() => navigate("/unanim/borrow")}
             className="bg-[#006CFF] hover:bg-[#0056CC] text-white px-6 py-4 h-auto rounded-xl font-sora text-xs font-medium inline-flex items-center gap-8"
           >
-            Connect wallet
+            Earn incentives
             <svg
               width="6"
               height="9"

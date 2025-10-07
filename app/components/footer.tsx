@@ -19,6 +19,9 @@ export default function Footer() {
           >
             Support
           </a>
+          <Link className="hover:text-white/90" to="/docs/">
+            Docs
+          </Link>
           <Link className="hover:text-white/90" to="/terms-and-conditions">
             Terms & conditions
           </Link>

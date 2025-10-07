@@ -1,14 +1,8 @@
-import {
-  isInArgentMobileAppBrowser,
-  ArgentMobileConnector,
-} from "starknetkit/argentMobile";
+import { InjectedConnector } from "starknetkit/injected";
 import {
   BraavosMobileConnector,
   isInBraavosMobileAppBrowser,
 } from "starknetkit/braavosMobile";
-import { InjectedConnector } from "starknetkit/injected";
-import { WebWalletConnector } from "starknetkit/webwallet";
-import { getStarknet } from "@starknet-io/get-starknet-core";
 import { constants } from "starknet";
 
 const CHAIN_ID =
@@ -20,7 +14,6 @@ const isMobileDevice = () => {
   if (typeof window === "undefined") {
     return false;
   }
-  getStarknet();
   // Primary method: User Agent + Touch support check
   const userAgent = navigator?.userAgent?.toLowerCase();
   const isMobileUA =
@@ -36,45 +29,24 @@ const isMobileDevice = () => {
 };
 
 export const availableConnectors = (): any[] => {
-  if (isInArgentMobileAppBrowser()) {
-    return [
-      ArgentMobileConnector.init({
-        options: {
-          url: typeof window !== "undefined" ? window.location.href : "",
-          dappName: "Uncap",
-          chainId: CHAIN_ID,
-        },
-      }),
-    ];
-  }
-
   if (isInBraavosMobileAppBrowser()) {
     return [BraavosMobileConnector.init({})];
   }
 
   if (isMobileDevice()) {
-    // On mobile (not in Argent/Braavos app), show specific mobile connectors
+    // On mobile (not in Braavos app), show specific mobile connectors
     return [
-      ArgentMobileConnector.init({
-        options: {
-          url: typeof window !== "undefined" ? window.location.href : "",
-          dappName: "Uncap",
-          chainId: CHAIN_ID,
-        },
+      new InjectedConnector({
+        options: { id: "argentX", name: "Ready Wallet (formerly Argent)" },
       }),
+      new InjectedConnector({ options: { id: "xverse" } }),
       BraavosMobileConnector.init({}),
-      new WebWalletConnector({
-        url:
-          CHAIN_ID === constants.NetworkName.SN_MAIN
-            ? "https://web.argent.xyz"
-            : "https://sepolia-web.argent.xyz",
-        theme: "light",
-      }),
     ].filter(Boolean);
   } else {
     // On desktop, show the broader list of connectors
     return [
       new InjectedConnector({ options: { id: "argentX" } }),
+      new InjectedConnector({ options: { id: "xverse" } }),
       new InjectedConnector({ options: { id: "braavos" } }),
       new InjectedConnector({ options: { id: "keplr" } }),
       new InjectedConnector({ options: { id: "okxwallet" } }),
