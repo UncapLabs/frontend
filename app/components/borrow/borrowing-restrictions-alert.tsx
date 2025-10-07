@@ -94,7 +94,7 @@ export function BorrowingRestrictionsAlert({
       </div>
 
       <a
-        href="https://uncap.finance/docs"
+        href="https://uncap.finance/docs/FAQ/redemptions-and-delegations#what-are-borrowing-restrictions"
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex items-center gap-1.5 text-sm font-medium font-sora text-amber-700 hover:text-amber-900 transition-colors group"

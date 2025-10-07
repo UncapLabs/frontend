@@ -38,7 +38,7 @@ export default function Footer() {
         {/* Right side - Social Links (middle on mobile, right on desktop) */}
         <div className="flex items-center gap-4 order-2 md:order-3 w-full md:w-auto justify-start md:justify-end">
           <a
-            href="https://twitter.com"
+            href="https://x.com/uncapfinance"
             target="_blank"
             rel="noopener noreferrer"
             className="text-white hover:text-white/90 transition-colors"

@@ -21,13 +21,13 @@ export function StabilityPoolsTable() {
   }));
 
   return (
-    <div className="bg-[#242424] rounded-lg p-6">
+    <div className="bg-[#242424] rounded-lg p-4 md:p-6">
       <div className="space-y-4">
         <div>
           <h3 className="text-white text-lg font-medium font-sora">
             Stability Pools Overview
           </h3>
-          <p className="text-sm text-[#B2B2B2] mt-1">
+          <p className="text-xs text-[#B2B2B2] mt-1">
             Earn rewards from loan fees and liquidations while helping maintain
             system stability.{" "}
             <a
@@ -45,7 +45,7 @@ export function StabilityPoolsTable() {
           {poolsData.map((pool) => (
             <div
               key={pool.collateralType}
-              className="border border-zinc-800 rounded-lg p-4 hover:bg-zinc-900/50 transition-colors"
+              className="border border-zinc-800 rounded-lg p-4 lg:border-0 lg:rounded-none lg:p-0 lg:py-3"
             >
               <div className="space-y-3">
                 {/* Pool header with icon and name */}
