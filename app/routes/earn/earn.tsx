@@ -156,10 +156,10 @@ export default Earn;
 
 export function meta() {
   return [
-    { title: "Stability Pool" },
+    { title: "Uncap - Earn yield on your stablecoins" },
     {
       name: "description",
-      content: "Manage your USDU deposits in Stability Pools",
+      content: "Earn sustainable yield on your stablecoins with Uncap Finance",
     },
   ];
 }

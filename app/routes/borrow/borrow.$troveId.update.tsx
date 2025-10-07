@@ -1016,7 +1016,10 @@ export default UpdatePosition;
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Update Position - Uncap" },
-    { name: "description", content: "Update your Uncap borrowing position" },
+    { title: "Uncap - Update position" },
+    {
+      name: "description",
+      content: "Update your BTC borrowing position with Uncap",
+    },
   ];
 }

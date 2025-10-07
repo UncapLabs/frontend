@@ -30,7 +30,10 @@ import {
   DEFAULT_COLLATERAL,
   getCollateralByAddress,
 } from "~/lib/collateral";
-import { getBalanceDecimals, getBalanceTokenAddress } from "~/lib/collateral/wrapping";
+import {
+  getBalanceDecimals,
+  getBalanceTokenAddress,
+} from "~/lib/collateral/wrapping";
 
 function Borrow() {
   const { address } = useAccount();
@@ -577,7 +580,10 @@ export default Borrow;
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Uncap" },
-    { name: "This is Uncap", content: "Welcome to Uncap!" },
+    { title: "Uncap - Borrow against BTC" },
+    {
+      name: "description",
+      content: "Borrow against BTC at the lowest rates with Uncap Finance",
+    },
   ];
 }

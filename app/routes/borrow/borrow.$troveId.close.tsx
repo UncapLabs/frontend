@@ -19,7 +19,12 @@ import { useCloseTrove } from "~/hooks/use-close-trove";
 import { useCallback } from "react";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { toast } from "sonner";
-import { Alert, AlertIcon, AlertDescription, AlertContent } from "~/components/ui/alert";
+import {
+  Alert,
+  AlertIcon,
+  AlertDescription,
+  AlertContent,
+} from "~/components/ui/alert";
 import { BorrowingRestrictionsAlert } from "~/components/borrow/borrowing-restrictions-alert";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
 import { Skeleton } from "~/components/ui/skeleton";
@@ -484,7 +489,10 @@ export default ClosePosition;
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Close Position - USDU" },
-    { name: "description", content: "Close your USDU borrowing position" },
+    { title: "Uncap - Close position" },
+    {
+      name: "description",
+      content: "Close your USDU borrowing position with Uncap",
+    },
   ];
 }

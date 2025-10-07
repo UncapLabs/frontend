@@ -126,7 +126,7 @@ export default LiquidatedPositionsPage;
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Liquidated Positions - USDU" },
+    { title: "Uncap - Liquidated position" },
     {
       name: "description",
       content:

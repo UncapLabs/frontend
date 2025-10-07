@@ -326,13 +326,3 @@ export default function Dashboard() {
     </>
   );
 }
-
-export function meta() {
-  return [
-    { title: "Dashboard - Uncap" },
-    {
-      name: "description",
-      content: "Manage your USDU borrowing and stability pool positions",
-    },
-  ];
-}
