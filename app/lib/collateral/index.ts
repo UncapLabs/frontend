@@ -232,15 +232,6 @@ export function getCollateralAddresses(collateralId: CollateralId) {
   return COLLATERALS[collateralId].addresses;
 }
 
-// Re-export wrapping utilities from the wrapping module
-export {
-  requiresWrapping,
-  getBalanceTokenAddress,
-  getBalanceDecimals,
-  generateDepositCallsFromBigint,
-  generateUnwrapCallFromBigint,
-} from "./wrapping";
-
 // Export flat arrays and defaults for UI components
 export const COLLATERAL_LIST = Object.values(COLLATERALS) as Collateral[];
 export const DEFAULT_COLLATERAL = COLLATERALS.WMWBTC;

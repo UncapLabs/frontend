@@ -3,17 +3,13 @@ import { useAccount } from "@starknet-react/core";
 import { useTransaction } from "~/hooks/use-transaction";
 import { useTransactionState } from "~/hooks/use-transaction-state";
 import { contractCall } from "~/lib/contracts/calls";
-import {
-  type Collateral,
-  requiresWrapping,
-  generateUnwrapCallFromBigint,
-  DEFAULT_COLLATERAL,
-} from "~/lib/collateral";
+import { type Collateral, DEFAULT_COLLATERAL } from "~/lib/collateral";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
 import { extractTroveId } from "~/lib/utils/position-helpers";
 import { bigToBigint } from "~/lib/decimal";
 import Big from "big.js";
+import { generateUnwrapCallFromBigint, requiresWrapping } from "~/lib/collateral/wrapping";
 
 // Close trove form data structure
 export interface CloseTroveFormData {

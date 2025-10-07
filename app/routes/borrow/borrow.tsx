@@ -25,13 +25,12 @@ import { calculatePercentageAmountBig } from "~/lib/input-parsers";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { usePositionMetrics } from "~/hooks/use-position-metrics";
 import {
-  getBalanceTokenAddress,
-  getBalanceDecimals,
   TOKENS,
   COLLATERAL_LIST,
   DEFAULT_COLLATERAL,
   getCollateralByAddress,
 } from "~/lib/collateral";
+import { getBalanceDecimals, getBalanceTokenAddress } from "~/lib/collateral/wrapping";
 
 function Borrow() {
   const { address } = useAccount();

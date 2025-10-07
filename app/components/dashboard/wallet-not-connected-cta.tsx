@@ -83,7 +83,7 @@ export default function WalletNotConnectedCTA() {
 
         <div className="relative z-10">
           <p className="text-[#242424] text-xs font-medium font-sora uppercase tracking-wider">
-            Dashboard
+            Provide liquidity
           </p>
           <h2 className="text-[#242424] text-2xl font-medium font-sora leading-7 py-2 mb-2">
             Liquidity

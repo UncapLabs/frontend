@@ -3,17 +3,13 @@ import { useAccount } from "@starknet-react/core";
 import { contractCall } from "~/lib/contracts/calls";
 import { useTransaction } from "./use-transaction";
 import { useTransactionState } from "./use-transaction-state";
-import {
-  type Collateral,
-  type CollateralId,
-  requiresWrapping,
-  generateUnwrapCallFromBigint,
-} from "~/lib/collateral";
+import { type Collateral, type CollateralId } from "~/lib/collateral";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
 import { bigToBigint } from "~/lib/decimal";
 import type { Call } from "starknet";
 import Big from "big.js";
+import { generateUnwrapCallFromBigint, requiresWrapping } from "~/lib/collateral/wrapping";
 
 interface SurplusAmount {
   collateral: Collateral;
@@ -65,8 +61,13 @@ export function useClaimAllSurplus({
 
         if (surplus && surplus.amount.gt(0)) {
           // Convert Big amount to bigint (wrapped token decimals)
-          const surplusBigint = bigToBigint(surplus.amount, collateral.decimals);
-          callList.push(generateUnwrapCallFromBigint(collateral, surplusBigint));
+          const surplusBigint = bigToBigint(
+            surplus.amount,
+            collateral.decimals
+          );
+          callList.push(
+            generateUnwrapCallFromBigint(collateral, surplusBigint)
+          );
         }
       }
     });

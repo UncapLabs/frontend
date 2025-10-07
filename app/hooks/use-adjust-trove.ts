@@ -4,10 +4,10 @@ import { contractCall } from "~/lib/contracts/calls";
 import { useTransaction } from "./use-transaction";
 import type { Collateral, CollateralId } from "~/lib/collateral";
 import {
-  requiresWrapping,
   generateDepositCallsFromBigint,
   generateUnwrapCallFromBigint,
-} from "~/lib/collateral";
+  requiresWrapping,
+} from "~/lib/collateral/wrapping";
 import Big from "big.js";
 import { bigToBigint } from "~/lib/decimal";
 
@@ -86,7 +86,11 @@ function getAdjustmentCalls(params: {
     );
 
     // For wrapped tokens: unwrap after withdrawal
-    if (!isCollIncrease && collateralChange !== 0n && requiresWrapping(collateral)) {
+    if (
+      !isCollIncrease &&
+      collateralChange !== 0n &&
+      requiresWrapping(collateral)
+    ) {
       calls.push(generateUnwrapCallFromBigint(collateral, collateralChange));
     }
 
@@ -208,7 +212,11 @@ export function useAdjustTrove({
 
   const changes = useMemo(() => {
     // Need at least current values to calculate changes
-    if (!currentCollateral || !currentDebt || currentInterestRate === undefined) {
+    if (
+      !currentCollateral ||
+      !currentDebt ||
+      currentInterestRate === undefined
+    ) {
       return null;
     }
 

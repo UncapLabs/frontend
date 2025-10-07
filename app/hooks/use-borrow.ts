@@ -5,15 +5,13 @@ import { useNextOwnerIndex } from "./use-next-owner-index";
 import { useTransaction } from "./use-transaction";
 import { useTransactionState } from "./use-transaction-state";
 import type { Collateral, CollateralId } from "~/lib/collateral";
-import {
-  DEFAULT_COLLATERAL,
-  generateDepositCallsFromBigint,
-} from "~/lib/collateral";
+import { DEFAULT_COLLATERAL } from "~/lib/collateral";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
 import { getTroveId, getPrefixedTroveId } from "~/lib/utils/trove-id";
 import { bigToBigint } from "~/lib/decimal";
 import Big from "big.js";
+import { generateDepositCallsFromBigint } from "~/lib/collateral/wrapping";
 
 export interface BorrowFormData {
   collateralAmount?: Big;

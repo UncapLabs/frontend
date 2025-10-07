@@ -7,8 +7,6 @@ import {
   TOKENS,
   getCollateralAddresses,
   getCollateral,
-  requiresWrapping,
-  generateUnwrapCallFromBigint,
 } from "~/lib/collateral";
 import { useTransaction } from "~/hooks/use-transaction";
 import { useTransactionState } from "./use-transaction-state";
@@ -18,6 +16,7 @@ import { bigToBigint } from "~/lib/decimal";
 import { useTRPC } from "~/lib/trpc";
 import Big from "big.js";
 import type { Call } from "starknet";
+import { generateUnwrapCallFromBigint, requiresWrapping } from "~/lib/collateral/wrapping";
 
 // Deposit form data structure
 export interface DepositFormData {

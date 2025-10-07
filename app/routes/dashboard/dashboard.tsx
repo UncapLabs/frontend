@@ -222,15 +222,8 @@ export default function Dashboard() {
             )}
 
             {/* Position Cards */}
-            {!address || (!isLoading && noPositions) ? (
+            {!address || noPositions ? (
               <WalletNotConnectedCTA />
-            ) : isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Loading skeletons */}
-                {[1, 2, 3, 4].map((i) => (
-                  <BorrowCard key={i} isLoading={true} />
-                ))}
-              </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Show active positions when wallet is connected */}

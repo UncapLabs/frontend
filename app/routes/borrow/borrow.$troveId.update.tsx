@@ -32,13 +32,10 @@ import { getInterestRatePercentage } from "~/lib/utils/position-helpers";
 import { extractTroveId, extractBranchId } from "~/lib/utils/trove-id";
 import { TransactionSummary } from "~/components/transaction-summary";
 import { usePositionMetrics } from "~/hooks/use-position-metrics";
-import {
-  TOKENS,
-  getCollateralByBranchId,
-  getBalanceDecimals,
-} from "~/lib/collateral";
+import { TOKENS, getCollateralByBranchId } from "~/lib/collateral";
 import Big from "big.js";
 import { bigintToBig } from "~/lib/decimal";
+import { getBalanceDecimals } from "~/lib/collateral/wrapping";
 
 // Helper component for action toggle buttons
 const ActionToggle = ({
