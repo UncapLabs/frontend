@@ -40,6 +40,8 @@ export function GetTestBtc() {
     ? tokenConfig.underlyingToken.address
     : tokenConfig.address;
 
+  console.log("mintTokenAddress", mintTokenAddress);
+
   const mintTokenDecimals = tokenConfig.underlyingToken
     ? tokenConfig.underlyingToken.decimals
     : tokenConfig.decimals;

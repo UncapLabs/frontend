@@ -1,0 +1,11 @@
+/*.png
+  Access-Control-Allow-Origin: *
+
+/*.jpg
+  Access-Control-Allow-Origin: *
+
+/*.svg
+  Access-Control-Allow-Origin: *
+
+/*.jpeg
+  Access-Control-Allow-Origin: *
