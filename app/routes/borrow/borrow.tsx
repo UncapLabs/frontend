@@ -34,6 +34,7 @@ import {
   getBalanceDecimals,
   getBalanceTokenAddress,
 } from "~/lib/collateral/wrapping";
+import { createMeta } from "~/lib/utils/meta";
 
 function Borrow() {
   const { address } = useAccount();
@@ -578,12 +579,9 @@ function Borrow() {
 
 export default Borrow;
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "Uncap - Borrow against BTC" },
-    {
-      name: "description",
-      content: "Borrow against BTC at the lowest rates with Uncap Finance",
-    },
-  ];
+export function meta(args: Route.MetaArgs) {
+  return createMeta(args, {
+    title: "Uncap - Borrow against BTC",
+    description: "Borrow against BTC at the lowest rates with Uncap Finance",
+  });
 }
