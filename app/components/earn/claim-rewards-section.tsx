@@ -117,35 +117,26 @@ export function ClaimRewardsSection({
 
         {/* Divider and Total */}
         {hasRewards ? (
-          <>
-            <div className="border-t border-neutral-200 pt-4 mt-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-neutral-800 font-sora uppercase">
-                  Total Value
-                </span>
-                <div className="text-right">
-                  <div className="text-xl font-semibold text-neutral-800 font-sora">
-                    <NumericFormat
-                      displayType="text"
-                      value={totalUSD.toString()}
-                      prefix="$"
-                      thousandSeparator=","
-                      decimalScale={2}
-                      fixedDecimalScale
-                    />
-                  </div>
+          <div className="border-t border-neutral-200 pt-4 mt-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-neutral-800 font-sora uppercase">
+                Total Value
+              </span>
+              <div className="text-right">
+                <div className="text-xl font-semibold text-neutral-800 font-sora">
+                  <NumericFormat
+                    displayType="text"
+                    value={totalUSD.toString()}
+                    prefix="$"
+                    thousandSeparator=","
+                    decimalScale={2}
+                    fixedDecimalScale
+                  />
                 </div>
               </div>
             </div>
-          </>
-        ) : (
-          <div className="border-t border-neutral-200 pt-4">
-            <p className="text-sm text-neutral-500 text-center font-sora">
-              No rewards available. Rewards accrue when you have deposits in the
-              stability pool.
-            </p>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
