@@ -31,18 +31,18 @@ export function useCollateralSurplus(borrower: string | undefined) {
     //   hasAmount: query.data?.GBTC ? query.data.GBTC.gt(0) : false,
     //   collateralType: "GBTC" as CollateralId,
     // },
-    WMWBTC: {
-      formatted: query.data?.WMWBTC ?? Big(0),
-      symbol: COLLATERALS.WMWBTC.symbol,
-      hasAmount: query.data?.WMWBTC ? query.data.WMWBTC.gt(0) : false,
-      collateralType: "WMWBTC" as CollateralId,
+    WWBTC: {
+      formatted: query.data?.WWBTC ?? Big(0),
+      symbol: COLLATERALS.WWBTC.symbol,
+      hasAmount: query.data?.WWBTC ? query.data.WWBTC.gt(0) : false,
+      collateralType: "WWBTC" as CollateralId,
     },
   };
 
   const availableSurpluses = [
     // formattedSurpluses.UBTC,
     // formattedSurpluses.GBTC,
-    formattedSurpluses.WMWBTC,
+    formattedSurpluses.WWBTC,
   ].filter((s) => s.hasAmount);
 
   return {

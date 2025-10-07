@@ -5,13 +5,11 @@ import * as z from "zod";
 
 // Prefixed trove ID format: "branchId:troveId"
 type PrefixedTroveId = string;
-type BranchId = string; // "0" for WMWBTC, "1" for UBTC, "2" for GBTC
+type BranchId = string; // "0" for WWBTC, "1" for UBTC, "2" for GBTC
 
-export const CollateralIdSchema = z.enum(["WMWBTC"]); //, "UBTC", "GBTC"]);
+export const CollateralIdSchema = z.enum(["WWBTC"]); //, "UBTC", "GBTC"]);
 
-export const getBitcoinprice = async (
-  collateralId: CollateralId = "WMWBTC"
-) => {
+export const getBitcoinprice = async (collateralId: CollateralId = "WWBTC") => {
   const myProvider = new RpcProvider({
     nodeUrl: process.env.NODE_URL,
   });

@@ -16,7 +16,10 @@ import { bigToBigint } from "~/lib/decimal";
 import { useTRPC } from "~/lib/trpc";
 import Big from "big.js";
 import type { Call } from "starknet";
-import { generateUnwrapCallFromBigint, requiresWrapping } from "~/lib/collateral/wrapping";
+import {
+  generateUnwrapCallFromBigint,
+  requiresWrapping,
+} from "~/lib/collateral/wrapping";
 
 // Deposit form data structure
 export interface DepositFormData {
@@ -327,7 +330,7 @@ export function useAllStabilityPoolPositions() {
     return {
       // UBTC: null,
       // GBTC: null,
-      WMWBTC: null,
+      WWBTC: null,
     };
   }
 

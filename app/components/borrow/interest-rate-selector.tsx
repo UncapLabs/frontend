@@ -38,7 +38,7 @@ export function InterestRateSelector({
   borrowAmount,
   collateralAmount,
   collateralPriceUSD,
-  collateralType = "WMWBTC",
+  collateralType = "WWBTC",
   onRateModeChange,
   lastInterestRateAdjTime,
   currentInterestRate,

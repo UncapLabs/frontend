@@ -1,9 +1,9 @@
 import type { Address } from "@starknet-react/chains";
 import Big from "big.js";
-import deploymentData from "../contracts/deployment_addresses.json";
+import deploymentData from "../contracts/deployment_addresses";
 import { USDU_ADDRESS, GAS_TOKEN_ADDRESS } from "../contracts/constants";
 
-export type CollateralId = "WMWBTC"; // | "UBTC" | "GBTC";
+export type CollateralId = "WWBTC"; // | "UBTC" | "GBTC";
 
 // Base Token type - can be used for any token (collateral, stablecoin, etc.)
 export interface Token {
@@ -65,8 +65,8 @@ function createCollateral(config: Omit<Collateral, "address">): Collateral {
 
 // Main collateral definitions
 export const COLLATERALS = {
-  WMWBTC: createCollateral({
-    id: "WMWBTC",
+  WWBTC: createCollateral({
+    id: "WWBTC",
     symbol: "wBTC", // User-facing name
     name: "Wrapped MWBitcoin",
     decimals: 18, // Wrapped token decimals
@@ -74,29 +74,29 @@ export const COLLATERALS = {
     branchId: 0,
     minCollateralizationRatio: new Big(1.15), // 115%
     addresses: {
-      token: deploymentData.WMWBTC.collateral as Address,
-      addressesRegistry: deploymentData.WMWBTC.addressesRegistry as Address,
-      borrowerOperations: deploymentData.WMWBTC.borrowerOperations as Address,
-      troveManager: deploymentData.WMWBTC.troveManager as Address,
-      troveNft: deploymentData.WMWBTC.troveNft as Address,
-      stabilityPool: deploymentData.WMWBTC.stabilityPool as Address,
-      sortedTroves: deploymentData.WMWBTC.sortedTroves as Address,
-      activePool: deploymentData.WMWBTC.activePool as Address,
-      defaultPool: deploymentData.WMWBTC.defaultPool as Address,
-      collSurplusPool: deploymentData.WMWBTC.collSurplusPool as Address,
-      gasPool: deploymentData.WMWBTC.gasPool as Address,
-      interestRouter: deploymentData.WMWBTC.interestRouter as Address,
-      liquidationManager: deploymentData.WMWBTC.liquidationManager as Address,
-      redemptionManager: deploymentData.WMWBTC.redemptionManager as Address,
-      batchManager: deploymentData.WMWBTC.batchManager as Address,
-      priceFeed: deploymentData.WMWBTC.priceFeed as Address,
-      hintHelpers: deploymentData.WMWBTC.hintHelpers as Address,
-      multiTroveGetter: deploymentData.WMWBTC.multiTroveGetter as Address,
-      troveManagerEventsEmitter: deploymentData.WMWBTC
+      token: deploymentData.WWBTC.collateral as Address,
+      addressesRegistry: deploymentData.WWBTC.addressesRegistry as Address,
+      borrowerOperations: deploymentData.WWBTC.borrowerOperations as Address,
+      troveManager: deploymentData.WWBTC.troveManager as Address,
+      troveNft: deploymentData.WWBTC.troveNft as Address,
+      stabilityPool: deploymentData.WWBTC.stabilityPool as Address,
+      sortedTroves: deploymentData.WWBTC.sortedTroves as Address,
+      activePool: deploymentData.WWBTC.activePool as Address,
+      defaultPool: deploymentData.WWBTC.defaultPool as Address,
+      collSurplusPool: deploymentData.WWBTC.collSurplusPool as Address,
+      gasPool: deploymentData.WWBTC.gasPool as Address,
+      interestRouter: deploymentData.WWBTC.interestRouter as Address,
+      liquidationManager: deploymentData.WWBTC.liquidationManager as Address,
+      redemptionManager: deploymentData.WWBTC.redemptionManager as Address,
+      batchManager: deploymentData.WWBTC.batchManager as Address,
+      priceFeed: deploymentData.WWBTC.priceFeed as Address,
+      hintHelpers: deploymentData.WWBTC.hintHelpers as Address,
+      multiTroveGetter: deploymentData.WWBTC.multiTroveGetter as Address,
+      troveManagerEventsEmitter: deploymentData.WWBTC
         .troveManagerEventsEmitter as Address,
     },
     underlyingToken: {
-      address: deploymentData.WMWBTC.underlyingAddress as Address,
+      address: deploymentData.WWBTC.underlyingAddress as Address,
       decimals: 8,
     },
   }),
@@ -184,13 +184,13 @@ export const TOKENS = {
 
 // Branch ID mappings (for contract interactions)
 export const COLLATERAL_TO_BRANCH = {
-  WMWBTC: 0,
+  WWBTC: 0,
   // UBTC: 1,
   // GBTC: 2,
 } as const;
 
 export const BRANCH_TO_COLLATERAL = {
-  0: "WMWBTC",
+  0: "WWBTC",
   // 1: "UBTC",
   // 2: "GBTC",
 } as const;
@@ -234,4 +234,4 @@ export function getCollateralAddresses(collateralId: CollateralId) {
 
 // Export flat arrays and defaults for UI components
 export const COLLATERAL_LIST = Object.values(COLLATERALS) as Collateral[];
-export const DEFAULT_COLLATERAL = COLLATERALS.WMWBTC;
+export const DEFAULT_COLLATERAL = COLLATERALS.WWBTC;

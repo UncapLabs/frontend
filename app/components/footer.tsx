@@ -61,7 +61,7 @@ export default function Footer() {
             </svg>
           </a>
           <a
-            href="https://github.com"
+            href="https://github.com/UncapLabs"
             target="_blank"
             rel="noopener noreferrer"
             className="text-white hover:text-white/90 transition-colors"

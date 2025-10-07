@@ -57,7 +57,7 @@ export const positionsRouter = router({
     .input(
       z.object({
         borrower: z.string(),
-        collateralType: z.enum(["WMWBTC"]), // "UBTC", "GBTC"
+        collateralType: z.enum(["WWBTC"]), // "UBTC", "GBTC"
       })
     )
     .query(async ({ input }) => {

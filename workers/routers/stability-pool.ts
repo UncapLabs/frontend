@@ -29,18 +29,18 @@ export const stabilityPoolRouter = router({
       // const [ubtcPosition, gbtcPosition, wmwbtcPosition] = await Promise.all([
       //   fetchPoolPosition(provider, userAddress, "UBTC"),
       //   fetchPoolPosition(provider, userAddress, "GBTC"),
-      //   fetchPoolPosition(provider, userAddress, "WMWBTC"),
+      //   fetchPoolPosition(provider, userAddress, "WWBTC"),
       // ]);
 
       const wmwbtcPosition = await fetchPoolPosition(
         provider,
         userAddress,
-        "WMWBTC"
+        "WWBTC"
       );
       return {
         // UBTC: ubtcPosition,
         // GBTC: gbtcPosition,
-        WMWBTC: wmwbtcPosition,
+        WWBTC: wmwbtcPosition,
       };
     }),
   getTotalDeposits: publicProcedure

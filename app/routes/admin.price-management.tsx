@@ -19,7 +19,7 @@ function PriceManagement() {
   const [isPendingWBTC, setIsPendingWBTC] = useState(false);
 
   const { bitcoin, isLoading, refetchBitcoin } = useFetchPrices({
-    collateralType: "WMWBTC",
+    collateralType: "WWBTC",
     fetchBitcoin: true,
     fetchUsdu: false,
   });
@@ -49,7 +49,7 @@ function PriceManagement() {
 
       const calls = [
         {
-          contractAddress: COLLATERALS.WMWBTC.addresses.priceFeed,
+          contractAddress: COLLATERALS.WWBTC.addresses.priceFeed,
           entrypoint: "set_price",
           calldata: [low.toString(), high.toString()], // Price as u256 (low, high)
         },

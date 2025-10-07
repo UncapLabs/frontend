@@ -1,0 +1,27 @@
+{
+  "USDU": "0x2f94539f80158f9a48a7acf3747718dfbec9b6f639e2742c1fb44ae7ab5aa04",
+  "gasToken": "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
+  "collateralRegistry": "0x76512e6722f1891ce15ca7e7ff6514b6898872fb8e6ce881d16108e26457e90",
+  "WWBTC": {
+    "collateral": "0x75d9e518f46a9ca0404fb0a7d386ce056dadf57fd9a0e8659772cb517be4a18",
+    "addressesRegistry": "0x42a37aa9263b01191286f0f800cc85c676441fb9d27d74bbf3ebcbf4e373d81",
+    "borrowerOperations": "0x7346e65e80eb61cdfcc56f6f21de07b312e93fe770fb17a6e43c1950acfdbab",
+    "troveManager": "0x586fc03b4e6901ef423890c19e8fcf528a269329ab23ff7cb2df975ec3d4d62",
+    "troveNft": "0x4a1e17f1e4d5fdd839fa6a4c52a742b9d10871028b6ffcfb2f1de8dd5dc2cd4",
+    "stabilityPool": "0x1ba4a9e2e86a41c6ed15016eda0404d12bf7b01052cccff1ace84d818335c7",
+    "sortedTroves": "0x5a98d258b4cc6c8b8b654fa1ee36146c79e8c5315a610d7ee03df9b4b27a11e",
+    "activePool": "0x780627de12ac84a7887b7f83496a8ece5ea3c5eb7170f9f00587dabfdbe18d1",
+    "defaultPool": "0x6914f468ba28ad42149db6ed642c3c4f123a2c91f3e569d02e90881531c960e",
+    "collSurplusPool": "0xd978e3fd1f8225407da3decd0baf7199904a49306cdf0f0820f67b4cec690f",
+    "gasPool": "0x1e45c1a94b7ad319cbafb162825b3c3577fe1ffbe4412d2b97d122426aaf7fd",
+    "interestRouter": "0x0477a98816f0298D678a8C74Bd06E898Ee4E3bB62FdB9bb05c397f3135aE8398",
+    "liquidationManager": "0x5f449359da7f480cbbbe09b6f2385858e3ffe6bb8de8d0e382252eb372d72a6",
+    "redemptionManager": "0x1f5ba149ecc34a37228bdbecff3ec84f957318d65bfb99650fbb020df4bb0d0",
+    "batchManager": "0x33fce86e1de643d13ef366059193fc0ca42a08888c0a589866d940e865ceb38",
+    "priceFeed": "0x6716836514e75e9f4eaa0fe93aa0448480a321b669041d6b5f27aa75374ac66",
+    "hintHelpers": "0x44b632d0e09b042b6521cd4ba250add5387fb68736cb10f2cc2411c1a1c2a84",
+    "multiTroveGetter": "0x780627de12ac84a7887b7f83496a8ece5ea3c5eb7170f9f00587dabfdbe18d1",
+    "troveManagerEventsEmitter": "0x38a9949900e7905f648cf0b50335efdac16a8acb8dfc870835da21c3f68e934",
+    "underlyingAddress": "0x03fe2b97c1fd336e750087d68b9b867997fd64a2661ff3ca5a7c771641e8e7ac"
+  }
+}

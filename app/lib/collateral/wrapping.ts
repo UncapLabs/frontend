@@ -4,7 +4,7 @@ import { contractCall } from "~/lib/contracts/calls";
 
 /**
  * Centralized wrapping logic for collaterals that require wrapping/unwrapping
- * (e.g., WMWBTC which wraps from 8 decimals to 18 decimals)
+ * (e.g., WWBTC which wraps from 8 decimals to 18 decimals)
  */
 
 /**
@@ -60,7 +60,7 @@ export function generateDepositCallsFromBigint(
 
   // Convert from wrapped decimals (18) to underlying decimals (e.g., 8)
   const decimalsDiff = 18n - BigInt(underlyingDecimals);
-  const underlyingAmount = wrappedAmount / (10n ** decimalsDiff);
+  const underlyingAmount = wrappedAmount / 10n ** decimalsDiff;
 
   return [
     // 1. Approve underlying token spending to CollateralWrapper

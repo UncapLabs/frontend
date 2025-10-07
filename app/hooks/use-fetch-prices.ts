@@ -12,7 +12,7 @@ interface UseFetchPricesOptions {
 /**
  * Hook to fetch Bitcoin and/or USDU prices
  * @param options - Configuration options for which prices to fetch
- * @param options.collateralType - The type of collateral (UBTC, GBTC, WMWBTC)
+ * @param options.collateralType - The type of collateral (UBTC, GBTC, WWBTC)
  * @param options.fetchBitcoin - Whether to fetch Bitcoin price, defaults to true
  * @param options.fetchUsdu - Whether to fetch USDU price, defaults to true
  * @param options.enabled - Whether to enable the queries, defaults to true

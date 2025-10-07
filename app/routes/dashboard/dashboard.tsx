@@ -46,7 +46,7 @@ export default function Dashboard() {
   const allStabilityPoolPositions = useAllStabilityPoolPositions();
 
   const { bitcoin: wbtcPrice } = useFetchPrices({
-    collateralType: "WMWBTC",
+    collateralType: "WWBTC",
     fetchUsdu: false,
   });
   // const { bitcoin: ubtcPrice } = useFetchPrices({
@@ -65,7 +65,7 @@ export default function Dashboard() {
 
   // Check if user has any stability pool positions
   const hasStabilityPoolPositions =
-    allStabilityPoolPositions.WMWBTC?.userDeposit.gt(0);
+    allStabilityPoolPositions.WWBTC?.userDeposit.gt(0);
 
   // Check if user has no positions at all
   const noPositions = activeTroves.length === 0 && !hasStabilityPoolPositions;
@@ -281,32 +281,32 @@ export default function Dashboard() {
                         />
                       )} */}
 
-                    {allStabilityPoolPositions.WMWBTC &&
-                      allStabilityPoolPositions.WMWBTC.userDeposit.gt(0) && (
+                    {allStabilityPoolPositions.WWBTC &&
+                      allStabilityPoolPositions.WWBTC.userDeposit.gt(0) && (
                         <StabilityPoolCard
-                          poolType="WMWBTC"
+                          poolType="WWBTC"
                           userDeposit={
-                            allStabilityPoolPositions.WMWBTC.userDeposit
+                            allStabilityPoolPositions.WWBTC.userDeposit
                           }
-                          poolShare={allStabilityPoolPositions.WMWBTC.poolShare}
+                          poolShare={allStabilityPoolPositions.WWBTC.poolShare}
                           usduRewards={
-                            allStabilityPoolPositions.WMWBTC.rewards.usdu
+                            allStabilityPoolPositions.WWBTC.rewards.usdu
                           }
                           collateralRewards={
-                            allStabilityPoolPositions.WMWBTC.rewards.collateral
+                            allStabilityPoolPositions.WWBTC.rewards.collateral
                           }
                           usduPrice={usdu?.price}
                           onManagePosition={() =>
-                            navigate("/unanim/earn?collateral=WMWBTC")
+                            navigate("/unanim/earn?collateral=WWBTC")
                           }
                           onDepositClick={() =>
                             navigate(
-                              "/unanim/earn?collateral=WMWBTC&action=deposit"
+                              "/unanim/earn?collateral=WWBTC&action=deposit"
                             )
                           }
                           onRewardsClick={() =>
                             navigate(
-                              "/unanim/earn?collateral=WMWBTC&action=claim"
+                              "/unanim/earn?collateral=WWBTC&action=claim"
                             )
                           }
                         />

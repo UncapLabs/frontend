@@ -12,7 +12,7 @@ export interface StabilityPoolDataQuery {
 export interface UseStabilityPoolDataResult {
   // UBTC: StabilityPoolDataQuery;
   // GBTC: StabilityPoolDataQuery;
-  WMWBTC: StabilityPoolDataQuery;
+  WWBTC: StabilityPoolDataQuery;
 }
 
 export function useStabilityPoolData(): UseStabilityPoolDataResult {
@@ -48,14 +48,14 @@ export function useStabilityPoolData(): UseStabilityPoolDataResult {
 
   const wmwbtcTotalDepositsQuery = useQuery({
     ...trpc.stabilityPoolRouter.getTotalDeposits.queryOptions({
-      collateralType: "WMWBTC",
+      collateralType: "WWBTC",
     }),
     refetchInterval: 30000,
   });
 
   const wmwbtcAprQuery = useQuery({
     ...trpc.stabilityPoolRouter.getPoolApr.queryOptions({
-      collateralType: "WMWBTC",
+      collateralType: "WWBTC",
     }),
     refetchInterval: 30000,
   });
@@ -71,7 +71,7 @@ export function useStabilityPoolData(): UseStabilityPoolDataResult {
     //   apr: gbtcAprQuery.data,
     //   isLoading: gbtcTotalDepositsQuery.isLoading || gbtcAprQuery.isLoading,
     // },
-    WMWBTC: {
+    WWBTC: {
       totalDeposits: wmwbtcTotalDepositsQuery.data,
       apr: wmwbtcAprQuery.data,
       isLoading: wmwbtcTotalDepositsQuery.isLoading || wmwbtcAprQuery.isLoading,

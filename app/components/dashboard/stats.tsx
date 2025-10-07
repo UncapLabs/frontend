@@ -477,13 +477,13 @@ export default function Stats() {
   const interestRateData = {
     // UBTC: useAverageInterestRate(COLLATERALS.UBTC.branchId),
     // GBTC: useAverageInterestRate(COLLATERALS.GBTC.branchId),
-    WMWBTC: useAverageInterestRate(COLLATERALS.WMWBTC.branchId),
+    WWBTC: useAverageInterestRate(COLLATERALS.WWBTC.branchId),
   };
 
   const visualizationData = {
     // UBTC: useInterestRateVisualizationData(COLLATERALS.UBTC.branchId),
     // GBTC: useInterestRateVisualizationData(COLLATERALS.GBTC.branchId),
-    WMWBTC: useInterestRateVisualizationData(COLLATERALS.WMWBTC.branchId),
+    WWBTC: useInterestRateVisualizationData(COLLATERALS.WWBTC.branchId),
   };
 
   const stabilityPoolData = useStabilityPoolData();

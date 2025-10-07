@@ -1,5 +1,5 @@
 // Import deployment configuration
-import deploymentData from "./deployment_addresses.json";
+import deploymentData from "./deployment_addresses";
 import type { Address } from "@starknet-react/chains";
 import * as z from "zod";
 
@@ -11,4 +11,4 @@ export const USDU_ADDRESS = deploymentData.USDU as Address;
 export const GAS_TOKEN_ADDRESS = deploymentData.gasToken as Address;
 
 // Zod schema for CollateralId validation (used in tRPC routers)
-export const CollateralTypeSchema = z.enum(["WMWBTC"]); // "UBTC", "GBTC"
+export const CollateralTypeSchema = z.enum(["WWBTC"]); // "UBTC", "GBTC"

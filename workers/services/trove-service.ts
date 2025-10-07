@@ -447,7 +447,7 @@ export async function getCollateralSurplus(
 ): Promise<{
   // UBTC: Big;
   // GBTC: Big;
-  WMWBTC: Big;
+  WWBTC: Big;
 }> {
   try {
     // Fetch surplus for all collateral types in parallel
@@ -458,28 +458,28 @@ export async function getCollateralSurplus(
     //     contractRead.collSurplusPool.getCollateral(
     //       provider,
     //       borrower,
-    //       "WMWBTC"
+    //       "WWBTC"
     //     ),
     //   ]);
 
     const wmwbtcSurplusRaw = await contractRead.collSurplusPool.getCollateral(
       provider,
       borrower,
-      "WMWBTC"
+      "WWBTC"
     );
 
     // Convert from blockchain integers to human-readable Big decimals
     return {
       // UBTC: bigintToBig(ubtcSurplusRaw, COLLATERALS.UBTC.decimals),
       // GBTC: bigintToBig(gbtcSurplusRaw, COLLATERALS.GBTC.decimals),
-      WMWBTC: bigintToBig(wmwbtcSurplusRaw, COLLATERALS.WMWBTC.decimals),
+      WWBTC: bigintToBig(wmwbtcSurplusRaw, COLLATERALS.WWBTC.decimals),
     };
   } catch (error) {
     console.error(`Error fetching collateral surplus for ${borrower}:`, error);
     return {
       // UBTC: new Big(0),
       // GBTC: new Big(0),
-      WMWBTC: new Big(0),
+      WWBTC: new Big(0),
     };
   }
 }

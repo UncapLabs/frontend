@@ -24,7 +24,7 @@ function Earn() {
   ) as [ActionType, (value: ActionType | null) => void];
   const [selectedCollateral] = useQueryState(
     "collateral",
-    parseAsString.withDefault("WMWBTC")
+    parseAsString.withDefault("WWBTC")
   ) as [CollateralId, (value: CollateralId | null) => void];
   const [claimRewards, setClaimRewards] = useQueryState(
     "claim",
@@ -159,6 +159,7 @@ export default Earn;
 export function meta(args: Route.MetaArgs) {
   return createMeta(args, {
     title: "Uncap - Earn yield on your stablecoins",
-    description: "Earn sustainable yield on your stablecoins with Uncap Finance",
+    description:
+      "Earn sustainable yield on your stablecoins with Uncap Finance",
   });
 }

@@ -20,6 +20,9 @@
 	"env": {
 		"dev": {
 		// services binding for local development
+		},
+		"production": {
+		// production environment for local testing
 		}
   	},
 	/**
