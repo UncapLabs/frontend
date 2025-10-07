@@ -8,7 +8,7 @@
     "deploy": "pnpm run build && wrangler deploy",
     "dev": "CLOUDFLARE_ENV=dev react-router dev",
     "preview": "pnpm run build && vite preview",
-    "preview:prod": "pnpm run build && CLOUDFLARE_ENV=production vite preview",
+    "preview:prod": "CLOUDFLARE_ENV=production pnpm run build && CLOUDFLARE_ENV=production vite preview",
     "typecheck": "pnpm run cf-typegen && react-router typegen && tsc -b",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

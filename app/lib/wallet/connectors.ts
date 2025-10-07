@@ -5,10 +5,10 @@ import {
 } from "starknetkit/braavosMobile";
 import { constants } from "starknet";
 
-const CHAIN_ID =
-  import.meta.env.VITE_CHAIN_ID === constants.NetworkName.SN_MAIN
-    ? constants.NetworkName.SN_MAIN
-    : constants.NetworkName.SN_SEPOLIA;
+// const CHAIN_ID =
+//   import.meta.env.VITE_CHAIN_ID === constants.NetworkName.SN_MAIN
+//     ? constants.NetworkName.SN_MAIN
+//     : constants.NetworkName.SN_SEPOLIA;
 
 const isMobileDevice = () => {
   if (typeof window === "undefined") {

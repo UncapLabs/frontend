@@ -46,14 +46,14 @@ export function useStabilityPoolData(): UseStabilityPoolDataResult {
   //   refetchInterval: 30000,
   // });
 
-  const wmwbtcTotalDepositsQuery = useQuery({
+  const wwbtcTotalDepositsQuery = useQuery({
     ...trpc.stabilityPoolRouter.getTotalDeposits.queryOptions({
       collateralType: "WWBTC",
     }),
     refetchInterval: 30000,
   });
 
-  const wmwbtcAprQuery = useQuery({
+  const wwbtcAprQuery = useQuery({
     ...trpc.stabilityPoolRouter.getPoolApr.queryOptions({
       collateralType: "WWBTC",
     }),
@@ -72,9 +72,9 @@ export function useStabilityPoolData(): UseStabilityPoolDataResult {
     //   isLoading: gbtcTotalDepositsQuery.isLoading || gbtcAprQuery.isLoading,
     // },
     WWBTC: {
-      totalDeposits: wmwbtcTotalDepositsQuery.data,
-      apr: wmwbtcAprQuery.data,
-      isLoading: wmwbtcTotalDepositsQuery.isLoading || wmwbtcAprQuery.isLoading,
+      totalDeposits: wwbtcTotalDepositsQuery.data,
+      apr: wwbtcAprQuery.data,
+      isLoading: wwbtcTotalDepositsQuery.isLoading || wwbtcAprQuery.isLoading,
     },
   };
 }

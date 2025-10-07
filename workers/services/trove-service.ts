@@ -462,7 +462,7 @@ export async function getCollateralSurplus(
     //     ),
     //   ]);
 
-    const wmwbtcSurplusRaw = await contractRead.collSurplusPool.getCollateral(
+    const wwbtcSurplusRaw = await contractRead.collSurplusPool.getCollateral(
       provider,
       borrower,
       "WWBTC"
@@ -472,7 +472,7 @@ export async function getCollateralSurplus(
     return {
       // UBTC: bigintToBig(ubtcSurplusRaw, COLLATERALS.UBTC.decimals),
       // GBTC: bigintToBig(gbtcSurplusRaw, COLLATERALS.GBTC.decimals),
-      WWBTC: bigintToBig(wmwbtcSurplusRaw, COLLATERALS.WWBTC.decimals),
+      WWBTC: bigintToBig(wwbtcSurplusRaw, COLLATERALS.WWBTC.decimals),
     };
   } catch (error) {
     console.error(`Error fetching collateral surplus for ${borrower}:`, error);

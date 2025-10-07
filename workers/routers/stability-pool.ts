@@ -32,7 +32,7 @@ export const stabilityPoolRouter = router({
       //   fetchPoolPosition(provider, userAddress, "WWBTC"),
       // ]);
 
-      const wmwbtcPosition = await fetchPoolPosition(
+      const wwbtcPosition = await fetchPoolPosition(
         provider,
         userAddress,
         "WWBTC"
@@ -40,7 +40,7 @@ export const stabilityPoolRouter = router({
       return {
         // UBTC: ubtcPosition,
         // GBTC: gbtcPosition,
-        WWBTC: wmwbtcPosition,
+        WWBTC: wwbtcPosition,
       };
     }),
   getTotalDeposits: publicProcedure
