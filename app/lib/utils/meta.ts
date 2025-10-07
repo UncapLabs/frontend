@@ -1,9 +1,5 @@
 import type { MetaDescriptor } from "react-router";
 
-type MetaArgs = {
-  matches: Array<{ meta?: MetaDescriptor[] }>;
-};
-
 type PageMeta = {
   title: string;
   description: string;
@@ -14,10 +10,12 @@ type PageMeta = {
  * Only overrides title and description tags
  */
 export function createMeta(
-  { matches }: MetaArgs,
+  { matches }: { matches: Array<{ meta?: MetaDescriptor[] } | undefined> },
   pageMeta: PageMeta
 ): MetaDescriptor[] {
-  const parentMeta = matches.flatMap((match) => match.meta ?? []);
+  const parentMeta = matches
+    .filter((match) => match !== undefined)
+    .flatMap((match) => match.meta ?? []);
 
   // Filter out tags we want to override
   const preservedMeta = parentMeta.filter(

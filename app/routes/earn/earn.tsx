@@ -9,6 +9,8 @@ import { useQueryState, parseAsString, parseAsBoolean } from "nuqs";
 import { DepositFlow } from "~/components/earn/deposit-flow";
 import { WithdrawFlow } from "~/components/earn/withdraw-flow";
 import { ClaimFlow } from "~/components/earn/claim-flow";
+import { createMeta } from "~/lib/utils/meta";
+import type { Route } from "./+types/earn";
 
 type ActionType = "deposit" | "withdraw" | "claim";
 
@@ -154,12 +156,9 @@ function Earn() {
 
 export default Earn;
 
-export function meta() {
-  return [
-    { title: "Uncap - Earn yield on your stablecoins" },
-    {
-      name: "description",
-      content: "Earn sustainable yield on your stablecoins with Uncap Finance",
-    },
-  ];
+export function meta(args: Route.MetaArgs) {
+  return createMeta(args, {
+    title: "Uncap - Earn yield on your stablecoins",
+    description: "Earn sustainable yield on your stablecoins with Uncap Finance",
+  });
 }

@@ -30,6 +30,7 @@ import { useFetchPrices } from "~/hooks/use-fetch-prices";
 import { Skeleton } from "~/components/ui/skeleton";
 import Big from "big.js";
 import { bigintToBig } from "~/lib/decimal";
+import { createMeta } from "~/lib/utils/meta";
 
 function ClosePosition() {
   const { address } = useAccount();
@@ -487,12 +488,9 @@ function ClosePosition() {
 
 export default ClosePosition;
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "Uncap - Close position" },
-    {
-      name: "description",
-      content: "Close your USDU borrowing position with Uncap",
-    },
-  ];
+export function meta(args: Route.MetaArgs) {
+  return createMeta(args, {
+    title: "Uncap - Close position",
+    description: "Close your USDU borrowing position with Uncap",
+  });
 }

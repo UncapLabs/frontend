@@ -36,6 +36,7 @@ import { TOKENS, getCollateralByBranchId } from "~/lib/collateral";
 import Big from "big.js";
 import { bigintToBig } from "~/lib/decimal";
 import { getBalanceDecimals } from "~/lib/collateral/wrapping";
+import { createMeta } from "~/lib/utils/meta";
 
 // Helper component for action toggle buttons
 const ActionToggle = ({
@@ -1014,12 +1015,9 @@ function UpdatePosition() {
 
 export default UpdatePosition;
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "Uncap - Update position" },
-    {
-      name: "description",
-      content: "Update your BTC borrowing position with Uncap",
-    },
-  ];
+export function meta(args: Route.MetaArgs) {
+  return createMeta(args, {
+    title: "Uncap - Update position",
+    description: "Update your BTC borrowing position with Uncap",
+  });
 }

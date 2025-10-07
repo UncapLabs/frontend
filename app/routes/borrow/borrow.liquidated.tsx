@@ -2,6 +2,7 @@ import { AlertTriangle } from "lucide-react";
 import type { Route } from "./+types/borrow.liquidated";
 import { CollateralSurplusCard } from "~/components/borrow/collateral-surplus-card";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { createMeta } from "~/lib/utils/meta";
 
 function LiquidatedPositionsPage() {
   return (
@@ -124,13 +125,10 @@ function LiquidatedPositionsPage() {
 
 export default LiquidatedPositionsPage;
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "Uncap - Liquidated position" },
-    {
-      name: "description",
-      content:
-        "Information about your liquidated positions and possible collateral surplus",
-    },
-  ];
+export function meta(args: Route.MetaArgs) {
+  return createMeta(args, {
+    title: "Uncap - Liquidated position",
+    description:
+      "Information about your liquidated positions and possible collateral surplus",
+  });
 }
