@@ -16,21 +16,14 @@ export const positionsRouter = router({
         userAddress: z.string(),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const { userAddress } = input;
 
-      if (!process.env.NODE_URL) {
-        throw new Error("RPC node URL not configured");
-      }
-
-      const provider = new RpcProvider({
-        nodeUrl: process.env.NODE_URL,
-      });
+      const provider = new RpcProvider({ nodeUrl: ctx.env.NODE_URL });
 
       try {
         // Setup GraphQL client
-        const graphqlEndpoint =
-          process.env.GRAPHQL_ENDPOINT || "http://localhost:3000/graphql";
+        const graphqlEndpoint = ctx.env.GRAPHQL_ENDPOINT;
         const graphqlClient = createGraphQLClient(graphqlEndpoint);
 
         const { positions, errors } = await fetchLoansByAccount(
@@ -90,20 +83,13 @@ export const positionsRouter = router({
         troveId: z.string(),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const { troveId } = input;
 
-      if (!process.env.NODE_URL) {
-        throw new Error("RPC node URL not configured");
-      }
-
-      const provider = new RpcProvider({
-        nodeUrl: process.env.NODE_URL,
-      });
+      const provider = new RpcProvider({ nodeUrl: ctx.env.NODE_URL });
 
       try {
-        const graphqlEndpoint =
-          process.env.GRAPHQL_ENDPOINT || "http://localhost:3000/graphql";
+        const graphqlEndpoint = ctx.env.GRAPHQL_ENDPOINT;
         const graphqlClient = createGraphQLClient(graphqlEndpoint);
 
         const position = await fetchPositionById(
@@ -125,16 +111,10 @@ export const positionsRouter = router({
         borrower: z.string(),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const { borrower } = input;
 
-      if (!process.env.NODE_URL) {
-        throw new Error("RPC node URL not configured");
-      }
-
-      const provider = new RpcProvider({
-        nodeUrl: process.env.NODE_URL,
-      });
+      const provider = new RpcProvider({ nodeUrl: ctx.env.NODE_URL });
 
       try {
         const surplus = await getCollateralSurplus(provider, borrower);

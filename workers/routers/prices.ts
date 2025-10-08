@@ -2,7 +2,7 @@ import { publicProcedure, router } from "../trpc";
 import { CollateralIdSchema, getBitcoinprice } from "workers/services/utils";
 import * as z from "zod";
 import { bigintToBig } from "~/lib/decimal";
-
+import { RpcProvider } from "starknet";
 import Big from "big.js";
 
 export const priceRouter = router({
@@ -12,8 +12,9 @@ export const priceRouter = router({
         collateralType: CollateralIdSchema,
       })
     )
-    .query(async ({ input }) => {
-      const price = await getBitcoinprice(input.collateralType);
+    .query(async ({ input, ctx }) => {
+      const provider = new RpcProvider({ nodeUrl: ctx.env.NODE_URL });
+      const price = await getBitcoinprice(provider, input.collateralType);
       return {
         price: bigintToBig(price, 18),
       };

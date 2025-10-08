@@ -16,7 +16,6 @@ import {
   STABILITY_POOL_ABI,
   USDU_ABI,
   COLLATERAL_WRAPPER_ABI,
-  PRICE_FEED_MOCK_ABI,
 } from ".";
 
 /**
@@ -323,7 +322,7 @@ export const contractCall = {
     fetchPrice: (collateralType: CollateralId) => {
       const addresses = getCollateralAddresses(collateralType);
       const contract = new Contract({
-        abi: PRICE_FEED_MOCK_ABI,
+        abi: PRICE_FEED_ABI,
         address: addresses.priceFeed,
       });
       return contract.populate("get_price", []);

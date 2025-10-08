@@ -11,6 +11,12 @@ app.use(
   "/trpc/*",
   trpcServer({
     router: appRouter,
+    createContext: (_opts, c) => {
+      return {
+        env: c.env,
+        executionCtx: c.executionCtx,
+      };
+    },
   })
 );
 

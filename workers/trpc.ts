@@ -1,6 +1,4 @@
 import { initTRPC } from "@trpc/server";
-import type { Bindings } from "hono/types";
-import type { RpcProvider } from "starknet";
 import superjson from "superjson";
 import Big from "big.js";
 
@@ -14,18 +12,10 @@ superjson.registerCustom<Big, string>(
   "big.js"
 );
 
-export interface CloudflareBindings extends Bindings {
-  VALUE_FROM_CLOUDFLARE: string;
-  ASSETS: Fetcher;
-  // Need to add other specific environment variables as needed
-}
-
-// Define the shape of our tRPC context.
+// Define the shape of our tRPC context - uses Env from worker-configuration.d.ts
 export type HonoContext = {
-  env: CloudflareBindings;
+  env: Env;
   executionCtx: ExecutionContext;
-  starknetProvider: RpcProvider;
-  // honoReq: import(\'hono\').Context[\'req\']; // could also include the raw Hono request if needed
 };
 
 // Initialize tRPC with the defined context type and superjson transformer

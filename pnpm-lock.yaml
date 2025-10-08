@@ -144,7 +144,7 @@ importers:
         specifier: ^2.0.3
         version: 2.0.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       starknet:
-        specifier: ^8.0.0
+        specifier: ^8.5.5
         version: 8.5.5
       starknetkit:
         specifier: ^3.2.0

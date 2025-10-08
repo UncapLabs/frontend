@@ -15,10 +15,8 @@ export const feesRouter = router({
         interestRate: z.string(), // BigInt as string for JSON serialization
       })
     )
-    .query(async ({ input }) => {
-      const provider = new RpcProvider({
-        nodeUrl: process.env.NODE_URL,
-      });
+    .query(async ({ input, ctx }) => {
+      const provider = new RpcProvider({ nodeUrl: ctx.env.NODE_URL });
 
       try {
         // Convert string inputs back to bigints
@@ -51,10 +49,8 @@ export const feesRouter = router({
         debtIncrease: z.string(), // BigInt as string for JSON serialization
       })
     )
-    .query(async ({ input }) => {
-      const provider = new RpcProvider({
-        nodeUrl: process.env.NODE_URL,
-      });
+    .query(async ({ input, ctx }) => {
+      const provider = new RpcProvider({ nodeUrl: ctx.env.NODE_URL });
 
       try {
         // Convert string inputs back to bigints

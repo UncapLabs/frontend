@@ -11,10 +11,6 @@ import {
   calculateStabilityPoolAPR,
 } from "workers/services/stability-pool";
 
-const provider = new RpcProvider({
-  nodeUrl: process.env.NODE_URL,
-});
-
 export const stabilityPoolRouter = router({
   getAllPositions: publicProcedure
     .input(
@@ -22,8 +18,9 @@ export const stabilityPoolRouter = router({
         userAddress: z.string(),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const { userAddress } = input;
+      const provider = new RpcProvider({ nodeUrl: ctx.env.NODE_URL });
 
       // Fetch positions for all collateral types in parallel
       // const [ubtcPosition, gbtcPosition, wmwbtcPosition] = await Promise.all([
@@ -49,8 +46,9 @@ export const stabilityPoolRouter = router({
         collateralType: CollateralTypeSchema,
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const { collateralType } = input;
+      const provider = new RpcProvider({ nodeUrl: ctx.env.NODE_URL });
 
       try {
         const totalDeposits = await contractRead.stabilityPool.getTotalDeposits(
@@ -73,8 +71,9 @@ export const stabilityPoolRouter = router({
         collateralType: CollateralTypeSchema,
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const { collateralType } = input;
+      const provider = new RpcProvider({ nodeUrl: ctx.env.NODE_URL });
       return calculateStabilityPoolAPR(provider, collateralType);
     }),
 });

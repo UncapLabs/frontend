@@ -16,14 +16,13 @@ export const branchRouter = router({
         branchId: CollateralTypeSchema,
       })
     )
-    .query(async ({ input }) => {
-      const provider = new RpcProvider({
-        nodeUrl: process.env.NODE_URL,
-      });
+    .query(async ({ input, ctx }) => {
+      const provider = new RpcProvider({ nodeUrl: ctx.env.NODE_URL });
 
       try {
         // Get current price
         const priceResult = await getBitcoinprice(
+          provider,
           input.branchId as CollateralType
         );
         const priceBig = bigintToBig(priceResult, 18);
