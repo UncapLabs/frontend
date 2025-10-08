@@ -31,10 +31,17 @@ export const getBitcoinprice = async (collateralId: CollateralId = "WWBTC") => {
   });
 
   console.log("[getBitcoinprice] Calling get_price on", collateral.addresses.priceFeed);
-  const result = await PriceFeedContract.get_price();
-  console.log("[getBitcoinprice] Got result:", result, "typeof:", typeof result);
 
-  return result;
+  try {
+    const result = await PriceFeedContract.get_price();
+    console.log("[getBitcoinprice] Got result:", result, "typeof:", typeof result);
+    return result;
+  } catch (error) {
+    console.error("[getBitcoinprice] Contract call failed:", error);
+    console.error("[getBitcoinprice] Error message:", error instanceof Error ? error.message : String(error));
+    console.error("[getBitcoinprice] Error stack:", error instanceof Error ? error.stack : "no stack");
+    throw new Error(`Failed to get Bitcoin price: ${error instanceof Error ? error.message : String(error)}`);
+  }
 };
 
 // Helper functions for prefixed trove IDs
