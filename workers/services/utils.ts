@@ -10,8 +10,16 @@ type BranchId = string; // "0" for WWBTC, "1" for UBTC, "2" for GBTC
 export const CollateralIdSchema = z.enum(["WWBTC"]); //, "UBTC", "GBTC"]);
 
 export const getBitcoinprice = async (collateralId: CollateralId = "WWBTC") => {
+  const nodeUrl = process.env.NODE_URL;
+
+  if (!nodeUrl) {
+    throw new Error("NODE_URL environment variable not set");
+  }
+
+  console.log("[getBitcoinprice] Creating provider for", collateralId);
+
   const myProvider = new RpcProvider({
-    nodeUrl: process.env.NODE_URL,
+    nodeUrl,
   });
 
   // Get the price feed for the specified collateral
@@ -22,7 +30,9 @@ export const getBitcoinprice = async (collateralId: CollateralId = "WWBTC") => {
     providerOrAccount: myProvider,
   });
 
+  console.log("[getBitcoinprice] Calling get_price on", collateral.addresses.priceFeed);
   const result = await PriceFeedContract.get_price();
+  console.log("[getBitcoinprice] Got result:", result, "typeof:", typeof result);
 
   return result;
 };
