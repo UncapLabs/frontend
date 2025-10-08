@@ -21,11 +21,9 @@ export const getBitcoinprice = async (
     providerOrAccount: provider,
   });
 
-  // Real PriceFeed returns (u256, bool) tuple
   const result = await PriceFeedContract.get_price();
 
-  // Extract price from tuple: [price, isValid]
-  return result[0];
+  return result;
 };
 
 // Helper functions for prefixed trove IDs

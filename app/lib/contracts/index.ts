@@ -5,7 +5,7 @@ import AddressesRegistryAbi from "./abis/AddressesRegistry.json";
 import BorrowerOperationsAbi from "./abis/BorrowerOperations.json";
 import CollSurplusPoolAbi from "./abis/CollSurplusPool.json";
 import HintHelpersAbi from "./abis/HintHelpers.json";
-import PriceFeedAbi from "./abis/PriceFeed.json";
+import PriceFeedAbi from "./abis/WBTCPriceFeed.json";
 import StabilityPoolAbi from "./abis/StabilityPool.json";
 import TroveManagerAbi from "./abis/TroveManager.json";
 import UBTCAbi from "./abis/UBTC.json";
