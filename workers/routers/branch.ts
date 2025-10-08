@@ -21,22 +21,22 @@ export const branchRouter = router({
 
       try {
         // Get current price
-        const priceResult = await getBitcoinprice(
-          provider,
-          input.branchId as CollateralType
-        );
+        const priceResult = await getBitcoinprice(provider, input.branchId);
+        console.log("priceResult", priceResult);
         const priceBig = bigintToBig(priceResult, 18);
 
         // Get branch data
         const { totalCollateral, totalDebt } =
           await contractRead.troveManager.getBranchTCR(
             provider,
-            input.branchId as CollateralType
+            input.branchId
           );
+        console.log("totalCollateral", totalCollateral);
+        console.log("totalDebt", totalDebt);
 
         const ccrResult = await contractRead.addressesRegistry.getCcr(
           provider,
-          input.branchId as CollateralType
+          input.branchId
         );
 
         // Convert to Big for precise calculations

@@ -315,20 +315,6 @@ export const contractCall = {
     },
   },
 
-  priceFeed: {
-    /**
-     * Fetch the current BTC price
-     */
-    fetchPrice: (collateralType: CollateralId) => {
-      const addresses = getCollateralAddresses(collateralType);
-      const contract = new Contract({
-        abi: PRICE_FEED_ABI,
-        address: addresses.priceFeed,
-      });
-      return contract.populate("get_price", []);
-    },
-  },
-
   troveManager: {
     /**
      * Get the latest trove data
@@ -493,11 +479,9 @@ export const contractRead = {
         providerOrAccount: provider,
       });
 
-      // Fetch branch totals
-      const [entireColl, entireDebt] = await Promise.all([
-        contract.call("get_entire_branch_coll", []),
-        contract.call("get_entire_branch_debt", []),
-      ]);
+      // Fetch branch totals sequentially to avoid starknet.js concurrency bug
+      const entireColl = await contract.call("get_entire_branch_coll", []);
+      const entireDebt = await contract.call("get_entire_branch_debt", []);
 
       return {
         totalCollateral: entireColl as bigint,
@@ -634,17 +618,14 @@ export const contractRead = {
         providerOrAccount: provider,
       });
 
-      // Fetch all data in parallel
+      // Fetch all data sequentially to avoid starknet.js concurrency bug
       // Use get_depositor_yield_gain_with_pending to include pending rewards
       // CRITICAL: Must fetch both collateralGain (pending) and stashedColl (from previous compounds)
-      const [deposit, usduGain, collateralGain, stashedColl, totalDeposits] =
-        await Promise.all([
-          contract.call("get_deposits", [userAddress]),
-          contract.call("get_depositor_yield_gain_with_pending", [userAddress]),
-          contract.call("get_depositor_coll_gain", [userAddress]),
-          contract.call("get_stashed_coll", [userAddress]),
-          contract.call("get_total_usdu_deposits", []),
-        ]);
+      const deposit = await contract.call("get_deposits", [userAddress]);
+      const usduGain = await contract.call("get_depositor_yield_gain_with_pending", [userAddress]);
+      const collateralGain = await contract.call("get_depositor_coll_gain", [userAddress]);
+      const stashedColl = await contract.call("get_stashed_coll", [userAddress]);
+      const totalDeposits = await contract.call("get_total_usdu_deposits", []);
 
       return {
         deposit: deposit as bigint,
