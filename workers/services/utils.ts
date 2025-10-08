@@ -22,7 +22,7 @@ export const getBitcoinprice = async (
   });
 
   // Real PriceFeed returns (u256, bool) tuple
-  const result = await PriceFeedContract.fetch_price();
+  const result = await PriceFeedContract.get_price();
 
   // Extract price from tuple: [price, isValid]
   return result[0];
