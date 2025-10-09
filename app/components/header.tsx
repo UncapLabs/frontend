@@ -121,15 +121,15 @@ function NavLink({
       <Link
         to={href}
         onClick={onClick}
-        className={`font-sora font-medium text-xs leading-3 flex items-center gap-1.5
+        className={`font-sora font-medium flex items-center gap-1.5
         ${
           isMobile
-            ? `block px-4 py-3 text-base rounded-lg ${
+            ? `block px-4 py-4 text-lg leading-6 rounded-lg ${
                 isActive
                   ? "bg-gray-100 text-amber-500"
                   : "text-gray-800 hover:bg-gray-50 hover:text-amber-500"
               }`
-            : `${
+            : `text-sm leading-4 ${
                 isActive
                   ? "text-amber-500 [&_path]:fill-[#FF9300]"
                   : "text-gray-800 group-hover:text-amber-500 [&_path]:fill-[#242424] group-hover:[&_path]:fill-[#FF9300]"
@@ -204,7 +204,7 @@ function Header() {
                   size="icon"
                   className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
                 >
-                  <MenuIcon className="h-5 w-5" />
+                  <MenuIcon className="size-5" />
                   <span className="sr-only">Open menu</span>
                 </Button>
               </DrawerTrigger>

@@ -131,12 +131,12 @@ export default function Dashboard() {
         {/* Main Layout */}
         <div className="flex flex-col lg:flex-row gap-5">
           {/* Left Section: Stats */}
-          <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px]">
+          <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px] order-2 lg:order-none">
             <Stats />
           </div>
 
           {/* Right Section: Positions */}
-          <div className="flex-1 lg:flex-[2]">
+          <div className="flex-1 lg:flex-[2] order-1 lg:order-none">
             {/* Error Alert for partial data */}
             {partialDataAvailable && (
               <Alert variant="warning" className="mb-6">
