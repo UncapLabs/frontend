@@ -4,7 +4,7 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "bitusd-app",
+	"name": "uncap-staging",
 	"main": "./workers/app.ts",
 	"compatibility_date": "2025-06-25",
 	"compatibility_flags": [
