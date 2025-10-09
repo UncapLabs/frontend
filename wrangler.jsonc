@@ -18,11 +18,11 @@
   	  { "pattern": "uncap.finance", "custom_domain": true }
   	],
 	"env": {
-    "dev": {},
+    // "dev": {},
     "staging": {
       "name": "uncap-staging",
       "routes": [
-        { "pattern": "staging.uncap.finance/*", "custom_domain": true }
+        { "pattern": "staging.uncap.finance", "custom_domain": true }
       ],
       "vars": {
         "ENVIRONMENT": "staging"
