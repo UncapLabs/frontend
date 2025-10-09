@@ -22,6 +22,14 @@ export default function Footer() {
           <Link className="hover:text-white/90" to="/docs/">
             Docs
           </Link>
+          <a
+            className="hover:text-white/90"
+            href="https://dune.com/pscott/uncap-protocol"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Analytics
+          </a>
           <Link className="hover:text-white/90" to="/terms-and-conditions">
             Terms & conditions
           </Link>
