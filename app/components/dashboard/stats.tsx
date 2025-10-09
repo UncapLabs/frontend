@@ -467,6 +467,168 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
             ))}
           </div>
         </div>
+
+        {/* Separator */}
+        <div className="my-8 h-px bg-[#484848] md:hidden lg:block lg:my-6" />
+
+        {/* Provide Liquidity Section */}
+        <div className="mb-4 md:mb-0">
+          <div className="mb-4">
+            <div className="flex items-center gap-2 mb-4">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 13 13"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M6.5 0.5C9.81371 0.5 12.5 3.18629 12.5 6.5C12.5 9.81371 9.81371 12.5 6.5 12.5C3.18629 12.5 0.5 9.81371 0.5 6.5C0.5 3.18629 3.18629 0.5 6.5 0.5ZM6.5 1.5C3.73858 1.5 1.5 3.73858 1.5 6.5C1.5 9.26142 3.73858 11.5 6.5 11.5C9.26142 11.5 11.5 9.26142 11.5 6.5C11.5 3.73858 9.26142 1.5 6.5 1.5ZM6.5 3C6.77614 3 7 3.22386 7 3.5V6.293L8.854 8.146C9.04926 8.34127 9.04926 8.65873 8.854 8.854C8.65873 9.04926 8.34127 9.04926 8.146 8.854L6.146 6.854C6.05211 6.76011 6 6.63261 6 6.5V3.5C6 3.22386 6.22386 3 6.5 3Z"
+                  fill="white"
+                />
+              </svg>
+              <h3 className="text-white text-base font-medium font-sora leading-none">
+                Provide Liquidity
+              </h3>
+            </div>
+            <p className="text-xs text-[#B2B2B2]">
+              Provide liquidity to the USDU/USDC pool on Ekubo
+            </p>
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden lg:block">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-zinc-800 hover:bg-transparent">
+                  <TableHead className="text-[#B2B2B2] text-[7px] leading-[7px] font-normal font-sora uppercase h-6 px-0">
+                    Pool
+                  </TableHead>
+                  <TableHead className="text-[#B2B2B2] text-[7px] leading-[7px] font-normal font-sora uppercase h-6 text-right">
+                    Platform
+                  </TableHead>
+                  <TableHead className="text-[#B2B2B2] text-[7px] leading-[7px] font-normal font-sora uppercase h-6 text-right">
+                    Provide
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow className="border-zinc-800 hover:bg-zinc-900/50">
+                  <TableCell className="px-0 py-3">
+                    <div className="flex items-center gap-2">
+                      <div className="flex -space-x-1">
+                        <div className="w-6 h-6 rounded-full overflow-hidden bg-zinc-800 border-2 border-[#242424]">
+                          <img
+                            src="/usdu.png"
+                            alt="USDU"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="w-6 h-6 rounded-full overflow-hidden bg-zinc-800 border-2 border-[#242424]">
+                          <img
+                            src="/usdc.svg"
+                            alt="USDC"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      </div>
+                      <span className="text-white text-sm font-normal font-sora">
+                        USDU/USDC
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-white text-sm font-normal font-sora text-right">
+                    Ekubo
+                  </TableCell>
+                  <TableCell className="text-right pr-0 py-3">
+                    <a
+                      href="https://app.ekubo.org/charts/USDU/USDC"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center px-3 py-1 rounded border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 transition-colors"
+                    >
+                      <svg
+                        width="10"
+                        height="7"
+                        viewBox="0 0 10 7"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M0.66705 4.03044L0.66705 2.9698L7.46995 2.9698L5.75013 1.24999L6.50053 0.500121L9.5 3.50012L6.50053 6.50012L5.75013 5.75025L7.46995 4.03044L0.66705 4.03044Z"
+                          fill="white"
+                        />
+                      </svg>
+                    </a>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Mobile/Tablet Card View */}
+          <div className="lg:hidden space-y-3">
+            <div className="border border-zinc-800 rounded-lg p-4 hover:bg-zinc-900/50 transition-colors">
+              <div className="space-y-3">
+                {/* Header with icons and pool name */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="flex -space-x-2">
+                      <div className="w-8 h-8 rounded-full overflow-hidden bg-zinc-800 border-2 border-[#242424]">
+                        <img
+                          src="/usdu.png"
+                          alt="USDU"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="w-8 h-8 rounded-full overflow-hidden bg-zinc-800 border-2 border-[#242424]">
+                        <img
+                          src="/usdc.svg"
+                          alt="USDC"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
+                    <span className="text-white text-base font-medium font-sora">
+                      USDU/USDC
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-white text-sm font-medium">
+                      Ekubo
+                    </span>
+                  </div>
+                </div>
+
+                {/* Action button */}
+                <div className="pt-3 border-t border-zinc-700">
+                  <a
+                    href="https://app.ekubo.org/charts/USDU/USDC"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 transition-colors"
+                  >
+                    <span className="text-white text-sm font-medium">
+                      Provide Liquidity
+                    </span>
+                    <svg
+                      width="10"
+                      height="7"
+                      viewBox="0 0 10 7"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M0.66705 4.03044L0.66705 2.9698L7.46995 2.9698L5.75013 1.24999L6.50053 0.500121L9.5 3.50012L6.50053 6.50012L5.75013 5.75025L7.46995 4.03044L0.66705 4.03044Z"
+                        fill="white"
+                      />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
