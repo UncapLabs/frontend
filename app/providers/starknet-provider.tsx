@@ -13,7 +13,8 @@ function NetworkChecker() {
   const hasChecked = useRef(false);
 
   // Get the required chain ID from environment variable
-  const requiredChainId = import.meta.env.VITE_CHAIN_ID === constants.StarknetChainId.SN_MAIN
+  const envChainId = import.meta.env.VITE_CHAIN_ID;
+  const requiredChainId = envChainId === "SN_MAIN"
     ? constants.StarknetChainId.SN_MAIN
     : constants.StarknetChainId.SN_SEPOLIA;
 
