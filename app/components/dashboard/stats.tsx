@@ -603,7 +603,7 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                 {/* Action button */}
                 <div className="pt-3 border-t border-zinc-700">
                   <a
-                    href="https://app.ekubo.org/charts/USDU/USDC"
+                    href="https://app.ekubo.org/positions/new?baseCurrency=USDU&quoteCurrency=USDC&tickLower=-27641100&tickUpper=-27621100"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 transition-colors"
