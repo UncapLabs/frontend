@@ -31,7 +31,15 @@ function NetworkChecker() {
 
       const currentChainIdHex = toHexChainid(chainId);
 
+      console.log("Network check:", {
+        currentChainIdHex,
+        requiredChainId,
+        envChainId: import.meta.env.VITE_CHAIN_ID,
+        match: currentChainIdHex === requiredChainId,
+      });
+
       if (currentChainIdHex !== requiredChainId) {
+        console.log("Triggering network switch...");
         // Trigger wallet prompt to switch network
         switchNetwork.requestAsync().catch((error) => {
           console.log("Network switch declined or failed:", error);
