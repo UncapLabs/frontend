@@ -18,13 +18,16 @@
   	  { "pattern": "uncap.finance", "custom_domain": true }
   	],
 	"env": {
-		"dev": {
-		// services binding for local development
-		},
-		"production": {
-		// production environment for local testing
-		}
-  	},
+    "staging": {
+      "name": "uncap-staging",
+      "routes": [
+        { "pattern": "staging.uncap.finance/*", "custom_domain": true }
+      ],
+      "vars": {
+        "ENVIRONMENT": "staging"
+      }
+    }
+  },
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
