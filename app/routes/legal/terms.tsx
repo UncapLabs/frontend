@@ -10,9 +10,6 @@ export async function loader({ context }: Route.LoaderArgs) {
   const caller = createCaller({
     env: context.cloudflare.env,
     executionCtx: context.cloudflare.ctx,
-    starknetProvider: new RpcProvider({
-      nodeUrl: context.cloudflare.env.NODE_URL,
-    }),
   });
 
   try {
@@ -92,9 +89,7 @@ export default function Terms({ loaderData }: Route.ComponentProps) {
                   </ol>
                 ),
                 li: ({ children }) => (
-                  <li className="text-gray-700">
-                    {children}
-                  </li>
+                  <li className="text-gray-700">{children}</li>
                 ),
                 strong: ({ children }) => (
                   <strong className="font-semibold text-[#004BB2]">

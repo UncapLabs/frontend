@@ -29,7 +29,7 @@ function LiquidatedPositionsPage() {
                     Position Liquidated
                   </h3>
                   <p className="text-sm font-sora text-neutral-600">
-                    Your position was liquidated when LTV exceeded 90.91%.
+                    Your position was liquidated when LTV exceeded 86.95%.
                   </p>
                 </div>
               </div>
@@ -40,7 +40,7 @@ function LiquidatedPositionsPage() {
                   Liquidation Threshold
                 </div>
                 <div className="text-2xl font-medium font-sora text-red-900">
-                  90.91% LTV
+                  86.95% LTV
                 </div>
               </div>
 
@@ -89,7 +89,7 @@ function LiquidatedPositionsPage() {
             <CardContent className="space-y-4">
               <p className="text-sm font-sora text-neutral-600">
                 To prevent future liquidations, keep your LTV well below the
-                90.91% threshold.
+                86.95% threshold.
               </p>
 
               <div className="bg-neutral-50 rounded-lg p-3 space-y-2">
