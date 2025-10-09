@@ -44,7 +44,7 @@ export default function WalletNotConnectedCTA() {
           </p>
 
           <Button
-            onClick={() => navigate("/unanim/borrow")}
+            onClick={() => navigate("/borrow")}
             className="bg-white hover:bg-white/90 text-[#242424] px-6 py-4 h-auto rounded-xl font-sora text-xs font-medium inline-flex items-center gap-8"
           >
             Open new position
@@ -145,7 +145,7 @@ export default function WalletNotConnectedCTA() {
           </p>
 
           <Button
-            onClick={() => navigate("/unanim/earn")}
+            onClick={() => navigate("/earn")}
             className="bg-[#006CFF] hover:bg-[#0056CC] text-white px-6 py-4 h-auto rounded-xl font-sora text-xs font-medium inline-flex items-center gap-8"
           >
             Start earning

@@ -873,7 +873,7 @@ function UpdatePosition() {
                         <li>
                           Alternatively, you can{" "}
                           <a
-                            href={`/unanim/borrow/${troveId}/close`}
+                            href={`/borrow/${troveId}/close`}
                             className="underline hover:opacity-80 font-medium"
                           >
                             close your position
@@ -951,7 +951,7 @@ function UpdatePosition() {
                     <>
                       You're withdrawing all your collateral. Consider{" "}
                       <a
-                        href={`/unanim/borrow/${troveId}/close`}
+                        href={`/borrow/${troveId}/close`}
                         className="underline hover:text-amber-900 font-semibold"
                       >
                         closing your position

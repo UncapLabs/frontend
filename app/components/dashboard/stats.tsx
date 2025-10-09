@@ -44,15 +44,15 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
 
   const handleBorrowClick = (collateralAddress?: string) => {
     if (collateralAddress) {
-      navigate(`/unanim/borrow?collateral=${collateralAddress}`);
+      navigate(`/borrow?collateral=${collateralAddress}`);
     }
   };
 
   const handleEarnClick = (collateralParam?: string) => {
     if (collateralParam) {
-      navigate(`/unanim/earn?collateral=${collateralParam}`);
+      navigate(`/earn?collateral=${collateralParam}`);
     } else {
-      navigate("/unanim/earn");
+      navigate("/earn");
     }
   };
 

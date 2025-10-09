@@ -71,21 +71,21 @@ export default function Dashboard() {
   const noPositions = activeTroves.length === 0 && !hasStabilityPoolPositions;
 
   const handleCreateNew = () => {
-    navigate("/unanim/borrow");
+    navigate("/borrow");
   };
 
   const handleUpdatePosition = (troveId: string, collateralAsset: string) => {
     // collateralAsset is already the CollateralType
-    navigate(`/unanim/borrow/${troveId}/update?type=${collateralAsset}`);
+    navigate(`/borrow/${troveId}/update?type=${collateralAsset}`);
   };
 
   const handleClosePosition = (troveId: string, collateralAsset: string) => {
     // collateralAsset is already the CollateralType
-    navigate(`/unanim/borrow/${troveId}/close?type=${collateralAsset}`);
+    navigate(`/borrow/${troveId}/close?type=${collateralAsset}`);
   };
 
   const handleLiquidatedPosition = () => {
-    navigate(`/unanim/borrow/liquidated`);
+    navigate(`/borrow/liquidated`);
   };
 
   return (
@@ -256,7 +256,7 @@ export default function Dashboard() {
                             allStabilityPoolPositions.UBTC.rewards.collateral
                           }
                           usduPrice={usdu?.price}
-                          onManagePosition={() => navigate("/unanim/earn")}
+                          onManagePosition={() => navigate("/earn")}
                         />
                       )} */}
 
@@ -276,7 +276,7 @@ export default function Dashboard() {
                           }
                           usduPrice={usdu?.price}
                           onManagePosition={() =>
-                            navigate("/unanim/earn?collateral=GBTC")
+                            navigate("/earn?collateral=GBTC")
                           }
                         />
                       )} */}
@@ -297,17 +297,13 @@ export default function Dashboard() {
                           }
                           usduPrice={usdu?.price}
                           onManagePosition={() =>
-                            navigate("/unanim/earn?collateral=WWBTC")
+                            navigate("/earn?collateral=WWBTC")
                           }
                           onDepositClick={() =>
-                            navigate(
-                              "/unanim/earn?collateral=WWBTC&action=deposit"
-                            )
+                            navigate("/earn?collateral=WWBTC&action=deposit")
                           }
                           onRewardsClick={() =>
-                            navigate(
-                              "/unanim/earn?collateral=WWBTC&action=claim"
-                            )
+                            navigate("/earn?collateral=WWBTC&action=claim")
                           }
                         />
                       )}

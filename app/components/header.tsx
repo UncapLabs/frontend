@@ -159,18 +159,18 @@ function Header() {
   const navItems = [
     {
       name: "Dashboard",
-      href: "/unanim/dashboard",
+      href: "/",
       icon: <DashboardIcon />,
     },
-    { name: "Borrow", href: "/unanim/borrow", icon: <BorrowIcon /> },
+    { name: "Borrow", href: "/borrow", icon: <BorrowIcon /> },
     {
       name: "Earn",
-      href: "/unanim/earn",
+      href: "/earn",
       icon: <EarnIcon />,
     },
     // {
     //   name: "STRK Rewards",
-    //   href: "/unanim/claim",
+    //   href: "/claim",
     //   icon: <EarnIcon />,
     // },
   ];
@@ -247,7 +247,7 @@ function Header() {
           {/* Center: Logo - hidden on screens smaller than lg */}
           <div className="hidden lg:flex justify-center flex-1 lg:flex-initial">
             <Link
-              to="/unanim/dashboard"
+              to="/"
               className="text-neutral-800 hover:opacity-80 transition-opacity"
             >
               <Logo />
