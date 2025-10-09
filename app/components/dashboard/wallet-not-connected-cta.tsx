@@ -95,23 +95,29 @@ export default function WalletNotConnectedCTA() {
           </p>
 
           <Button
-            onClick={() => navigate("/unanim/borrow")}
+            asChild
             className="bg-[#006CFF] hover:bg-[#0056CC] text-white px-6 py-4 h-auto rounded-xl font-sora text-xs font-medium inline-flex items-center gap-8"
           >
-            Earn incentives
-            <svg
-              width="6"
-              height="9"
-              viewBox="0 0 7 11"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              style={{ width: "6px", height: "9px" }}
+            <a
+              href="https://app.ekubo.org/positions/new?baseCurrency=USDU&quoteCurrency=USDC&tickLower=-27641100&tickUpper=-27621100"
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              <path
-                d="M0.685547 9.21183L4.39714 5.50024L0.685547 1.78865L1.83379 0.648486L6.68555 5.50024L1.83379 10.352L0.685547 9.21183Z"
-                fill="white"
-              />
-            </svg>
+              Earn incentives
+              <svg
+                width="6"
+                height="9"
+                viewBox="0 0 7 11"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                style={{ width: "6px", height: "9px" }}
+              >
+                <path
+                  d="M0.685547 9.21183L4.39714 5.50024L0.685547 1.78865L1.83379 0.648486L6.68555 5.50024L1.83379 10.352L0.685547 9.21183Z"
+                  fill="white"
+                />
+              </svg>
+            </a>
           </Button>
         </div>
       </div>

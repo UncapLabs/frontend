@@ -18,6 +18,7 @@
   	  { "pattern": "uncap.finance", "custom_domain": true }
   	],
 	"env": {
+    "dev": {},
     "staging": {
       "name": "uncap-staging",
       "routes": [
