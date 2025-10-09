@@ -5,6 +5,7 @@ import { StarknetConfig, publicProvider, voyager, useAccount, useWalletRequest }
 import { connectors } from "../lib/wallet/connectors";
 import { TransactionStoreProvider } from "./transaction-provider";
 import { constants } from "starknet";
+import { toHexChainid } from "../lib/utils/chain-id";
 
 // Component that monitors connection and prompts network switch if needed
 function NetworkChecker() {
@@ -28,10 +29,9 @@ function NetworkChecker() {
     if (address && chainId && !hasChecked.current) {
       hasChecked.current = true;
 
-      const currentChainId = BigInt(chainId);
-      const targetChainId = BigInt(requiredChainId);
+      const currentChainIdHex = toHexChainid(chainId);
 
-      if (currentChainId !== targetChainId) {
+      if (currentChainIdHex !== requiredChainId) {
         // Trigger wallet prompt to switch network
         switchNetwork.requestAsync().catch((error) => {
           console.log("Network switch declined or failed:", error);
