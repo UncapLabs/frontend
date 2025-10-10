@@ -348,9 +348,16 @@ export async function fetchLoansByAccount(
 
   const troves = await getIndexedTrovesByAccount(graphqlClient, account);
 
-  // Process troves with individual error handling
+  // Filter to only process active troves - no need to make RPC calls for closed/liquidated positions
+  const activeTroves = troves.filter((trove) => trove.status === "active");
+
+  console.log(
+    `[fetchLoansByAccount] Found ${troves.length} total troves, ${activeTroves.length} active. Skipping RPC calls for ${troves.length - activeTroves.length} non-active troves.`
+  );
+
+  // Process only active troves with individual error handling
   const results = await Promise.allSettled(
-    troves.map(async (trove) => {
+    activeTroves.map(async (trove) => {
       if (!isPrefixedTroveId(trove.id)) {
         console.error(
           `[fetchLoansByAccountEnhanced] Invalid prefixed trove ID: ${trove.id}`
@@ -411,7 +418,7 @@ export async function fetchLoansByAccount(
   });
 
   console.log(
-    `[fetchLoansByAccountEnhanced] Returning ${positions.length} valid positions, ${errors.length} errors`
+    `[fetchLoansByAccount] Returning ${positions.length} active positions (filtered ${troves.length - activeTroves.length} non-active), ${errors.length} errors`
   );
 
   return { positions, errors };

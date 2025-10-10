@@ -2,8 +2,28 @@ import { Hono } from "hono";
 import { trpcServer } from "@hono/trpc-server";
 import { appRouter } from "./router";
 import { createRequestHandler } from "react-router";
+import { getTotalCirculatingSupply } from "./services/supply";
 
 const app = new Hono<{ Bindings: Env }>();
+
+// CoinGecko API integration - Supply endpoint
+app.get("/api/coingecko/supply", async (c) => {
+  try {
+    const totalSupply = await getTotalCirculatingSupply(c.env.NODE_URL);
+
+    console.log("totalSupply", totalSupply);
+
+    // Set CORS headers to allow CoinGecko to access the endpoint
+    c.header("Access-Control-Allow-Origin", "*");
+    c.header("Access-Control-Allow-Methods", "GET");
+    c.header("Cache-Control", "public, max-age=60"); // Cache for 1 minute
+
+    return c.json({ result: totalSupply });
+  } catch (error) {
+    console.error("Error fetching supply for CoinGecko:", error);
+    return c.json({ error: "Failed to fetch supply" }, 500);
+  }
+});
 
 // Add more routes as needed here
 
