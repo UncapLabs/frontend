@@ -129,9 +129,9 @@ export default function Dashboard() {
         </div>
 
         {/* Main Layout */}
-        <div className="flex flex-col lg:flex-row gap-5">
+        <div className="flex flex-col lg:flex-row gap-4 lg:items-stretch">
           {/* Left Section: Stats */}
-          <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px] order-2 lg:order-none">
+          <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px] order-2 lg:order-none flex">
             <Stats />
           </div>
 

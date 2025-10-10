@@ -1,5 +1,9 @@
 import { memo, type ReactNode } from "react";
-import { NumericFormat, type NumberFormatValues } from "react-number-format";
+import {
+  NumericFormat,
+  type NumberFormatValues,
+  type SourceInfo,
+} from "react-number-format";
 import { Label } from "~/components/ui/label";
 import {
   Select,
@@ -77,8 +81,17 @@ export const TokenInput = memo(function TokenInput({
     return value.times(price.price);
   })();
 
-  const handleValueChange = (values: NumberFormatValues) => {
+  const handleValueChange = (
+    values: NumberFormatValues,
+    sourceInfo: SourceInfo
+  ) => {
     if (disabled) return;
+
+    // CRITICAL: Ignore changes triggered by prop updates (not user input)
+    // This preserves full precision when percentage buttons set values with >6 decimals
+    if (sourceInfo.source === "prop") {
+      return;
+    }
 
     // Handle empty input - only set to undefined if truly empty
     if (!values.value || values.value === "") {
@@ -225,7 +238,7 @@ export const TokenInput = memo(function TokenInput({
             placeholder={placeholder}
             inputMode="decimal"
             allowNegative={false}
-            decimalScale={token.decimals}
+            decimalScale={6} // Display max 6 decimals for better UX, but preserve full precision internally
             value={displayValue}
             onValueChange={handleValueChange}
             onBlur={onBlur}

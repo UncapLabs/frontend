@@ -57,9 +57,9 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
   };
 
   return (
-    <div className="bg-[#242424] rounded-lg p-4 md:p-6">
+    <div className="bg-[#242424] rounded-lg p-4 md:p-6 h-full flex flex-col w-full">
       {/* Tablet: Side by side layout */}
-      <div className="md:grid md:grid-cols-2 md:gap-6 lg:block">
+      <div className="md:grid md:grid-cols-2 md:gap-6 lg:block flex-1">
         {/* Borrow Rates Section */}
         <div>
           <div className="mb-4">

@@ -17,8 +17,8 @@ import { TransactionHistoryButton } from "./transaction-history-button";
 function Logo() {
   return (
     <svg
-      width="97"
-      height="20"
+      width="121"
+      height="25"
       viewBox="0 0 97 20"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

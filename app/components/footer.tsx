@@ -19,9 +19,14 @@ export default function Footer() {
           >
             Support
           </a>
-          <Link className="hover:text-white/90" to="/docs/">
+          <a
+            className="hover:text-white/90"
+            href="https://uncap.finance/docs"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Docs
-          </Link>
+          </a>
           <a
             className="hover:text-white/90"
             href="https://dune.com/pscott/uncap-protocol"

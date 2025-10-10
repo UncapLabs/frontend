@@ -28,8 +28,22 @@ export function createMeta(
       !("name" in meta && meta.name === "twitter:description")
   );
 
+  // Deduplicate preserved meta (e.g., twitter:image appears in multiple parent routes)
+  const uniquePreserved = Array.from(
+    new Map(
+      preservedMeta.map((meta) => {
+        const key =
+          "name" in meta && meta.name ? `name:${meta.name}` :
+          "property" in meta && meta.property ? `property:${meta.property}` :
+          "charset" in meta ? "charset" :
+          JSON.stringify(meta);
+        return [key, meta];
+      })
+    ).values()
+  );
+
   return [
-    ...preservedMeta,
+    ...uniquePreserved,
     { title: pageMeta.title },
     { name: "description", content: pageMeta.description },
     { property: "og:title", content: pageMeta.title },
