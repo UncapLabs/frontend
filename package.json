@@ -13,7 +13,11 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "codegen": "graphql-codegen --config codegen.ts",
-    "codegen:watch": "graphql-codegen --config codegen.ts --watch"
+    "codegen:watch": "graphql-codegen --config codegen.ts --watch",
+    "db:generate": "dotenv -e .dev.vars -- npx drizzle-kit generate",
+    "db:migrate:local": "npx wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "npx wrangler d1 migrations apply DB --remote",
+    "db:studio": "dotenv -e .dev.vars -- npx drizzle-kit studio"
   },
   "dependencies": {
     "@graphql-typed-document-node/core": "^3.2.0",
@@ -46,6 +50,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "dnum": "^2.15.0",
+    "drizzle-orm": "^0.44.6",
     "graphql": "^16.11.0",
     "graphql-request": "^7.2.0",
     "hono": "^4.7.8",
@@ -83,6 +88,8 @@
     "@typescript-eslint/eslint-plugin": "^8.36.0",
     "@typescript-eslint/parser": "^8.36.0",
     "babel-plugin-react-compiler": "19.1.0-rc.2",
+    "dotenv-cli": "^10.0.0",
+    "drizzle-kit": "^0.31.5",
     "eslint": "^9.30.1",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "6.0.0-rc1",

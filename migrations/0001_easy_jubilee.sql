@@ -1,0 +1,1 @@
+ALTER TABLE `referrals` ADD `referee_anonymous_name` text NOT NULL;

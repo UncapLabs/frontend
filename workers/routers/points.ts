@@ -1,118 +1,193 @@
-import { publicProcedure, router } from "../trpc";
-import * as z from "zod";
-
-const GRAPHQL_ENDPOINT =
-  process.env.GRAPHQL_ENDPOINT || "http://localhost:3000/graphql";
-
-const getUserPointsQuery = `
-  query GetUserPoints($userAddress: ID!) {
-    user(id: $userAddress) {
-      totalPoints
-      totalRate
-      lastUpdateTime
-    }
-  }
-`;
-
-type UserPointsResponse = {
-  data?: {
-    user?: {
-      totalPoints: string;
-      totalRate: string;
-      lastUpdateTime: string;
-    };
-  };
-  errors?: Array<{ message: string }>;
-};
-
-type PointsResult = {
-  currentPoints: number;
-  earningRate: number;
-};
-
-async function fetchUserFromGraphQL(
-  userAddress: string
-): Promise<UserPointsResponse> {
-  const response = await fetch(GRAPHQL_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      query: getUserPointsQuery,
-      variables: { userAddress },
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`GraphQL request failed: ${response.statusText}`);
-  }
-
-  return response.json();
-}
-
-function calculateCurrentPoints(
-  totalPoints: string,
-  earningRate: string,
-  lastUpdateTime: string
-): PointsResult {
-  const timestampNow = Math.floor(Date.now() / 1000);
-  const timeDelta = timestampNow - parseInt(lastUpdateTime);
-
-  // Convert from 10^18 format to actual values for calculation
-  // earningRate is in points per second * 10^18
-  const ratePerSecond = BigInt(earningRate);
-  const totalPointsBigInt = BigInt(totalPoints);
-
-  // Calculate accumulated points (rate * time)
-  const accumulatedPoints = ratePerSecond * BigInt(timeDelta);
-
-  // Add to total (both are in 10^18 format)
-  const currentPointsBigInt = totalPointsBigInt + accumulatedPoints;
-
-  // Convert to number by dividing by 10^18
-  const currentPoints = Number(currentPointsBigInt) / 1e18;
-  const earningRateNumber = Number(ratePerSecond) / 1e18;
-
-  return {
-    currentPoints,
-    earningRate: earningRateNumber,
-  };
-}
+import { publicProcedure, router } from '../trpc';
+import * as z from 'zod';
+import { generateReferralCode, applyReferralCode, getReferralInfo } from '../services/referral-service';
+import { createDbClient } from '../db/client';
+import { userPoints, userTotalPoints, referralCodes } from '../db/schema';
+import { eq, sql, desc, and } from 'drizzle-orm';
 
 export const pointsRouter = router({
-  getUserPoints: publicProcedure
+  // ==========================================
+  // Points Queries
+  // ==========================================
+
+  getUserPoints: publicProcedure.input(z.object({ userAddress: z.string() })).query(async ({ input, ctx }) => {
+    const db = createDbClient(ctx.env.DB);
+    const normalizedAddress = input.userAddress.toLowerCase();
+
+    // Get weekly breakdown
+    const weeklyPoints = await db
+      .select({
+        weekStart: userPoints.weekStart,
+        seasonNumber: userPoints.seasonNumber,
+        weekNumber: userPoints.weekNumber,
+        basePoints: userPoints.basePoints,
+        referralBonus: userPoints.referralBonus,
+        totalPoints: userPoints.totalPoints,
+        calculatedAt: userPoints.calculatedAt,
+      })
+      .from(userPoints)
+      .where(eq(userPoints.userAddress, normalizedAddress))
+      .orderBy(desc(userPoints.weekStart))
+      .all();
+
+    // Get total points
+    const totals = await db
+      .select()
+      .from(userTotalPoints)
+      .where(eq(userTotalPoints.userAddress, normalizedAddress))
+      .get();
+
+    return {
+      weeklyPoints: weeklyPoints || [],
+      totals: totals || {
+        season1Points: 0,
+        season2Points: 0,
+        season3Points: 0,
+        allTimePoints: 0,
+        currentSeasonRank: null,
+      },
+    };
+  }),
+
+  getLeaderboard: publicProcedure
+    .input(
+      z.object({
+        seasonNumber: z.number().optional(),
+        limit: z.number().min(10).max(500).default(100),
+        offset: z.number().min(0).default(0),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const db = createDbClient(ctx.env.DB);
+      const { seasonNumber, limit, offset } = input;
+
+      if (seasonNumber) {
+        // Season-specific leaderboard
+        const columnName = `season${seasonNumber}Points` as 'season1Points' | 'season2Points' | 'season3Points';
+
+        const results = await db
+          .select({
+            userAddress: userTotalPoints.userAddress,
+            points: userTotalPoints[columnName],
+            totalReferrals: userTotalPoints.totalReferrals,
+            rank: sql<number>`ROW_NUMBER() OVER (ORDER BY ${userTotalPoints[columnName]} DESC)`,
+          })
+          .from(userTotalPoints)
+          .where(sql`${userTotalPoints[columnName]} > 0`)
+          .orderBy(desc(userTotalPoints[columnName]))
+          .limit(limit)
+          .offset(offset)
+          .all();
+
+        const countResult = await db
+          .select({ total: sql<number>`COUNT(*)` })
+          .from(userTotalPoints)
+          .where(sql`${userTotalPoints[columnName]} > 0`)
+          .get();
+
+        return {
+          leaderboard: results || [],
+          total: countResult?.total || 0,
+          hasMore: offset + limit < (countResult?.total || 0),
+        };
+      } else {
+        // All-time leaderboard
+        const results = await db
+          .select({
+            userAddress: userTotalPoints.userAddress,
+            points: userTotalPoints.allTimePoints,
+            totalReferrals: userTotalPoints.totalReferrals,
+            rank: sql<number>`ROW_NUMBER() OVER (ORDER BY ${userTotalPoints.allTimePoints} DESC)`,
+          })
+          .from(userTotalPoints)
+          .where(sql`${userTotalPoints.allTimePoints} > 0`)
+          .orderBy(desc(userTotalPoints.allTimePoints))
+          .limit(limit)
+          .offset(offset)
+          .all();
+
+        const countResult = await db
+          .select({ total: sql<number>`COUNT(*)` })
+          .from(userTotalPoints)
+          .where(sql`${userTotalPoints.allTimePoints} > 0`)
+          .get();
+
+        return {
+          leaderboard: results || [],
+          total: countResult?.total || 0,
+          hasMore: offset + limit < (countResult?.total || 0),
+        };
+      }
+    }),
+
+  getUserRank: publicProcedure
     .input(
       z.object({
         userAddress: z.string(),
+        seasonNumber: z.number().optional(),
       })
     )
-    .query(async ({ input }) => {
-      const { userAddress } = input;
+    .query(async ({ input, ctx }) => {
+      const db = createDbClient(ctx.env.DB);
+      const normalizedAddress = input.userAddress.toLowerCase();
+      const { seasonNumber } = input;
 
-      try {
-        const data = await fetchUserFromGraphQL(userAddress);
+      const columnName = seasonNumber
+        ? (`season${seasonNumber}Points` as 'season1Points' | 'season2Points' | 'season3Points')
+        : 'allTimePoints';
 
-        if (data.errors) {
-          throw new Error(`GraphQL errors: ${JSON.stringify(data.errors)}`);
-        }
+      const result = await db
+        .select({
+          rank: sql<number>`ROW_NUMBER() OVER (ORDER BY ${userTotalPoints[columnName]} DESC)`,
+          points: userTotalPoints[columnName],
+        })
+        .from(userTotalPoints)
+        .where(and(eq(userTotalPoints.userAddress, normalizedAddress), sql`${userTotalPoints[columnName]} > 0`))
+        .get();
 
-        const user = data.data?.user;
-
-        if (!user) {
-          throw new Error(`User not found: ${userAddress}`);
-        }
-
-        return calculateCurrentPoints(
-          user.totalPoints,
-          user.totalRate,
-          user.lastUpdateTime
-        );
-      } catch (error) {
-        console.error("[getUserPoints] Error fetching user points:", error);
-        throw error;
-      }
+      return result || { rank: null, points: 0 };
     }),
+
+  // ==========================================
+  // Referral Mutations
+  // ==========================================
+
+  generateReferralCode: publicProcedure.input(z.object({ userAddress: z.string() })).mutation(async ({ input, ctx }) => {
+    const code = await generateReferralCode(input.userAddress, ctx.env);
+    return { referralCode: code };
+  }),
+
+  applyReferralCode: publicProcedure
+    .input(
+      z.object({
+        userAddress: z.string(),
+        referralCode: z.string().min(6).max(10),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const result = await applyReferralCode(input.userAddress, input.referralCode, ctx.env);
+      return result;
+    }),
+
+  // ==========================================
+  // Referral Queries
+  // ==========================================
+
+  getReferralInfo: publicProcedure.input(z.object({ userAddress: z.string() })).query(async ({ input, ctx }) => {
+    const info = await getReferralInfo(input.userAddress, ctx.env);
+    return info;
+  }),
+
+  validateReferralCode: publicProcedure.input(z.object({ referralCode: z.string() })).query(async ({ input, ctx }) => {
+    const db = createDbClient(ctx.env.DB);
+    const result = await db
+      .select()
+      .from(referralCodes)
+      .where(eq(referralCodes.referralCode, input.referralCode.toUpperCase().trim()))
+      .get();
+
+    return { valid: !!result };
+  }),
 });
 
 export type PointsRouter = typeof pointsRouter;

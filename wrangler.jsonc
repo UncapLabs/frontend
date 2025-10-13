@@ -17,8 +17,53 @@
 	"routes": [
   	  { "pattern": "uncap.finance", "custom_domain": true }
   	],
+
+	// D1 Database for Points and Referrals
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "uncap-points",
+			"database_id": "e283d907-bd57-4b7c-a4d6-ffc13bc0755b",
+			"migrations_dir": "migrations"
+		}
+	],
+
+	// Durable Objects
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "SNAPSHOT_COLLECTOR",
+				"class_name": "SnapshotCollectorDO",
+				"script_name": "bitusd-app"
+			}
+		]
+	},
+
+	// Cron Triggers
+	"triggers": {
+		"crons": [
+			"0 0 * * FRI"  // Weekly points calculation (Friday midnight UTC)
+		]
+	},
+
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_classes": ["SnapshotCollectorDO"]
+		}
+	],
+
 	"env": {
-    "dev": {},
+    "dev": {
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "uncap-points",
+					"database_id": "e283d907-bd57-4b7c-a4d6-ffc13bc0755b",
+					"migrations_dir": "migrations"
+				}
+			]
+		}
   },
 	/**
 	 * Smart Placement

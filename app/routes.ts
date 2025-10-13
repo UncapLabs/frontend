@@ -19,6 +19,7 @@ export default [
       route("close", "routes/borrow/borrow.$troveId.close.tsx"),
     ]),
     route("earn", "routes/earn/earn.tsx"),
+    route("referrals", "routes/referrals.tsx"),
     route("terms-and-conditions", "routes/legal/terms.tsx"),
     route("privacy-policy", "routes/legal/privacy.tsx"),
     // route("claim", "routes/claim/claim.tsx"),
