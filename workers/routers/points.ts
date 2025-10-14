@@ -1,53 +1,59 @@
-import { publicProcedure, router } from '../trpc';
-import * as z from 'zod';
-import { generateReferralCode, applyReferralCode, getReferralInfo } from '../services/referral-service';
-import { createDbClient } from '../db/client';
-import { userPoints, userTotalPoints, referralCodes } from '../db/schema';
-import { eq, sql, desc, and } from 'drizzle-orm';
+import { publicProcedure, router } from "../trpc";
+import * as z from "zod";
+import {
+  generateReferralCode,
+  applyReferralCode,
+  getReferralInfo,
+} from "../services/referral-service";
+import { createDbClient } from "../db/client";
+import { userPoints, userTotalPoints, referralCodes } from "../db/schema";
+import { eq, sql, desc } from "drizzle-orm";
 
 export const pointsRouter = router({
   // ==========================================
   // Points Queries
   // ==========================================
 
-  getUserPoints: publicProcedure.input(z.object({ userAddress: z.string() })).query(async ({ input, ctx }) => {
-    const db = createDbClient(ctx.env.DB);
-    const normalizedAddress = input.userAddress.toLowerCase();
+  getUserPoints: publicProcedure
+    .input(z.object({ userAddress: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const db = createDbClient(ctx.env.DB);
+      const normalizedAddress = input.userAddress.toLowerCase();
 
-    // Get weekly breakdown
-    const weeklyPoints = await db
-      .select({
-        weekStart: userPoints.weekStart,
-        seasonNumber: userPoints.seasonNumber,
-        weekNumber: userPoints.weekNumber,
-        basePoints: userPoints.basePoints,
-        referralBonus: userPoints.referralBonus,
-        totalPoints: userPoints.totalPoints,
-        calculatedAt: userPoints.calculatedAt,
-      })
-      .from(userPoints)
-      .where(eq(userPoints.userAddress, normalizedAddress))
-      .orderBy(desc(userPoints.weekStart))
-      .all();
+      // Get weekly breakdown
+      const weeklyPoints = await db
+        .select({
+          weekStart: userPoints.weekStart,
+          seasonNumber: userPoints.seasonNumber,
+          weekNumber: userPoints.weekNumber,
+          basePoints: userPoints.basePoints,
+          referralBonus: userPoints.referralBonus,
+          totalPoints: userPoints.totalPoints,
+          calculatedAt: userPoints.calculatedAt,
+        })
+        .from(userPoints)
+        .where(eq(userPoints.userAddress, normalizedAddress))
+        .orderBy(desc(userPoints.weekStart))
+        .all();
 
-    // Get total points
-    const totals = await db
-      .select()
-      .from(userTotalPoints)
-      .where(eq(userTotalPoints.userAddress, normalizedAddress))
-      .get();
+      // Get total points
+      const totals = await db
+        .select()
+        .from(userTotalPoints)
+        .where(eq(userTotalPoints.userAddress, normalizedAddress))
+        .get();
 
-    return {
-      weeklyPoints: weeklyPoints || [],
-      totals: totals || {
-        season1Points: 0,
-        season2Points: 0,
-        season3Points: 0,
-        allTimePoints: 0,
-        currentSeasonRank: null,
-      },
-    };
-  }),
+      return {
+        weeklyPoints: weeklyPoints || [],
+        totals: totals || {
+          season1Points: 0,
+          season2Points: 0,
+          season3Points: 0,
+          allTimePoints: 0,
+          currentSeasonRank: null,
+        },
+      };
+    }),
 
   getLeaderboard: publicProcedure
     .input(
@@ -63,7 +69,10 @@ export const pointsRouter = router({
 
       if (seasonNumber) {
         // Season-specific leaderboard
-        const columnName = `season${seasonNumber}Points` as 'season1Points' | 'season2Points' | 'season3Points';
+        const columnName = `season${seasonNumber}Points` as
+          | "season1Points"
+          | "season2Points"
+          | "season3Points";
 
         const results = await db
           .select({
@@ -133,29 +142,50 @@ export const pointsRouter = router({
       const { seasonNumber } = input;
 
       const columnName = seasonNumber
-        ? (`season${seasonNumber}Points` as 'season1Points' | 'season2Points' | 'season3Points')
-        : 'allTimePoints';
+        ? (`season${seasonNumber}Points` as
+            | "season1Points"
+            | "season2Points"
+            | "season3Points")
+        : "allTimePoints";
 
-      const result = await db
+      const userRow = await db
         .select({
-          rank: sql<number>`ROW_NUMBER() OVER (ORDER BY ${userTotalPoints[columnName]} DESC)`,
           points: userTotalPoints[columnName],
         })
         .from(userTotalPoints)
-        .where(and(eq(userTotalPoints.userAddress, normalizedAddress), sql`${userTotalPoints[columnName]} > 0`))
+        .where(eq(userTotalPoints.userAddress, normalizedAddress))
         .get();
 
-      return result || { rank: null, points: 0 };
+      const userPointsValue = userRow?.points ?? 0;
+
+      if (!userRow || userPointsValue <= 0) {
+        return { rank: null, points: 0 };
+      }
+
+      const higherRankCount = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(userTotalPoints)
+        .where(sql`${userTotalPoints[columnName]} > ${userPointsValue}`)
+        .get();
+
+      const higherCount = higherRankCount?.count ?? 0;
+
+      return {
+        rank: higherCount + 1,
+        points: userPointsValue,
+      };
     }),
 
   // ==========================================
   // Referral Mutations
   // ==========================================
 
-  generateReferralCode: publicProcedure.input(z.object({ userAddress: z.string() })).mutation(async ({ input, ctx }) => {
-    const code = await generateReferralCode(input.userAddress, ctx.env);
-    return { referralCode: code };
-  }),
+  generateReferralCode: publicProcedure
+    .input(z.object({ userAddress: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const code = await generateReferralCode(input.userAddress, ctx.env);
+      return { referralCode: code };
+    }),
 
   applyReferralCode: publicProcedure
     .input(
@@ -165,7 +195,11 @@ export const pointsRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const result = await applyReferralCode(input.userAddress, input.referralCode, ctx.env);
+      const result = await applyReferralCode(
+        input.userAddress,
+        input.referralCode,
+        ctx.env
+      );
       return result;
     }),
 
@@ -173,21 +207,30 @@ export const pointsRouter = router({
   // Referral Queries
   // ==========================================
 
-  getReferralInfo: publicProcedure.input(z.object({ userAddress: z.string() })).query(async ({ input, ctx }) => {
-    const info = await getReferralInfo(input.userAddress, ctx.env);
-    return info;
-  }),
+  getReferralInfo: publicProcedure
+    .input(z.object({ userAddress: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const info = await getReferralInfo(input.userAddress, ctx.env);
+      return info;
+    }),
 
-  validateReferralCode: publicProcedure.input(z.object({ referralCode: z.string() })).query(async ({ input, ctx }) => {
-    const db = createDbClient(ctx.env.DB);
-    const result = await db
-      .select()
-      .from(referralCodes)
-      .where(eq(referralCodes.referralCode, input.referralCode.toUpperCase().trim()))
-      .get();
+  validateReferralCode: publicProcedure
+    .input(z.object({ referralCode: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const db = createDbClient(ctx.env.DB);
+      const result = await db
+        .select()
+        .from(referralCodes)
+        .where(
+          eq(
+            referralCodes.referralCode,
+            input.referralCode.toUpperCase().trim()
+          )
+        )
+        .get();
 
-    return { valid: !!result };
-  }),
+      return { valid: !!result };
+    }),
 });
 
 export type PointsRouter = typeof pointsRouter;

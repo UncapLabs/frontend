@@ -30,7 +30,7 @@ export default function Terms({ loaderData }: Route.ComponentProps) {
   const { content, error } = loaderData;
 
   return (
-    <div className="min-h-screen bg-[#f5f3ee]">
+    <div className="bg-[#f5f3ee]">
       {/* Header */}
       <div className="border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">

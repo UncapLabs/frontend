@@ -85,11 +85,15 @@ export async function generateReferralCode(userAddress: string, env: Env): Promi
 }
 
 function generateRandomCode(): string {
+  const randomValues = new Uint32Array(CODE_LENGTH);
+  globalThis.crypto.getRandomValues(randomValues);
+
   let code = '';
-  for (let i = 0; i < CODE_LENGTH; i++) {
-    const randomIndex = Math.floor(Math.random() * CODE_CHARS.length);
+  for (const value of randomValues) {
+    const randomIndex = value % CODE_CHARS.length;
     code += CODE_CHARS[randomIndex];
   }
+
   return code;
 }
 
@@ -138,7 +142,7 @@ export async function applyReferralCode(
       refereeAddress: normalizedReferee,
       refereeAnonymousName: anonymousName,
       referralCode: normalizedCode,
-      appliedRetroactively: true, // Assume retroactive by default
+      appliedRetroactively: false,
     });
 
     // Update referrer's total referral count
@@ -177,6 +181,7 @@ export async function getReferralInfo(
   env: Env
 ): Promise<{
   referralCode: string | null;
+  appliedReferralCode: string | null;
   referees: Array<{ anonymousName: string; appliedAt: Date; totalPoints: number }>;
   totalReferrals: number;
   totalBonusEarned: number;
@@ -189,6 +194,13 @@ export async function getReferralInfo(
     .select()
     .from(referralCodes)
     .where(eq(referralCodes.userAddress, normalizedAddress))
+    .get();
+
+  // Check if user has applied someone else's referral code
+  const appliedReferralData = await db
+    .select()
+    .from(referrals)
+    .where(eq(referrals.refereeAddress, normalizedAddress))
     .get();
 
   // Get user's referees with their points
@@ -217,6 +229,7 @@ export async function getReferralInfo(
 
   return {
     referralCode: codeData?.referralCode || null,
+    appliedReferralCode: appliedReferralData?.referralCode || null,
     referees: refereesData.map((r) => ({
       anonymousName: r.refereeAnonymousName,
       appliedAt: r.appliedAt,

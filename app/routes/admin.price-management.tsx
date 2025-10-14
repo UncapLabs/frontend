@@ -67,7 +67,7 @@ function PriceManagement() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
+    <div className="mx-auto max-w-4xl py-8 px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-baseline">
         <h1 className="text-3xl font-bold mb-2 text-slate-800">
           wBTC Price Management

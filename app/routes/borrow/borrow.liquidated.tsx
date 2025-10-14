@@ -6,7 +6,7 @@ import { createMeta } from "~/lib/utils/meta";
 
 function LiquidatedPositionsPage() {
   return (
-    <div className="w-full mx-auto max-w-7xl py-8 lg:py-12 px-4 sm:px-6 lg:px-8 min-h-screen">
+    <div className="w-full mx-auto max-w-7xl py-8 lg:py-12 px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between pb-6 items-baseline">
         <h1 className="text-3xl md:text-4xl lg:text-5xl font-medium leading-10 font-sora text-[#242424]">
           Liquidated Positions

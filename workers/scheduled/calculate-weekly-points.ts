@@ -1,6 +1,7 @@
 import { createDbClient } from '../db/client';
 import { positionSnapshots, userPoints, referrals, userTotalPoints } from '../db/schema';
 import { POINTS_CONFIG, REFERRAL_CONFIG, getWeekConfig } from '../config/points-config';
+import type { WeekConfig } from '../config/points-config';
 import { sql, eq, and, gte, lt } from 'drizzle-orm';
 
 export async function calculateWeeklyPoints(env: Env): Promise<void> {
@@ -63,11 +64,16 @@ export async function calculateWeeklyPoints(env: Env): Promise<void> {
 
     console.log(`[Points Calculation] Processing ${snapshots.length} users`);
 
+    const earlyAdopterParticipants =
+      weekConfig.formula.multipliers?.earlyAdopter ? await getParticipantsForWeek(db, POINTS_CONFIG[0]?.weeks[0]) : null;
+
     // 5. Calculate base points for each user
     const userPointsMap = new Map<string, number>();
     let totalActivity = 0;
 
     for (const userSnapshot of snapshots) {
+      const normalizedAddress = userSnapshot.userAddress.toLowerCase();
+
       // Check minimum snapshot requirement
       if (
         weekConfig.formula.minSnapshotsRequired &&
@@ -82,19 +88,18 @@ export async function calculateWeeklyPoints(env: Env): Promise<void> {
         userSnapshot.avgCollateral * weekConfig.formula.collateralWeight;
 
       // Apply multipliers
-      if (weekConfig.formula.multipliers?.earlyAdopter) {
-        // Check if user participated in week 1
-        const hasWeek1Activity = await hasUserActivityInWeek1(db, userSnapshot.userAddress);
-        if (hasWeek1Activity) {
-          activityScore *= weekConfig.formula.multipliers.earlyAdopter;
-        }
+      if (
+        weekConfig.formula.multipliers?.earlyAdopter &&
+        earlyAdopterParticipants?.has(normalizedAddress)
+      ) {
+        activityScore *= weekConfig.formula.multipliers.earlyAdopter;
       }
 
       if (weekConfig.formula.multipliers?.highCollateral && userSnapshot.maxCollateral >= 1.0) {
         activityScore *= weekConfig.formula.multipliers.highCollateral;
       }
 
-      userPointsMap.set(userSnapshot.userAddress, activityScore);
+      userPointsMap.set(normalizedAddress, activityScore);
       totalActivity += activityScore;
     }
 
@@ -177,28 +182,6 @@ async function calculateReferralBonuses(
   return bonuses;
 }
 
-async function hasUserActivityInWeek1(
-  db: ReturnType<typeof createDbClient>,
-  userAddress: string
-): Promise<boolean> {
-  const season1Week1 = POINTS_CONFIG[0]?.weeks[0];
-  if (!season1Week1) return false;
-
-  const result = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(positionSnapshots)
-    .where(
-      and(
-        eq(positionSnapshots.userAddress, userAddress),
-        gte(positionSnapshots.snapshotTime, new Date(season1Week1.startDate)),
-        lt(positionSnapshots.snapshotTime, new Date(season1Week1.endDate))
-      )
-    )
-    .get();
-
-  return (result?.count || 0) > 0;
-}
-
 async function updateUserTotalPoints(
   db: ReturnType<typeof createDbClient>,
   seasonNumber: number
@@ -241,11 +224,11 @@ async function updateUserTotalPoints(
 
 function getLastMondayISO(): string {
   const now = new Date();
-  const dayOfWeek = now.getDay();
-  const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  const lastMonday = new Date(now);
-  lastMonday.setDate(now.getDate() - daysToSubtract - 7); // Go back to last week's Monday
-  return lastMonday.toISOString().split('T')[0];
+  const utcNow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const dayOfWeek = utcNow.getUTCDay();
+  const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek + 6;
+  utcNow.setUTCDate(utcNow.getUTCDate() - daysToSubtract);
+  return utcNow.toISOString().split('T')[0];
 }
 
 function getNextMondayISO(mondayISO: string): string {
@@ -253,4 +236,29 @@ function getNextMondayISO(mondayISO: string): string {
   const nextMonday = new Date(monday);
   nextMonday.setDate(monday.getDate() + 7);
   return nextMonday.toISOString().split('T')[0];
+}
+
+async function getParticipantsForWeek(
+  db: ReturnType<typeof createDbClient>,
+  week: WeekConfig | undefined
+): Promise<Set<string>> {
+  if (!week) {
+    return new Set();
+  }
+
+  const rows = await db
+    .select({
+      userAddress: positionSnapshots.userAddress,
+    })
+    .from(positionSnapshots)
+    .where(
+      and(
+        gte(positionSnapshots.snapshotTime, new Date(week.startDate)),
+        lt(positionSnapshots.snapshotTime, new Date(week.endDate))
+      )
+    )
+    .groupBy(positionSnapshots.userAddress)
+    .all();
+
+  return new Set(rows.map((row) => row.userAddress.toLowerCase()));
 }
