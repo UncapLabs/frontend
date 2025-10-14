@@ -103,8 +103,7 @@ export default function ReferralsPage() {
             {hasReferralCode && !referralInfo?.appliedReferralCode ? (
               <>
                 Apply your code for
-                <br />
-                a one-time points bonus
+                <br />a one-time points bonus
               </>
             ) : (
               <>
@@ -308,7 +307,7 @@ export default function ReferralsPage() {
         </div>
 
         {referralInfo?.referees && referralInfo.referees.length > 0 ? (
-          <div className="space-y-3">
+          <div>
             {/* Table Header */}
             <div className="hidden md:grid md:grid-cols-4 gap-4 pb-3 border-b border-[#E5E5E5]">
               <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider">
@@ -329,7 +328,7 @@ export default function ReferralsPage() {
             {referralInfo.referees.map((referee, idx) => (
               <div
                 key={idx}
-                className="md:grid md:grid-cols-4 gap-4 py-4 border-b border-[#E5E5E5] last:border-0 space-y-2 md:space-y-0"
+                className="md:grid md:grid-cols-4 gap-4 py-4 border-b border-[#E5E5E5] last:border-0 space-y-2 md:space-y-0 md:items-center"
               >
                 <div>
                   <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider md:hidden mb-1">
