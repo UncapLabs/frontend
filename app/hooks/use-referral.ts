@@ -68,7 +68,7 @@ export function useReferral() {
     referralInfo,
     isLoading,
     generateCode: () => generateCode.mutate(),
-    applyCode: (code: string) => applyCode.mutate(code),
+    applyCode: (code: string) => applyCode.mutateAsync(code),
     isGenerating: generateCode.isPending,
     isApplying: applyCode.isPending,
   };

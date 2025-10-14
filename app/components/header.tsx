@@ -101,6 +101,34 @@ function EarnIcon() {
   );
 }
 
+// Referral Icon (Multiple Users)
+function ReferralIcon() {
+  return (
+    <svg
+      width="14"
+      height="12"
+      viewBox="0 0 14 12"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <circle cx="4" cy="3" r="2" fill="currentColor" />
+      <path
+        d="M0.5 11.5C0.5 9.567 2.067 8 4 8C5.933 8 7.5 9.567 7.5 11.5"
+        stroke="currentColor"
+        strokeWidth="1"
+        strokeLinecap="round"
+      />
+      <circle cx="10.5" cy="2.5" r="1.5" fill="currentColor" />
+      <path
+        d="M7.5 9.5C7.5 8.119 8.619 7 10 7C11.381 7 12.5 8.119 12.5 9.5"
+        stroke="currentColor"
+        strokeWidth="1"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 function NavLink({
   children,
   href = "#",
@@ -167,6 +195,11 @@ function Header() {
       name: "Earn",
       href: "/earn",
       icon: <EarnIcon />,
+    },
+    {
+      name: "Referrals",
+      href: "/referrals",
+      icon: <ReferralIcon />,
     },
     // {
     //   name: "STRK Rewards",

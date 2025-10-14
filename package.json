@@ -20,6 +20,7 @@
     "db:studio": "dotenv -e .dev.vars -- npx drizzle-kit studio"
   },
   "dependencies": {
+    "@cloudflare/workers-types": "^4.20251011.0",
     "@graphql-typed-document-node/core": "^3.2.0",
     "@hono/trpc-server": "^0.3.4",
     "@radix-ui/react-accordion": "^1.2.10",

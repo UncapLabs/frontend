@@ -6,6 +6,7 @@ import { createRequestHandler } from "react-router";
 import { getTotalCirculatingSupply } from "./services/supply";
 import { calculateWeeklyPoints } from "./scheduled/calculate-weekly-points";
 import { SnapshotCollectorDO } from "./durable-objects/snapshot-collector";
+import { type ScheduledEvent } from "@cloudflare/workers-types";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -32,9 +33,9 @@ app.get("/api/coingecko/supply", async (c) => {
 });
 
 // Protect admin endpoints with Bearer Auth
-app.use('/api/admin/*', async (c, next) => {
+app.use("/api/admin/*", async (c, next) => {
   if (!c.env.ADMIN_API_KEY) {
-    return c.json({ error: 'Admin authentication not configured' }, 500);
+    return c.json({ error: "Admin authentication not configured" }, 500);
   }
 
   const auth = bearerAuth({ token: c.env.ADMIN_API_KEY });
@@ -86,7 +87,9 @@ app.post("/api/admin/backfill-snapshots", async (c) => {
 
     const id = c.env.SNAPSHOT_COLLECTOR.idFromName("global");
     const stub = c.env.SNAPSHOT_COLLECTOR.get(id);
-    const response = await stub.fetch(new Request(`https://dummy/backfill?from=${from}&to=${to}`));
+    const response = await stub.fetch(
+      new Request(`https://dummy/backfill?from=${from}&to=${to}`)
+    );
     return response;
   } catch (error: any) {
     return c.json({ success: false, error: error.message }, 500);
@@ -157,7 +160,7 @@ export default {
         await calculateWeeklyPoints(env);
       }
     } catch (error) {
-      console.error('[Cron] Error:', error);
+      console.error("[Cron] Error:", error);
       // Don't throw - let cron retry naturally
     }
   },

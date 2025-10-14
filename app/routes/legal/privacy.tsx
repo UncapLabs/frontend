@@ -3,7 +3,6 @@ import ReactMarkdown from "react-markdown";
 import { Button } from "~/components/ui/button";
 import { Link } from "react-router";
 import { createCaller } from "../../../workers/router";
-import { RpcProvider } from "starknet";
 
 // Server-side loader for SSR
 export async function loader({ context }: Route.LoaderArgs) {

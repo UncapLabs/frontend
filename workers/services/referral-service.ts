@@ -1,6 +1,6 @@
 import { createDbClient } from '../db/client';
 import { referralCodes, referrals, userTotalPoints, userPoints } from '../db/schema';
-import { eq, sql, desc } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 
 const CODE_LENGTH = 7;
 const CODE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -122,7 +122,23 @@ export async function applyReferralCode(
     return { success: false, message: 'Cannot use your own referral code' };
   }
 
-  // 3. Check if user already used a code
+  // 3. Prevent mutual referrals (referring someone and then using their code)
+  const reverseReferral = await db
+    .select()
+    .from(referrals)
+    .where(
+      and(
+        eq(referrals.referrerAddress, normalizedReferee),
+        eq(referrals.refereeAddress, referrerData.userAddress)
+      )
+    )
+    .get();
+
+  if (reverseReferral) {
+    return { success: false, message: 'Cannot use referral code from someone you referred' };
+  }
+
+  // 4. Check if user already used a code
   const existingReferral = await db.select().from(referrals).where(eq(referrals.refereeAddress, normalizedReferee)).get();
 
   if (existingReferral) {
@@ -132,7 +148,7 @@ export async function applyReferralCode(
     };
   }
 
-  // 4. Apply the code
+  // 5. Apply the code
   try {
     // Generate anonymous name for this referee
     const anonymousName = generateAnonymousName(normalizedReferee);
