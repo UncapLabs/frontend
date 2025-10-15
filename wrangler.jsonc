@@ -28,17 +28,6 @@
 		}
 	],
 
-	// Durable Objects
-	"durable_objects": {
-		"bindings": [
-			{
-				"name": "SNAPSHOT_COLLECTOR",
-				"class_name": "SnapshotCollectorDO",
-				"script_name": "bitusd-app"
-			}
-		]
-	},
-
 	// Cron Triggers
 	"triggers": {
 		"crons": [
