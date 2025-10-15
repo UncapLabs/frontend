@@ -1,10 +1,14 @@
-import { createDbClient } from '../db/client';
-import { referralCodes, referrals, userTotalPoints, userPoints } from '../db/schema';
-import { and, desc, eq, sql } from 'drizzle-orm';
-import { REFERRAL_CONFIG } from '../config/points-config';
+import { createDbClient } from "../db/client";
+import {
+  referralCodes,
+  referrals,
+  userTotalPoints,
+  userPoints,
+} from "../db/schema";
+import { and, desc, eq, sql } from "drizzle-orm";
 
 const CODE_LENGTH = 7;
-const CODE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+const CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
 /**
  * Generate a consistent anonymous name from an address
@@ -12,27 +16,66 @@ const CODE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
  */
 function generateAnonymousName(address: string): string {
   const adjectives = [
-    'Swift', 'Bright', 'Noble', 'Silent', 'Golden', 'Cosmic', 'Mystic', 'Lunar',
-    'Solar', 'Crystal', 'Thunder', 'Shadow', 'Emerald', 'Sapphire', 'Azure', 'Crimson'
+    "Swift",
+    "Bright",
+    "Noble",
+    "Silent",
+    "Golden",
+    "Cosmic",
+    "Mystic",
+    "Lunar",
+    "Solar",
+    "Crystal",
+    "Thunder",
+    "Shadow",
+    "Emerald",
+    "Sapphire",
+    "Azure",
+    "Crimson",
   ];
   const nouns = [
-    'Tiger', 'Eagle', 'Phoenix', 'Dragon', 'Wolf', 'Falcon', 'Lion', 'Bear',
-    'Hawk', 'Panther', 'Raven', 'Shark', 'Cobra', 'Jaguar', 'Lynx', 'Viper'
+    "Tiger",
+    "Eagle",
+    "Phoenix",
+    "Dragon",
+    "Wolf",
+    "Falcon",
+    "Lion",
+    "Bear",
+    "Hawk",
+    "Panther",
+    "Raven",
+    "Shark",
+    "Cobra",
+    "Jaguar",
+    "Lynx",
+    "Viper",
   ];
 
   // Use address as seed for consistent naming
-  const hash = address.toLowerCase().split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const hash = address
+    .toLowerCase()
+    .split("")
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const adjIndex = hash % adjectives.length;
   const nounIndex = (hash * 7) % nouns.length;
 
   return `${adjectives[adjIndex]} ${nouns[nounIndex]}`;
 }
 
-export async function generateReferralCode(userAddress: string, env: Env): Promise<string> {
-  console.log('[generateReferralCode] Starting...', { userAddress, hasDB: !!env.DB });
+export async function generateReferralCode(
+  userAddress: string,
+  env: Env
+): Promise<string> {
+  console.log("[generateReferralCode] Starting...", {
+    userAddress,
+    hasDB: !!env.DB,
+  });
 
   if (!env.DB) {
-    throw new Error('DB binding is not available. Make sure the dev server has been restarted.');
+    throw new Error(
+      "DB binding is not available. Make sure the dev server has been restarted."
+    );
   }
 
   const db = createDbClient(env.DB);
@@ -40,21 +83,27 @@ export async function generateReferralCode(userAddress: string, env: Env): Promi
 
   // Check if user already has a code
   try {
-    console.log('[generateReferralCode] Querying for existing code...');
+    console.log("[generateReferralCode] Querying for existing code...");
     const existing = await db
       .select()
       .from(referralCodes)
       .where(eq(referralCodes.userAddress, normalizedAddress))
       .get();
 
-    console.log('[generateReferralCode] Query result:', { hasExisting: !!existing });
+    console.log("[generateReferralCode] Query result:", {
+      hasExisting: !!existing,
+    });
 
     if (existing) {
       return existing.referralCode;
     }
   } catch (error) {
-    console.error('[generateReferralCode] Database query error:', error);
-    throw new Error(`Failed to query database: ${error instanceof Error ? error.message : String(error)}`);
+    console.error("[generateReferralCode] Database query error:", error);
+    throw new Error(
+      `Failed to query database: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
   }
 
   // Generate unique code
@@ -74,7 +123,7 @@ export async function generateReferralCode(userAddress: string, env: Env): Promi
       return code;
     } catch (error: any) {
       // If duplicate code, try again
-      if (error.message?.includes('UNIQUE constraint failed')) {
+      if (error.message?.includes("UNIQUE constraint failed")) {
         attempts++;
         continue;
       }
@@ -82,14 +131,16 @@ export async function generateReferralCode(userAddress: string, env: Env): Promi
     }
   }
 
-  throw new Error('Failed to generate unique referral code after multiple attempts');
+  throw new Error(
+    "Failed to generate unique referral code after multiple attempts"
+  );
 }
 
 function generateRandomCode(): string {
   const randomValues = new Uint32Array(CODE_LENGTH);
   globalThis.crypto.getRandomValues(randomValues);
 
-  let code = '';
+  let code = "";
   for (const value of randomValues) {
     const randomIndex = value % CODE_CHARS.length;
     code += CODE_CHARS[randomIndex];
@@ -115,12 +166,12 @@ export async function applyReferralCode(
     .get();
 
   if (!referrerData) {
-    return { success: false, message: 'Invalid referral code' };
+    return { success: false, message: "Invalid referral code" };
   }
 
   // 2. Check if user is trying to refer themselves
   if (referrerData.userAddress === normalizedReferee) {
-    return { success: false, message: 'Cannot use your own referral code' };
+    return { success: false, message: "Cannot use your own referral code" };
   }
 
   // 3. Prevent mutual referrals (referring someone and then using their code)
@@ -136,16 +187,23 @@ export async function applyReferralCode(
     .get();
 
   if (reverseReferral) {
-    return { success: false, message: 'Cannot use referral code from someone you referred' };
+    return {
+      success: false,
+      message: "Cannot use referral code from someone you referred",
+    };
   }
 
   // 4. Check if user already used a code
-  const existingReferral = await db.select().from(referrals).where(eq(referrals.refereeAddress, normalizedReferee)).get();
+  const existingReferral = await db
+    .select()
+    .from(referrals)
+    .where(eq(referrals.refereeAddress, normalizedReferee))
+    .get();
 
   if (existingReferral) {
     return {
       success: false,
-      message: 'You have already used a referral code',
+      message: "You have already used a referral code",
     };
   }
 
@@ -177,15 +235,15 @@ export async function applyReferralCode(
         },
       });
 
-    return { success: true, message: 'Referral code applied successfully' };
+    return { success: true, message: "Referral code applied successfully" };
   } catch (error: any) {
-    console.error('[Referral] Error applying code:', error);
+    console.error("[Referral] Error applying code:", error);
 
     // Handle race condition (another request applied a code simultaneously)
-    if (error.message?.includes('UNIQUE constraint failed')) {
+    if (error.message?.includes("UNIQUE constraint failed")) {
       return {
         success: false,
-        message: 'You have already used a referral code',
+        message: "You have already used a referral code",
       };
     }
 
@@ -199,7 +257,11 @@ export async function getReferralInfo(
 ): Promise<{
   referralCode: string | null;
   appliedReferralCode: string | null;
-  referees: Array<{ anonymousName: string; appliedAt: Date; totalPoints: number }>;
+  referees: Array<{
+    anonymousName: string;
+    appliedAt: Date;
+    totalPoints: number;
+  }>;
   totalReferrals: number;
   totalBonusEarned: number;
   bonusRate: number;
@@ -232,7 +294,11 @@ export async function getReferralInfo(
     .from(referrals)
     .leftJoin(userPoints, eq(referrals.refereeAddress, userPoints.userAddress))
     .where(eq(referrals.referrerAddress, normalizedAddress))
-    .groupBy(referrals.refereeAnonymousName, referrals.refereeAddress, referrals.appliedAt)
+    .groupBy(
+      referrals.refereeAnonymousName,
+      referrals.refereeAddress,
+      referrals.appliedAt
+    )
     .orderBy(desc(referrals.appliedAt))
     .all();
 
@@ -255,6 +321,6 @@ export async function getReferralInfo(
     })),
     totalReferrals: refereesData.length,
     totalBonusEarned: bonusData?.totalBonus || 0,
-    bonusRate: REFERRAL_CONFIG.bonusRate,
+    bonusRate: 0.1,
   };
 }
