@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { useAccount } from "@starknet-react/core";
@@ -6,6 +6,9 @@ import { useReferral } from "~/hooks/use-referral";
 import { Check, Copy, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryState } from "nuqs";
+import { useLocalStorage } from "usehooks-ts";
+
+const REFERRAL_STORAGE_KEY = "uncap_pending_referral_code";
 
 export default function ReferralsPage() {
   const { address } = useAccount();
@@ -23,9 +26,24 @@ export default function ReferralsPage() {
   const referralCode = refParam?.toUpperCase().trim() || "";
   const hasReferralCode = !!referralCode;
 
-  // Initialize input with referral code from URL or empty
-  const [inputCode, setInputCode] = useState(referralCode);
+  const [storedReferralCode, setStoredReferralCode] = useLocalStorage<string | null>(
+    REFERRAL_STORAGE_KEY,
+    null
+  );
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!referralCode) {
+      return;
+    }
+
+    setStoredReferralCode((current) =>
+      current === referralCode ? current : referralCode
+    );
+  }, [referralCode, setStoredReferralCode]);
+
+  const normalizedBonusRate = referralInfo?.bonusRate ?? 0.15;
+  const bonusPercent = Math.round(normalizedBonusRate * 100);
 
   const handleCopy = () => {
     if (referralInfo?.referralCode) {
@@ -49,19 +67,33 @@ export default function ReferralsPage() {
     window.open(twitterUrl, "_blank");
   };
 
-  const handleApplyCode = async () => {
-    if (inputCode.trim()) {
-      try {
-        const result = await applyCode(inputCode.trim());
-        // Only clear the ref param if application was successful
-        if (result.success && hasReferralCode) {
+  const handleInputChange = (value: string) => {
+    const normalized = value.replace(/\s+/g, "").toUpperCase();
+    setStoredReferralCode(normalized ? normalized : null);
+    if (hasReferralCode && normalized !== referralCode) {
+      setRefParam(null);
+    }
+  };
+
+  const handleApplyCode = async (code?: string) => {
+    const source = code ?? storedReferralCode ?? "";
+    const normalized = source.trim();
+    if (!normalized) {
+      return;
+    }
+
+    try {
+      const result = await applyCode(normalized);
+      if (result.success) {
+        setStoredReferralCode(null);
+        if (hasReferralCode) {
           setRefParam(null);
         }
-        // If not successful, keep the ref param so user can try again
-      } catch (error) {
-        // Error is already handled by the mutation (shows toast)
-        // Keep the ref param in URL so user can try again
       }
+      // If not successful, keep the ref param so user can try again
+    } catch (error) {
+      // Error is already handled by the mutation (shows toast)
+      // Keep the ref param in URL so user can try again
     }
   };
 
@@ -139,13 +171,9 @@ export default function ReferralsPage() {
                   Referral Code
                 </label>
                 <Input
-                  placeholder={
-                    !address
-                      ? "Connect wallet to apply code"
-                      : "Enter code (e.g., ABC123X)"
-                  }
-                  value={inputCode}
-                  onChange={(e) => setInputCode(e.target.value.toUpperCase())}
+                  placeholder="Enter code (e.g., ABC123X)"
+                  value={storedReferralCode ?? ""}
+                  onChange={(e) => handleInputChange(e.target.value)}
                   maxLength={10}
                   className="h-12 px-4 rounded-xl border-[#E5E5E5] font-mono text-base"
                   disabled={!address || isApplying}
@@ -153,8 +181,12 @@ export default function ReferralsPage() {
               </div>
 
               <Button
-                onClick={handleApplyCode}
-                disabled={!address || isApplying || !inputCode.trim()}
+                onClick={() => handleApplyCode()}
+                disabled={
+                  !address ||
+                  isApplying ||
+                  !(storedReferralCode && storedReferralCode.trim())
+                }
                 className="bg-[#006CFF] hover:bg-[#0056CC] text-white px-6 py-4 h-auto rounded-xl font-sora text-xs font-medium w-full disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isApplying ? "Applying..." : "Apply Code"}
@@ -251,7 +283,7 @@ export default function ReferralsPage() {
 
                 <p className="text-white/70 text-xs font-sora leading-relaxed">
                   Share this code with friends. When they earn points, you'll
-                  earn bonus points too!
+                  earn {bonusPercent}% bonus points too!
                 </p>
               </div>
             ) : (
@@ -373,7 +405,7 @@ export default function ReferralsPage() {
                     Your Bonus
                   </p>
                   <p className="text-sm font-bold font-sora text-[#00C853]">
-                    +{(referee.totalPoints * 0.15).toFixed(2)} pts
+                    +{(referee.totalPoints * normalizedBonusRate).toFixed(2)} pts
                   </p>
                 </div>
               </div>

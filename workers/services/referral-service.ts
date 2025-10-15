@@ -1,6 +1,7 @@
 import { createDbClient } from '../db/client';
 import { referralCodes, referrals, userTotalPoints, userPoints } from '../db/schema';
 import { and, desc, eq, sql } from 'drizzle-orm';
+import { REFERRAL_CONFIG } from '../config/points-config';
 
 const CODE_LENGTH = 7;
 const CODE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -201,6 +202,7 @@ export async function getReferralInfo(
   referees: Array<{ anonymousName: string; appliedAt: Date; totalPoints: number }>;
   totalReferrals: number;
   totalBonusEarned: number;
+  bonusRate: number;
 }> {
   const db = createDbClient(env.DB);
   const normalizedAddress = userAddress.toLowerCase();
@@ -253,5 +255,6 @@ export async function getReferralInfo(
     })),
     totalReferrals: refereesData.length,
     totalBonusEarned: bonusData?.totalBonus || 0,
+    bonusRate: REFERRAL_CONFIG.bonusRate,
   };
 }
