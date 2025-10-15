@@ -1,11 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTRPC } from '~/lib/trpc';
-import { useState } from 'react';
 
-export function useLeaderboard(seasonNumber?: number) {
+export function useLeaderboard(seasonNumber?: number, page: number = 0, limit: number = 50) {
   const trpc = useTRPC();
-  const [page, setPage] = useState(0);
-  const limit = 50;
 
   const { data, isLoading, error } = useQuery({
     ...trpc.pointsRouter.getLeaderboard.queryOptions({
@@ -21,8 +18,6 @@ export function useLeaderboard(seasonNumber?: number) {
     leaderboard: data?.leaderboard || [],
     total: data?.total || 0,
     hasMore: data?.hasMore || false,
-    page,
-    setPage,
     isLoading,
     error,
   };
