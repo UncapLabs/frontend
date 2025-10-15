@@ -9,6 +9,24 @@ import { createDbClient } from "../db/client";
 import { userPoints, userTotalPoints, referralCodes } from "../db/schema";
 import { eq, sql, desc } from "drizzle-orm";
 
+const LEADERBOARD_DEFAULT_LIMIT = 50;
+const LEADERBOARD_MAX_LIMIT = 500;
+const SEASON_NUMBERS = [1, 2, 3] as const;
+type SeasonNumber = (typeof SEASON_NUMBERS)[number];
+
+function getPointsColumn(season?: SeasonNumber) {
+  switch (season) {
+    case 1:
+      return userTotalPoints.season1Points;
+    case 2:
+      return userTotalPoints.season2Points;
+    case 3:
+      return userTotalPoints.season3Points;
+    default:
+      return userTotalPoints.allTimePoints;
+  }
+}
+
 export const pointsRouter = router({
   // ==========================================
   // Points Queries
@@ -58,75 +76,71 @@ export const pointsRouter = router({
   getLeaderboard: publicProcedure
     .input(
       z.object({
-        seasonNumber: z.number().optional(),
-        limit: z.number().min(10).max(500).default(100),
-        offset: z.number().min(0).default(0),
+        seasonNumber: z
+          .number()
+          .int()
+          .refine(
+            (value) => SEASON_NUMBERS.includes(value as SeasonNumber),
+            "Unsupported season number"
+          )
+          .optional(),
+        limit: z
+          .number()
+          .int()
+          .min(1)
+          .max(LEADERBOARD_MAX_LIMIT)
+          .default(LEADERBOARD_DEFAULT_LIMIT),
+        offset: z.number().int().min(0).default(0),
       })
     )
     .query(async ({ input, ctx }) => {
       const db = createDbClient(ctx.env.DB);
       const { seasonNumber, limit, offset } = input;
 
-      if (seasonNumber) {
-        // Season-specific leaderboard
-        const columnName = `season${seasonNumber}Points` as
-          | "season1Points"
-          | "season2Points"
-          | "season3Points";
+      const season = seasonNumber as SeasonNumber | undefined;
+      const pointsColumn = getPointsColumn(season);
 
-        const results = await db
+      const normalizedLimit = Math.min(Math.max(limit, 1), LEADERBOARD_MAX_LIMIT);
+      const normalizedOffset = Math.max(offset, 0);
+
+      const positivePointsFilter = sql`${pointsColumn} > 0`;
+
+      const [rows, countResult] = await Promise.all([
+        db
           .select({
             userAddress: userTotalPoints.userAddress,
-            points: userTotalPoints[columnName],
+            points: pointsColumn,
             totalReferrals: userTotalPoints.totalReferrals,
-            rank: sql<number>`ROW_NUMBER() OVER (ORDER BY ${userTotalPoints[columnName]} DESC)`,
           })
           .from(userTotalPoints)
-          .where(sql`${userTotalPoints[columnName]} > 0`)
-          .orderBy(desc(userTotalPoints[columnName]))
-          .limit(limit)
-          .offset(offset)
-          .all();
-
-        const countResult = await db
+          .where(positivePointsFilter)
+          .orderBy(desc(pointsColumn))
+          .limit(normalizedLimit)
+          .offset(normalizedOffset)
+          .all(),
+        db
           .select({ total: sql<number>`COUNT(*)` })
           .from(userTotalPoints)
-          .where(sql`${userTotalPoints[columnName]} > 0`)
-          .get();
+          .where(positivePointsFilter)
+          .get(),
+      ]);
 
-        return {
-          leaderboard: results || [],
-          total: countResult?.total || 0,
-          hasMore: offset + limit < (countResult?.total || 0),
-        };
-      } else {
-        // All-time leaderboard
-        const results = await db
-          .select({
-            userAddress: userTotalPoints.userAddress,
-            points: userTotalPoints.allTimePoints,
-            totalReferrals: userTotalPoints.totalReferrals,
-            rank: sql<number>`ROW_NUMBER() OVER (ORDER BY ${userTotalPoints.allTimePoints} DESC)`,
-          })
-          .from(userTotalPoints)
-          .where(sql`${userTotalPoints.allTimePoints} > 0`)
-          .orderBy(desc(userTotalPoints.allTimePoints))
-          .limit(limit)
-          .offset(offset)
-          .all();
+      const totalCount = countResult?.total ?? 0;
+      const leaderboard = (rows || []).map((row, index) => ({
+        ...row,
+        rank: normalizedOffset + index + 1,
+      }));
+      const pageCount =
+        normalizedLimit > 0 && totalCount > 0
+          ? Math.ceil(totalCount / normalizedLimit)
+          : 0;
 
-        const countResult = await db
-          .select({ total: sql<number>`COUNT(*)` })
-          .from(userTotalPoints)
-          .where(sql`${userTotalPoints.allTimePoints} > 0`)
-          .get();
-
-        return {
-          leaderboard: results || [],
-          total: countResult?.total || 0,
-          hasMore: offset + limit < (countResult?.total || 0),
-        };
-      }
+      return {
+        leaderboard,
+        total: totalCount,
+        hasMore: normalizedOffset + leaderboard.length < totalCount,
+        pageCount,
+      };
     }),
 
   getUserRank: publicProcedure

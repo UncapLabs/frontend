@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { useLeaderboard } from "~/hooks/use-leaderboard";
+import { useLeaderboard, LEADERBOARD_PAGE_SIZE } from "~/hooks/use-leaderboard";
 import { cn } from "~/lib/utils";
 
 type LeaderboardEntry = {
@@ -37,8 +37,6 @@ const SEASON_OPTIONS = [
   { label: "Season 2", value: "2" },
   { label: "Season 3", value: "3" },
 ] as const;
-
-const PAGE_SIZE = 50;
 
 type SeasonOptionValue = (typeof SEASON_OPTIONS)[number]["value"];
 const SEASON_VALUES = SEASON_OPTIONS.map((option) => option.value) as SeasonOptionValue[];
@@ -68,10 +66,18 @@ export default function LeaderboardPage() {
 
   const pageIndex = currentPage - 1;
 
-  const { leaderboard, total, hasMore, isLoading, error } = useLeaderboard(
+  const {
+    leaderboard,
+    total,
+    hasMore,
+    pageCount,
+    isLoading,
+    isFetching,
+    error,
+  } = useLeaderboard(
     seasonNumber,
     pageIndex,
-    PAGE_SIZE
+    LEADERBOARD_PAGE_SIZE
   );
 
   const columns = useMemo<ColumnDef<LeaderboardEntry>[]>(() => {
@@ -145,31 +151,33 @@ export default function LeaderboardPage() {
     state: {
       pagination: {
         pageIndex,
-        pageSize: PAGE_SIZE,
+        pageSize: LEADERBOARD_PAGE_SIZE,
       },
     },
   });
 
-  const startRank = pageIndex * PAGE_SIZE + 1;
-  const endRank = pageIndex * PAGE_SIZE + leaderboard.length;
+  const startRank = pageIndex * LEADERBOARD_PAGE_SIZE + 1;
+  const endRank = pageIndex * LEADERBOARD_PAGE_SIZE + leaderboard.length;
   const hasRange = leaderboard.length > 0;
   const hasTotal = typeof total === "number" && !Number.isNaN(total);
+  const safeCurrentPage =
+    pageCount && currentPage > pageCount ? pageCount : currentPage;
+  const isTransitioning = isLoading || isFetching;
+  const nextDisabled =
+    isTransitioning || !hasMore || (pageCount > 0 && safeCurrentPage >= pageCount);
+  const prevDisabled = isTransitioning || safeCurrentPage <= 1;
 
   const handleSeasonChange = (value: SeasonOptionValue) => {
     void setSeasonSelection(value);
     void setPageParam(1);
   };
-
   const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      void setPageParam(currentPage - 1);
-    }
+    if (prevDisabled) return;
+    void setPageParam(Math.max(1, safeCurrentPage - 1));
   };
-
   const handleNextPage = () => {
-    if (hasMore) {
-      void setPageParam(currentPage + 1);
-    }
+    if (nextDisabled) return;
+    void setPageParam(safeCurrentPage + 1);
   };
 
   return (
@@ -318,14 +326,16 @@ export default function LeaderboardPage() {
 
         <div className="px-6 py-4 border-t border-[#F5F3EE] flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-xs font-sora text-[#AAA28E]">
-            Page {currentPage}
+            Page {safeCurrentPage}
+            {pageCount > 0 ? ` of ${pageCount}` : ""}
+            {isFetching && !isLoading ? " • Updating…" : ""}
           </div>
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
               size="sm"
               onClick={handlePreviousPage}
-              disabled={currentPage <= 1 || isLoading}
+              disabled={prevDisabled}
               className="font-sora text-xs"
             >
               Previous
@@ -334,7 +344,7 @@ export default function LeaderboardPage() {
               variant="outline"
               size="sm"
               onClick={handleNextPage}
-              disabled={!hasMore || isLoading}
+              disabled={nextDisabled}
               className="font-sora text-xs"
             >
               Next
