@@ -6,6 +6,7 @@ import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { TransactionSummary } from "~/components/transaction-summary";
 import { TokenInput } from "~/components/token-input";
 import { ArrowIcon } from "~/components/icons/arrow-icon";
+import { BridgeInfo } from "~/components/bridge-info";
 import { useEffect, useCallback } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
@@ -220,12 +221,14 @@ function Borrow() {
   }, [form, reset, setBorrowAmount, setCollateralAmount, setInterestRate]);
 
   return (
-    <div className="w-full mx-auto max-w-7xl py-8 lg:py-12 px-4 sm:px-6 lg:px-8 pb-32">
-      <div className="flex justify-between pb-6 lg:pb-8 items-baseline">
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-medium leading-10 font-sora text-[#242424]">
-          Borrow
-        </h1>
-      </div>
+    <>
+      <BridgeInfo />
+      <div className="w-full mx-auto max-w-7xl py-8 lg:py-12 px-4 sm:px-6 lg:px-8 pb-32">
+        <div className="flex justify-between pb-6 lg:pb-8 items-baseline">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-medium leading-10 font-sora text-[#242424]">
+            Borrow
+          </h1>
+        </div>
 
       <div className="flex flex-col lg:flex-row gap-5">
         {/* Left Panel */}
@@ -574,6 +577,7 @@ function Borrow() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 

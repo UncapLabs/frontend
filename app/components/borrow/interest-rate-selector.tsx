@@ -108,7 +108,7 @@ export function InterestRateSelector({
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-1">
             <h3 className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight">
-              Interest Rate
+              Set your Interest Rate
             </h3>
             <RedemptionInfo variant="modal" />
           </div>

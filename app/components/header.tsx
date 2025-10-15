@@ -143,10 +143,7 @@ function PointsIcon() {
         d="M6 0.5L7 2.5H9L10 3L9.5 4.5L8 6C7.5 6.5 7 7 6.5 7.5L6 8L5.5 7.5C5 7 4.5 6.5 4 6L2.5 4.5L2 3L3 2.5H5L6 0.5Z"
         fill="currentColor"
       />
-      <path
-        d="M4 9H8V10H7.5V11.5H4.5V10H4V9Z"
-        fill="currentColor"
-      />
+      <path d="M4 9H8V10H7.5V11.5H4.5V10H4V9Z" fill="currentColor" />
     </svg>
   );
 }
@@ -223,11 +220,11 @@ function Header() {
       href: "/points",
       icon: <PointsIcon />,
     },
-    {
-      name: "Referrals",
-      href: "/referrals",
-      icon: <ReferralIcon />,
-    },
+    // {
+    //   name: "Referrals",
+    //   href: "/referrals",
+    //   icon: <ReferralIcon />,
+    // },
     // {
     //   name: "STRK Rewards",
     //   href: "/claim",

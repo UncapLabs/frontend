@@ -282,7 +282,7 @@ function UpdatePosition() {
 
   return (
     <>
-      <div className="flex justify-between pb-6 items-baseline">
+      <div className="flex justify-between pb-6 lg:pb-8 items-baseline">
         <h1 className="text-3xl md:text-4xl lg:text-5xl font-medium leading-10 font-sora text-[#242424]">
           Update Position
         </h1>

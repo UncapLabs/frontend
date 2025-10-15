@@ -12,6 +12,7 @@ import {
   useInterestRateVisualizationData,
 } from "~/hooks/use-interest-rate";
 import { useStabilityPoolData } from "~/hooks/use-stability-pool-data";
+import { useBranchTCR } from "~/hooks/use-branch-tcr";
 import { COLLATERALS, COLLATERAL_LIST } from "~/lib/collateral";
 import Big from "big.js";
 import { NumericFormat } from "react-number-format";
@@ -22,7 +23,7 @@ interface BorrowRateItem {
   borrowRate: Big | undefined;
   totalDebt: string;
   maxLTV: string;
-  rateAvg: Big | undefined;
+  totalCollateral: string;
   collateralAddress?: string;
 }
 
@@ -77,11 +78,11 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                 />
               </svg>
               <h3 className="text-white text-base font-medium font-sora leading-none">
-                Borrow rates
+                Borrow against your collateral
               </h3>
             </div>
             <p className="text-xs text-[#B2B2B2]">
-              Borrow USDU against your wBTC at the interest rate of your choice
+              Borrow USDU against your wBTC at the interest rate of your choice.
             </p>
           </div>
 
@@ -94,10 +95,7 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                     Collateral
                   </TableHead>
                   <TableHead className="text-[#B2B2B2] text-[7px] leading-[7px] font-normal font-sora uppercase h-6 text-right">
-                    Rate AVG.
-                  </TableHead>
-                  <TableHead className="text-[#B2B2B2] text-[7px] leading-[7px] font-normal font-sora uppercase h-6 text-right">
-                    Max LTV
+                    Total Collateral
                   </TableHead>
                   <TableHead className="text-[#B2B2B2] text-[7px] leading-[7px] font-normal font-sora uppercase h-6 text-right">
                     Total debt
@@ -128,23 +126,7 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                       </div>
                     </TableCell>
                     <TableCell className="text-white text-sm font-normal font-sora text-right tabular-nums min-w-[70px]">
-                      {rate.rateAvg ? (
-                        <>
-                          <NumericFormat
-                            displayType="text"
-                            value={rate.rateAvg.times(100).toString()}
-                            thousandSeparator=","
-                            decimalScale={2}
-                            fixedDecimalScale
-                          />
-                          %
-                        </>
-                      ) : (
-                        "—"
-                      )}
-                    </TableCell>
-                    <TableCell className="text-white text-sm font-normal font-sora text-right tabular-nums min-w-[70px]">
-                      {rate.maxLTV}
+                      {rate.totalCollateral}
                     </TableCell>
                     <TableCell className="text-white text-sm font-normal font-sora text-right tabular-nums min-w-[70px]">
                       {rate.totalDebt}
@@ -184,7 +166,7 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                 className="border border-zinc-800 rounded-lg p-4 hover:bg-zinc-900/50 transition-colors"
               >
                 <div className="space-y-3">
-                  {/* Header with icon, name and rate */}
+                  {/* Header with icon and name */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full overflow-hidden bg-zinc-800">
@@ -198,37 +180,16 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                         {rate.collateral}
                       </span>
                     </div>
-                    <div className="text-right">
-                      <div className="flex items-baseline justify-end gap-1.5">
-                        <span className="text-white text-lg font-semibold font-sora">
-                          {rate.rateAvg ? (
-                            <>
-                              <NumericFormat
-                                displayType="text"
-                                value={rate.rateAvg.times(100).toString()}
-                                thousandSeparator=","
-                                decimalScale={2}
-                                fixedDecimalScale
-                              />
-                              %
-                            </>
-                          ) : (
-                            "—"
-                          )}
-                        </span>
-                        <span className="text-[#B2B2B2] text-xs">
-                          Rate AVG.
-                        </span>
-                      </div>
-                    </div>
                   </div>
 
                   {/* Stats */}
                   <div className="flex justify-between gap-6">
                     <div className="flex-1">
-                      <div className="text-[#B2B2B2] text-xs mb-1">Max LTV</div>
+                      <div className="text-[#B2B2B2] text-xs mb-1">
+                        Total Coll.
+                      </div>
                       <div className="text-white text-sm font-medium">
-                        {rate.maxLTV}
+                        {rate.totalCollateral}
                       </div>
                     </div>
                     <div className="flex-1 text-right">
@@ -290,12 +251,12 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                 />
               </svg>
               <h3 className="text-white text-base font-medium font-sora leading-none">
-                Earn rates
+                Earn yield on your USDU
               </h3>
             </div>
             <p className="text-xs text-[#B2B2B2]">
               Deposit USDU and earn rewards from liquidations and borrower
-              interest
+              interest.
             </p>
           </div>
 
@@ -326,12 +287,34 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                   >
                     <TableCell className="px-0 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full overflow-hidden bg-zinc-800">
-                          <img
-                            src={rate.icon}
-                            alt={rate.pool}
-                            className="w-full h-full object-cover"
-                          />
+                        <div className="flex items-center gap-1">
+                          <div className="w-6 h-6 rounded-full overflow-hidden bg-zinc-800 flex items-center justify-center p-0.5">
+                            <img
+                              src="/usdu.png"
+                              alt="USDU"
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                          <svg
+                            width="8"
+                            height="6"
+                            viewBox="0 0 8 6"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="flex-shrink-0"
+                          >
+                            <path
+                              d="M0.5 3.5L0.5 2.5L5.793 2.5L4.146 0.853L4.854 0.146L7.707 3L4.854 5.854L4.146 5.147L5.793 3.5L0.5 3.5Z"
+                              fill="#666666"
+                            />
+                          </svg>
+                          <div className="w-6 h-6 rounded-full overflow-hidden bg-zinc-800">
+                            <img
+                              src={rate.icon}
+                              alt={rate.pool}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
                         </div>
                         <span className="text-white text-sm font-normal font-sora">
                           {rate.pool}
@@ -390,46 +373,68 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                 className="border border-zinc-800 rounded-lg p-4 hover:bg-zinc-900/50 transition-colors"
               >
                 <div className="space-y-3">
-                  {/* Header with icon, name and APR */}
+                  {/* Header with icons and name */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full overflow-hidden bg-zinc-800">
-                        <img
-                          src={rate.icon}
-                          alt={rate.pool}
-                          className="w-full h-full object-cover"
-                        />
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-8 h-8 rounded-full overflow-hidden bg-zinc-800 flex items-center justify-center p-1">
+                          <img
+                            src="/usdu.png"
+                            alt="USDU"
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <svg
+                          width="10"
+                          height="8"
+                          viewBox="0 0 10 8"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="flex-shrink-0"
+                        >
+                          <path
+                            d="M0.5 4.5L0.5 3.5L7.293 3.5L5.646 1.853L6.354 1.146L9.707 4.5L6.354 7.854L5.646 7.147L7.293 4.5L0.5 4.5Z"
+                            fill="#666666"
+                          />
+                        </svg>
+                        <div className="w-8 h-8 rounded-full overflow-hidden bg-zinc-800">
+                          <img
+                            src={rate.icon}
+                            alt={rate.pool}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
                       </div>
                       <span className="text-white text-base font-medium font-sora">
                         {rate.pool}
                       </span>
-                    </div>
-                    <div className="text-right">
-                      <div className="flex items-baseline justify-end gap-1.5">
-                        <span className="text-white text-lg font-semibold font-sora">
-                          {rate.supplyAPR ? (
-                            <>
-                              <NumericFormat
-                                displayType="text"
-                                value={rate.supplyAPR.toString()}
-                                thousandSeparator=","
-                                decimalScale={2}
-                                fixedDecimalScale
-                              />
-                              %
-                            </>
-                          ) : (
-                            "—"
-                          )}
-                        </span>
-                        <span className="text-[#B2B2B2] text-xs">APR</span>
-                      </div>
                     </div>
                   </div>
 
                   {/* Stats */}
                   <div className="flex justify-between gap-6">
                     <div className="flex-1">
+                      <div className="text-[#B2B2B2] text-xs mb-1">
+                        Supply APR
+                      </div>
+                      <div className="text-white text-sm font-medium">
+                        {rate.supplyAPR ? (
+                          <>
+                            <NumericFormat
+                              displayType="text"
+                              value={rate.supplyAPR.toString()}
+                              thousandSeparator=","
+                              decimalScale={2}
+                              fixedDecimalScale
+                            />
+                            %
+                          </>
+                        ) : (
+                          "—"
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex-1 text-right">
                       <div className="text-[#B2B2B2] text-xs mb-1">
                         Total Deposits
                       </div>
@@ -492,7 +497,7 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
               </h3>
             </div>
             <p className="text-xs text-[#B2B2B2]">
-              Provide liquidity to the USDU/USDC pool on Ekubo
+              Provide liquidity to the USDU/USDC pool on Ekubo.
             </p>
           </div>
 
@@ -648,6 +653,12 @@ export default function Stats() {
     WWBTC: useInterestRateVisualizationData(COLLATERALS.WWBTC.branchId),
   };
 
+  const tcrData = {
+    // UBTC: useBranchTCR("UBTC"),
+    // GBTC: useBranchTCR("GBTC"),
+    WWBTC: useBranchTCR("WWBTC"),
+  };
+
   const stabilityPoolData = useStabilityPoolData();
 
   // Helper function to format currency values
@@ -667,6 +678,7 @@ export default function Stats() {
   const borrowRates: BorrowRateItem[] = COLLATERAL_LIST.map((collateral) => {
     const rateData = interestRateData[collateral.id];
     const vizData = visualizationData[collateral.id];
+    const tcr = tcrData[collateral.id];
     const minCollatRatio = collateral.minCollateralizationRatio.toNumber();
     const maxLTV = (1 / minCollatRatio) * 100;
 
@@ -676,7 +688,7 @@ export default function Stats() {
       borrowRate: rateData.data,
       totalDebt: formatCurrency(vizData.data?.totalDebt),
       maxLTV: `${maxLTV.toFixed(2)}%`,
-      rateAvg: rateData.data,
+      totalCollateral: formatCurrency(tcr.data?.totalCollateralUSD),
       collateralAddress: collateral.address,
     };
   });

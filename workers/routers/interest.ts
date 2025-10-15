@@ -12,6 +12,10 @@ import {
   getAverageInterestRateForBranch,
 } from "../services/interest";
 import Big from "big.js";
+import { RpcProvider } from "starknet";
+import { contractRead } from "~/lib/contracts/calls";
+import type { CollateralId } from "~/lib/collateral";
+import { bigintToBig } from "~/lib/decimal";
 
 type ChartDataPoint = {
   debt: Big;

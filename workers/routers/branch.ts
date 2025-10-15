@@ -49,10 +49,10 @@ export const branchRouter = router({
         let tcr: Big | null = null;
         let isBelowCcr = false;
 
-        if (totalDebtBig.gt(0)) {
-          // Calculate collateral value in USD
-          const collateralValueInUSD = totalCollateralBig.times(priceBig);
+        // Calculate collateral value in USD
+        const collateralValueInUSD = totalCollateralBig.times(priceBig);
 
+        if (totalDebtBig.gt(0)) {
           // TCR = collateral value / debt
           tcr = collateralValueInUSD.div(totalDebtBig);
 
@@ -65,6 +65,7 @@ export const branchRouter = router({
           ccr: ccrBig,
           isBelowCcr,
           totalCollateral: totalCollateralBig,
+          totalCollateralUSD: collateralValueInUSD,
           totalDebt: totalDebtBig,
         };
       } catch (error) {
