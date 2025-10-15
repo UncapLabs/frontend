@@ -312,7 +312,7 @@ export default function ReferralsPage() {
           </div>
           <div className="flex items-end gap-6">
             <div className="flex flex-col gap-1">
-              <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight leading-none">
+              <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight leading-none mb-2">
                 Total Referrals
               </p>
               <p className="text-2xl font-medium font-sora text-[#242424] leading-none">
@@ -324,7 +324,7 @@ export default function ReferralsPage() {
               </p>
             </div>
             <div className="flex flex-col gap-1">
-              <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight leading-none">
+              <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight leading-none mb-2">
                 Total Points
               </p>
               <p className="text-2xl font-medium font-sora text-[#242424] leading-none">

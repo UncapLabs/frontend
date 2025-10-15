@@ -15,20 +15,15 @@ export default function RewardsPage() {
   const { weeklyPoints, totals, isLoading } = useUserPoints();
   const { rank } = useUserRank();
 
-  // Hardcoded test data
-  const testAddress =
-    "0x033446F12430CE62862707d5B0495ba79d9965671c558BA163Ab99EF06434144";
-  const isTestAddress = address?.toLowerCase() === testAddress.toLowerCase();
-
-  const totalPoints = isTestAddress ? 9215.42 : totals?.allTimePoints || 0;
-  const displayRank = isTestAddress ? "418" : rank || "—";
+  const totalPoints = totals?.allTimePoints || 0;
+  const displayRank = rank || "—";
 
   // Hardcoded all weeks - Week 1 starts October 10, 2025
   const allWeeks = [
     {
       seasonNumber: 1,
       weekStart: "2025-10-10",
-      totalPoints: isTestAddress ? 39.0 : 0,
+      totalPoints: 0,
     },
     {
       seasonNumber: 2,
@@ -144,7 +139,7 @@ export default function RewardsPage() {
                         <div className="text-5xl font-medium font-sora text-neutral-800">
                           {!address ? (
                             "????"
-                          ) : isLoading && !isTestAddress ? (
+                          ) : isLoading ? (
                             "..."
                           ) : (
                             <NumericFormat
@@ -192,7 +187,7 @@ export default function RewardsPage() {
                     <div className="text-xl font-medium font-sora text-neutral-800">
                       {!address ? (
                         "—"
-                      ) : isLoading && !isTestAddress ? (
+                      ) : isLoading ? (
                         "..."
                       ) : (
                         <NumericFormat
@@ -241,7 +236,9 @@ export default function RewardsPage() {
                     </p>
                   </div>
                   <p className="text-sm font-bold font-sora text-[#242424]">
-                    {!address
+                    {week.seasonNumber === 1
+                      ? "Coming soon"
+                      : !address
                       ? "—"
                       : week.totalPoints > 0
                       ? week.totalPoints.toFixed(2) + " pts"
@@ -286,7 +283,7 @@ export default function RewardsPage() {
                         <div className="text-5xl font-medium font-sora text-neutral-800">
                           {!address ? (
                             "????"
-                          ) : isLoading && !isTestAddress ? (
+                          ) : isLoading ? (
                             "..."
                           ) : (
                             <NumericFormat
@@ -336,7 +333,7 @@ export default function RewardsPage() {
                     <div className="text-xl font-medium font-sora text-neutral-800">
                       {!address ? (
                         "—"
-                      ) : isLoading && !isTestAddress ? (
+                      ) : isLoading ? (
                         "..."
                       ) : (
                         <NumericFormat
