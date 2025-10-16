@@ -1,75 +1,26 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/components/ui/dialog";
 import { InfoBox } from "~/components/ui/info-box";
-import { Info, TrendingDown, Shield, TrendingUp } from "lucide-react";
+import { TrendingDown, Shield, TrendingUp } from "lucide-react";
 
 interface RedemptionInfoProps {
-  variant?: "inline" | "modal";
   className?: string;
   children?: React.ReactNode;
 }
 
 export function RedemptionInfo({
-  variant = "inline",
   className,
   children,
 }: RedemptionInfoProps) {
-  // Modal content - uses default dialog styles (gray text, dark icons)
-  const modalContent = (
-    <>
-      <div className="text-sm font-normal leading-relaxed font-sora">
-        <p className="mb-2 font-medium">
-          You control your loan's interest rate:
-        </p>
-        <ul className="list-disc list-inside space-y-1 ml-2">
-          <li>Lower rates cost less but carry higher redemption risk</li>
-          <li>
-            Higher rates cost more but provide better redemption protection
-          </li>
-        </ul>
-      </div>
-      <p className="text-sm font-normal leading-relaxed font-sora mt-4">
-        When redeemed, your debt and collateral are reduced equally, so no net
-        loss is incurred.
-      </p>
-      <div className="grid grid-cols-3 gap-4 mt-6">
-        <div className="flex flex-col items-start">
-          <div className="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center mb-2">
-            <TrendingDown className="h-6 w-6 text-[#242424]" />
-          </div>
-          <p className="text-xs font-normal leading-relaxed text-[#94938D]">
-            Redemptions occur when USDU drops below $1
-          </p>
-        </div>
-        <div className="flex flex-col items-start">
-          <div className="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center mb-2">
-            <Shield className="h-6 w-6 text-[#242424]" />
-          </div>
-          <p className="text-xs font-normal leading-relaxed text-[#94938D]">
-            Loans with the lowest interest rate are affected first
-          </p>
-        </div>
-        <div className="flex flex-col items-start">
-          <div className="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center mb-2">
-            <TrendingUp className="h-6 w-6 text-[#242424]" />
-          </div>
-          <p className="text-xs font-normal leading-relaxed text-[#94938D]">
-            Raising the interest rate reduces your redemption risk
-          </p>
-        </div>
-      </div>
-    </>
-  );
-
-  // Inline content - uses blue styling for InfoBox
-  const inlineContent = (
-    <>
+  return (
+    <InfoBox
+      title="Setting Your Interest Rate"
+      variant="blue"
+      className={className}
+      learnMoreUrl="https://uncap.finance/docs/FAQ/redemptions-and-delegations"
+      learnMoreText="Learn more about interest rates and redemptions"
+    >
+      {children && (
+        <div className="mb-4 pb-4 border-b border-blue-200">{children}</div>
+      )}
       <div className="text-[#004BB2] text-sm font-normal leading-relaxed font-sora">
         <p className="mb-2 font-medium">
           You control your loan's interest rate:
@@ -111,40 +62,6 @@ export function RedemptionInfo({
           </p>
         </div>
       </div>
-    </>
-  );
-
-  if (variant === "modal") {
-    return (
-      <Dialog>
-        <DialogTrigger asChild>
-          <Info className="h-3.5 w-3.5 text-neutral-400 cursor-help" />
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Setting Your Interest Rate</DialogTitle>
-          </DialogHeader>
-          <DialogDescription asChild>
-            <div className="space-y-4">{modalContent}</div>
-          </DialogDescription>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
-  // Inline version using InfoBox component
-  return (
-    <InfoBox
-      title="Setting Your Interest Rate"
-      variant="blue"
-      className={className}
-      learnMoreUrl="https://uncap.finance/docs/FAQ/redemptions-and-delegations"
-      learnMoreText="Learn more about interest rates and redemptions"
-    >
-      {children && (
-        <div className="mb-4 pb-4 border-b border-blue-200">{children}</div>
-      )}
-      {inlineContent}
     </InfoBox>
   );
 }

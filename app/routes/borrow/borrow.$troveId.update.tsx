@@ -963,7 +963,7 @@ function UpdatePosition() {
             }
           />
 
-          <RedemptionInfo variant="inline">
+          <RedemptionInfo>
             {hasBeenRedeemed && position && (
               <div className="text-[#004BB2] text-sm font-normal leading-relaxed font-sora">
                 <p className="mb-2 font-medium">

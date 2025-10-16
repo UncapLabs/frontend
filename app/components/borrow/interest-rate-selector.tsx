@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { RedemptionInfo } from "./redemption-info";
+import { InfoDialog } from "~/components/info-dialog";
 import { InterestRateSkeleton } from "./interest-rate-skeleton";
 import { ManualRateControls } from "./manual-rate-controls";
 import { STRKRebateInfo } from "./strk-rebate-info";
@@ -110,7 +110,9 @@ export function InterestRateSelector({
             <h3 className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight">
               Set your Interest Rate
             </h3>
-            <RedemptionInfo variant="modal" />
+            <InfoDialog defaultTab="borrowing">
+              <Info className="h-3.5 w-3.5 text-neutral-400 cursor-help" />
+            </InfoDialog>
           </div>
           {averageRate.data && (
             <span className="text-xs text-neutral-500 font-sora leading-3">

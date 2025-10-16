@@ -6,7 +6,7 @@ import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { TransactionSummary } from "~/components/transaction-summary";
 import { TokenInput } from "~/components/token-input";
 import { ArrowIcon } from "~/components/icons/arrow-icon";
-import { BridgeInfo } from "~/components/bridge-info";
+import { FloatingInfoButton } from "~/components/floating-info-button";
 import { useEffect, useCallback } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
@@ -222,7 +222,7 @@ function Borrow() {
 
   return (
     <>
-      <BridgeInfo />
+      <FloatingInfoButton />
       <div className="w-full mx-auto max-w-7xl py-8 lg:py-12 px-4 sm:px-6 lg:px-8 pb-32">
         <div className="flex justify-between pb-6 lg:pb-8 items-baseline">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-medium leading-10 font-sora text-[#242424]">
@@ -230,353 +230,354 @@ function Borrow() {
           </h1>
         </div>
 
-      <div className="flex flex-col lg:flex-row gap-5">
-        {/* Left Panel */}
-        <div className="flex-1 lg:flex-[2]">
-          {["pending", "success", "error"].includes(currentState) ? (
-            <TransactionStatus
-              transactionHash={transactionHash}
-              isError={currentState === "error"}
-              isSuccess={currentState === "success"}
-              error={transactionError as Error | null}
-              successTitle="Borrow Successful!"
-              successSubtitle="Your position has been created successfully."
-              details={
-                formData.collateralAmount &&
-                formData.borrowAmount &&
-                transactionHash
-                  ? [
-                      {
-                        label: "Collateral Deposited",
-                        value: (
-                          <>
-                            <NumericFormat
-                              displayType="text"
-                              value={formData.collateralAmount.toString()}
-                              thousandSeparator=","
-                              decimalScale={7}
-                              fixedDecimalScale={false}
-                            />{" "}
-                            {collateral.symbol}
-                          </>
-                        ),
-                      },
-                      {
-                        label: "Amount Borrowed",
-                        value: (
-                          <>
-                            <NumericFormat
-                              displayType="text"
-                              value={formData.borrowAmount.toString()}
-                              thousandSeparator=","
-                              decimalScale={2}
-                              fixedDecimalScale
-                            />{" "}
-                            USDU
-                          </>
-                        ),
-                      },
-                      {
-                        label: "Interest Rate (APR)",
-                        value: `${formData.interestRate.toString()}%`,
-                      },
-                    ]
-                  : undefined
-              }
-              onComplete={handleNewBorrow}
-              completeButtonText="Create New Position"
-            />
-          ) : (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                form.handleSubmit();
-              }}
-            >
-              {/* Show borrowing restrictions alert if TCR is below CCR */}
-              <BorrowingRestrictionsAlert collateralType={collateral.id} />
-
-              <div
-                className={`space-y-1 ${
-                  isSending || isPending ? "opacity-75" : ""
-                }`}
+        <div className="flex flex-col lg:flex-row gap-5">
+          {/* Left Panel */}
+          <div className="flex-1 lg:flex-[2]">
+            {["pending", "success", "error"].includes(currentState) ? (
+              <TransactionStatus
+                transactionHash={transactionHash}
+                isError={currentState === "error"}
+                isSuccess={currentState === "success"}
+                error={transactionError as Error | null}
+                successTitle="Borrow Successful!"
+                successSubtitle="Your position has been created successfully."
+                details={
+                  formData.collateralAmount &&
+                  formData.borrowAmount &&
+                  transactionHash
+                    ? [
+                        {
+                          label: "Collateral Deposited",
+                          value: (
+                            <>
+                              <NumericFormat
+                                displayType="text"
+                                value={formData.collateralAmount.toString()}
+                                thousandSeparator=","
+                                decimalScale={7}
+                                fixedDecimalScale={false}
+                              />{" "}
+                              {collateral.symbol}
+                            </>
+                          ),
+                        },
+                        {
+                          label: "Amount Borrowed",
+                          value: (
+                            <>
+                              <NumericFormat
+                                displayType="text"
+                                value={formData.borrowAmount.toString()}
+                                thousandSeparator=","
+                                decimalScale={2}
+                                fixedDecimalScale
+                              />{" "}
+                              USDU
+                            </>
+                          ),
+                        },
+                        {
+                          label: "Interest Rate (APR)",
+                          value: `${formData.interestRate.toString()}%`,
+                        },
+                      ]
+                    : undefined
+                }
+                onComplete={handleNewBorrow}
+                completeButtonText="Create New Position"
+              />
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  form.handleSubmit();
+                }}
               >
-                {/* Deposit Collateral Section */}
-                <form.Field
-                  name="collateralAmount"
-                  asyncDebounceMs={300}
-                  validators={{
-                    onChangeAsync: async ({ value }) => {
-                      if (!address || !value) return undefined;
+                {/* Show borrowing restrictions alert if TCR is below CCR */}
+                <BorrowingRestrictionsAlert collateralType={collateral.id} />
 
-                      // Don't validate balance until it's loaded
-                      if (!bitcoinBalance) return undefined;
-
-                      // Convert balance to Big for precise comparison
-                      const balance = bigintToBig(
-                        bitcoinBalance.value,
-                        getBalanceDecimals(collateral)
-                      );
-
-                      return validators.compose(
-                        validators.insufficientBalance(value, balance),
-                        validators.maximumAmount(value, new Big(MAX_LIMIT))
-                      );
-                    },
-                  }}
-                  listeners={{
-                    onChangeDebounceMs: 500,
-                    onChange: ({ fieldApi }) => {
-                      // When collateral changes, revalidate borrow amount
-                      // This ensures LTV and debt limit checks are re-run
-                      const currentBorrowAmount =
-                        fieldApi.form.getFieldValue("borrowAmount");
-                      if (
-                        currentBorrowAmount !== undefined &&
-                        currentBorrowAmount.gt(0)
-                      ) {
-                        fieldApi.form.validateField("borrowAmount", "change");
-                      }
-                    },
-                  }}
+                <div
+                  className={`space-y-1 ${
+                    isSending || isPending ? "opacity-75" : ""
+                  }`}
                 >
-                  {(field) => (
-                    <TokenInput
-                      token={collateral}
-                      tokens={COLLATERAL_LIST}
-                      onTokenChange={(newToken) => {
-                        // Cast back to Collateral since we know these are collaterals
-                        const newCollateral = newToken as any;
-                        setSelectedTokenAddress(
-                          newCollateral.addresses
-                            ? newCollateral.addresses.token
-                            : newCollateral.address
-                        );
-                        // Reset amount when token changes
-                        field.handleChange(undefined);
-                      }}
-                      balance={bitcoinBalance}
-                      price={bitcoin}
-                      value={collateralAmount ?? undefined}
-                      onChange={(value) => {
-                        // Update URL state directly - nuqs updates React state instantly
-                        setCollateralAmount(value ?? null);
-                        // Also update form for validation
-                        field.handleChange(value);
-                      }}
-                      onBlur={field.handleBlur}
-                      label="Deposit Amount"
-                      percentageButtons
-                      onPercentageClick={handleCollateralPercentageClick}
-                      disabled={isSending || isPending}
-                      includeMax={true}
-                      tokenSelectorBgColor="bg-token-bg"
-                      tokenSelectorTextColor="text-token-orange"
-                    />
-                  )}
-                </form.Field>
+                  {/* Deposit Collateral Section */}
+                  <form.Field
+                    name="collateralAmount"
+                    asyncDebounceMs={300}
+                    validators={{
+                      onChangeAsync: async ({ value }) => {
+                        if (!address || !value) return undefined;
 
-                <div className="relative flex justify-center items-center">
-                  <div className="absolute z-10">
-                    <ArrowIcon
-                      size={40}
-                      className="sm:w-12 sm:h-12 md:w-20 md:h-20"
-                      innerCircleColor="#242424"
-                      direction="down"
-                    />
+                        // Don't validate balance until it's loaded
+                        if (!bitcoinBalance) return undefined;
+
+                        // Convert balance to Big for precise comparison
+                        const balance = bigintToBig(
+                          bitcoinBalance.value,
+                          getBalanceDecimals(collateral)
+                        );
+
+                        return validators.compose(
+                          validators.insufficientBalance(value, balance),
+                          validators.maximumAmount(value, new Big(MAX_LIMIT))
+                        );
+                      },
+                    }}
+                    listeners={{
+                      onChangeDebounceMs: 500,
+                      onChange: ({ fieldApi }) => {
+                        // When collateral changes, revalidate borrow amount
+                        // This ensures LTV and debt limit checks are re-run
+                        const currentBorrowAmount =
+                          fieldApi.form.getFieldValue("borrowAmount");
+                        if (
+                          currentBorrowAmount !== undefined &&
+                          currentBorrowAmount.gt(0)
+                        ) {
+                          fieldApi.form.validateField("borrowAmount", "change");
+                        }
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <TokenInput
+                        token={collateral}
+                        tokens={COLLATERAL_LIST}
+                        onTokenChange={(newToken) => {
+                          // Cast back to Collateral since we know these are collaterals
+                          const newCollateral = newToken as any;
+                          setSelectedTokenAddress(
+                            newCollateral.addresses
+                              ? newCollateral.addresses.token
+                              : newCollateral.address
+                          );
+                          // Reset amount when token changes
+                          field.handleChange(undefined);
+                        }}
+                        balance={bitcoinBalance}
+                        price={bitcoin}
+                        value={collateralAmount ?? undefined}
+                        onChange={(value) => {
+                          // Update URL state directly - nuqs updates React state instantly
+                          setCollateralAmount(value ?? null);
+                          // Also update form for validation
+                          field.handleChange(value);
+                        }}
+                        onBlur={field.handleBlur}
+                        label="Deposit Amount"
+                        percentageButtons
+                        onPercentageClick={handleCollateralPercentageClick}
+                        disabled={isSending || isPending}
+                        includeMax={true}
+                        tokenSelectorBgColor="bg-token-bg"
+                        tokenSelectorTextColor="text-token-orange"
+                      />
+                    )}
+                  </form.Field>
+
+                  <div className="relative flex justify-center items-center">
+                    <div className="absolute z-10">
+                      <ArrowIcon
+                        size={40}
+                        className="sm:w-12 sm:h-12 md:w-20 md:h-20"
+                        innerCircleColor="#242424"
+                        direction="down"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Borrow Stablecoin Section */}
+                  <form.Field
+                    name="borrowAmount"
+                    asyncDebounceMs={300}
+                    validators={{
+                      onChangeAsync: async ({ value, fieldApi }) => {
+                        if (!value) return undefined;
+
+                        const collateral =
+                          fieldApi.form.getFieldValue("collateralAmount");
+
+                        // Don't validate until prices are loaded
+                        if (!bitcoin?.price || !usdu?.price) return undefined;
+
+                        // Calculate debt limit inline with proper collateralization ratio
+                        const debtLimit =
+                          collateral && bitcoin?.price
+                            ? computeDebtLimit(
+                                collateral,
+                                bitcoin.price,
+                                minCollateralizationRatio
+                              )
+                            : new Big(0);
+
+                        return validators.compose(
+                          validators.requiresCollateral(value, collateral),
+                          validators.minimumUsdValue(
+                            value,
+                            usdu.price,
+                            new Big(200)
+                          ),
+                          validators.debtLimit(value, debtLimit),
+                          // LTV check
+                          (() => {
+                            if (!collateral) return undefined;
+                            const collateralValue = collateral.times(
+                              bitcoin.price
+                            );
+                            const borrowValue = value.times(usdu.price);
+                            const maxLtvPercent = new Big(1)
+                              .div(minCollateralizationRatio)
+                              .times(100);
+                            return validators.ltvRatio(
+                              borrowValue,
+                              collateralValue,
+                              maxLtvPercent
+                            );
+                          })()
+                        );
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <TokenInput
+                        token={TOKENS.USDU}
+                        price={usdu}
+                        value={borrowAmount ?? undefined}
+                        onChange={(value) => {
+                          // Update URL state directly - nuqs updates React state instantly
+                          setBorrowAmount(value ?? null);
+                          // Also update form for validation
+                          field.handleChange(value);
+                        }}
+                        onBlur={field.handleBlur}
+                        label="Borrow Amount"
+                        percentageButtons
+                        percentageButtonsOnHover
+                        onPercentageClick={handleBorrowPercentageClick}
+                        disabled={isSending || isPending}
+                        showBalance={false}
+                        tokenSelectorBgColor="bg-token-bg-red/10"
+                        tokenSelectorTextColor="text-token-bg-red"
+                        maxValue={100000000}
+                      />
+                    )}
+                  </form.Field>
+
+                  {/* Interest Rate Options */}
+                  <InterestRateSelector
+                    interestRate={
+                      interestRate ? Number(interestRate.toString()) : 5
+                    }
+                    onInterestRateChange={(rate) => {
+                      if (!isSending && !isPending) {
+                        const rateBig = new Big(rate).round(2);
+                        form.setFieldValue("interestRate", rateBig);
+                        // Update URL
+                        setInterestRate(rateBig);
+                      }
+                    }}
+                    disabled={isSending || isPending}
+                    borrowAmount={borrowAmount ?? undefined}
+                    collateralAmount={collateralAmount ?? undefined}
+                    collateralPriceUSD={bitcoin?.price}
+                    collateralType={collateral.id}
+                  />
+
+                  {/* Borrow Button */}
+                  <div className="flex flex-col items-start space-y-4 mt-6">
+                    <form.Subscribe
+                      selector={(state) => ({
+                        canSubmit: state.canSubmit,
+                        collateralErrors:
+                          state.fieldMeta.collateralAmount?.errors || [],
+                        borrowErrors:
+                          state.fieldMeta.borrowAmount?.errors || [],
+                        collateralAmount: state.values.collateralAmount,
+                        borrowAmount: state.values.borrowAmount,
+                      })}
+                    >
+                      {({
+                        canSubmit,
+                        collateralErrors,
+                        borrowErrors,
+                        collateralAmount,
+                        borrowAmount,
+                      }) => {
+                        let buttonText = "Borrow";
+
+                        if (!address) {
+                          buttonText = "Connect Wallet";
+                        } else if (collateralErrors.length > 0) {
+                          buttonText = collateralErrors[0];
+                        } else if (borrowErrors.length > 0) {
+                          buttonText = borrowErrors[0];
+                        } else if (!collateralAmount) {
+                          buttonText = "Deposit collateral";
+                        } else if (!borrowAmount) {
+                          buttonText = "Enter borrow amount";
+                        }
+
+                        return (
+                          <Button
+                            type={address ? "submit" : "button"}
+                            onClick={!address ? connectWallet : undefined}
+                            disabled={
+                              address &&
+                              (!collateralAmount ||
+                                !borrowAmount ||
+                                borrowAmount.lte(0) ||
+                                isSending ||
+                                isPending ||
+                                !canSubmit)
+                            }
+                            className="w-full h-12 bg-token-bg-blue hover:bg-blue-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all whitespace-nowrap"
+                          >
+                            {isSending
+                              ? "Confirm in wallet..."
+                              : isPending
+                              ? "Transaction pending..."
+                              : buttonText}
+                          </Button>
+                        );
+                      }}
+                    </form.Subscribe>
                   </div>
                 </div>
+              </form>
+            )}
+          </div>
 
-                {/* Borrow Stablecoin Section */}
-                <form.Field
-                  name="borrowAmount"
-                  asyncDebounceMs={300}
-                  validators={{
-                    onChangeAsync: async ({ value, fieldApi }) => {
-                      if (!value) return undefined;
-
-                      const collateral =
-                        fieldApi.form.getFieldValue("collateralAmount");
-
-                      // Don't validate until prices are loaded
-                      if (!bitcoin?.price || !usdu?.price) return undefined;
-
-                      // Calculate debt limit inline with proper collateralization ratio
-                      const debtLimit =
-                        collateral && bitcoin?.price
-                          ? computeDebtLimit(
-                              collateral,
-                              bitcoin.price,
-                              minCollateralizationRatio
-                            )
-                          : new Big(0);
-
-                      return validators.compose(
-                        validators.requiresCollateral(value, collateral),
-                        validators.minimumUsdValue(
-                          value,
-                          usdu.price,
-                          new Big(200)
-                        ),
-                        validators.debtLimit(value, debtLimit),
-                        // LTV check
-                        (() => {
-                          if (!collateral) return undefined;
-                          const collateralValue = collateral.times(
-                            bitcoin.price
-                          );
-                          const borrowValue = value.times(usdu.price);
-                          const maxLtvPercent = new Big(1)
-                            .div(minCollateralizationRatio)
-                            .times(100);
-                          return validators.ltvRatio(
-                            borrowValue,
-                            collateralValue,
-                            maxLtvPercent
-                          );
-                        })()
-                      );
-                    },
-                  }}
-                >
-                  {(field) => (
-                    <TokenInput
-                      token={TOKENS.USDU}
-                      price={usdu}
-                      value={borrowAmount ?? undefined}
-                      onChange={(value) => {
-                        // Update URL state directly - nuqs updates React state instantly
-                        setBorrowAmount(value ?? null);
-                        // Also update form for validation
-                        field.handleChange(value);
-                      }}
-                      onBlur={field.handleBlur}
-                      label="Borrow Amount"
-                      percentageButtons
-                      percentageButtonsOnHover
-                      onPercentageClick={handleBorrowPercentageClick}
-                      disabled={isSending || isPending}
-                      showBalance={false}
-                      tokenSelectorBgColor="bg-token-bg-red/10"
-                      tokenSelectorTextColor="text-token-bg-red"
-                      maxValue={100000000}
-                    />
-                  )}
-                </form.Field>
-
-                {/* Interest Rate Options */}
-                <InterestRateSelector
-                  interestRate={
-                    interestRate ? Number(interestRate.toString()) : 5
-                  }
-                  onInterestRateChange={(rate) => {
-                    if (!isSending && !isPending) {
-                      const rateBig = new Big(rate).round(2);
-                      form.setFieldValue("interestRate", rateBig);
-                      // Update URL
-                      setInterestRate(rateBig);
-                    }
-                  }}
-                  disabled={isSending || isPending}
-                  borrowAmount={borrowAmount ?? undefined}
-                  collateralAmount={collateralAmount ?? undefined}
-                  collateralPriceUSD={bitcoin?.price}
-                  collateralType={collateral.id}
-                />
-
-                {/* Borrow Button */}
-                <div className="flex flex-col items-start space-y-4 mt-6">
-                  <form.Subscribe
-                    selector={(state) => ({
-                      canSubmit: state.canSubmit,
-                      collateralErrors:
-                        state.fieldMeta.collateralAmount?.errors || [],
-                      borrowErrors: state.fieldMeta.borrowAmount?.errors || [],
-                      collateralAmount: state.values.collateralAmount,
-                      borrowAmount: state.values.borrowAmount,
-                    })}
-                  >
-                    {({
-                      canSubmit,
-                      collateralErrors,
-                      borrowErrors,
-                      collateralAmount,
-                      borrowAmount,
-                    }) => {
-                      let buttonText = "Borrow";
-
-                      if (!address) {
-                        buttonText = "Connect Wallet";
-                      } else if (collateralErrors.length > 0) {
-                        buttonText = collateralErrors[0];
-                      } else if (borrowErrors.length > 0) {
-                        buttonText = borrowErrors[0];
-                      } else if (!collateralAmount) {
-                        buttonText = "Deposit collateral";
-                      } else if (!borrowAmount) {
-                        buttonText = "Enter borrow amount";
-                      }
-
-                      return (
-                        <Button
-                          type={address ? "submit" : "button"}
-                          onClick={!address ? connectWallet : undefined}
-                          disabled={
-                            address &&
-                            (!collateralAmount ||
-                              !borrowAmount ||
-                              borrowAmount.lte(0) ||
-                              isSending ||
-                              isPending ||
-                              !canSubmit)
-                          }
-                          className="w-full h-12 bg-token-bg-blue hover:bg-blue-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all whitespace-nowrap"
-                        >
-                          {isSending
-                            ? "Confirm in wallet..."
-                            : isPending
-                            ? "Transaction pending..."
-                            : buttonText}
-                        </Button>
-                      );
-                    }}
-                  </form.Subscribe>
-                </div>
-              </div>
-            </form>
-          )}
-        </div>
-
-        {/* Right Panel - Transaction Summary and Redemption Info */}
-        <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px] space-y-4">
-          <TransactionSummary
-            type="open"
-            changes={{
-              collateral: {
-                to: collateralAmount || new Big(0),
-                token: collateral.symbol,
-              },
-              collateralValueUSD: {
-                to:
-                  collateralAmount && bitcoin?.price
-                    ? collateralAmount.times(bitcoin.price)
-                    : new Big(0),
-              },
-              debt: {
-                to: borrowAmount || new Big(0),
-              },
-              interestRate: {
-                to: interestRate || new Big(5),
-              },
-            }}
-            liquidationPrice={metrics.liquidationPrice}
-            collateralType={collateral.id}
-          />
-          <RedemptionInfo variant="inline" />
+          {/* Right Panel - Transaction Summary and Redemption Info */}
+          <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px] space-y-4">
+            <TransactionSummary
+              type="open"
+              changes={{
+                collateral: {
+                  to: collateralAmount || new Big(0),
+                  token: collateral.symbol,
+                },
+                collateralValueUSD: {
+                  to:
+                    collateralAmount && bitcoin?.price
+                      ? collateralAmount.times(bitcoin.price)
+                      : new Big(0),
+                },
+                debt: {
+                  to: borrowAmount || new Big(0),
+                },
+                interestRate: {
+                  to: interestRate || new Big(5),
+                },
+              }}
+              liquidationPrice={metrics.liquidationPrice}
+              collateralType={collateral.id}
+            />
+            <RedemptionInfo />
+          </div>
         </div>
       </div>
-    </div>
     </>
   );
 }

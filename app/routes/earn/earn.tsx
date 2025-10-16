@@ -9,6 +9,7 @@ import { useQueryState, parseAsString, parseAsBoolean } from "nuqs";
 import { DepositFlow } from "~/components/earn/deposit-flow";
 import { WithdrawFlow } from "~/components/earn/withdraw-flow";
 import { ClaimFlow } from "~/components/earn/claim-flow";
+import { InfoBox } from "~/components/ui/info-box";
 import { createMeta } from "~/lib/utils/meta";
 import type { Route } from "./+types/earn";
 
@@ -146,8 +147,36 @@ function Earn() {
         </div>
 
         {/* Right Section: Table */}
-        <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px]">
+        <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px] space-y-4">
           <StabilityPoolsTable />
+          <InfoBox
+            title="How Stability Pool Yields Work"
+            variant="blue"
+            learnMoreUrl="https://uncap.finance/docs/FAQ/usdu-and-earn"
+            learnMoreText="Learn more about the Stability Pool"
+          >
+            <div className="text-[#004BB2] text-sm font-normal leading-relaxed font-sora space-y-4">
+              <div>
+                <p className="font-medium mb-2">
+                  Yield comes from two sources:
+                </p>
+                <ul className="list-disc list-inside space-y-1 ml-2">
+                  <li>
+                    <strong>Interest payments:</strong> 75% of borrower interest
+                    flows to depositors, paid in USDU
+                  </li>
+                  <li>
+                    <strong>Liquidation gains:</strong> Your USDU purchases
+                    collateral from liquidated loans at ~5% discount
+                  </li>
+                </ul>
+              </div>
+              <p>
+                No lockup periods—withdraw anytime. Yield is sustainable and
+                real, with no token emissions required.
+              </p>
+            </div>
+          </InfoBox>
         </div>
       </div>
     </div>
