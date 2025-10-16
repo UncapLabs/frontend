@@ -15,6 +15,13 @@
       "when": 1760362282609,
       "tag": "0001_easy_jubilee",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1760618389916,
+      "tag": "0002_friendly_arachne",
+      "breakpoints": true
     }
   ]
 }

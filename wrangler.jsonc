@@ -27,21 +27,6 @@
 			"migrations_dir": "migrations"
 		}
 	],
-
-	// Cron Triggers
-	"triggers": {
-		"crons": [
-			"0 0 * * FRI"  // Weekly points calculation (Friday midnight UTC)
-		]
-	},
-
-	"migrations": [
-		{
-			"tag": "v1",
-			"new_classes": ["SnapshotCollectorDO"]
-		}
-	],
-
 	"env": {
     "dev": {
 			"d1_databases": [
