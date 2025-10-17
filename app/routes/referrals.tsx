@@ -148,19 +148,30 @@ export default function ReferralsPage() {
                   <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider md:hidden mb-1">
                     Points Since Referral
                   </p>
-                  <p className="text-sm font-medium font-sora text-[#242424]">
-                    {referee.pointsSinceReferral.toFixed(2)} pts
-                  </p>
+                  {referee.pointsSinceReferral > 0 ? (
+                    <p className="text-sm font-medium font-sora text-[#242424]">
+                      {referee.pointsSinceReferral.toFixed(2)} pts
+                    </p>
+                  ) : (
+                    <p className="text-sm font-medium font-sora text-[#94938D]">
+                      Pending weekly update
+                    </p>
+                  )}
                 </div>
 
                 <div className="md:text-right">
                   <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider md:hidden mb-1">
                     Your Bonus
                   </p>
-                  <p className="text-sm font-bold font-sora text-[#00C853]">
-                    +{referee.bonusEarned.toFixed(2)}{" "}
-                    pts
-                  </p>
+                  {referee.bonusEarned > 0 ? (
+                    <p className="text-sm font-bold font-sora text-[#00C853]">
+                      +{referee.bonusEarned.toFixed(2)} pts
+                    </p>
+                  ) : (
+                    <p className="text-sm font-medium font-sora text-[#94938D]">
+                      Pending weekly update
+                    </p>
+                  )}
                 </div>
               </div>
             ))}

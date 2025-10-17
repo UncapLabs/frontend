@@ -400,15 +400,21 @@ export async function getReferralInfo(userAddress: string, env: Env): Promise<Re
   return {
     referralCode: codeData?.referralCode || null,
     appliedReferralCode: appliedReferralData?.referralCode || null,
-    referees: baseReferrals.map((ref) => ({
-      anonymousName: ref.refereeAnonymousName,
-      appliedAt:
-        typeof ref.appliedAt === "number"
-          ? ref.appliedAt
-          : new Date(ref.appliedAt).getTime(),
-      pointsSinceReferral: pointsByReferee.get(ref.refereeAddress) ?? 0,
-      bonusEarned: bonusByReferee.get(ref.refereeAddress) ?? 0,
-    })),
+    referees: baseReferrals.map((ref) => {
+      const bonus = bonusByReferee.get(ref.refereeAddress) ?? 0;
+      const points =
+        bonus > 0 ? pointsByReferee.get(ref.refereeAddress) ?? 0 : 0;
+
+      return {
+        anonymousName: ref.refereeAnonymousName,
+        appliedAt:
+          typeof ref.appliedAt === "number"
+            ? ref.appliedAt
+            : new Date(ref.appliedAt).getTime(),
+        pointsSinceReferral: points,
+        bonusEarned: bonus,
+      };
+    }),
     totalReferrals: baseReferrals.length,
     totalBonusEarned,
     bonusRate,
