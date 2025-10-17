@@ -99,7 +99,7 @@ export default function ReferralsPage() {
                 Joined
               </p>
               <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider">
-                Total Points
+                Points Since Referral
               </p>
               <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider text-right">
                 Your Bonus
@@ -143,10 +143,10 @@ export default function ReferralsPage() {
 
                 <div>
                   <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider md:hidden mb-1">
-                    Total Points
+                    Points Since Referral
                   </p>
                   <p className="text-sm font-medium font-sora text-[#242424]">
-                    {referee.totalPoints.toFixed(2)} pts
+                    {referee.pointsSinceReferral.toFixed(2)} pts
                   </p>
                 </div>
 
@@ -155,7 +155,7 @@ export default function ReferralsPage() {
                     Your Bonus
                   </p>
                   <p className="text-sm font-bold font-sora text-[#00C853]">
-                    +{(referee.totalPoints * normalizedBonusRate).toFixed(2)}{" "}
+                    +{referee.bonusEarned.toFixed(2)}{" "}
                     pts
                   </p>
                 </div>

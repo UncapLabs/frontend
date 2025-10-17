@@ -121,9 +121,9 @@ export async function generateReferralCode(
       });
 
       return code;
-    } catch (error: any) {
+    } catch (error: unknown) {
       // If duplicate code, try again
-      if (error.message?.includes("UNIQUE constraint failed")) {
+      if (error instanceof Error && error.message.includes("UNIQUE constraint failed")) {
         attempts++;
         continue;
       }
@@ -236,11 +236,11 @@ export async function applyReferralCode(
       });
 
     return { success: true, message: "Referral code applied successfully" };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[Referral] Error applying code:", error);
 
     // Handle race condition (another request applied a code simultaneously)
-    if (error.message?.includes("UNIQUE constraint failed")) {
+    if (error instanceof Error && error.message.includes("UNIQUE constraint failed")) {
       return {
         success: false,
         message: "You have already used a referral code",
@@ -251,23 +251,27 @@ export async function applyReferralCode(
   }
 }
 
-export async function getReferralInfo(
-  userAddress: string,
-  env: Env
-): Promise<{
+type ReferralInfoReferee = {
+  anonymousName: string;
+  appliedAt: number;
+  pointsSinceReferral: number;
+  bonusEarned: number;
+};
+
+type ReferralInfo = {
   referralCode: string | null;
   appliedReferralCode: string | null;
-  referees: Array<{
-    anonymousName: string;
-    appliedAt: Date;
-    totalPoints: number;
-  }>;
+  referees: ReferralInfoReferee[];
   totalReferrals: number;
   totalBonusEarned: number;
   bonusRate: number;
-}> {
+};
+
+export async function getReferralInfo(userAddress: string, env: Env): Promise<ReferralInfo> {
   const db = createDbClient(env.DB);
   const normalizedAddress = userAddress.toLowerCase();
+
+  const bonusRate = 0.1;
 
   // Get user's referral code
   const codeData = await db
@@ -289,7 +293,16 @@ export async function getReferralInfo(
       refereeAnonymousName: referrals.refereeAnonymousName,
       refereeAddress: referrals.refereeAddress,
       appliedAt: referrals.appliedAt,
-      totalPoints: sql<number>`COALESCE(SUM(${userPoints.totalPoints}), 0)`,
+      pointsSinceReferral: sql<number>`
+        COALESCE(SUM(
+          CASE
+            WHEN ${userPoints.weekStart} IS NOT NULL
+              AND strftime('%s', ${userPoints.weekStart}) >= (${referrals.appliedAt} / 1000)
+            THEN ${userPoints.totalPoints}
+            ELSE 0
+          END
+        ), 0)
+      `,
     })
     .from(referrals)
     .leftJoin(userPoints, eq(referrals.refereeAddress, userPoints.userAddress))
@@ -317,10 +330,11 @@ export async function getReferralInfo(
     referees: refereesData.map((r) => ({
       anonymousName: r.refereeAnonymousName,
       appliedAt: r.appliedAt,
-      totalPoints: r.totalPoints,
+      pointsSinceReferral: r.pointsSinceReferral,
+      bonusEarned: r.pointsSinceReferral * bonusRate,
     })),
     totalReferrals: refereesData.length,
     totalBonusEarned: bonusData?.totalBonus || 0,
-    bonusRate: 0.1,
+    bonusRate,
   };
 }
