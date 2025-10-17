@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { InfoDialog } from "~/components/info-dialog";
-import { InterestRateSkeleton } from "./interest-rate-skeleton";
 import { ManualRateControls } from "./manual-rate-controls";
 import { STRKRebateInfo } from "./strk-rebate-info";
 import { Info, AlertTriangle } from "lucide-react";
@@ -114,11 +113,13 @@ export function InterestRateSelector({
               <Info className="h-3.5 w-3.5 text-neutral-400 cursor-help" />
             </InfoDialog>
           </div>
-          {averageRate.data && (
-            <span className="text-xs text-neutral-500 font-sora leading-3">
-              avg: {averageRate.data.times(100).toFixed(2)}%
-            </span>
-          )}
+          <span className="text-xs text-neutral-500 font-sora leading-3">
+            {averageRate.data ? (
+              <>avg: {averageRate.data.times(100).toFixed(2)}%</>
+            ) : (
+              <span className="invisible">avg: 0.00%</span>
+            )}
+          </span>
         </div>
         {/* <RateModeSelector
           mode={rateMode}
@@ -131,94 +132,65 @@ export function InterestRateSelector({
         {/* {rateMode === "manual" ? ( */}
         {/* <> */}
         <div className="space-y-4">
-          {isLoading ? (
-            <InterestRateSkeleton />
-          ) : hasData ? (
-            <>
-              <div className="flex items-start gap-4">
-                <ManualRateControls
-                  interestRate={interestRate}
-                  onInterestRateChange={onInterestRateChange}
-                  borrowAmount={borrowAmount}
-                  visualizationData={visualizationData.data}
-                  disabled={disabled}
-                />
-              </div>
+          <>
+            <div className="flex items-start gap-4">
+              <ManualRateControls
+                interestRate={interestRate}
+                onInterestRateChange={onInterestRateChange}
+                borrowAmount={borrowAmount}
+                visualizationData={hasData ? visualizationData.data : undefined}
+                disabled={disabled}
+              />
+            </div>
 
-              {/* Combined Redeemable Before You and Redemption Risk */}
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <span className="text-neutral-800 text-xs font-medium font-sora leading-3 whitespace-nowrap">
-                    <span className="hidden sm:inline">
-                      Redeemable before you:
-                    </span>
-                    <span className="sm:hidden">Ahead:</span>
+            {/* Combined Redeemable Before You and Redemption Risk */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="text-neutral-800 text-xs font-medium font-sora leading-3 whitespace-nowrap">
+                  <span className="hidden sm:inline">
+                    Redeemable before you:
                   </span>
-                  <span className="text-xs font-medium text-neutral-800 font-sora">
-                    {debtInFront.gt(0)
-                      ? `$${debtInFront.div(1000000).toFixed(2)}M`
-                      : "—"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
-                    <span className="hidden sm:inline">Redemption Risk:</span>
-                    <span className="sm:hidden">Risk:</span>
-                  </span>
-                  {redemptionRisk.data && (
-                    <div
-                      className={`px-1.5 sm:px-2 py-3 h-6 flex items-center justify-center rounded-md border ${
-                        redemptionRisk.data === "Low"
-                          ? "bg-green-500/10 border-green-500/20"
+                  <span className="sm:hidden">Ahead:</span>
+                </span>
+                <span className="text-xs font-medium text-neutral-800 font-sora">
+                  {debtInFront.gt(0)
+                    ? `$${debtInFront.div(1000000).toFixed(2)}M`
+                    : "—"}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
+                  <span className="hidden sm:inline">Redemption Risk:</span>
+                  <span className="sm:hidden">Risk:</span>
+                </span>
+                <div
+                  className={`px-1.5 sm:px-2 py-3 h-6 flex items-center justify-center rounded-md border ${
+                    redemptionRisk.data
+                      ? redemptionRisk.data === "Low"
+                        ? "bg-green-500/10 border-green-500/20"
+                        : redemptionRisk.data === "Medium"
+                        ? "bg-amber-500/10 border-amber-500/20"
+                        : "bg-red-500/10 border-red-500/20"
+                      : "bg-neutral-100 border-neutral-200"
+                  }`}
+                >
+                  <span
+                    className={`text-xs font-normal font-sora ${
+                      redemptionRisk.data
+                        ? redemptionRisk.data === "Low"
+                          ? "text-green-700"
                           : redemptionRisk.data === "Medium"
-                          ? "bg-amber-500/10 border-amber-500/20"
-                          : redemptionRisk.data === "High"
-                          ? "bg-red-500/10 border-red-500/20"
-                          : "bg-neutral-100 border-neutral-200"
-                      }`}
-                    >
-                      <span
-                        className={`text-xs font-normal font-sora ${
-                          redemptionRisk.data === "Low"
-                            ? "text-green-700"
-                            : redemptionRisk.data === "Medium"
-                            ? "text-amber-700"
-                            : redemptionRisk.data === "High"
-                            ? "text-red-700"
-                            : "text-neutral-500"
-                        }`}
-                      >
-                        {redemptionRisk.data}
-                      </span>
-                    </div>
-                  )}
+                          ? "text-amber-700"
+                          : "text-red-700"
+                        : "text-neutral-500"
+                    }`}
+                  >
+                    {redemptionRisk.data || "—"}
+                  </span>
                 </div>
               </div>
-            </>
-          ) : (
-            // No data or error - show ManualRateControls without chart
-            <>
-              <div className="max-w-md">
-                <div>
-                  <ManualRateControls
-                    interestRate={interestRate}
-                    onInterestRateChange={onInterestRateChange}
-                    visualizationData={undefined} // No data available
-                    disabled={disabled}
-                  />
-                  {/* Yearly Interest Cost - Display below the interest rate input */}
-                  {borrowAmount && borrowAmount.gt(0) && (
-                    <div className="mt-2 ml-1">
-                      <span className="text-xs text-slate-500">
-                        {borrowAmount.times(interestRate).div(100).toFixed(2)}{" "}
-                        USDU / year
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
+            </div>
+          </>
         </div>
 
         {/* STRK Rebate Information */}

@@ -91,7 +91,7 @@ function Borrow() {
     defaultValues: {
       collateralAmount: undefined as Big | undefined,
       borrowAmount: undefined as Big | undefined,
-      interestRate: new Big("5"),
+      interestRate: new Big("2.5"),
     },
     onSubmit: async ({ value }) => {
       if (!isReady) {
@@ -126,7 +126,7 @@ function Borrow() {
   } = useBorrow({
     collateralAmount: collateralAmount ?? undefined,
     borrowAmount: borrowAmount ?? undefined,
-    interestRate: interestRate ?? new Big("5"),
+    interestRate: interestRate ?? new Big("2.5"),
     collateral: collateral,
   });
 
@@ -217,7 +217,7 @@ function Borrow() {
     reset(); // Reset transaction state
     setBorrowAmount(null);
     setCollateralAmount(null);
-    setInterestRate(new Big("5"));
+    setInterestRate(new Big("2.5"));
   }, [form, reset, setBorrowAmount, setCollateralAmount, setInterestRate]);
 
   return (
@@ -502,7 +502,7 @@ function Borrow() {
                   {/* Interest Rate Options */}
                   <InterestRateSelector
                     interestRate={
-                      interestRate ? Number(interestRate.toString()) : 5
+                      interestRate ? Number(interestRate.toString()) : 2.5
                     }
                     onInterestRateChange={(rate) => {
                       if (!isSending && !isPending) {
@@ -602,7 +602,7 @@ function Borrow() {
                   to: borrowAmount || new Big(0),
                 },
                 interestRate: {
-                  to: interestRate || new Big(5),
+                  to: interestRate || new Big(2.5),
                 },
               }}
               liquidationPrice={metrics.liquidationPrice}

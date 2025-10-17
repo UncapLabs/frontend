@@ -136,7 +136,7 @@ export function InterestSlider({
       style={{
         minWidth: CHART_CONSTANTS.MIN_WIDTH,
         width: "100%",
-        height: chart && chart.length > 0 ? CHART_CONSTANTS.HEIGHT : 32,
+        height: CHART_CONSTANTS.HEIGHT,
         cursor: disabled ? "default" : "pointer",
       }}
       onMouseDown={handleMouseDown}
