@@ -42,8 +42,7 @@ export function useLeaderboard(
   const pageCount =
     data?.pageCount ?? (total > 0 ? Math.ceil(total / safeLimit) : 0);
   const serverHasMore = data?.hasMore ?? false;
-  const hasMore =
-    pageCount > 0 ? safePage + 1 < pageCount : serverHasMore;
+  const hasMore = pageCount > 0 ? safePage + 1 < pageCount : serverHasMore;
 
   return {
     leaderboard: data?.leaderboard ?? [],

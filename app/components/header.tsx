@@ -8,9 +8,15 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "~/components/ui/drawer";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
-import { Menu as MenuIcon, X as XIcon } from "lucide-react";
+import { Menu as MenuIcon, X as XIcon, ChevronDown } from "lucide-react";
 import { Link, useLocation } from "react-router";
 import { TransactionHistoryButton } from "./transaction-history-button";
 
@@ -148,6 +154,35 @@ function PointsIcon() {
   );
 }
 
+// Leaderboard Icon (Podium)
+function LeaderboardIcon() {
+  return (
+    <svg
+      width="14"
+      height="12"
+      viewBox="0 0 14 12"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M5 5H9V11H5V5Z"
+        fill="currentColor"
+      />
+      <path
+        d="M0 7H4V11H0V7Z"
+        fill="currentColor"
+        opacity="0.7"
+      />
+      <path
+        d="M10 8H14V11H10V8Z"
+        fill="currentColor"
+        opacity="0.5"
+      />
+      <circle cx="7" cy="2" r="1.5" fill="currentColor" />
+    </svg>
+  );
+}
+
 function NavLink({
   children,
   href = "#",
@@ -203,7 +238,7 @@ function NavLink({
 }
 
 function Header() {
-  const navItems = [
+  const mainNavItems = [
     {
       name: "Dashboard",
       href: "/",
@@ -215,6 +250,9 @@ function Header() {
       href: "/earn",
       icon: <EarnIcon />,
     },
+  ];
+
+  const moreNavItems = [
     {
       name: "Points",
       href: "/points",
@@ -225,14 +263,19 @@ function Header() {
       href: "/referrals",
       icon: <ReferralIcon />,
     },
-    // {
-    //   name: "STRK Rewards",
-    //   href: "/claim",
-    //   icon: <EarnIcon />,
-    // },
+    {
+      name: "Leaderboard",
+      href: "/leaderboard",
+      icon: <LeaderboardIcon />,
+    },
   ];
+
+  const allNavItems = [...mainNavItems, ...moreNavItems];
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+
+  const isMoreActive = moreNavItems.some(item => item.href === location.pathname);
 
   return (
     <header className="bg-[#F5F3EE]/80 sticky top-0 z-50 backdrop-blur-lg backdrop-saturate-150">
@@ -240,7 +283,7 @@ function Header() {
         <div className="flex justify-between items-center h-14">
           {/* Left side: Navigation Links (Desktop) */}
           <nav className="hidden md:flex items-center gap-7 flex-1">
-            {navItems.map((item) => (
+            {mainNavItems.map((item) => (
               <NavLink
                 key={item.name}
                 href={item.href}
@@ -250,6 +293,54 @@ function Header() {
                 {item.name}
               </NavLink>
             ))}
+
+            {/* More Dropdown */}
+            <div className="relative group">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={`font-sora font-medium flex items-center gap-1.5 text-sm leading-4 outline-none ${
+                      isMoreActive
+                        ? "text-amber-500 [&_path]:fill-[#FF9300] [&_svg]:stroke-[#FF9300]"
+                        : "text-gray-800 group-hover:text-amber-500 [&_path]:fill-[#242424] group-hover:[&_path]:fill-[#FF9300] [&_svg]:stroke-[#242424] group-hover:[&_svg]:stroke-[#FF9300]"
+                    }`}
+                  >
+                    More
+                    <ChevronDown className="h-3 w-3" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48 bg-white">
+                  {moreNavItems.map((item) => (
+                    <DropdownMenuItem key={item.name} asChild>
+                      <Link
+                        to={item.href}
+                        className={`flex items-center gap-2 cursor-pointer ${
+                          location.pathname === item.href
+                            ? "text-amber-500 [&_path]:fill-[#FF9300]"
+                            : "text-gray-800 hover:text-amber-500 [&_path]:fill-[#242424] hover:[&_path]:fill-[#FF9300]"
+                        }`}
+                      >
+                        {item.icon}
+                        <span>{item.name}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Active underline for More dropdown */}
+              {isMoreActive && (
+                <div className="absolute -bottom-3.5 left-0 right-0 flex justify-center pointer-events-none">
+                  <div className="w-7 h-0.5 bg-amber-500"></div>
+                </div>
+              )}
+              {/* Hover underline for More dropdown */}
+              {!isMoreActive && (
+                <div className="absolute -bottom-3.5 left-0 right-0 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  <div className="w-7 h-0.5 bg-amber-500/30"></div>
+                </div>
+              )}
+            </div>
           </nav>
 
           {/* Mobile: Hamburger Menu */}
@@ -284,7 +375,7 @@ function Header() {
                   </DrawerTitle>
                 </DrawerHeader>
                 <nav className="mt-4 flex flex-col space-y-2 p-4">
-                  {navItems.map((item) => (
+                  {allNavItems.map((item) => (
                     <DrawerClose asChild key={item.name}>
                       <NavLink
                         href={item.href}
