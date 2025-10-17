@@ -220,11 +220,11 @@ function Header() {
       href: "/points",
       icon: <PointsIcon />,
     },
-    // {
-    //   name: "Referrals",
-    //   href: "/referrals",
-    //   icon: <ReferralIcon />,
-    // },
+    {
+      name: "Referrals",
+      href: "/referrals",
+      icon: <ReferralIcon />,
+    },
     // {
     //   name: "STRK Rewards",
     //   href: "/claim",

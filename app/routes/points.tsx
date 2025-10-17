@@ -18,43 +18,33 @@ export default function RewardsPage() {
   const totalPoints = totals?.allTimePoints || 0;
   const displayRank = rank || "—";
 
-  // Hardcoded all weeks - Week 1 starts October 10, 2025
-  const allWeeks = [
-    {
-      seasonNumber: 1,
-      weekStart: "2025-10-10",
-      totalPoints: 0,
-    },
-    {
-      seasonNumber: 2,
-      weekStart: "2025-10-17",
-      totalPoints: 0,
-    },
-    {
-      seasonNumber: 3,
-      weekStart: "2025-10-24",
-      totalPoints: 0,
-    },
-    {
-      seasonNumber: 4,
-      weekStart: "2025-10-31",
-      totalPoints: 0,
-    },
-    {
-      seasonNumber: 5,
-      weekStart: "2025-11-07",
-      totalPoints: 0,
-    },
-    { seasonNumber: 6, weekStart: "2025-11-14", totalPoints: 0 },
-    { seasonNumber: 7, weekStart: "2025-11-21", totalPoints: 0 },
-    { seasonNumber: 8, weekStart: "2025-11-28", totalPoints: 0 },
-    { seasonNumber: 9, weekStart: "2025-12-05", totalPoints: 0 },
-    { seasonNumber: 10, weekStart: "2025-12-12", totalPoints: 0 },
-    { seasonNumber: 11, weekStart: "2025-12-19", totalPoints: 0 },
-    { seasonNumber: 12, weekStart: "2025-12-26", totalPoints: 0 },
-  ];
+  const SEASON_WEEKS = Array.from({ length: 12 }, (_, index) => {
+    const startDate = new Date("2025-10-10T06:00:00Z");
+    startDate.setUTCDate(startDate.getUTCDate() + index * 7);
+    return {
+      weekNumber: index + 1,
+      weekStart: startDate.toISOString().slice(0, 10),
+    };
+  });
 
-  const displayWeeklyPoints = allWeeks;
+  const weeklyPointsByStart = new Map<string, (typeof weeklyPoints)[number]>();
+  for (const week of weeklyPoints) {
+    const key = week.weekStart?.slice(0, 10);
+    if (!key) continue;
+    weeklyPointsByStart.set(key, week);
+  }
+
+  const displayWeeklyPoints = SEASON_WEEKS.map((preset) => {
+    const data = weeklyPointsByStart.get(preset.weekStart);
+    return {
+      ...preset,
+      totalPoints: data?.totalPoints ?? 0,
+      calculatedAt: data?.calculatedAt ?? null,
+      basePoints: data?.basePoints ?? 0,
+      referralBonus: data?.referralBonus ?? 0,
+      hasComputed: data !== undefined,
+    };
+  });
 
   // Determine rank tier based on total points
   const getRankTier = (points: number) => {
@@ -69,8 +59,11 @@ export default function RewardsPage() {
   const rankTier = getRankTier(totalPoints);
 
   // Get last week's points (most recent week with data)
-  const lastWeekPoints =
-    displayWeeklyPoints.find((w) => w.totalPoints > 0)?.totalPoints || 0;
+  const lastWeekPoints = (() => {
+    const computedWeeks = displayWeeklyPoints.filter((week) => week.hasComputed);
+    if (computedWeeks.length === 0) return null;
+    return computedWeeks[computedWeeks.length - 1].totalPoints;
+  })();
 
   // Format date range for weekly breakdown
   const formatWeekRange = (weekStart: string) => {
@@ -185,19 +178,21 @@ export default function RewardsPage() {
                       Last Week's Points
                     </div>
                     <div className="text-xl font-medium font-sora text-neutral-800">
-                      {!address ? (
-                        "—"
-                      ) : isLoading ? (
-                        "..."
-                      ) : (
-                        <NumericFormat
-                          displayType="text"
-                          value={lastWeekPoints.toString()}
-                          thousandSeparator=","
-                          decimalScale={2}
-                          fixedDecimalScale
-                        />
-                      )}
+                      {!address
+                        ? "—"
+                        : isLoading
+                        ? "..."
+                        : lastWeekPoints === null
+                        ? "—"
+                        : (
+                            <NumericFormat
+                              displayType="text"
+                              value={lastWeekPoints.toString()}
+                              thousandSeparator=","
+                              decimalScale={2}
+                              fixedDecimalScale
+                            />
+                          )}
                     </div>
                   </div>
                 </div>
@@ -222,30 +217,36 @@ export default function RewardsPage() {
 
             <div className="space-y-3">
               {/* Simplified Table - Showing all weeks */}
-              {displayWeeklyPoints.map((week, idx) => (
-                <div
-                  key={idx}
-                  className="py-3 border-b border-[#E5E5E5] last:border-0 flex items-end justify-between"
-                >
-                  <div>
-                    <p className="text-xs font-medium font-sora text-[#242424] mb-1">
-                      Week {week.seasonNumber}
-                    </p>
-                    <p className="text-xs font-sora text-[#94938D]">
-                      {formatWeekRange(week.weekStart)}
+              {displayWeeklyPoints.length > 0 ? (
+                displayWeeklyPoints.map((week) => (
+                  <div
+                    key={`${week.weekStart}-${week.weekNumber}`}
+                    className="py-3 border-b border-[#E5E5E5] last:border-0 flex items-end justify-between"
+                  >
+                    <div>
+                      <p className="text-xs font-medium font-sora text-[#242424] mb-1">
+                        Week {week.weekNumber}
+                      </p>
+                      <p className="text-xs font-sora text-[#94938D]">
+                        {formatWeekRange(week.weekStart)}
+                      </p>
+                    </div>
+                    <p className="text-sm font-bold font-sora text-[#242424]">
+                      {!address
+                        ? "—"
+                        : week.hasComputed
+                        ? `${week.totalPoints.toFixed(2)} pts`
+                        : "—"}
                     </p>
                   </div>
-                  <p className="text-sm font-bold font-sora text-[#242424]">
-                    {week.seasonNumber === 1
-                      ? "Coming soon"
-                      : !address
-                      ? "—"
-                      : week.totalPoints > 0
-                      ? week.totalPoints.toFixed(2) + " pts"
-                      : "—"}
-                  </p>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-sm font-sora text-[#94938D]">
+                  {!address
+                    ? "Connect your wallet to see weekly points."
+                    : "No points recorded yet. Check back after the weekly calculation."}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -331,19 +332,21 @@ export default function RewardsPage() {
                       Last Week's Points
                     </div>
                     <div className="text-xl font-medium font-sora text-neutral-800">
-                      {!address ? (
-                        "—"
-                      ) : isLoading ? (
-                        "..."
-                      ) : (
-                        <NumericFormat
-                          displayType="text"
-                          value={lastWeekPoints.toString()}
-                          thousandSeparator=","
-                          decimalScale={2}
-                          fixedDecimalScale
-                        />
-                      )}
+                      {!address
+                        ? "—"
+                        : isLoading
+                        ? "..."
+                        : lastWeekPoints === null
+                        ? "—"
+                        : (
+                            <NumericFormat
+                              displayType="text"
+                              value={lastWeekPoints.toString()}
+                              thousandSeparator=","
+                              decimalScale={2}
+                              fixedDecimalScale
+                            />
+                          )}
                     </div>
                   </div>
                 </div>
