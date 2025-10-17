@@ -49,7 +49,7 @@ function Borrow() {
   const [borrowAmount, setBorrowAmount] = useQueryState("borrow", parseAsBig);
   const [interestRate, setInterestRate] = useQueryState(
     "rate",
-    parseAsBigWithDefault("5")
+    parseAsBigWithDefault("2.5")
   );
   const [selectedTokenAddress, setSelectedTokenAddress] =
     useQueryState("collateral");
@@ -454,13 +454,47 @@ function Borrow() {
                         onBlur={field.handleBlur}
                         label="Borrow Amount"
                         percentageButtons
-                        percentageButtonsOnHover
                         onPercentageClick={handleBorrowPercentageClick}
                         disabled={isSending || isPending}
                         showBalance={false}
                         tokenSelectorBgColor="bg-token-bg-red/10"
                         tokenSelectorTextColor="text-token-bg-red"
                         maxValue={100000000}
+                        bottomRightContent={
+                          metrics.liquidationRisk &&
+                          borrowAmount &&
+                          borrowAmount.gt(0) ? (
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                              <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
+                                <span className="hidden sm:inline">
+                                  Liquidation Risk:
+                                </span>
+                                <span className="sm:hidden">Risk:</span>
+                              </span>
+                              <div
+                                className={`px-1.5 sm:px-2 py-3 h-6 flex items-center justify-center rounded-md border ${
+                                  metrics.liquidationRisk === "Low"
+                                    ? "bg-green-500/10 border-green-500/20"
+                                    : metrics.liquidationRisk === "Medium"
+                                    ? "bg-amber-500/10 border-amber-500/20"
+                                    : "bg-red-500/10 border-red-500/20"
+                                }`}
+                              >
+                                <span
+                                  className={`text-xs font-normal font-sora ${
+                                    metrics.liquidationRisk === "Low"
+                                      ? "text-green-700"
+                                      : metrics.liquidationRisk === "Medium"
+                                      ? "text-amber-700"
+                                      : "text-red-700"
+                                  }`}
+                                >
+                                  {metrics.liquidationRisk}
+                                </span>
+                              </div>
+                            </div>
+                          ) : undefined
+                        }
                       />
                     )}
                   </form.Field>

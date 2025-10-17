@@ -241,12 +241,49 @@ function formatTransactionDetails(
     case "claim":
       return (
         <div className="space-y-0.5">
-          <div className="text-xs font-sora text-neutral-600">
-            <span className="text-neutral-500">Claimed:</span>{" "}
-            <span className="font-medium text-neutral-800">
-              <FormattedNumber value={details.amount} /> {details.token}
-            </span>
-          </div>
+          {/* Handle stability pool claims with separate rewards */}
+          {(details.usduRewards || details.collateralRewards) ? (
+            <>
+              {details.usduRewards && Number(details.usduRewards) > 0 && (
+                <div className="text-xs font-sora text-neutral-600">
+                  <span className="text-neutral-500">USDU:</span>{" "}
+                  <span className="font-medium text-neutral-800">
+                    <FormattedNumber value={details.usduRewards} /> USDU
+                  </span>
+                </div>
+              )}
+              {details.collateralRewards && Number(details.collateralRewards) > 0 && (
+                <div className="text-xs font-sora text-neutral-600">
+                  <span className="text-neutral-500">
+                    {details.collateralToken || "wBTC"}:
+                  </span>{" "}
+                  <span className="font-medium text-neutral-800">
+                    <FormattedNumber value={details.collateralRewards} />{" "}
+                    {details.collateralToken || "wBTC"}
+                  </span>
+                </div>
+              )}
+              {details.pool && (
+                <div className="text-xs font-sora text-neutral-600">
+                  <span className="text-neutral-500">Pool:</span>{" "}
+                  <span className="font-medium text-neutral-800">
+                    {COLLATERALS[details.pool as CollateralId]?.symbol ||
+                      details.pool}
+                  </span>
+                </div>
+              )}
+            </>
+          ) : (
+            /* Handle simple claims */
+            details.amount && details.token && (
+              <div className="text-xs font-sora text-neutral-600">
+                <span className="text-neutral-500">Claimed:</span>{" "}
+                <span className="font-medium text-neutral-800">
+                  <FormattedNumber value={details.amount} /> {details.token}
+                </span>
+              </div>
+            )
+          )}
         </div>
       );
 
@@ -305,6 +342,26 @@ function formatTransactionDetails(
               <FormattedNumber value={details.amount} /> USDU
             </span>
           </div>
+          {/* Show claimed rewards if any */}
+          {details.usduRewards && Number(details.usduRewards) > 0 && (
+            <div className="text-xs font-sora text-neutral-600">
+              <span className="text-neutral-500">+ USDU rewards:</span>{" "}
+              <span className="font-medium text-neutral-800">
+                <FormattedNumber value={details.usduRewards} /> USDU
+              </span>
+            </div>
+          )}
+          {details.collateralRewards && Number(details.collateralRewards) > 0 && (
+            <div className="text-xs font-sora text-neutral-600">
+              <span className="text-neutral-500">
+                + {details.collateralToken || "wBTC"} rewards:
+              </span>{" "}
+              <span className="font-medium text-neutral-800">
+                <FormattedNumber value={details.collateralRewards} />{" "}
+                {details.collateralToken || "wBTC"}
+              </span>
+            </div>
+          )}
           {details.pool && (
             <div className="text-xs font-sora text-neutral-600">
               <span className="text-neutral-500">Pool:</span>{" "}

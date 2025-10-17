@@ -44,6 +44,7 @@ interface TokenInputProps {
   includeMax?: boolean;
   tokenSelectorBgColor?: string;
   tokenSelectorTextColor?: string;
+  bottomRightContent?: ReactNode; // Custom content to replace balance display
 }
 
 export const TokenInput = memo(function TokenInput({
@@ -71,6 +72,7 @@ export const TokenInput = memo(function TokenInput({
   includeMax = false,
   tokenSelectorBgColor = "bg-token-bg",
   tokenSelectorTextColor = "text-token-orange",
+  bottomRightContent,
 }: TokenInputProps) {
   // Convert value to string for display (preserves full precision)
   const displayValue = value?.toString() || "";
@@ -252,7 +254,7 @@ export const TokenInput = memo(function TokenInput({
         </div>
       </div>
 
-      {/* Bottom row: USD value on left, Balance on right */}
+      {/* Bottom row: USD value on left, Balance or custom content on right */}
       <div className="flex justify-between items-end">
         {/* USD value on bottom left */}
         <NumericFormat
@@ -265,44 +267,48 @@ export const TokenInput = memo(function TokenInput({
           fixedDecimalScale
         />
 
-        {/* Balance info on bottom right */}
-        {showBalance && (
-          <button
-            type="button"
-            onClick={onBalanceClick}
-            disabled={!onBalanceClick || disabled || !balance?.value}
-            className={`
-              flex items-end gap-1
-              ${
-                onBalanceClick && balance?.value && !disabled
-                  ? "cursor-pointer hover:opacity-70 transition-opacity"
-                  : "cursor-default"
-              }
-            `}
-          >
-            <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
-              {balanceLabel}:
-            </span>
-            {balance ? (
-              <>
-                <NumericFormat
-                  className="text-neutral-800 text-base font-medium font-sora leading-none"
-                  displayType="text"
-                  value={balance.formatted ?? balanceAsBig?.toString() ?? "0"}
-                  thousandSeparator=","
-                  decimalScale={6}
-                  fixedDecimalScale
-                />
-                <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
-                  {token.symbol}
-                </span>
-              </>
-            ) : (
-              <span className="text-neutral-800 text-base font-medium font-sora leading-none">
-                -
+        {/* Custom bottom right content or Balance info */}
+        {bottomRightContent ? (
+          bottomRightContent
+        ) : (
+          showBalance && (
+            <button
+              type="button"
+              onClick={onBalanceClick}
+              disabled={!onBalanceClick || disabled || !balance?.value}
+              className={`
+                flex items-end gap-1
+                ${
+                  onBalanceClick && balance?.value && !disabled
+                    ? "cursor-pointer hover:opacity-70 transition-opacity"
+                    : "cursor-default"
+                }
+              `}
+            >
+              <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
+                {balanceLabel}:
               </span>
-            )}
-          </button>
+              {balance ? (
+                <>
+                  <NumericFormat
+                    className="text-neutral-800 text-base font-medium font-sora leading-none"
+                    displayType="text"
+                    value={balance.formatted ?? balanceAsBig?.toString() ?? "0"}
+                    thousandSeparator=","
+                    decimalScale={6}
+                    fixedDecimalScale
+                  />
+                  <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
+                    {token.symbol}
+                  </span>
+                </>
+              ) : (
+                <span className="text-neutral-800 text-base font-medium font-sora leading-none">
+                  -
+                </span>
+              )}
+            </button>
+          )
         )}
       </div>
 

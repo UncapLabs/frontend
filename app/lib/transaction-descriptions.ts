@@ -50,6 +50,23 @@ export function createTransactionDescription(
         : "Close trove";
 
     case "claim":
+      // Handle stability pool claims with separate USDU and collateral rewards
+      if (details?.usduRewards || details?.collateralRewards) {
+        const parts: string[] = [];
+        if (details.usduRewards && Number(details.usduRewards) > 0) {
+          const usduAmount = Number(details.usduRewards).toFixed(2);
+          parts.push(`${usduAmount} USDU`);
+        }
+        if (details.collateralRewards && Number(details.collateralRewards) > 0) {
+          const collateralSymbol = details.collateralToken || "wBTC";
+          const collateralAmount = Number(details.collateralRewards).toFixed(7);
+          parts.push(`${collateralAmount} ${collateralSymbol}`);
+        }
+        if (parts.length > 0) {
+          return `Claim ${parts.join(" and ")} from Stability Pool`;
+        }
+      }
+      // Handle simple claims
       if (details?.amount && details?.token) {
         return `Claim ${details.amount} ${details.token}`;
       }

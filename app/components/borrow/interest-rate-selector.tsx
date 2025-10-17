@@ -145,8 +145,21 @@ export function InterestRateSelector({
                 />
               </div>
 
-              {/* Combined Redemption Risk and Redeemable Before You */}
+              {/* Combined Redeemable Before You and Redemption Risk */}
               <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <span className="text-neutral-800 text-xs font-medium font-sora leading-3 whitespace-nowrap">
+                    <span className="hidden sm:inline">
+                      Redeemable before you:
+                    </span>
+                    <span className="sm:hidden">Ahead:</span>
+                  </span>
+                  <span className="text-xs font-medium text-neutral-800 font-sora">
+                    {debtInFront.gt(0)
+                      ? `$${debtInFront.div(1000000).toFixed(2)}M`
+                      : "—"}
+                  </span>
+                </div>
                 <div className="flex items-center gap-1.5 sm:gap-2">
                   <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
                     <span className="hidden sm:inline">Redemption Risk:</span>
@@ -179,19 +192,6 @@ export function InterestRateSelector({
                       </span>
                     </div>
                   )}
-                </div>
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <span className="text-neutral-800 text-xs font-medium font-sora leading-3 whitespace-nowrap">
-                    <span className="hidden sm:inline">
-                      Redeemable before you:
-                    </span>
-                    <span className="sm:hidden">Ahead:</span>
-                  </span>
-                  <span className="text-xs font-medium text-neutral-800 font-sora">
-                    {debtInFront.gt(0)
-                      ? `$${debtInFront.div(1000000).toFixed(2)}M`
-                      : "—"}
-                  </span>
                 </div>
               </div>
             </>

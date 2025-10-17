@@ -60,7 +60,9 @@ export default function RewardsPage() {
 
   // Get last week's points (most recent week with data)
   const lastWeekPoints = (() => {
-    const computedWeeks = displayWeeklyPoints.filter((week) => week.hasComputed);
+    const computedWeeks = displayWeeklyPoints.filter(
+      (week) => week.hasComputed
+    );
     if (computedWeeks.length === 0) return null;
     return computedWeeks[computedWeeks.length - 1].totalPoints;
   })();
@@ -121,7 +123,7 @@ export default function RewardsPage() {
                 <div className="flex flex-col flex-1">
                   <div className="flex justify-between items-center mb-4 lg:mb-8">
                     <div className="text-xs font-medium font-sora uppercase tracking-tight text-neutral-800">
-                      Total Xpoints
+                      Total points
                     </div>
                   </div>
 
@@ -146,7 +148,7 @@ export default function RewardsPage() {
                         </div>
                         <div className="p-2.5 rounded-lg inline-flex justify-start items-center gap-2 bg-[#F5F3EE]">
                           <span className="text-sm font-medium font-sora leading-tight text-neutral-800">
-                            Xpoints
+                            points
                           </span>
                         </div>
                       </div>
@@ -178,21 +180,21 @@ export default function RewardsPage() {
                       Last Week's Points
                     </div>
                     <div className="text-xl font-medium font-sora text-neutral-800">
-                      {!address
-                        ? "—"
-                        : isLoading
-                        ? "..."
-                        : lastWeekPoints === null
-                        ? "—"
-                        : (
-                            <NumericFormat
-                              displayType="text"
-                              value={lastWeekPoints.toString()}
-                              thousandSeparator=","
-                              decimalScale={2}
-                              fixedDecimalScale
-                            />
-                          )}
+                      {!address ? (
+                        "—"
+                      ) : isLoading ? (
+                        "..."
+                      ) : lastWeekPoints === null ? (
+                        "—"
+                      ) : (
+                        <NumericFormat
+                          displayType="text"
+                          value={lastWeekPoints.toString()}
+                          thousandSeparator=","
+                          decimalScale={2}
+                          fixedDecimalScale
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -332,21 +334,21 @@ export default function RewardsPage() {
                       Last Week's Points
                     </div>
                     <div className="text-xl font-medium font-sora text-neutral-800">
-                      {!address
-                        ? "—"
-                        : isLoading
-                        ? "..."
-                        : lastWeekPoints === null
-                        ? "—"
-                        : (
-                            <NumericFormat
-                              displayType="text"
-                              value={lastWeekPoints.toString()}
-                              thousandSeparator=","
-                              decimalScale={2}
-                              fixedDecimalScale
-                            />
-                          )}
+                      {!address ? (
+                        "—"
+                      ) : isLoading ? (
+                        "..."
+                      ) : lastWeekPoints === null ? (
+                        "—"
+                      ) : (
+                        <NumericFormat
+                          displayType="text"
+                          value={lastWeekPoints.toString()}
+                          thousandSeparator=","
+                          decimalScale={2}
+                          fixedDecimalScale
+                        />
+                      )}
                     </div>
                   </div>
                 </div>

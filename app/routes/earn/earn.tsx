@@ -56,22 +56,22 @@ function Earn() {
         </h1>
       </div>
 
-      <div className="flex flex-col-reverse lg:flex-row gap-5">
-        {/* Left Section: Form */}
-        <div className="flex-1 lg:flex-[2]">
+      <div className="flex flex-col lg:flex-row gap-5">
+        {/* Left Section: Form - Shows first on mobile, left on desktop */}
+        <div className="flex-1 lg:flex-[2] order-1">
           <div className="space-y-2">
             {/* Combined Action Tabs */}
-            <div className="bg-white rounded-2xl p-6 space-y-4">
+            <div className="bg-white rounded-2xl p-4 sm:p-6 space-y-4">
               <Label className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight block">
                 Choose Action
               </Label>
 
               {/* Action Tabs Row */}
-              <div className="flex gap-1">
+              <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => setAction("deposit")}
-                  className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium font-sora transition-all ${
+                  className={`flex-1 py-3 px-2 sm:px-4 rounded-lg text-xs sm:text-sm font-medium font-sora transition-all ${
                     action === "deposit"
                       ? "bg-token-bg-blue text-white"
                       : "text-neutral-600 hover:text-neutral-800 hover:bg-neutral-50"
@@ -82,7 +82,7 @@ function Earn() {
                 <button
                   type="button"
                   onClick={() => setAction("withdraw")}
-                  className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium font-sora transition-all ${
+                  className={`flex-1 py-3 px-2 sm:px-4 rounded-lg text-xs sm:text-sm font-medium font-sora transition-all ${
                     action === "withdraw"
                       ? "bg-token-bg-blue text-white"
                       : "text-neutral-600 hover:text-neutral-800 hover:bg-neutral-50"
@@ -93,7 +93,7 @@ function Earn() {
                 <button
                   type="button"
                   onClick={() => setAction("claim")}
-                  className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium font-sora transition-all ${
+                  className={`flex-1 py-3 px-2 sm:px-4 rounded-lg text-xs sm:text-sm font-medium font-sora transition-all whitespace-nowrap ${
                     action === "claim"
                       ? "bg-token-bg-blue text-white"
                       : "text-neutral-600 hover:text-neutral-800 hover:bg-neutral-50"
@@ -146,9 +146,8 @@ function Earn() {
           </div>
         </div>
 
-        {/* Right Section: Table */}
-        <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px] space-y-4">
-          <StabilityPoolsTable />
+        {/* Right Section: Info and Stats - Shows after form on mobile, right on desktop */}
+        <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px] space-y-4 order-2">
           <InfoBox
             title="How Stability Pool Yields Work"
             variant="blue"
@@ -177,6 +176,7 @@ function Earn() {
               </p>
             </div>
           </InfoBox>
+          <StabilityPoolsTable />
         </div>
       </div>
     </div>

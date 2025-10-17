@@ -262,18 +262,38 @@ export function useWithdrawFromStabilityPool({
       transactionState.setPending(hash);
 
       // Add to transaction store
-      if (address && amount) {
+      if (address && amount !== undefined) {
+        // Determine if this is a claim-only transaction (amount = 0 with rewards)
+        const isClaimOnly = amount.eq(0) && doClaim && rewards && (rewards.usdu.gt(0) || rewards.collateral.gt(0));
+
         const transactionData = {
           hash,
-          type: "withdraw" as const,
-          description: createTransactionDescription("withdraw", {
-            amount: amount.toString(),
-            token: "USDU",
-          }),
-          details: {
-            amount: amount.toString(),
-            pool: collateralType,
-          },
+          type: (isClaimOnly ? "claim" : "withdraw") as "claim" | "withdraw",
+          description: isClaimOnly
+            ? createTransactionDescription("claim", {
+                rewards,
+                pool: collateralType,
+              })
+            : createTransactionDescription("withdraw", {
+                amount: amount.toString(),
+                token: "USDU",
+              }),
+          details: isClaimOnly
+            ? {
+                pool: collateralType,
+                usduRewards: rewards?.usdu.toString(),
+                collateralRewards: rewards?.collateral.toString(),
+                collateralToken: getCollateral(collateralType).symbol,
+              }
+            : {
+                amount: amount.toString(),
+                pool: collateralType,
+                ...(doClaim && rewards && (rewards.usdu.gt(0) || rewards.collateral.gt(0)) ? {
+                  usduRewards: rewards.usdu.toString(),
+                  collateralRewards: rewards.collateral.toString(),
+                  collateralToken: getCollateral(collateralType).symbol,
+                } : {}),
+              },
         };
 
         transactionStore.addTransaction(address, transactionData);
