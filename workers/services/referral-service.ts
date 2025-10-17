@@ -287,54 +287,130 @@ export async function getReferralInfo(userAddress: string, env: Env): Promise<Re
     .where(eq(referrals.refereeAddress, normalizedAddress))
     .get();
 
-  // Get user's referees with their points
-  const refereesData = await db
+  const baseReferrals = await db
     .select({
       refereeAnonymousName: referrals.refereeAnonymousName,
       refereeAddress: referrals.refereeAddress,
       appliedAt: referrals.appliedAt,
-      pointsSinceReferral: sql<number>`
-        COALESCE(SUM(
-          CASE
-            WHEN ${userPoints.weekStart} IS NOT NULL
-              AND strftime('%s', ${userPoints.weekStart}) >= (${referrals.appliedAt} / 1000)
-            THEN ${userPoints.totalPoints}
-            ELSE 0
-          END
-        ), 0)
-      `,
     })
     .from(referrals)
-    .leftJoin(userPoints, eq(referrals.refereeAddress, userPoints.userAddress))
     .where(eq(referrals.referrerAddress, normalizedAddress))
-    .groupBy(
-      referrals.refereeAnonymousName,
-      referrals.refereeAddress,
-      referrals.appliedAt
-    )
     .orderBy(desc(referrals.appliedAt))
     .all();
 
-  // Calculate total bonus earned
-  const bonusData = await db
+  if (baseReferrals.length === 0) {
+    return {
+      referralCode: codeData?.referralCode || null,
+      appliedReferralCode: appliedReferralData?.referralCode || null,
+      referees: [],
+      totalReferrals: 0,
+      totalBonusEarned: 0,
+      bonusRate,
+    };
+  }
+
+  const refereeWeeklyPoints = await db
     .select({
-      totalBonus: sql<number>`COALESCE(SUM(${userPoints.referralBonus}), 0)`,
+      refereeAddress: referrals.refereeAddress,
+      weekStart: userPoints.weekStart,
+      totalPoints: userPoints.totalPoints,
+    })
+    .from(referrals)
+    .innerJoin(
+      userPoints,
+      and(
+        eq(referrals.refereeAddress, userPoints.userAddress),
+        sql`strftime('%s', ${userPoints.weekStart}) >= (${referrals.appliedAt} / 1000)`
+      )
+    )
+    .where(eq(referrals.referrerAddress, normalizedAddress))
+    .all();
+
+  const referrerWeeklyBonuses = await db
+    .select({
+      weekStart: userPoints.weekStart,
+      referralBonus: userPoints.referralBonus,
     })
     .from(userPoints)
     .where(eq(userPoints.userAddress, normalizedAddress))
-    .get();
+    .all();
+
+  const pointsByReferee = new Map<string, number>();
+  const weeklyPointsByReferee = new Map<string, Map<string, number>>();
+
+  for (const row of refereeWeeklyPoints) {
+    const weekKey = row.weekStart;
+    const refereeAddress = row.refereeAddress;
+    if (!weekKey || !refereeAddress) continue;
+
+    const points = Number(row.totalPoints ?? 0);
+    if (!Number.isFinite(points)) continue;
+
+    pointsByReferee.set(
+      refereeAddress,
+      (pointsByReferee.get(refereeAddress) ?? 0) + points
+    );
+
+    const weekMap =
+      weeklyPointsByReferee.get(weekKey) ?? new Map<string, number>();
+    weekMap.set(refereeAddress, (weekMap.get(refereeAddress) ?? 0) + points);
+    weeklyPointsByReferee.set(weekKey, weekMap);
+  }
+
+  const weeklyBonusMap = new Map<string, number>();
+  let totalBonusEarned = 0;
+
+  for (const row of referrerWeeklyBonuses) {
+    const weekKey = row.weekStart;
+    if (!weekKey) continue;
+
+    const bonus = Number(row.referralBonus ?? 0);
+    if (!Number.isFinite(bonus) || bonus === 0) continue;
+
+    weeklyBonusMap.set(weekKey, (weeklyBonusMap.get(weekKey) ?? 0) + bonus);
+    totalBonusEarned += bonus;
+  }
+
+  const bonusByReferee = new Map<string, number>();
+
+  for (const [weekKey, weekMap] of weeklyPointsByReferee) {
+    const creditedBonus = weeklyBonusMap.get(weekKey) ?? 0;
+    if (creditedBonus <= 0) {
+      continue;
+    }
+
+    let weekTotalPoints = 0;
+    for (const value of weekMap.values()) {
+      weekTotalPoints += value;
+    }
+
+    if (weekTotalPoints <= 0) {
+      continue;
+    }
+
+    for (const [refereeAddress, refereePoints] of weekMap) {
+      const allocation = (refereePoints / weekTotalPoints) * creditedBonus;
+      bonusByReferee.set(
+        refereeAddress,
+        (bonusByReferee.get(refereeAddress) ?? 0) + allocation
+      );
+    }
+  }
 
   return {
     referralCode: codeData?.referralCode || null,
     appliedReferralCode: appliedReferralData?.referralCode || null,
-    referees: refereesData.map((r) => ({
-      anonymousName: r.refereeAnonymousName,
-      appliedAt: r.appliedAt,
-      pointsSinceReferral: r.pointsSinceReferral,
-      bonusEarned: r.pointsSinceReferral * bonusRate,
+    referees: baseReferrals.map((ref) => ({
+      anonymousName: ref.refereeAnonymousName,
+      appliedAt:
+        typeof ref.appliedAt === "number"
+          ? ref.appliedAt
+          : new Date(ref.appliedAt).getTime(),
+      pointsSinceReferral: pointsByReferee.get(ref.refereeAddress) ?? 0,
+      bonusEarned: bonusByReferee.get(ref.refereeAddress) ?? 0,
     })),
-    totalReferrals: refereesData.length,
-    totalBonusEarned: bonusData?.totalBonus || 0,
+    totalReferrals: baseReferrals.length,
+    totalBonusEarned,
     bonusRate,
   };
 }

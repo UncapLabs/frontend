@@ -89,7 +89,10 @@ export default function ReferralsPage() {
         </div>
 
         {referralInfo?.referees && referralInfo.referees.length > 0 ? (
-          <div>
+          <div className="space-y-4">
+            <p className="text-xs text-[#AAA28E] font-sora uppercase tracking-tight">
+              Referral points refresh every Friday at 10:00 UTC after the weekly calculation.
+            </p>
             {/* Table Header */}
             <div className="hidden md:grid md:grid-cols-4 gap-4 pb-3 border-b border-[#E5E5E5]">
               <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider">
