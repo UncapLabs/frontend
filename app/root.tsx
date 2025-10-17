@@ -21,8 +21,9 @@ import Big from "big.js";
 
 import type { Route } from "./+types/root";
 import "./app.css";
-import { StarknetProvider } from "./providers/starknet-provider";
 import { PHProvider } from "./providers/posthog-provider";
+import { StarknetProvider } from "./providers/starknet-provider";
+import { ReferralProvider } from "./providers/referral-provider";
 
 export const meta: Route.MetaFunction = () => {
   return [
@@ -153,9 +154,11 @@ export default function App() {
       <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
         <StarknetProvider>
           <NuqsAdapter>
-            <Outlet />
-            <Toaster />
-            <ReactQueryDevtools initialIsOpen={false} />
+            <ReferralProvider>
+              <Outlet />
+              <Toaster />
+              <ReactQueryDevtools initialIsOpen={false} />
+            </ReferralProvider>
           </NuqsAdapter>
         </StarknetProvider>
       </TRPCProvider>

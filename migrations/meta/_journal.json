@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1760346483054,
-      "tag": "0000_ambitious_maximus",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1760362282609,
-      "tag": "0001_easy_jubilee",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1760618389916,
-      "tag": "0002_friendly_arachne",
+      "when": 1760690059704,
+      "tag": "0000_good_the_stranger",
       "breakpoints": true
     }
   ]

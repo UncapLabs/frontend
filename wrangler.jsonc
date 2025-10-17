@@ -27,18 +27,6 @@
 			"migrations_dir": "migrations"
 		}
 	],
-	"env": {
-    "dev": {
-			"d1_databases": [
-				{
-					"binding": "DB",
-					"database_name": "uncap-points",
-					"database_id": "e283d907-bd57-4b7c-a4d6-ffc13bc0755b",
-					"migrations_dir": "migrations"
-				}
-			]
-		}
-  },
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

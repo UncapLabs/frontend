@@ -9,81 +9,6 @@ import {
 import { sql } from "drizzle-orm";
 
 // ============================================
-// Position Snapshots (Raw Data)
-// ============================================
-export const positionSnapshots = sqliteTable(
-  "position_snapshots",
-  {
-    id: integer("id").primaryKey({ autoIncrement: true }),
-    userAddress: text("user_address").notNull(),
-    troveId: text("trove_id").notNull(),
-    snapshotTime: integer("snapshot_time", { mode: "timestamp_ms" }).notNull(),
-    collateralBtc: real("collateral_btc").notNull(),
-    borrowedUsdu: real("borrowed_usdu").notNull(),
-    interestRate: real("interest_rate"),
-    collateralRatio: real("collateral_ratio"),
-    createdAt: integer("created_at", { mode: "timestamp_ms" })
-      .default(sql`(unixepoch() * 1000)`)
-      .notNull(),
-  },
-  (table) => ({
-    userTimeIdx: index("idx_snapshot_user_time").on(
-      table.userAddress,
-      table.snapshotTime
-    ),
-    timeIdx: index("idx_snapshot_time").on(table.snapshotTime),
-  })
-);
-
-// ============================================
-// Stability Pool Snapshots (Raw Data)
-// ============================================
-export const stabilityPoolSnapshots = sqliteTable(
-  "stability_pool_snapshots",
-  {
-    id: integer("id").primaryKey({ autoIncrement: true }),
-    userAddress: text("user_address").notNull(),
-    snapshotTime: integer("snapshot_time", { mode: "timestamp_ms" }).notNull(),
-    depositedUsdu: real("deposited_usdu").notNull(), // Amount of USDU deposited
-    createdAt: integer("created_at", { mode: "timestamp_ms" })
-      .default(sql`(unixepoch() * 1000)`)
-      .notNull(),
-  },
-  (table) => ({
-    userTimeIdx: index("idx_sp_user_time").on(
-      table.userAddress,
-      table.snapshotTime
-    ),
-    timeIdx: index("idx_sp_time").on(table.snapshotTime),
-  })
-);
-
-// ============================================
-// Ekubo Liquidity Snapshots (Raw Data)
-// ============================================
-export const ekuboLiquiditySnapshots = sqliteTable(
-  "ekubo_liquidity_snapshots",
-  {
-    id: integer("id").primaryKey({ autoIncrement: true }),
-    userAddress: text("user_address").notNull(),
-    snapshotTime: integer("snapshot_time", { mode: "timestamp_ms" }).notNull(),
-    liquidityAmount: real("liquidity_amount").notNull(), // Liquidity position value in USD or token units
-    usduAmount: real("usdu_amount"), // USDU side of the pair
-    usdcAmount: real("usdc_amount"), // USDC side of the pair
-    createdAt: integer("created_at", { mode: "timestamp_ms" })
-      .default(sql`(unixepoch() * 1000)`)
-      .notNull(),
-  },
-  (table) => ({
-    userTimeIdx: index("idx_ekubo_user_time").on(
-      table.userAddress,
-      table.snapshotTime
-    ),
-    timeIdx: index("idx_ekubo_time").on(table.snapshotTime),
-  })
-);
-
-// ============================================
 // User Points (Calculated Weekly)
 // ============================================
 export const userPoints = sqliteTable(
@@ -183,18 +108,6 @@ export const userTotalPoints = sqliteTable(
 );
 
 // Type exports for use in application code
-export type PositionSnapshot = typeof positionSnapshots.$inferSelect;
-export type NewPositionSnapshot = typeof positionSnapshots.$inferInsert;
-
-export type StabilityPoolSnapshot = typeof stabilityPoolSnapshots.$inferSelect;
-export type NewStabilityPoolSnapshot =
-  typeof stabilityPoolSnapshots.$inferInsert;
-
-export type EkuboLiquiditySnapshot =
-  typeof ekuboLiquiditySnapshots.$inferSelect;
-export type NewEkuboLiquiditySnapshot =
-  typeof ekuboLiquiditySnapshots.$inferInsert;
-
 export type UserPoints = typeof userPoints.$inferSelect;
 export type NewUserPoints = typeof userPoints.$inferInsert;
 
