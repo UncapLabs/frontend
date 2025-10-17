@@ -619,10 +619,10 @@ export const contractRead = {
       });
 
       // Fetch all data sequentially to avoid starknet.js concurrency bug
-      // Use get_depositor_yield_gain_with_pending to include pending rewards
+      // CRITICAL: Use get_compounded_usdu_deposit (not get_deposits) to get actual balance after liquidations
       // CRITICAL: Must fetch both collateralGain (pending) and stashedColl (from previous compounds)
-      const deposit = await contract.call("get_deposits", [userAddress]);
-      const usduGain = await contract.call("get_depositor_yield_gain_with_pending", [userAddress]);
+      const deposit = await contract.call("get_compounded_usdu_deposit", [userAddress]);
+      const usduGain = await contract.call("get_depositor_yield_gain", [userAddress]);
       const collateralGain = await contract.call("get_depositor_coll_gain", [userAddress]);
       const stashedColl = await contract.call("get_stashed_coll", [userAddress]);
       const totalDeposits = await contract.call("get_total_usdu_deposits", []);
