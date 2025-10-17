@@ -42,7 +42,7 @@ export function InfoDialog({ defaultTab = "bridge", children }: InfoDialogProps 
   const trigger = children || defaultTrigger;
 
   const tabButtons = (
-    <div className="flex gap-2 border-b border-neutral-200">
+    <div className="flex gap-2 border-b border-neutral-200 mt-4">
       <button
         onClick={() => setActiveTab("bridge")}
         className={`px-4 py-2 text-sm font-medium font-sora transition-colors relative ${
@@ -438,22 +438,24 @@ export function InfoDialog({ defaultTab = "bridge", children }: InfoDialogProps 
   return (
     <Drawer>
       <DrawerTrigger asChild>{trigger}</DrawerTrigger>
-      <DrawerContent>
-        {tabButtons}
-        <DrawerHeader>
-          <DrawerTitle className="text-2xl font-medium font-sora text-[#242424]">
-            {activeTab === "bridge"
-              ? "Bridge Bitcoin to Starknet"
-              : "How Borrowing Works"}
-          </DrawerTitle>
-          <DrawerDescription className="text-neutral-800 text-sm font-normal font-sora">
-            {activeTab === "bridge"
-              ? "Choose the best bridging method based on where your Bitcoin is located"
-              : "Learn how to borrow USDU against your collateral"}
-          </DrawerDescription>
-        </DrawerHeader>
-        <div className="px-4 pb-8 overflow-y-auto max-h-[70vh]">
-          {activeTab === "bridge" ? bridgeContent : borrowingContent}
+      <DrawerContent className="max-h-[85vh]">
+        <div className="overflow-y-auto flex-1">
+          {tabButtons}
+          <DrawerHeader>
+            <DrawerTitle className="text-2xl font-medium font-sora text-[#242424]">
+              {activeTab === "bridge"
+                ? "Bridge Bitcoin to Starknet"
+                : "How Borrowing Works"}
+            </DrawerTitle>
+            <DrawerDescription className="text-neutral-800 text-sm font-normal font-sora">
+              {activeTab === "bridge"
+                ? "Choose the best bridging method based on where your Bitcoin is located"
+                : "Learn how to borrow USDU against your collateral"}
+            </DrawerDescription>
+          </DrawerHeader>
+          <div className="px-4 pb-8">
+            {activeTab === "bridge" ? bridgeContent : borrowingContent}
+          </div>
         </div>
       </DrawerContent>
     </Drawer>
