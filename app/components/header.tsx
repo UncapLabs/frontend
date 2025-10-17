@@ -263,11 +263,11 @@ function Header() {
       href: "/referrals",
       icon: <ReferralIcon />,
     },
-    {
-      name: "Leaderboard",
-      href: "/leaderboard",
-      icon: <LeaderboardIcon />,
-    },
+    // {
+    //   name: "Leaderboard",
+    //   href: "/leaderboard",
+    //   icon: <LeaderboardIcon />,
+    // },
   ];
 
   const allNavItems = [...mainNavItems, ...moreNavItems];

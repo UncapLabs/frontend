@@ -29,7 +29,7 @@ import {
 } from "~/components/ui/select";
 import { LEADERBOARD_PAGE_SIZE } from "~/hooks/use-leaderboard";
 import { cn } from "~/lib/utils";
-import { createCaller } from "../../workers/router";
+import { createCaller } from "../../../workers/router";
 import { useTRPC } from "~/lib/trpc";
 
 type LeaderboardEntry = {

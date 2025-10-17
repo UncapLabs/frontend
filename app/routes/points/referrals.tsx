@@ -27,11 +27,16 @@ export default function ReferralsPage() {
     if (!referralInfo?.referralCode) return;
 
     const url = `https://uncap.finance/?ref=${referralInfo.referralCode}`;
-    const text =
-      "Uncap Finance is a bitcoin-backed stablecoin that lets you borrow against BTC at a low rate. Join me:";
+    const text = `Uncap Finance is live! 🚀
+
+Borrow USDU against your BTC at ultra-low rates + earn boosted yields.
+
+Early supporters get points and referral bonuses 👀
+
+Join the BTC economy: ${url}`;
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
       text
-    )}&url=${encodeURIComponent(url)}`;
+    )}`;
 
     window.open(twitterUrl, "_blank");
   };
