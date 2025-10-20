@@ -220,6 +220,28 @@ function Borrow() {
     setInterestRate(new Big("2.5"));
   }, [form, reset, setBorrowAmount, setCollateralAmount, setInterestRate]);
 
+  const hasBorrowAmount = !!(borrowAmount && borrowAmount.gt(0));
+  const liquidationRiskLevel = hasBorrowAmount
+    ? metrics.liquidationRisk
+    : undefined;
+  const liquidationRiskStyles =
+    liquidationRiskLevel === "Low"
+      ? "bg-green-500/10 border-green-500/20"
+      : liquidationRiskLevel === "Medium"
+      ? "bg-amber-500/10 border-amber-500/20"
+      : liquidationRiskLevel === "High"
+      ? "bg-red-500/10 border-red-500/20"
+      : "bg-neutral-100 border-neutral-200";
+  const liquidationRiskTextStyles =
+    liquidationRiskLevel === "Low"
+      ? "text-green-700"
+      : liquidationRiskLevel === "Medium"
+      ? "text-amber-700"
+      : liquidationRiskLevel === "High"
+      ? "text-red-700"
+      : "text-neutral-500";
+  const liquidationRiskLabel = liquidationRiskLevel ?? "—";
+
   return (
     <>
       <FloatingInfoButton />
@@ -461,39 +483,23 @@ function Borrow() {
                         tokenSelectorTextColor="text-token-bg-red"
                         maxValue={100000000}
                         bottomRightContent={
-                          metrics.liquidationRisk &&
-                          borrowAmount &&
-                          borrowAmount.gt(0) ? (
-                            <div className="flex items-center gap-1.5 sm:gap-2">
-                              <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
-                                <span className="hidden sm:inline">
-                                  Liquidation Risk:
-                                </span>
-                                <span className="sm:hidden">Risk:</span>
+                          <div className="flex items-center gap-1.5 sm:gap-2">
+                            <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
+                              <span className="hidden sm:inline">
+                                Liquidation Risk:
                               </span>
-                              <div
-                                className={`px-1.5 sm:px-2 py-3 h-6 flex items-center justify-center rounded-md border ${
-                                  metrics.liquidationRisk === "Low"
-                                    ? "bg-green-500/10 border-green-500/20"
-                                    : metrics.liquidationRisk === "Medium"
-                                    ? "bg-amber-500/10 border-amber-500/20"
-                                    : "bg-red-500/10 border-red-500/20"
-                                }`}
+                              <span className="sm:hidden">Risk:</span>
+                            </span>
+                            <div
+                              className={`px-1.5 sm:px-2 py-3 h-6 flex items-center justify-center rounded-md border ${liquidationRiskStyles}`}
+                            >
+                              <span
+                                className={`text-xs font-normal font-sora ${liquidationRiskTextStyles}`}
                               >
-                                <span
-                                  className={`text-xs font-normal font-sora ${
-                                    metrics.liquidationRisk === "Low"
-                                      ? "text-green-700"
-                                      : metrics.liquidationRisk === "Medium"
-                                      ? "text-amber-700"
-                                      : "text-red-700"
-                                  }`}
-                                >
-                                  {metrics.liquidationRisk}
-                                </span>
-                              </div>
+                                {liquidationRiskLabel}
+                              </span>
                             </div>
-                          ) : undefined
+                          </div>
                         }
                       />
                     )}

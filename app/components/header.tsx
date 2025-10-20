@@ -5,18 +5,24 @@ import {
   DrawerContent,
   DrawerTrigger,
   DrawerClose,
-  DrawerHeader,
-  DrawerTitle,
 } from "~/components/ui/drawer";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "~/components/ui/navigation-menu";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
-import { Menu as MenuIcon, X as XIcon, ChevronDown } from "lucide-react";
+import {
+  Menu as MenuIcon,
+  BookOpen,
+  FileText,
+  Video,
+  HelpCircle,
+} from "lucide-react";
 import { Link, useLocation } from "react-router";
 import { TransactionHistoryButton } from "./transaction-history-button";
 
@@ -164,20 +170,9 @@ function LeaderboardIcon() {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <path
-        d="M5 5H9V11H5V5Z"
-        fill="currentColor"
-      />
-      <path
-        d="M0 7H4V11H0V7Z"
-        fill="currentColor"
-        opacity="0.7"
-      />
-      <path
-        d="M10 8H14V11H10V8Z"
-        fill="currentColor"
-        opacity="0.5"
-      />
+      <path d="M5 5H9V11H5V5Z" fill="currentColor" />
+      <path d="M0 7H4V11H0V7Z" fill="currentColor" opacity="0.7" />
+      <path d="M10 8H14V11H10V8Z" fill="currentColor" opacity="0.5" />
       <circle cx="7" cy="2" r="1.5" fill="currentColor" />
     </svg>
   );
@@ -252,6 +247,33 @@ function Header() {
     },
   ];
 
+  const howToItems = [
+    {
+      name: "How to borrow?",
+      href: "https://uncap.finance/docs/blog/borrowing-at-0-5-percent",
+      icon: <BookOpen className="h-4 w-4" />,
+      description: "Learn how to borrow USDU against your Bitcoin collateral."
+    },
+    {
+      name: "How to set your interest rate?",
+      href: "https://uncap.finance/docs/blog/borrowing-at-0-5-percent",
+      icon: <FileText className="h-4 w-4" />,
+      description: "Understand how to manage and optimize your interest rate."
+    },
+    {
+      name: "How to bridge bitcoin?",
+      href: "https://uncap.finance/docs/blog/borrowing-at-0-5-percent",
+      icon: <Video className="h-4 w-4" />,
+      description: "Step-by-step guide to bridge your Bitcoin to Starknet."
+    },
+    {
+      name: "How to earn yield?",
+      href: "https://uncap.finance/docs/blog/borrowing-at-0-5-percent",
+      icon: <HelpCircle className="h-4 w-4" />,
+      description: "Discover ways to earn yield on your USDU deposits."
+    },
+  ];
+
   const moreNavItems = [
     {
       name: "Points",
@@ -270,12 +292,12 @@ function Header() {
     // },
   ];
 
-  const allNavItems = [...mainNavItems, ...moreNavItems];
-
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
 
-  const isMoreActive = moreNavItems.some(item => item.href === location.pathname);
+  const isMoreActive = moreNavItems.some(
+    (item) => item.href === location.pathname
+  );
 
   return (
     <header className="bg-[#F5F3EE]/80 sticky top-0 z-50 backdrop-blur-lg backdrop-saturate-150">
@@ -294,57 +316,114 @@ function Header() {
               </NavLink>
             ))}
 
-            {/* More Dropdown */}
-            <div className="relative group">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className={`font-sora font-medium flex items-center gap-1.5 text-sm leading-4 outline-none ${
+            {/* More Flyout Menu - Contains everything else */}
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger
+                    className={`font-sora font-medium text-sm leading-4 bg-transparent hover:bg-transparent data-[state=open]:bg-transparent h-auto px-0 focus:bg-transparent ${
                       isMoreActive
-                        ? "text-amber-500 [&_path]:fill-[#FF9300] [&_svg]:stroke-[#FF9300]"
-                        : "text-gray-800 group-hover:text-amber-500 [&_path]:fill-[#242424] group-hover:[&_path]:fill-[#FF9300] [&_svg]:stroke-[#242424] group-hover:[&_svg]:stroke-[#FF9300]"
+                        ? "text-amber-500"
+                        : "text-gray-800 hover:text-amber-500 focus:text-amber-500 data-[state=open]:text-amber-500"
                     }`}
                   >
                     More
-                    <ChevronDown className="h-3 w-3" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-48 bg-white">
-                  {moreNavItems.map((item) => (
-                    <DropdownMenuItem key={item.name} asChild>
-                      <Link
-                        to={item.href}
-                        className={`flex items-center gap-2 cursor-pointer ${
-                          location.pathname === item.href
-                            ? "text-amber-500 [&_path]:fill-[#FF9300]"
-                            : "text-gray-800 hover:text-amber-500 [&_path]:fill-[#242424] hover:[&_path]:fill-[#FF9300]"
-                        }`}
-                      >
-                        {item.icon}
-                        <span>{item.name}</span>
-                      </Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="w-[200px] p-3">
+                      <ul className="grid gap-2">
+                        <li>
+                          {moreNavItems.map((item) => (
+                            <NavigationMenuLink key={item.name} asChild>
+                              <Link
+                                to={item.href}
+                                className={`flex-row items-center gap-2 transition-colors hover:text-amber-500 ${
+                                  location.pathname === item.href
+                                    ? "text-amber-500 [&_path]:fill-[#FF9300] [&_circle]:fill-[#FF9300]"
+                                    : "text-gray-800 [&_path]:fill-[#242424] [&_circle]:fill-[#242424] hover:[&_path]:fill-[#FF9300] hover:[&_circle]:fill-[#FF9300]"
+                                }`}
+                              >
+                                {item.icon}
+                                {item.name}
+                              </Link>
+                            </NavigationMenuLink>
+                          ))}
+                        </li>
+                      </ul>
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
 
-              {/* Active underline for More dropdown */}
-              {isMoreActive && (
-                <div className="absolute -bottom-3.5 left-0 right-0 flex justify-center pointer-events-none">
-                  <div className="w-7 h-0.5 bg-amber-500"></div>
-                </div>
-              )}
-              {/* Hover underline for More dropdown */}
-              {!isMoreActive && (
-                <div className="absolute -bottom-3.5 left-0 right-0 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                  <div className="w-7 h-0.5 bg-amber-500/30"></div>
-                </div>
-              )}
-            </div>
+            {/* How To's Flyout Menu */}
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="font-sora font-medium text-sm leading-4 text-gray-800 hover:text-amber-500 bg-transparent hover:bg-transparent data-[state=open]:bg-transparent data-[state=open]:text-amber-500 h-auto px-0 focus:bg-transparent focus:text-amber-500">
+                    How To's
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="grid gap-2 p-3 sm:w-[400px] md:w-[500px] lg:w-[600px] lg:grid-cols-[.75fr_1fr]">
+                      <div className="row-span-3">
+                        <NavigationMenuLink asChild>
+                          <a
+                            className="relative flex h-full w-full select-none flex-col justify-end rounded-lg bg-[#0051bf] hover:!bg-[#0051bf] focus:!bg-[#0051bf] p-4 no-underline outline-none overflow-hidden transition-shadow hover:shadow-lg focus:shadow-md hover:!text-white focus:!text-white"
+                            href={howToItems[0].href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {/* Decorative coin */}
+                            <div className="absolute inset-0 pointer-events-none">
+                              <img
+                                src="/coin_02.png"
+                                alt=""
+                                className="absolute w-40 h-40 top-0 right-0 -translate-y-1/4 translate-x-1/4 object-contain opacity-20"
+                              />
+                            </div>
+
+                            <div className="relative z-10">
+                              <BookOpen className="h-6 w-6 text-white" />
+                              <div className="mb-2 mt-3 text-lg font-medium text-white">
+                                {howToItems[0].name}
+                              </div>
+                              <p className="text-sm leading-tight text-white/90">
+                                {howToItems[0].description}
+                              </p>
+                            </div>
+                          </a>
+                        </NavigationMenuLink>
+                      </div>
+                      {howToItems.slice(1).map((item) => (
+                        <NavigationMenuLink key={item.name} asChild>
+                          <a
+                            className="block select-none space-y-1 rounded-md p-2 leading-none no-underline outline-none transition-colors hover:bg-gray-50 hover:text-amber-500 focus:bg-gray-50 focus:text-amber-500"
+                            href={item.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <div className="flex items-center gap-1.5 mb-1">
+                              {item.icon}
+                              <div className="text-sm font-medium leading-none">
+                                {item.name}
+                              </div>
+                            </div>
+                            <p className="line-clamp-2 text-sm leading-snug text-gray-600">
+                              {item.description}
+                            </p>
+                          </a>
+                        </NavigationMenuLink>
+                      ))}
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
           </nav>
 
-          {/* Mobile: Hamburger Menu */}
-          <div className="md:hidden">
+          {/* Mobile: Logo and Hamburger Menu */}
+          <div className="md:hidden flex items-center gap-3">
+            <img src="/uncap.png" alt="UNCAP" className="h-5 w-5" />
             <Drawer open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <DrawerTrigger asChild>
                 <Button
@@ -357,36 +436,71 @@ function Header() {
                 </Button>
               </DrawerTrigger>
               <DrawerContent className="bg-white dark:bg-gray-900">
-                <DrawerHeader className="text-left pb-2 pt-4 border-b border-gray-100 dark:border-gray-800">
-                  <DrawerTitle className="flex justify-between items-center text-gray-900 dark:text-gray-100">
-                    <span className="text-[#242424] dark:text-white">
-                      <Logo />
-                    </span>
-                    <DrawerClose asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-                      >
-                        <XIcon className="h-5 w-5" />
-                        <span className="sr-only">Close menu</span>
-                      </Button>
-                    </DrawerClose>
-                  </DrawerTitle>
-                </DrawerHeader>
-                <nav className="mt-4 flex flex-col space-y-2 p-4">
-                  {allNavItems.map((item) => (
-                    <DrawerClose asChild key={item.name}>
-                      <NavLink
-                        href={item.href}
-                        isActive={location.pathname === item.href}
-                        isMobile
-                        icon={item.icon}
-                      >
-                        {item.name}
-                      </NavLink>
-                    </DrawerClose>
-                  ))}
+                <nav className="mt-4 flex flex-col p-4">
+                  {/* Main Navigation - First 3 items without header */}
+                  <div className="mb-6">
+                    <div className="space-y-1">
+                      {mainNavItems.map((item) => (
+                        <DrawerClose asChild key={item.name}>
+                          <Link
+                            to={item.href}
+                            className={`flex items-center gap-3 px-4 py-2.5 rounded-lg font-sora font-medium text-sm transition-colors ${
+                              location.pathname === item.href
+                                ? "bg-amber-50 text-amber-500 [&_path]:fill-[#FF9300]"
+                                : "text-gray-800 hover:bg-gray-50 hover:text-amber-500 [&_path]:fill-[#242424]"
+                            }`}
+                          >
+                            {item.icon}
+                            {item.name}
+                          </Link>
+                        </DrawerClose>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* More Section - Contains everything else */}
+                  <div className="mb-6">
+                    <h3 className="px-4 mb-3 text-xs font-semibold font-sora text-gray-500 uppercase tracking-wider">
+                      More
+                    </h3>
+                    <div className="space-y-1">
+                      {moreNavItems.map((item) => (
+                        <DrawerClose asChild key={item.name}>
+                          <Link
+                            to={item.href}
+                            className={`flex items-center gap-3 px-4 py-2.5 rounded-lg font-sora font-medium text-sm transition-colors ${
+                              location.pathname === item.href
+                                ? "bg-amber-50 text-amber-500 [&_path]:fill-[#FF9300] [&_circle]:fill-[#FF9300]"
+                                : "text-gray-800 hover:bg-gray-50 hover:text-amber-500 [&_path]:fill-[#242424] [&_circle]:fill-[#242424]"
+                            }`}
+                          >
+                            {item.icon}
+                            {item.name}
+                          </Link>
+                        </DrawerClose>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* How To's Section */}
+                  <div>
+                    <h3 className="px-4 mb-3 text-xs font-semibold font-sora text-gray-500 uppercase tracking-wider">
+                      How To's
+                    </h3>
+                    <div className="space-y-1">
+                      {howToItems.map((item) => (
+                        <DrawerClose asChild key={item.name}>
+                          <Link
+                            to={item.href}
+                            className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50 hover:text-amber-500 font-sora font-medium text-sm transition-colors"
+                          >
+                            {item.icon}
+                            {item.name}
+                          </Link>
+                        </DrawerClose>
+                      ))}
+                    </div>
+                  </div>
                 </nav>
               </DrawerContent>
             </Drawer>

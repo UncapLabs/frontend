@@ -35,7 +35,7 @@ export function TransactionStoreProvider({
   const pollForTrove = React.useCallback(
     async ({
       troveId,
-      maxAttempts = 15,
+      maxAttempts = 5,
       interval = 2000,
       onComplete,
     }: {
@@ -107,16 +107,22 @@ export function TransactionStoreProvider({
                 });
 
                 // Invalidate interest rate data (visualization and chart)
-                const branchId = getBranchId(transaction.details.collateralType as CollateralId);
+                const branchId = getBranchId(
+                  transaction.details.collateralType as CollateralId
+                );
                 queryClient.invalidateQueries({
-                  queryKey: trpc.interestRouter.getInterestRateVisualizationData.queryKey({
-                    branchId,
-                  }),
+                  queryKey:
+                    trpc.interestRouter.getInterestRateVisualizationData.queryKey(
+                      {
+                        branchId,
+                      }
+                    ),
                 });
                 queryClient.invalidateQueries({
-                  queryKey: trpc.interestRouter.getInterestRateChartData.queryKey({
-                    branchId,
-                  }),
+                  queryKey:
+                    trpc.interestRouter.getInterestRateChartData.queryKey({
+                      branchId,
+                    }),
                 });
               }
             },
@@ -136,7 +142,10 @@ export function TransactionStoreProvider({
 
             // Invalidate the specific position by ID
             if (transaction.details?.troveId) {
-              console.log("[Transaction Provider] Invalidating position:", transaction.details.troveId);
+              console.log(
+                "[Transaction Provider] Invalidating position:",
+                transaction.details.troveId
+              );
               queryClient.invalidateQueries({
                 queryKey: trpc.positionsRouter.getPositionById.queryKey({
                   troveId: transaction.details.troveId,
@@ -146,16 +155,23 @@ export function TransactionStoreProvider({
 
             // Invalidate interest rate data if collateral type is known
             if (transaction.details?.collateralType) {
-              const branchId = getBranchId(transaction.details.collateralType as CollateralId);
+              const branchId = getBranchId(
+                transaction.details.collateralType as CollateralId
+              );
               queryClient.invalidateQueries({
-                queryKey: trpc.interestRouter.getInterestRateVisualizationData.queryKey({
-                  branchId,
-                }),
+                queryKey:
+                  trpc.interestRouter.getInterestRateVisualizationData.queryKey(
+                    {
+                      branchId,
+                    }
+                  ),
               });
               queryClient.invalidateQueries({
-                queryKey: trpc.interestRouter.getInterestRateChartData.queryKey({
-                  branchId,
-                }),
+                queryKey: trpc.interestRouter.getInterestRateChartData.queryKey(
+                  {
+                    branchId,
+                  }
+                ),
               });
             }
           }, 2000);

@@ -31,7 +31,7 @@ export function InfoDialog({ defaultTab = "bridge", children }: InfoDialogProps 
 
   const defaultTrigger = (
     <button
-      className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white hover:bg-neutral-50 border border-neutral-200 flex items-center justify-center transition-all hover:scale-105"
+      className="transition-all hover:scale-110 hover:opacity-80"
       aria-label="Help and information"
       title="Get help"
     >
