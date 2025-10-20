@@ -331,7 +331,7 @@ export default function BorrowCard(props: Props) {
                   : "text-neutral-800"
               }`}
             >
-              Liquidation
+              Liquidation Price
             </div>
             <div
               className={`text-xl font-medium font-sora ${

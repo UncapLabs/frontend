@@ -58,9 +58,9 @@ export function usePositionMetrics({
 
     const liquidationRisk: "Low" | "Medium" | "High" | undefined =
       liquidationPrice.gt(zeroBig) && bitcoinPrice
-        ? bitcoinPrice.div(liquidationPrice).gt(2)
+        ? bitcoinPrice.div(liquidationPrice).gt(1.65)
           ? "Low"
-          : bitcoinPrice.div(liquidationPrice).gt(1.5)
+          : bitcoinPrice.div(liquidationPrice).gt(1.4)
           ? "Medium"
           : "High"
         : undefined;
