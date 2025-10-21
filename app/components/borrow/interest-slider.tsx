@@ -213,7 +213,7 @@ export function InterestSlider({
         /* Simplified slider track when no chart */
         <div
           className="absolute left-0 right-0 top-1/2 -translate-y-1/2"
-          style={{ height: 4 }}
+          style={{ height: 2 }}
         >
           <div className="absolute inset-0 rounded-full bg-neutral-200" />
           {/* Active portion of the track */}
