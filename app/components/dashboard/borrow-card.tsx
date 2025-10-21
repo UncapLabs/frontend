@@ -209,7 +209,7 @@ export default function BorrowCard(props: Props) {
           {/* Collateral Amount Values */}
           <div className="flex-1 flex flex-col justify-center">
             <div>
-              <div className="flex items-baseline gap-3">
+              <div className="flex items-center gap-3">
                 <div
                   className={`text-3xl font-medium font-sora ${
                     isZombie || isFullyRedeemed
@@ -391,7 +391,7 @@ function BorrowCardSkeleton() {
           {/* Collateral Amount Values */}
           <div className="flex-1 flex flex-col justify-center">
             <div>
-              <div className="flex items-baseline gap-3">
+              <div className="flex items-center gap-3">
                 {/* Large amount */}
                 <div className="h-9 w-32 bg-slate-200 rounded animate-pulse" />
               </div>

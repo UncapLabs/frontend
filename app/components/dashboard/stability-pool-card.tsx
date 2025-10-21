@@ -104,7 +104,7 @@ export default function StabilityPoolCard({
           {/* Deposit Amount Values */}
           <div className="flex-1 flex flex-col justify-center">
             <div>
-              <div className="flex items-baseline gap-3">
+              <div className="flex items-center gap-3">
                 <div className="text-3xl font-medium font-sora text-neutral-800">
                   <NumericFormat
                     displayType="text"

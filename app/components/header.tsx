@@ -18,10 +18,12 @@ import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import {
   Menu as MenuIcon,
-  BookOpen,
+  BitcoinIcon,
   FileText,
   Video,
   HelpCircle,
+  Percent,
+  PiggyBank,
 } from "lucide-react";
 import { Link, useLocation } from "react-router";
 import { TransactionHistoryButton } from "./transaction-history-button";
@@ -248,29 +250,29 @@ function Header() {
   ];
 
   const howToItems = [
+    // {
+    //   name: "How to bridge bitcoin?",
+    //   href: "https://uncap.finance/docs/blog/borrowing-at-0-5-percent",
+    //   icon: <Video className="h-4 w-4" />,
+    //   description: "Step-by-step guide to bridge your Bitcoin to Starknet.",
+    // },
     {
       name: "How to borrow?",
-      href: "https://uncap.finance/docs/blog/borrowing-at-0-5-percent",
-      icon: <BookOpen className="h-4 w-4" />,
-      description: "Learn how to borrow USDU against your Bitcoin collateral."
+      href: "https://uncap.finance/docs/blog/launch-guide-borrow-bitcoin-cheapest-rates",
+      icon: <BitcoinIcon className="h-4 w-4 lg:text-white" />,
+      description: "Learn how to borrow USDU against your Bitcoin collateral.",
     },
     {
       name: "How to set your interest rate?",
-      href: "https://uncap.finance/docs/blog/borrowing-at-0-5-percent",
-      icon: <FileText className="h-4 w-4" />,
-      description: "Understand how to manage and optimize your interest rate."
-    },
-    {
-      name: "How to bridge bitcoin?",
-      href: "https://uncap.finance/docs/blog/borrowing-at-0-5-percent",
-      icon: <Video className="h-4 w-4" />,
-      description: "Step-by-step guide to bridge your Bitcoin to Starknet."
+      href: "https://uncap.finance/docs/FAQ/borrowing-liquidations#what-are-user-set-rates",
+      icon: <Percent className="h-4 w-4" />,
+      description: "Understand how to manage and optimize your interest rate.",
     },
     {
       name: "How to earn yield?",
-      href: "https://uncap.finance/docs/blog/borrowing-at-0-5-percent",
-      icon: <HelpCircle className="h-4 w-4" />,
-      description: "Discover ways to earn yield on your USDU deposits."
+      href: "https://uncap.finance/docs/FAQ/usdu-and-earn#how-can-i-earn-with-uncap",
+      icon: <PiggyBank className="h-4 w-4" />,
+      description: "Discover ways to earn yield on your USDU deposits.",
     },
   ];
 
@@ -383,7 +385,9 @@ function Header() {
                             </div>
 
                             <div className="relative z-10">
-                              <BookOpen className="h-6 w-6 text-white" />
+                              <div className="[&_svg]:h-6 [&_svg]:w-6">
+                                {howToItems[0].icon}
+                              </div>
                               <div className="mb-2 mt-3 text-lg font-medium text-white">
                                 {howToItems[0].name}
                               </div>
@@ -397,7 +401,7 @@ function Header() {
                       {howToItems.slice(1).map((item) => (
                         <NavigationMenuLink key={item.name} asChild>
                           <a
-                            className="block select-none space-y-1 rounded-md p-2 leading-none no-underline outline-none transition-colors hover:bg-gray-50 hover:text-amber-500 focus:bg-gray-50 focus:text-amber-500"
+                            className="block select-none space-y-1 rounded-md p-2 leading-none no-underline outline-none transition-colors hover:bg-gray-50 hover:text-amber-500 focus:bg-gray-50 focus:text-amber-500 [&:hover_svg]:text-amber-500 [&:focus_svg]:text-amber-500"
                             href={item.href}
                             target="_blank"
                             rel="noopener noreferrer"

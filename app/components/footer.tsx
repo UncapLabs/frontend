@@ -49,6 +49,14 @@ export default function Footer() {
           >
             Security Audit
           </a>
+          <a
+            className="hover:text-white/90"
+            href="https://uncap.substack.com/embed"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Newsletter
+          </a>
         </nav>
 
         {/* Right side - Social Links (middle on mobile, right on desktop) */}

@@ -1,5 +1,5 @@
 import { NumericFormat } from "react-number-format";
-import { AlertCircle, Info } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { cn } from "~/lib/utils";
 import {
   Tooltip,
@@ -210,19 +210,16 @@ export function TransactionSummary({
 
         {/* Loan */}
         <div className="flex justify-between items-start">
-          <div className="flex items-center gap-2">
-            <span className="text-neutral-800 text-sm font-normal font-sora">
-              Loan
-            </span>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info className="h-3 w-3 text-neutral-400 cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Amount of USDU you are borrowing</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-neutral-800 text-sm font-normal font-sora cursor-help">
+                Loan
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Amount of USDU you are borrowing</p>
+            </TooltipContent>
+          </Tooltip>
           <div className="text-right">
             {type === "update" && changes.debt?.from !== changes.debt?.to ? (
               <div className="space-y-1">
@@ -301,22 +298,19 @@ export function TransactionSummary({
 
         {/* Interest Rate with annual cost */}
         <div className="flex justify-between items-start">
-          <div className="flex items-center gap-2">
-            <span className="text-neutral-800 text-sm font-normal font-sora">
-              Interest rate
-            </span>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info className="h-3 w-3 text-neutral-400 cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>
-                  Annual interest rate on your loan. Higher rates reduce
-                  redemption risk.
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-neutral-800 text-sm font-normal font-sora cursor-help">
+                Interest rate
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>
+                Annual interest rate on your loan. Higher rates reduce
+                redemption risk.
+              </p>
+            </TooltipContent>
+          </Tooltip>
           <div className="text-right">
             {type === "update" &&
             changes.interestRate?.from !== undefined &&
@@ -363,94 +357,21 @@ export function TransactionSummary({
           </div>
         </div>
 
-        {/* LTV Ratio */}
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <span className="text-neutral-800 text-sm font-normal font-sora">
-              LTV
-            </span>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info className="h-3 w-3 text-neutral-400 cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>
-                  Loan-to-Value ratio. Shows how much you're borrowing against
-                  your collateral value.
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <div className="text-right">
-            {(() => {
-              const currentLTV =
-                changes.collateralValueUSD?.to &&
-                changes.debt?.to &&
-                changes.collateralValueUSD.to.gt(0)
-                  ? changes.debt.to
-                      .div(changes.collateralValueUSD.to)
-                      .times(100)
-                  : new Big(0);
-              const previousLTV =
-                type === "update" &&
-                changes.collateralValueUSD?.from &&
-                changes.debt?.from &&
-                changes.collateralValueUSD.from.gt(0)
-                  ? changes.debt.from
-                      .div(changes.collateralValueUSD.from)
-                      .times(100)
-                  : undefined;
-
-              // Check if LTV changed significantly (more than 0.01%)
-              const ltvChanged =
-                previousLTV !== undefined &&
-                currentLTV.minus(previousLTV).abs().gt(0.01);
-
-              if (type === "update" && ltvChanged) {
-                return (
-                  <div className="flex items-center gap-2 justify-end">
-                    <span className="text-neutral-800/50 text-base font-medium font-sora line-through">
-                      {previousLTV.toFixed(1)}%
-                    </span>
-                    <span className="text-xs text-neutral-800/50">→</span>
-                    <span className="text-neutral-800 text-base font-medium font-sora">
-                      {currentLTV.toFixed(1)}%
-                    </span>
-                  </div>
-                );
-              } else {
-                return (
-                  <span className="text-neutral-800 text-base font-medium font-sora">
-                    {currentLTV.gt(0) ? (
-                      `${currentLTV.toFixed(1)}%`
-                    ) : (
-                      <span className="text-neutral-800/50">—</span>
-                    )}
-                  </span>
-                );
-              }
-            })()}
-          </div>
-        </div>
-
         {/* Liquidation Price */}
         <div className="flex justify-between items-start">
-          <div className="flex items-center gap-2">
-            <span className="text-neutral-800 text-sm font-normal font-sora">
-              Liquidation Price
-            </span>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info className="h-3 w-3 text-neutral-400 cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>
-                  Bitcoin price at which your position will be liquidated (115%
-                  collateral ratio)
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-neutral-800 text-sm font-normal font-sora cursor-help">
+                Liquidation Price
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>
+                Bitcoin price at which your position will be liquidated (115%
+                collateral ratio)
+              </p>
+            </TooltipContent>
+          </Tooltip>
           <div className="text-right">
             {type === "update" &&
             previousLiquidationPrice &&
@@ -498,6 +419,123 @@ export function TransactionSummary({
               </span>
             )}
           </div>
+        </div>
+
+        {/* Loan to Value Ratio */}
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="text-neutral-800 text-sm font-normal font-sora cursor-help">
+                  Loan to Value
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>
+                  Loan-to-Value ratio. Shows how much you're borrowing against
+                  your collateral value.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+            <div className="text-right">
+              {(() => {
+                const currentLTV =
+                  changes.collateralValueUSD?.to &&
+                  changes.debt?.to &&
+                  changes.collateralValueUSD.to.gt(0)
+                    ? changes.debt.to
+                        .div(changes.collateralValueUSD.to)
+                        .times(100)
+                    : new Big(0);
+                const previousLTV =
+                  type === "update" &&
+                  changes.collateralValueUSD?.from &&
+                  changes.debt?.from &&
+                  changes.collateralValueUSD.from.gt(0)
+                    ? changes.debt.from
+                        .div(changes.collateralValueUSD.from)
+                        .times(100)
+                    : undefined;
+
+                // Check if LTV changed significantly (more than 0.01%)
+                const ltvChanged =
+                  previousLTV !== undefined &&
+                  currentLTV.minus(previousLTV).abs().gt(0.01);
+
+                if (type === "update" && ltvChanged) {
+                  return (
+                    <div className="flex items-center gap-2 justify-end">
+                      <span className="text-neutral-800/50 text-base font-medium font-sora line-through">
+                        {previousLTV.toFixed(1)}%
+                      </span>
+                      <span className="text-xs text-neutral-800/50">→</span>
+                      <span className="text-neutral-800 text-base font-medium font-sora">
+                        {currentLTV.toFixed(1)}%
+                      </span>
+                    </div>
+                  );
+                } else {
+                  return (
+                    <span className="text-neutral-800 text-base font-medium font-sora">
+                      {currentLTV.gt(0) ? (
+                        `${currentLTV.toFixed(1)}%`
+                      ) : (
+                        <span className="text-neutral-800/50">—</span>
+                      )}
+                    </span>
+                  );
+                }
+              })()}
+            </div>
+          </div>
+
+          {/* LTV Visual Bar - Always display */}
+          {(() => {
+            const currentLTV =
+              changes.collateralValueUSD?.to &&
+              changes.debt?.to &&
+              changes.collateralValueUSD.to.gt(0)
+                ? changes.debt.to
+                    .div(changes.collateralValueUSD.to)
+                    .times(100)
+                : new Big(0);
+
+            // Calculate the position percentage (scale to max 87% for display)
+            const maxDisplayLTV = 87;
+            const position = Math.min(
+              (currentLTV.toNumber() / maxDisplayLTV) * 100,
+              100
+            );
+
+            // Determine risk status and colors
+            const getRiskStatus = (ltv: number) => {
+              if (ltv >= 75) return { label: "Aggressive", color: "text-red-600", gradient: "from-red-400 to-red-600" };
+              if (ltv >= 50) return { label: "Moderate", color: "text-amber-600", gradient: "from-amber-400 to-amber-600" };
+              return { label: "Conservative", color: "text-green-600", gradient: "from-green-400 to-green-600" };
+            };
+
+            const riskStatus = getRiskStatus(currentLTV.toNumber());
+
+            return (
+              <div className="space-y-2">
+                {/* Bar with gradient */}
+                <div className="relative h-2 bg-neutral-100 rounded-full overflow-hidden">
+                  <div
+                    className={cn("h-full transition-all duration-300 bg-gradient-to-r", riskStatus.gradient)}
+                    style={{ width: `${position}%` }}
+                  />
+                </div>
+
+                {/* Status label and max on same row */}
+                <div className="flex justify-between items-center text-xs font-sora">
+                  <span className={riskStatus.color}>{riskStatus.label}</span>
+                  <span className="text-neutral-800/50">
+                    Max. {maxDisplayLTV.toFixed(1)}%
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Warnings */}

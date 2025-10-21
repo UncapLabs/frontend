@@ -130,7 +130,7 @@ export default function RewardsPage() {
                   {/* Points Amount */}
                   <div className="flex-1 flex flex-col justify-center">
                     <div>
-                      <div className="flex items-baseline gap-3">
+                      <div className="flex items-center gap-3">
                         <div className="text-5xl font-medium font-sora text-neutral-800">
                           {!address ? (
                             "????"
@@ -146,6 +146,7 @@ export default function RewardsPage() {
                             />
                           )}
                         </div>
+                        {/* Points Badge */}
                         <div className="p-2.5 rounded-lg inline-flex justify-start items-center gap-2 bg-[#F5F3EE]">
                           <span className="text-sm font-medium font-sora leading-tight text-neutral-800">
                             points
@@ -213,6 +214,9 @@ export default function RewardsPage() {
                 </h2>
                 <p className="text-sm text-[#94938D] font-sora">
                   Weekly breakdown of your points earnings
+                </p>
+                <p className="text-xs text-[#AAA28E] font-sora mt-1">
+                  Calculated every Friday at 10:00 UTC
                 </p>
               </div>
             </div>
@@ -282,7 +286,7 @@ export default function RewardsPage() {
                   {/* Points Amount */}
                   <div className="flex-1 flex flex-col justify-center">
                     <div>
-                      <div className="flex items-baseline gap-3">
+                      <div className="flex items-center gap-3">
                         <div className="text-5xl font-medium font-sora text-neutral-800">
                           {!address ? (
                             "????"
