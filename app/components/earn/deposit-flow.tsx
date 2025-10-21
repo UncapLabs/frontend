@@ -366,7 +366,7 @@ export function DepositFlow({
             </div>
           </div>
 
-          <div className="flex flex-col items-start space-y-4 mt-6">
+          <div className="flex flex-col items-start space-y-4 mt-4">
             <form.Subscribe
               selector={(state) => ({
                 canSubmit: state.canSubmit,

@@ -7,6 +7,7 @@ import { TransactionSummary } from "~/components/transaction-summary";
 import { TokenInput } from "~/components/token-input";
 import { ArrowIcon } from "~/components/icons/arrow-icon";
 import { FloatingInfoButton } from "~/components/floating-info-button";
+import { InfoDialog } from "~/components/info-dialog";
 import { useEffect, useCallback } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
@@ -526,7 +527,7 @@ function Borrow() {
                   />
 
                   {/* Borrow Button */}
-                  <div className="flex flex-col items-start space-y-4 mt-6">
+                  <div className="flex flex-col items-start space-y-2 mt-4">
                     <form.Subscribe
                       selector={(state) => ({
                         canSubmit: state.canSubmit,
@@ -560,26 +561,58 @@ function Borrow() {
                         }
 
                         return (
-                          <Button
-                            type={address ? "submit" : "button"}
-                            onClick={!address ? connectWallet : undefined}
-                            disabled={
-                              address &&
-                              (!collateralAmount ||
-                                !borrowAmount ||
-                                borrowAmount.lte(0) ||
-                                isSending ||
-                                isPending ||
-                                !canSubmit)
-                            }
-                            className="w-full h-12 bg-token-bg-blue hover:bg-blue-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all whitespace-nowrap"
-                          >
-                            {isSending
-                              ? "Confirm in wallet..."
-                              : isPending
-                              ? "Transaction pending..."
-                              : buttonText}
-                          </Button>
+                          <>
+                            <Button
+                              type={address ? "submit" : "button"}
+                              onClick={!address ? connectWallet : undefined}
+                              disabled={
+                                address &&
+                                (!collateralAmount ||
+                                  !borrowAmount ||
+                                  borrowAmount.lte(0) ||
+                                  isSending ||
+                                  isPending ||
+                                  !canSubmit)
+                              }
+                              className="w-full h-12 bg-token-bg-blue hover:bg-blue-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all whitespace-nowrap"
+                            >
+                              {isSending
+                                ? "Confirm in wallet..."
+                                : isPending
+                                ? "Transaction pending..."
+                                : buttonText}
+                            </Button>
+
+                            {/* Show bridge warning when balance is explicitly 0 */}
+                            {bitcoinBalance?.value === 0n && (
+                              <InfoDialog defaultTab="bridge">
+                                <button
+                                  type="button"
+                                  className="w-full text-left text-neutral-800 text-sm font-normal font-sora hover:opacity-70 transition-opacity cursor-pointer flex items-center gap-1.5"
+                                >
+                                  <span>Not enough {collateral.symbol}.</span>
+                                  <span className="underline flex items-center gap-1">
+                                    Bridge funds
+                                    <svg
+                                      width="12"
+                                      height="12"
+                                      viewBox="0 0 12 12"
+                                      fill="none"
+                                      className="inline-block"
+                                    >
+                                      <path
+                                        d="M3 9L9 3M9 3H4.5M9 3V7.5"
+                                        stroke="currentColor"
+                                        strokeWidth="1.5"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                      />
+                                    </svg>
+                                  </span>
+                                </button>
+                              </InfoDialog>
+                            )}
+                          </>
                         );
                       }}
                     </form.Subscribe>

@@ -25,7 +25,10 @@ interface InfoDialogProps {
   children?: React.ReactNode;
 }
 
-export function InfoDialog({ defaultTab = "bridge", children }: InfoDialogProps = {}) {
+export function InfoDialog({
+  defaultTab = "bridge",
+  children,
+}: InfoDialogProps = {}) {
   const isDesktop = useMediaQuery("(min-width: 640px)");
   const [activeTab, setActiveTab] = useState<Tab>(defaultTab);
 
@@ -183,7 +186,7 @@ export function InfoDialog({ defaultTab = "bridge", children }: InfoDialogProps 
       <div className="bg-neutral-50 rounded-xl p-6 space-y-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium font-sora text-[#242424]">
-            From EVM Networks (Ethereum, L2s)
+            From EVM Networks (Ethereum & L2s)
           </h3>
           {/* Visual flow: Ethereum → Starknet */}
           <div className="flex items-center gap-2">
@@ -400,10 +403,11 @@ export function InfoDialog({ defaultTab = "bridge", children }: InfoDialogProps 
           <div className="max-w-md">
             <p className="text-sm font-normal font-sora text-neutral-700 text-justify">
               Choose your own interest rate when borrowing. Lower rates save you
-              money but increase your redemption risk - when USDU trades below $1,
-              someone can swap USDU for your collateral at face value, repaying
-              part of your debt. Higher rates provide better protection. You can
-              adjust your rate anytime to balance cost and safety.
+              money but increase your redemption risk - when USDU trades below
+              $1, someone can swap USDU for your collateral at face value,
+              repaying part of your debt. Higher rates provide better
+              protection. You can adjust your rate anytime to balance cost and
+              safety.
             </p>
           </div>
         </div>

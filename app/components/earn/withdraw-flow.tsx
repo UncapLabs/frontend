@@ -188,7 +188,8 @@ export function WithdrawFlow({
                 onChangeAsync: async ({ value }) => {
                   if (!address || !value) return undefined;
                   if (!selectedPosition) return undefined;
-                  const userDeposit = selectedPosition?.userDeposit || new Big(0);
+                  const userDeposit =
+                    selectedPosition?.userDeposit || new Big(0);
                   return validators.compose(
                     validators.insufficientBalance(value, userDeposit)
                   );
@@ -216,9 +217,12 @@ export function WithdrawFlow({
                       : null
                   }
                   onPercentageClick={(percentage) => {
-                    const userDeposit = selectedPosition?.userDeposit || new Big(0);
+                    const userDeposit =
+                      selectedPosition?.userDeposit || new Big(0);
                     const newValue =
-                      percentage === 1 ? userDeposit : userDeposit.times(percentage);
+                      percentage === 1
+                        ? userDeposit
+                        : userDeposit.times(percentage);
                     field.handleChange(newValue);
                   }}
                 />
@@ -362,7 +366,7 @@ export function WithdrawFlow({
             </div>
           </div>
 
-          <div className="flex flex-col items-start space-y-4 mt-6">
+          <div className="flex flex-col items-start space-y-4 mt-4">
             <form.Subscribe
               selector={(state) => ({
                 canSubmit: state.canSubmit,
@@ -405,8 +409,8 @@ export function WithdrawFlow({
                       !!address &&
                       (!form.state.values.amount ||
                         form.state.values.amount.lte(0) ||
-                        (!selectedPosition?.userDeposit ||
-                          selectedPosition.userDeposit.eq(0)) ||
+                        !selectedPosition?.userDeposit ||
+                        selectedPosition.userDeposit.eq(0) ||
                         isSending ||
                         isPending ||
                         !canSubmit)

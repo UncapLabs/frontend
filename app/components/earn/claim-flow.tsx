@@ -196,13 +196,14 @@ export function ClaimFlow({
                         >
                           <div className="space-y-2">
                             <p className="text-xs">
-                              If checked, both USDU and {selectedCollateralSymbol}{" "}
-                              rewards will be claimed and sent to your wallet
+                              If checked, both USDU and{" "}
+                              {selectedCollateralSymbol} rewards will be claimed
+                              and sent to your wallet
                             </p>
                             <p className="text-xs">
                               If left unchecked, USDU rewards will be compounded
-                              and {selectedCollateralSymbol} rewards will stay in
-                              pool and can be claimed later
+                              and {selectedCollateralSymbol} rewards will stay
+                              in pool and can be claimed later
                             </p>
                           </div>
                         </TooltipContent>
@@ -253,7 +254,7 @@ export function ClaimFlow({
             </div>
           </div>
 
-          <div className="flex flex-col items-start space-y-4 mt-6">
+          <div className="flex flex-col items-start space-y-4 mt-4">
             {(() => {
               const hasRewards =
                 selectedPosition?.rewards &&
@@ -278,9 +279,9 @@ export function ClaimFlow({
                   onClick={!address ? connectWallet : undefined}
                   disabled={
                     !!address &&
-                    ((!selectedPosition?.rewards ||
+                    (!selectedPosition?.rewards ||
                       (selectedPosition.rewards.usdu.eq(0) &&
-                        selectedPosition.rewards.collateral.eq(0))) ||
+                        selectedPosition.rewards.collateral.eq(0)) ||
                       isSending ||
                       isPending)
                   }
