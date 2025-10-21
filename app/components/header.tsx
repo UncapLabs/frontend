@@ -494,13 +494,15 @@ function Header() {
                     <div className="space-y-1">
                       {howToItems.map((item) => (
                         <DrawerClose asChild key={item.name}>
-                          <Link
-                            to={item.href}
+                          <a
+                            href={item.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50 hover:text-amber-500 font-sora font-medium text-sm transition-colors"
                           >
                             {item.icon}
                             {item.name}
-                          </Link>
+                          </a>
                         </DrawerClose>
                       ))}
                     </div>
