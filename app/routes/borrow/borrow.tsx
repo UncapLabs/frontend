@@ -19,7 +19,10 @@ import { useAccount, useBalance } from "@starknet-react/core";
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
 import { useBorrow } from "~/hooks/use-borrow";
-import { useTelosBatchMetadata } from "~/hooks/use-telos-batch-manager";
+import {
+  useTelosBatchMetadata,
+  useTelosManagedInfo,
+} from "~/hooks/use-telos-batch-manager";
 import { useQueryState, parseAsStringEnum } from "nuqs";
 import { parseAsBig, parseAsBigWithDefault } from "~/lib/url-parsers";
 import Big from "big.js";
@@ -70,40 +73,6 @@ function Borrow() {
     branchId: collateral.branchId,
   });
 
-  const manualInterestRate = interestRate ?? new Big("2.5");
-  const telosAprPercent = telosBatch.data
-    ? telosBatch.data.annualInterestRate.times(100)
-    : undefined;
-  const telosFeePercent = telosBatch.data
-    ? telosBatch.data.annualManagementFee.times(100)
-    : undefined;
-  const telosBcrPercent = telosBatch.data
-    ? telosBatch.data.bcrRequirement.times(100)
-    : undefined;
-  const telosCooldownSeconds =
-    telosBatch.data?.minInterestRateChangePeriodSeconds;
-  const telosBatchManagerAddress =
-    telosBatch.data?.batchManagerAddress ??
-    collateral.defaultInterestManager ??
-    collateral.addresses.batchManager;
-
-  const effectiveInterestRate =
-    rateMode === "managed" && telosAprPercent
-      ? telosAprPercent
-      : manualInterestRate;
-
-  const managedInterestInfo = {
-    apr: telosAprPercent,
-    fee: telosFeePercent,
-    cooldownSeconds: telosCooldownSeconds,
-    cooldownEndsAt: telosBatch.data?.cooldownEndsAt,
-    bcr: telosBcrPercent,
-    batchManagerLabel: "Telos",
-    isLoading: telosBatch.isLoading,
-    isError: telosBatch.isError,
-    managedDebt: telosBatch.data?.managedDebt,
-  };
-
   // Get balance token address and decimals
   const balanceTokenAddress = getBalanceTokenAddress(collateral);
 
@@ -125,38 +94,39 @@ function Borrow() {
   });
   const minCollateralizationRatio = collateral.minCollateralizationRatio;
 
-const metrics = usePositionMetrics({
-  collateralAmount: collateralAmount,
-  borrowAmount: borrowAmount,
-  bitcoinPrice: bitcoin?.price,
-  usduPrice: usdu?.price,
-  minCollateralizationRatio,
-});
+  const metrics = usePositionMetrics({
+    collateralAmount: collateralAmount,
+    borrowAmount: borrowAmount,
+    bitcoinPrice: bitcoin?.price,
+    usduPrice: usdu?.price,
+    minCollateralizationRatio,
+  });
 
-const telosRequirementRatio = collateral.minCollateralizationRatio.plus(
-  telosBatch.data?.bcrRequirement ?? new Big(0)
-);
-const telosRequirementPercent = telosRequirementRatio.times(100);
-const hasBorrowValues =
-  collateralAmount !== null &&
-  collateralAmount !== undefined &&
-  borrowAmount !== null &&
-  borrowAmount !== undefined &&
-  borrowAmount.gt(0) &&
-  collateralAmount.gt(0) &&
-  bitcoin?.price !== undefined;
-const telosMeetsBcr = hasBorrowValues
-  ? metrics.collateralRatio.gte(telosRequirementPercent)
-  : true;
+  const hasBorrowValues =
+    collateralAmount !== null &&
+    collateralAmount !== undefined &&
+    borrowAmount !== null &&
+    borrowAmount !== undefined &&
+    borrowAmount.gt(0) &&
+    collateralAmount.gt(0) &&
+    bitcoin?.price !== undefined;
 
-let telosDisableReason: string | undefined;
-if (telosBatch.isError) {
-  telosDisableReason = "Unable to load Telos settings. Please try again later.";
-} else if (hasBorrowValues && telosBatch.data && !telosMeetsBcr) {
-  telosDisableReason = `Increase collateral or reduce debt to reach at least ${telosRequirementPercent.toFixed(2)}% collateral ratio required by Telos.`;
-}
+  const manualInterestRate = interestRate ?? new Big("2.5");
 
-const telosManagedDisabled = Boolean(telosDisableReason);
+  const {
+    effectiveInterestRate,
+    telosBatchManagerAddress,
+    managedInterestInfo,
+    telosDisableReason,
+    telosManagedDisabled,
+  } = useTelosManagedInfo({
+    telosBatch,
+    collateral,
+    manualInterestRate,
+    rateMode,
+    collateralRatio: metrics.collateralRatio,
+    hasBorrowValues,
+  });
 
   const form = useForm({
     defaultValues: {
@@ -726,13 +696,6 @@ const telosManagedDisabled = Boolean(telosDisableReason);
                 interestRate: {
                   to: effectiveInterestRate,
                 },
-                batchManager:
-                  rateMode === "managed"
-                    ? {
-                        to: telosBatchManagerAddress,
-                        label: "Telos",
-                      }
-                    : undefined,
               }}
               liquidationPrice={metrics.liquidationPrice}
               collateralType={collateral.id}

@@ -1,18 +1,10 @@
 import { NumericFormat } from "react-number-format";
 import Big from "big.js";
-import {
-  Alert,
-  AlertIcon,
-  AlertDescription,
-  AlertContent,
-} from "~/components/ui/alert";
 
 interface ManagedStrategyProps {
   borrowAmount?: Big;
   apr?: Big;
   managementFee?: Big;
-  batchManagerLabel?: string;
-  isError?: boolean;
   managedDebt?: Big;
 }
 
@@ -25,8 +17,6 @@ export function ManagedStrategy({
   borrowAmount,
   apr,
   managementFee,
-  batchManagerLabel = "Telos",
-  isError = false,
   managedDebt,
 }: ManagedStrategyProps) {
   const feePercent = managementFee;
@@ -73,33 +63,7 @@ export function ManagedStrategy({
         )}
       </div>
       {/* Managed Strategy Info */}
-      <div className="w-full bg-neutral-50 rounded-xl p-4 space-y-3">
-        {/* Error Message */}
-        {isError && (
-          <Alert variant="warning">
-            <AlertIcon variant="warning">
-              <svg
-                className="w-4 h-3"
-                viewBox="0 0 16 11"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M6.20549 10.8855L0.820557 5.49933L2.61511 3.70478L6.20549 7.29389L13.3837 0.114401L15.1795 1.91022L6.20549 10.8855Z"
-                  fill="#FF9300"
-                />
-              </svg>
-            </AlertIcon>
-            <AlertContent>
-              <AlertDescription>
-                <strong>Unable to load {batchManagerLabel} settings</strong>
-                <p>Please try again later.</p>
-              </AlertDescription>
-            </AlertContent>
-          </Alert>
-        )}
-
-        {/* Header with logo */}
+      <div className="w-full bg-neutral-50 rounded-xl p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 space-y-1">
             <p className="text-neutral-600 text-xs font-normal font-sora leading-relaxed">

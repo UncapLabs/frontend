@@ -123,14 +123,8 @@ export function InterestRateSelector({
     };
   }, [chartBars, interestRateBig]);
 
-  const managedOptionDisabled =
-    isManagedOptionDisabled || Boolean(managedDisableReason);
-
   const handleModeChange = (mode: RateMode) => {
     if (mode === activeMode) {
-      return;
-    }
-    if (mode === "managed" && managedOptionDisabled) {
       return;
     }
     onRateModeChange?.(mode);
@@ -264,8 +258,6 @@ export function InterestRateSelector({
                 borrowAmount={borrowAmount}
                 apr={managedInfo?.apr}
                 managementFee={managedInfo?.fee}
-                batchManagerLabel={managedInfo?.batchManagerLabel}
-                isError={managedInfo?.isError}
                 managedDebt={managedInfo?.managedDebt}
               />
             </div>
@@ -320,7 +312,7 @@ export function InterestRateSelector({
         )}
 
         {/* STRK Rebate - shared between both modes */}
-        {borrowAmount && borrowAmount.gt(0) && rebateData && (
+        {/* {borrowAmount && borrowAmount.gt(0) && rebateData && (
           <STRKRebateInfo
             yearlyInterestUSD={rebateData.yearlyInterestUSD}
             yearlyRebateUSD={rebateData.yearlyRebateUSD}
@@ -335,7 +327,7 @@ export function InterestRateSelector({
                 : undefined
             }
           />
-        )}
+        )} */}
       </div>
     </div>
   );
