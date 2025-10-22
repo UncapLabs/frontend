@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { RpcProvider } from "starknet";
 import { publicProcedure, router } from "../trpc";
 import {
   INTEREST_RATE_START_BIG,
@@ -12,6 +13,8 @@ import {
   getAverageInterestRateForBranch,
 } from "../services/interest";
 import Big from "big.js";
+import { fetchTelosBatchMetadata } from "../services/telos-batch";
+import { getCollateralByBranchId } from "~/lib/collateral";
 
 type ChartDataPoint = {
   debt: Big;
@@ -261,6 +264,48 @@ export const interestRouter = router({
     )
     .query(async ({ input }) => {
       return getAverageInterestRateForBranch(input.branchId);
+    }),
+  getTelosBatchMetadata: publicProcedure
+    .input(
+      z.object({
+        branchId: z.number().optional().default(0),
+        batchManagerAddress: z.string().optional(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const collateral = getCollateralByBranchId(input.branchId);
+
+      if (!collateral) {
+        throw new Error(`Unsupported branch id: ${input.branchId}`);
+      }
+
+      const provider = new RpcProvider({ nodeUrl: ctx.env.NODE_URL });
+
+      const metadata = await fetchTelosBatchMetadata(
+        provider,
+        collateral.id,
+        input.batchManagerAddress
+      );
+
+      const cooldownEndsAt =
+        metadata.lastInterestRateAdjustment +
+        metadata.minInterestRateChangePeriodSeconds;
+
+      return {
+        collateralId: metadata.collateralId,
+        batchManagerAddress: metadata.batchManagerAddress,
+        annualInterestRate: metadata.annualInterestRate,
+        minInterestRate: metadata.minInterestRate,
+        maxInterestRate: metadata.maxInterestRate,
+        annualManagementFee: metadata.annualManagementFee,
+        minInterestRateChangePeriodSeconds:
+          metadata.minInterestRateChangePeriodSeconds,
+        lastInterestRateAdjustment: metadata.lastInterestRateAdjustment,
+        lastDebtUpdateTime: metadata.lastDebtUpdateTime,
+        cooldownEndsAt,
+        bcrRequirement: metadata.bcrRequirement,
+        managedDebt: metadata.managedDebt,
+      };
     }),
 });
 

@@ -22,6 +22,7 @@
     "hintHelpers": "0x1efdea1bd822408058aaef0f676fd63cf181956c876623874eb0490cc81fde8",
     "multiTroveGetter": "0x359929753a326ecae73ae1dda6d5d81023538ceb35f3321400e6d53fe2db7d3",
     "troveManagerEventsEmitter": "0x3fce3dbd7cd7b59dc13e4f67bcc54f6a8e84d2ed917266543c2669af970e5d1",
-    "underlyingAddress": "0x5c91074ab62af523b9f260ae380fb193a039994a24eafca59385323a6002f2e"
+    "underlyingAddress": "0x5c91074ab62af523b9f260ae380fb193a039994a24eafca59385323a6002f2e",
+    "defaultInterestManager": "0x305aca6cadcd7d6f4ebd60fd7ea32e020b8eff3fc3709733fc37e0102628f10"
   }
 }

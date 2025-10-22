@@ -16,6 +16,8 @@ interface UseAdjustTroveParams {
   currentCollateral?: Big;
   currentDebt?: Big;
   currentInterestRate?: bigint;
+  currentBatchManager?: string | null;
+  targetBatchManager?: string | null;
   newCollateral?: Big;
   newDebt?: Big;
   newInterestRate?: bigint;
@@ -201,6 +203,8 @@ export function useAdjustTrove({
   currentCollateral,
   currentDebt,
   currentInterestRate,
+  currentBatchManager,
+  targetBatchManager,
   newCollateral,
   newDebt,
   newInterestRate,
@@ -231,6 +235,16 @@ export function useAdjustTrove({
     // Use collateral decimals if available, otherwise default to 18
     const collateralDecimals = collateral?.decimals || 18;
 
+    const currentManager = currentBatchManager ?? "0x0";
+    const targetManager =
+      targetBatchManager === undefined
+        ? currentManager
+        : targetBatchManager ?? "0x0";
+    const hasBatchManagerChange =
+      targetBatchManager !== undefined && targetManager !== currentManager;
+    const leavingBatchManager =
+      targetBatchManager === null && currentManager !== "0x0";
+
     return {
       collateralChange: bigToBigint(collateralDiff.abs(), collateralDecimals),
       debtChange: bigToBigint(debtDiff.abs(), 18),
@@ -240,11 +254,16 @@ export function useAdjustTrove({
       hasDebtChange: debtDiff.abs().gt(0.01), // Minimum change threshold
       hasInterestRateChange: currentInterestRate !== targetInterestRate,
       newInterestRate: targetInterestRate,
+      hasBatchManagerChange,
+      targetBatchManager,
+      leavingBatchManager,
     };
   }, [
     currentCollateral,
     currentDebt,
     currentInterestRate,
+    currentBatchManager,
+    targetBatchManager,
     newCollateral,
     newDebt,
     newInterestRate,
@@ -263,45 +282,59 @@ export function useAdjustTrove({
     if (
       !changes.hasCollateralChange &&
       !changes.hasDebtChange &&
-      !changes.hasInterestRateChange
+      !changes.hasInterestRateChange &&
+      !changes.hasBatchManagerChange
     ) {
       return undefined;
     }
 
-    // If only interest rate is changing, use adjust_trove_interest_rate
-    if (
-      !changes.hasCollateralChange &&
-      !changes.hasDebtChange &&
-      changes.hasInterestRateChange
-    ) {
-      return [
-        contractCall.borrowerOperations.adjustTroveInterestRate({
-          troveId,
-          annualInterestRate: changes.newInterestRate,
-          upperHint: 0n,
-          lowerHint: 0n,
-          maxUpfrontFee,
-          collateralType,
-        }),
-      ];
+    const callsList = [];
+
+    if (changes.hasBatchManagerChange) {
+      if (changes.leavingBatchManager) {
+        callsList.push(
+          contractCall.borrowerOperations.removeFromBatch({
+            troveId,
+            newAnnualInterestRate: changes.newInterestRate,
+            upperHint: 0n,
+            lowerHint: 0n,
+            maxUpfrontFee,
+            collateralType,
+          })
+        );
+      } else if (changes.targetBatchManager) {
+        callsList.push(
+          contractCall.borrowerOperations.setInterestBatchManager({
+            troveId,
+            newBatchManager: changes.targetBatchManager,
+            upperHint: 0n,
+            lowerHint: 0n,
+            maxUpfrontFee,
+            collateralType,
+          })
+        );
+      }
     }
 
-    const baseCalls = getAdjustmentCalls({
-      troveId,
-      collateralChange: changes.hasCollateralChange
-        ? changes.collateralChange
-        : 0n,
-      debtChange: changes.hasDebtChange ? changes.debtChange : 0n,
-      isCollIncrease: changes.isCollIncrease,
-      isDebtIncrease: changes.isDebtIncrease,
-      maxUpfrontFee,
-      collateral,
-      isZombie,
-    });
+    if (changes.hasCollateralChange || changes.hasDebtChange) {
+      const baseCalls = getAdjustmentCalls({
+        troveId,
+        collateralChange: changes.hasCollateralChange
+          ? changes.collateralChange
+          : 0n,
+        debtChange: changes.hasDebtChange ? changes.debtChange : 0n,
+        isCollIncrease: changes.isCollIncrease,
+        isDebtIncrease: changes.isDebtIncrease,
+        maxUpfrontFee,
+        collateral,
+        isZombie,
+      });
+      callsList.push(...baseCalls);
+    }
 
     // If interest rate is also changing, add the interest rate adjustment call
-    if (changes.hasInterestRateChange) {
-      baseCalls.push(
+    if (changes.hasInterestRateChange && !changes.leavingBatchManager) {
+      callsList.push(
         contractCall.borrowerOperations.adjustTroveInterestRate({
           troveId,
           annualInterestRate: changes.newInterestRate,
@@ -313,8 +346,8 @@ export function useAdjustTrove({
       );
     }
 
-    return baseCalls;
-  }, [address, troveId, changes, maxUpfrontFee, collateral]);
+    return callsList.length > 0 ? callsList : undefined;
+  }, [address, troveId, changes, maxUpfrontFee, collateral, isZombie]);
 
   // Use the generic transaction hook
   const transaction = useTransaction(calls);
@@ -326,7 +359,8 @@ export function useAdjustTrove({
       !!changes &&
       (changes.hasCollateralChange ||
         changes.hasDebtChange ||
-        changes.hasInterestRateChange),
+        changes.hasInterestRateChange ||
+        changes.hasBatchManagerChange),
     changes,
   };
 }

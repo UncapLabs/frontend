@@ -15,21 +15,24 @@ import {
 import { getAnnualInterestRate } from "~/lib/utils/calc";
 import { bigintToBig } from "~/lib/decimal";
 import Big from "big.js";
+import type { Position } from "workers/services/trove-service";
 
 export interface UpdateFormData {
   collateralAmount?: Big;
   borrowAmount?: Big;
   interestRate: Big;
   selectedCollateralToken: string;
+  targetBatchManager?: string;
 }
 
 interface UseUpdatePositionParams {
-  position: any | null;
+  position: Position | null;
   collateralAmount?: Big;
   borrowAmount?: Big;
   interestRate?: Big;
   collateralToken?: Collateral;
   onSuccess?: () => void;
+  targetBatchManager?: string | null;
 }
 
 export function useUpdatePosition({
@@ -39,6 +42,7 @@ export function useUpdatePosition({
   interestRate,
   collateralToken,
   onSuccess,
+  targetBatchManager,
 }: UseUpdatePositionParams) {
   const { address } = useAccount();
   const transactionStore = useTransactionStore();
@@ -50,6 +54,7 @@ export function useUpdatePosition({
       borrowAmount: position?.borrowedAmount,
       interestRate: position ? getInterestRatePercentage(position) : new Big(5),
       selectedCollateralToken: collateralToken?.symbol || DEFAULT_COLLATERAL.symbol,
+      targetBatchManager,
     },
   });
 
@@ -81,6 +86,8 @@ export function useUpdatePosition({
       position.status === "redeemed" &&
       position.borrowedAmount.gt(0) &&
       position.borrowedAmount.lt(MIN_DEBT),
+    currentBatchManager: position?.batchManager ?? null,
+    targetBatchManager,
   });
 
   // Create a wrapped send function that manages state transitions
@@ -95,6 +102,7 @@ export function useUpdatePosition({
         borrowAmount: borrowAmount || position?.borrowedAmount,
         interestRate: interestRate || new Big(5),
         selectedCollateralToken: collateralToken?.symbol || DEFAULT_COLLATERAL.symbol,
+        targetBatchManager,
       });
       transactionState.setPending(hash);
 
@@ -114,6 +122,7 @@ export function useUpdatePosition({
           hasInterestRateChange: changes?.hasInterestRateChange || false,
           newInterestRate: interestRate || undefined,
           collateralToken: collateralToken?.symbol || DEFAULT_COLLATERAL.symbol,
+          hasBatchManagerChange: changes?.hasBatchManagerChange || false,
         });
 
         const transactionData = {
@@ -130,6 +139,8 @@ export function useUpdatePosition({
             newInterestRate: interestRate || undefined,
             collateralToken: collateralToken?.symbol || DEFAULT_COLLATERAL.symbol,
             collateralType: collateralToken?.id || DEFAULT_COLLATERAL.id,
+            previousBatchManager: position.batchManager || undefined,
+            targetBatchManager: targetBatchManager || undefined,
           },
         };
 
@@ -147,6 +158,7 @@ export function useUpdatePosition({
     address,
     position,
     changes,
+    targetBatchManager,
   ]);
 
   // Check if we need to update state based on transaction status

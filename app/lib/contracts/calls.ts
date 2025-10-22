@@ -1,4 +1,4 @@
-import { Contract, type RpcProvider } from "starknet";
+import { Contract, type AccountInterface, type RpcProvider } from "starknet";
 import {
   getCollateralAddresses,
   getBranchId,
@@ -16,7 +16,42 @@ import {
   STABILITY_POOL_ABI,
   USDU_ABI,
   COLLATERAL_WRAPPER_ABI,
+  BATCH_MANAGER_ABI,
 } from ".";
+
+interface InterestBatchManagerStruct {
+  min_interest_rate: bigint;
+  max_interest_rate: bigint;
+  min_interest_rate_change_period: bigint;
+}
+
+interface LatestBatchDataStruct {
+  total_debt_shares: bigint;
+  entire_debt_without_redistribution: bigint;
+  entire_coll_without_redistribution: bigint;
+  accrued_interest: bigint;
+  recorded_debt: bigint;
+  annual_interest_rate: bigint;
+  weighted_recorded_debt: bigint;
+  annual_management_fee: bigint;
+  accrued_management_fee: bigint;
+  weighted_recorded_batch_management_fee: bigint;
+  last_debt_update_time: bigint;
+  last_interest_rate_adj_time: bigint;
+}
+
+interface TroveDataStruct {
+  entire_debt: bigint;
+  entire_coll: bigint;
+  redist_usdu_debt_gain: bigint;
+  redist_coll_gain: bigint;
+  accrued_interest: bigint;
+  recorded_debt: bigint;
+  annual_interest_rate: bigint;
+  weighted_recorded_debt: bigint;
+  accrued_batch_management_fee: bigint;
+  last_interest_rate_adj_time: bigint;
+}
 
 /**
  * Contract builders that leverage ABIs for type safety
@@ -79,6 +114,47 @@ export const contractCall = {
         params.addManager ?? "0x0",
         params.removeManager ?? "0x0",
         params.receiver ?? "0x0",
+      ]);
+    },
+
+    /**
+     * Open a new trove and immediately join an interest batch manager
+     */
+    openTroveAndJoinInterestBatchManager: (params: {
+      owner: string;
+      ownerIndex: bigint;
+      collAmount: bigint;
+      usduAmount: bigint;
+      collateralType: CollateralId;
+      interestBatchManager?: string;
+      upperHint?: bigint;
+      lowerHint?: bigint;
+      maxUpfrontFee?: bigint;
+      addManager?: string;
+      removeManager?: string;
+      receiver?: string;
+    }) => {
+      const addresses = getCollateralAddresses(params.collateralType);
+      const contract = new Contract({
+        abi: BORROWER_OPERATIONS_ABI,
+        address: addresses.borrowerOperations,
+      });
+
+      return contract.populate("open_trove_and_join_interest_batch_manager", [
+        {
+          owner: params.owner,
+          owner_index: params.ownerIndex,
+          coll_amount: params.collAmount,
+          usdu_amount: params.usduAmount,
+          upper_hint: params.upperHint ?? 0n,
+          lower_hint: params.lowerHint ?? 0n,
+          interest_batch_manager:
+            params.interestBatchManager ?? addresses.batchManager,
+          max_upfront_fee: params.maxUpfrontFee ?? 2n ** 256n - 1n,
+          add_manager: params.addManager ?? "0x0",
+          remove_manager: params.removeManager ?? "0x0",
+          receiver: params.receiver ?? "0x0",
+        },
       ]);
     },
 
@@ -221,6 +297,56 @@ export const contractCall = {
       return contract.populate("adjust_trove_interest_rate", [
         params.troveId,
         params.annualInterestRate,
+        params.upperHint ?? 0n,
+        params.lowerHint ?? 0n,
+        params.maxUpfrontFee ?? 2n ** 256n - 1n,
+      ]);
+    },
+
+    /**
+     * Assign a trove to an interest batch manager
+     */
+    setInterestBatchManager: (params: {
+      troveId: bigint;
+      newBatchManager: string;
+      upperHint?: bigint;
+      lowerHint?: bigint;
+      maxUpfrontFee?: bigint;
+      collateralType: CollateralId;
+    }) => {
+      const addresses = getCollateralAddresses(params.collateralType);
+      const contract = new Contract({
+        abi: BORROWER_OPERATIONS_ABI,
+        address: addresses.borrowerOperations,
+      });
+      return contract.populate("set_interest_batch_manager", [
+        params.troveId,
+        params.newBatchManager,
+        params.upperHint ?? 0n,
+        params.lowerHint ?? 0n,
+        params.maxUpfrontFee ?? 2n ** 256n - 1n,
+      ]);
+    },
+
+    /**
+     * Remove a trove from its current batch manager (return to manual control)
+     */
+    removeFromBatch: (params: {
+      troveId: bigint;
+      newAnnualInterestRate: bigint;
+      upperHint?: bigint;
+      lowerHint?: bigint;
+      maxUpfrontFee?: bigint;
+      collateralType: CollateralId;
+    }) => {
+      const addresses = getCollateralAddresses(params.collateralType);
+      const contract = new Contract({
+        abi: BORROWER_OPERATIONS_ABI,
+        address: addresses.borrowerOperations,
+      });
+      return contract.populate("remove_from_batch", [
+        params.troveId,
+        params.newAnnualInterestRate,
         params.upperHint ?? 0n,
         params.lowerHint ?? 0n,
         params.maxUpfrontFee ?? 2n ** 256n - 1n,
@@ -410,6 +536,55 @@ export const contractRead = {
       ]);
       return result as string;
     },
+
+    /**
+     * Get Telos batch manager configuration (rate bounds, cooldown)
+     */
+    getInterestBatchManager: async (
+      provider: RpcProvider,
+      collateralType: CollateralId,
+      batchManagerAddress?: string
+    ): Promise<{
+      minInterestRate: bigint;
+      maxInterestRate: bigint;
+      minInterestRateChangePeriod: bigint;
+    }> => {
+      const addresses = getCollateralAddresses(collateralType);
+      const contract = new Contract({
+        abi: BORROWER_OPERATIONS_ABI,
+        address: addresses.borrowerOperations,
+        providerOrAccount: provider,
+      });
+      const targetBatchManager = batchManagerAddress ?? addresses.batchManager;
+      const result = (await contract.call(
+        "get_interest_batch_manager",
+        [targetBatchManager]
+      )) as InterestBatchManagerStruct;
+
+      return {
+        minInterestRate: result.min_interest_rate,
+        maxInterestRate: result.max_interest_rate,
+        minInterestRateChangePeriod: result.min_interest_rate_change_period,
+      };
+    },
+
+    /**
+     * Get the additional Borrower Collateral Requirement (BCR)
+     */
+    getBcr: async (
+      provider: RpcProvider,
+      collateralType: CollateralId
+    ): Promise<bigint> => {
+      const addresses = getCollateralAddresses(collateralType);
+      const contract = new Contract({
+        abi: BORROWER_OPERATIONS_ABI,
+        address: addresses.borrowerOperations,
+        providerOrAccount: provider,
+      });
+      const result = await contract.call("get_bcr", []);
+
+      return result as bigint;
+    },
   },
 
   troveManager: {
@@ -429,7 +604,7 @@ export const contractRead = {
       });
       const result = (await contract.call("get_latest_trove_data", [
         troveId,
-      ])) as any;
+      ])) as TroveDataStruct;
 
       // The contract returns a struct with all fields properly parsed by Starknet.js
       return {
@@ -486,6 +661,45 @@ export const contractRead = {
       return {
         totalCollateral: entireColl as bigint,
         totalDebt: entireDebt as bigint,
+      };
+    },
+  },
+
+  batchManager: {
+    /**
+     * Get the latest Telos batch data for a given collateral
+     */
+    getLatestBatchData: async (
+      provider: RpcProvider,
+      collateralType: CollateralId,
+      batchManagerAddress?: string
+    ) => {
+      const addresses = getCollateralAddresses(collateralType);
+      const contract = new Contract({
+        abi: BATCH_MANAGER_ABI,
+        address: addresses.batchManager,
+        providerOrAccount: provider,
+      });
+      const targetBatchManager = batchManagerAddress ?? addresses.batchManager;
+
+      const result = (await contract.call("get_latest_batch_data", [
+        targetBatchManager,
+      ])) as LatestBatchDataStruct;
+
+      return {
+        totalDebtShares: result.total_debt_shares,
+        entireDebtWithoutRedistribution: result.entire_debt_without_redistribution,
+        entireCollWithoutRedistribution: result.entire_coll_without_redistribution,
+        accruedInterest: result.accrued_interest,
+        recordedDebt: result.recorded_debt,
+        annualInterestRate: result.annual_interest_rate,
+        weightedRecordedDebt: result.weighted_recorded_debt,
+        annualManagementFee: result.annual_management_fee,
+        accruedManagementFee: result.accrued_management_fee,
+        weightedRecordedBatchManagementFee:
+          result.weighted_recorded_batch_management_fee,
+        lastDebtUpdateTime: result.last_debt_update_time,
+        lastInterestRateAdjTime: result.last_interest_rate_adj_time,
       };
     },
   },
@@ -644,7 +858,7 @@ export const contractRead = {
  */
 export const createContracts = (
   collateralType: CollateralId,
-  provider?: any
+  provider?: RpcProvider | AccountInterface
 ) => {
   const addresses = getCollateralAddresses(collateralType);
 

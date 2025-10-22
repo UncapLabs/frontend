@@ -19,9 +19,6 @@ import { Separator } from "~/components/ui/separator";
 import {
   Menu as MenuIcon,
   BitcoinIcon,
-  FileText,
-  Video,
-  HelpCircle,
   Percent,
   PiggyBank,
 } from "lucide-react";

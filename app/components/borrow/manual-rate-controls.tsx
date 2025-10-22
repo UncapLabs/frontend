@@ -169,10 +169,7 @@ export function ManualRateControls({
         {borrowAmount && borrowAmount.gt(0) && (
           <div className="flex items-baseline">
             <span className="text-sm text-neutral-800 font-medium font-sora">
-              {borrowAmount
-                .times(interestRate)
-                .div(100)
-                .toFixed(2)}
+              {borrowAmount.times(interestRate).div(100).toFixed(2)}
             </span>
             <span className="text-xs text-neutral-500 block ml-1">
               {" "}

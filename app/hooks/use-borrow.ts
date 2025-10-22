@@ -18,6 +18,8 @@ export interface BorrowFormData {
   borrowAmount?: Big;
   interestRate: Big;
   selectedCollateralToken: string;
+  rateMode: "manual" | "managed";
+  interestBatchManager?: string;
 }
 
 interface UseBorrowParams {
@@ -26,6 +28,8 @@ interface UseBorrowParams {
   interestRate: Big;
   collateral?: Collateral;
   onSuccess?: () => void;
+  rateMode?: "manual" | "managed";
+  interestBatchManagerAddress?: string;
 }
 
 export function useBorrow({
@@ -34,9 +38,18 @@ export function useBorrow({
   interestRate,
   collateral,
   onSuccess,
+  rateMode = "manual",
+  interestBatchManagerAddress,
 }: UseBorrowParams) {
   const { address } = useAccount();
   const transactionStore = useTransactionStore();
+
+  const defaultBatchManager =
+    rateMode === "managed"
+      ? interestBatchManagerAddress ??
+        collateral?.defaultInterestManager ??
+        collateral?.addresses.batchManager
+      : undefined;
 
   const { nextOwnerIndex, isLoading: isLoadingNextOwnerIndex } =
     useNextOwnerIndex({
@@ -51,6 +64,8 @@ export function useBorrow({
       borrowAmount: undefined,
       interestRate: new Big(5), // Default to 5% APR as Big instance
       selectedCollateralToken: collateral?.symbol || DEFAULT_COLLATERAL.id,
+      rateMode,
+      interestBatchManager: defaultBatchManager,
     },
   });
 
@@ -90,18 +105,38 @@ export function useBorrow({
       addresses.borrowerOperations
     );
 
+    const isManaged = rateMode === "managed";
+    const defaultInterestManager =
+      collateral.defaultInterestManager ?? addresses.batchManager;
+    const batchManager = isManaged
+      ? interestBatchManagerAddress ?? defaultInterestManager
+      : undefined;
+    const usduAmount = bigToBigint(borrowAmount, 18);
+
+    const openCall = isManaged && batchManager
+      ? contractCall.borrowerOperations.openTroveAndJoinInterestBatchManager({
+          owner: address,
+          ownerIndex: nextOwnerIndex,
+          collAmount: wrappedAmount,
+          usduAmount,
+          collateralType: collateral.id as CollateralId,
+          interestBatchManager: batchManager,
+          maxUpfrontFee: 2n ** 256n - 1n,
+        })
+      : contractCall.borrowerOperations.openTrove({
+          owner: address,
+          ownerIndex: nextOwnerIndex,
+          collAmount: wrappedAmount,
+          usduAmount,
+          annualInterestRate: bigToBigint(interestRate.div(100), 18),
+          collateralType: collateral.id as CollateralId,
+          maxUpfrontFee: 2n ** 256n - 1n,
+        });
+
     // Add the openTrove call
     return [
       ...depositCalls,
-      contractCall.borrowerOperations.openTrove({
-        owner: address,
-        ownerIndex: nextOwnerIndex,
-        collAmount: wrappedAmount,
-        usduAmount: bigToBigint(borrowAmount, 18),
-        annualInterestRate: bigToBigint(interestRate.div(100), 18),
-        collateralType: collateral.id as CollateralId,
-        maxUpfrontFee: 2n ** 256n - 1n,
-      }),
+      openCall,
     ];
   }, [
     address,
@@ -111,6 +146,8 @@ export function useBorrow({
     isLoadingNextOwnerIndex,
     nextOwnerIndex,
     interestRate,
+    rateMode,
+    interestBatchManagerAddress,
   ]);
 
   // Use the generic transaction hook
@@ -121,6 +158,11 @@ export function useBorrow({
     const hash = await transaction.send();
 
     if (hash) {
+      const effectiveBatchManager =
+        rateMode === "managed"
+          ? interestBatchManagerAddress ?? collateral?.defaultInterestManager
+          : undefined;
+
       // Transaction was sent successfully, move to pending
       // Now we update the form data since user accepted
       transactionState.updateFormData({
@@ -128,6 +170,8 @@ export function useBorrow({
         borrowAmount,
         interestRate,
         selectedCollateralToken: collateral?.symbol || DEFAULT_COLLATERAL.id,
+        rateMode,
+        interestBatchManager: effectiveBatchManager,
       });
       transactionState.setPending(hash);
 
@@ -150,6 +194,7 @@ export function useBorrow({
             borrowAmount,
             interestRate,
             collateralToken: collateral.symbol,
+            batchManager: effectiveBatchManager,
           }),
           details: {
             collateralAmount,
@@ -157,6 +202,8 @@ export function useBorrow({
             interestRate,
             collateralToken: collateral.symbol,
             collateralType: collateral.id,
+            rateMode,
+            batchManager: effectiveBatchManager,
             ...(troveId && {
               troveId,
               ownerIndex: nextOwnerIndex?.toString(), // Convert BigInt to string for JSON serialization
@@ -178,6 +225,8 @@ export function useBorrow({
     collateral,
     address,
     nextOwnerIndex,
+    rateMode,
+    interestBatchManagerAddress,
   ]);
 
   // Check if we need to update state based on transaction status

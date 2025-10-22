@@ -49,6 +49,7 @@ export interface Collateral extends Omit<Token, "address"> {
   minCollateralizationRatio: Big;
   addresses: CollateralAddresses;
   underlyingToken?: UnderlyingToken;
+  defaultInterestManager?: Address;
   // Helper to get the token address for compatibility
   get address(): Address;
 }
@@ -95,6 +96,8 @@ export const COLLATERALS = {
       troveManagerEventsEmitter: deploymentData.WWBTC
         .troveManagerEventsEmitter as Address,
     },
+    defaultInterestManager: deploymentData.WWBTC
+      .defaultInterestManager as Address,
     underlyingToken: {
       address: deploymentData.WWBTC.underlyingAddress as Address,
       decimals: 8,

@@ -7,9 +7,12 @@ export function createTransactionDescription(
   switch (type) {
     case "borrow":
       if (details?.collateralAmount && details?.borrowAmount) {
+        const managerText = details.batchManager
+          ? " under Telos management"
+          : "";
         return `Open trove with ${details.collateralAmount} ${
           details.collateralToken || "collateral"
-        } to borrow ${details.borrowAmount} USDU`;
+        } to borrow ${details.borrowAmount} USDU${managerText}`;
       }
       return "Open new trove";
 
@@ -37,6 +40,13 @@ export function createTransactionDescription(
           details.newInterestRate !== undefined
         ) {
           parts.push(`Change rate to ${details.newInterestRate.toFixed(2)}%`);
+        }
+        if (details.hasBatchManagerChange) {
+          if (details.targetBatchManager) {
+            parts.push("Delegate interest to Telos");
+          } else {
+            parts.push("Return to manual interest control");
+          }
         }
         return parts.length > 0
           ? parts.join(" and ")

@@ -19,13 +19,15 @@ import { useAccount, useBalance } from "@starknet-react/core";
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
 import { useBorrow } from "~/hooks/use-borrow";
-import { useQueryState } from "nuqs";
+import { useTelosBatchMetadata } from "~/hooks/use-telos-batch-manager";
+import { useQueryState, parseAsStringEnum } from "nuqs";
 import { parseAsBig, parseAsBigWithDefault } from "~/lib/url-parsers";
 import Big from "big.js";
 import { bigintToBig } from "~/lib/decimal";
 import { calculatePercentageAmountBig } from "~/lib/input-parsers";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { usePositionMetrics } from "~/hooks/use-position-metrics";
+import type { Collateral } from "~/lib/collateral";
 import {
   TOKENS,
   COLLATERAL_LIST,
@@ -37,6 +39,7 @@ import {
   getBalanceTokenAddress,
 } from "~/lib/collateral/wrapping";
 import { createMeta } from "~/lib/utils/meta";
+import type { RateMode } from "~/components/borrow/rate-mode-selector";
 
 function Borrow() {
   const { address } = useAccount();
@@ -54,10 +57,52 @@ function Borrow() {
   );
   const [selectedTokenAddress, setSelectedTokenAddress] =
     useQueryState("collateral");
+  const [rateMode, setRateMode] = useQueryState(
+    "rateMode",
+    parseAsStringEnum<RateMode>(["manual", "managed"]).withDefault("manual")
+  );
 
   // Get the collateral based on the address in URL or use default
   const collateral =
     getCollateralByAddress(selectedTokenAddress || "") || DEFAULT_COLLATERAL;
+
+  const telosBatch = useTelosBatchMetadata({
+    branchId: collateral.branchId,
+  });
+
+  const manualInterestRate = interestRate ?? new Big("2.5");
+  const telosAprPercent = telosBatch.data
+    ? telosBatch.data.annualInterestRate.times(100)
+    : undefined;
+  const telosFeePercent = telosBatch.data
+    ? telosBatch.data.annualManagementFee.times(100)
+    : undefined;
+  const telosBcrPercent = telosBatch.data
+    ? telosBatch.data.bcrRequirement.times(100)
+    : undefined;
+  const telosCooldownSeconds =
+    telosBatch.data?.minInterestRateChangePeriodSeconds;
+  const telosBatchManagerAddress =
+    telosBatch.data?.batchManagerAddress ??
+    collateral.defaultInterestManager ??
+    collateral.addresses.batchManager;
+
+  const effectiveInterestRate =
+    rateMode === "managed" && telosAprPercent
+      ? telosAprPercent
+      : manualInterestRate;
+
+  const managedInterestInfo = {
+    apr: telosAprPercent,
+    fee: telosFeePercent,
+    cooldownSeconds: telosCooldownSeconds,
+    cooldownEndsAt: telosBatch.data?.cooldownEndsAt,
+    bcr: telosBcrPercent,
+    batchManagerLabel: "Telos",
+    isLoading: telosBatch.isLoading,
+    isError: telosBatch.isError,
+    managedDebt: telosBatch.data?.managedDebt,
+  };
 
   // Get balance token address and decimals
   const balanceTokenAddress = getBalanceTokenAddress(collateral);
@@ -80,19 +125,44 @@ function Borrow() {
   });
   const minCollateralizationRatio = collateral.minCollateralizationRatio;
 
-  const metrics = usePositionMetrics({
-    collateralAmount: collateralAmount,
-    borrowAmount: borrowAmount,
-    bitcoinPrice: bitcoin?.price,
-    usduPrice: usdu?.price,
-    minCollateralizationRatio,
-  });
+const metrics = usePositionMetrics({
+  collateralAmount: collateralAmount,
+  borrowAmount: borrowAmount,
+  bitcoinPrice: bitcoin?.price,
+  usduPrice: usdu?.price,
+  minCollateralizationRatio,
+});
+
+const telosRequirementRatio = collateral.minCollateralizationRatio.plus(
+  telosBatch.data?.bcrRequirement ?? new Big(0)
+);
+const telosRequirementPercent = telosRequirementRatio.times(100);
+const hasBorrowValues =
+  collateralAmount !== null &&
+  collateralAmount !== undefined &&
+  borrowAmount !== null &&
+  borrowAmount !== undefined &&
+  borrowAmount.gt(0) &&
+  collateralAmount.gt(0) &&
+  bitcoin?.price !== undefined;
+const telosMeetsBcr = hasBorrowValues
+  ? metrics.collateralRatio.gte(telosRequirementPercent)
+  : true;
+
+let telosDisableReason: string | undefined;
+if (telosBatch.isError) {
+  telosDisableReason = "Unable to load Telos settings. Please try again later.";
+} else if (hasBorrowValues && telosBatch.data && !telosMeetsBcr) {
+  telosDisableReason = `Increase collateral or reduce debt to reach at least ${telosRequirementPercent.toFixed(2)}% collateral ratio required by Telos.`;
+}
+
+const telosManagedDisabled = Boolean(telosDisableReason);
 
   const form = useForm({
     defaultValues: {
       collateralAmount: undefined as Big | undefined,
       borrowAmount: undefined as Big | undefined,
-      interestRate: new Big("2.5"),
+      interestRate: manualInterestRate,
     },
     onSubmit: async ({ value }) => {
       if (!isReady) {
@@ -127,8 +197,11 @@ function Borrow() {
   } = useBorrow({
     collateralAmount: collateralAmount ?? undefined,
     borrowAmount: borrowAmount ?? undefined,
-    interestRate: interestRate ?? new Big("2.5"),
-    collateral: collateral,
+    interestRate: effectiveInterestRate,
+    collateral,
+    rateMode,
+    interestBatchManagerAddress:
+      rateMode === "managed" ? telosBatchManagerAddress : undefined,
   });
 
   // Revalidate fields when wallet connection changes
@@ -370,7 +443,7 @@ function Borrow() {
                         tokens={COLLATERAL_LIST}
                         onTokenChange={(newToken) => {
                           // Cast back to Collateral since we know these are collaterals
-                          const newCollateral = newToken as any;
+                          const newCollateral = newToken as Collateral;
                           setSelectedTokenAddress(
                             newCollateral.addresses
                               ? newCollateral.addresses.token
@@ -508,22 +581,29 @@ function Borrow() {
 
                   {/* Interest Rate Options */}
                   <InterestRateSelector
-                    interestRate={
-                      interestRate ? Number(interestRate.toString()) : 2.5
-                    }
+                    interestRate={Number(
+                      manualInterestRate.toFixed(3)
+                    )}
                     onInterestRateChange={(rate) => {
-                      if (!isSending && !isPending) {
-                        const rateBig = new Big(rate).round(2);
-                        form.setFieldValue("interestRate", rateBig);
-                        // Update URL
-                        setInterestRate(rateBig);
+                      if (rateMode !== "manual" || isSending || isPending) {
+                        return;
                       }
+                      const rateBig = new Big(rate).round(2);
+                      form.setFieldValue("interestRate", rateBig);
+                      setInterestRate(rateBig);
                     }}
                     disabled={isSending || isPending}
                     borrowAmount={borrowAmount ?? undefined}
                     collateralAmount={collateralAmount ?? undefined}
                     collateralPriceUSD={bitcoin?.price}
                     collateralType={collateral.id}
+                    rateMode={rateMode}
+                    onRateModeChange={(mode) => {
+                      void setRateMode(mode);
+                    }}
+                    managedInfo={managedInterestInfo}
+                    isManagedOptionDisabled={telosManagedDisabled}
+                    managedDisableReason={telosDisableReason}
                   />
 
                   {/* Borrow Button */}
@@ -558,6 +638,8 @@ function Borrow() {
                           buttonText = "Deposit collateral";
                         } else if (!borrowAmount) {
                           buttonText = "Enter borrow amount";
+                        } else if (rateMode === "managed" && telosDisableReason) {
+                          buttonText = telosDisableReason;
                         }
 
                         return (
@@ -572,7 +654,8 @@ function Borrow() {
                                   borrowAmount.lte(0) ||
                                   isSending ||
                                   isPending ||
-                                  !canSubmit)
+                                  !canSubmit ||
+                                  (rateMode === "managed" && Boolean(telosDisableReason)))
                               }
                               className="w-full h-12 bg-token-bg-blue hover:bg-blue-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all whitespace-nowrap"
                             >
@@ -641,8 +724,15 @@ function Borrow() {
                   to: borrowAmount || new Big(0),
                 },
                 interestRate: {
-                  to: interestRate || new Big(2.5),
+                  to: effectiveInterestRate,
                 },
+                batchManager:
+                  rateMode === "managed"
+                    ? {
+                        to: telosBatchManagerAddress,
+                        label: "Telos",
+                      }
+                    : undefined,
               }}
               liquidationPrice={metrics.liquidationPrice}
               collateralType={collateral.id}

@@ -29,6 +29,11 @@ interface PositionChange {
     from?: Big;
     to: Big;
   };
+  batchManager?: {
+    from?: string | null;
+    to?: string | null;
+    label?: string;
+  };
 }
 
 interface TransactionSummaryProps {

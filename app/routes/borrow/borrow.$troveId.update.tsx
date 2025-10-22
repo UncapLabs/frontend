@@ -37,6 +37,8 @@ import Big from "big.js";
 import { bigintToBig } from "~/lib/decimal";
 import { getBalanceDecimals } from "~/lib/collateral/wrapping";
 import { createMeta } from "~/lib/utils/meta";
+import { useTelosBatchMetadata } from "~/hooks/use-telos-batch-manager";
+import type { RateMode } from "~/components/borrow/rate-mode-selector";
 
 // Helper component for action toggle buttons
 const ActionToggle = ({
@@ -105,12 +107,75 @@ function UpdatePosition() {
   // Use default collateral if not found
   const selectedCollateral = collateral || getCollateralByBranchId(0)!;
 
+  const telosBatch = useTelosBatchMetadata({
+    branchId: selectedCollateral.branchId,
+  });
+
+  const [rateModeSelection, setRateModeSelection] = useState<RateMode | null>(
+    null
+  );
+  const activeRateMode: RateMode =
+    rateModeSelection ??
+    (position?.batchManager ? "managed" : "manual");
+
   // Use local state for amounts with Big.js for precision
   const [collateralAmount, setCollateralAmount] = useState<Big | undefined>(
     undefined
   );
   const [borrowAmount, setBorrowAmount] = useState<Big | undefined>(undefined);
   const [interestRate, setInterestRate] = useState<Big | undefined>(undefined);
+
+  const manualInterestRate =
+    interestRate ??
+    (position ? getInterestRatePercentage(position) : new Big(5));
+
+  const telosAprPercent = telosBatch.data
+    ? telosBatch.data.annualInterestRate.times(100)
+    : undefined;
+  const telosFeePercent = telosBatch.data
+    ? telosBatch.data.annualManagementFee.times(100)
+    : undefined;
+  const telosBcrPercent = telosBatch.data
+    ? telosBatch.data.bcrRequirement.times(100)
+    : undefined;
+  const telosCooldownSeconds =
+    telosBatch.data?.minInterestRateChangePeriodSeconds;
+  const telosBatchManagerAddress =
+    telosBatch.data?.batchManagerAddress ??
+    selectedCollateral.defaultInterestManager ??
+    selectedCollateral.addresses.batchManager;
+  const managedInterestInfo = {
+    apr: telosAprPercent,
+    fee: telosFeePercent,
+    cooldownSeconds: telosCooldownSeconds,
+    cooldownEndsAt: telosBatch.data?.cooldownEndsAt,
+    bcr: telosBcrPercent,
+    batchManagerLabel: "Telos",
+    isLoading: telosBatch.isLoading,
+    isError: telosBatch.isError,
+    managedDebt: telosBatch.data?.managedDebt,
+  };
+
+  let summaryBatchManager:
+    | {
+        from?: string | null;
+        to?: string | null;
+        label?: string;
+      }
+    | undefined;
+
+  if (activeRateMode === "managed") {
+    summaryBatchManager = {
+      from: position?.batchManager ?? null,
+      to: telosBatchManagerAddress,
+      label: "Telos",
+    };
+  } else if (position?.batchManager) {
+    summaryBatchManager = {
+      from: position.batchManager,
+      to: null,
+    };
+  }
 
   // Action state for collateral and debt
   const [collateralAction, setCollateralAction] = useQueryState(
@@ -188,22 +253,57 @@ function UpdatePosition() {
   });
 
   // Calculate metrics for target position (for new liquidation price)
-  const metrics = usePositionMetrics({
-    collateralAmount: targetCollateral,
-    borrowAmount: targetDebt,
-    bitcoinPrice: bitcoin?.price,
-    usduPrice: usdu?.price,
-    minCollateralizationRatio,
-  });
+const metrics = usePositionMetrics({
+  collateralAmount: targetCollateral,
+  borrowAmount: targetDebt,
+  bitcoinPrice: bitcoin?.price,
+  usduPrice: usdu?.price,
+  minCollateralizationRatio,
+});
+
+const telosRequirementRatio = selectedCollateral.minCollateralizationRatio.plus(
+  telosBatch.data?.bcrRequirement ?? new Big(0)
+);
+const telosRequirementPercent = telosRequirementRatio.times(100);
+const targetHasDebt = targetDebt.gt(0) && bitcoin?.price !== undefined;
+const telosUpdateMeetsBcr = targetHasDebt
+  ? metrics.collateralRatio.gte(telosRequirementPercent)
+  : true;
+
+let telosUpdateDisableReason: string | undefined;
+if (telosBatch.isError) {
+  telosUpdateDisableReason = "Unable to load Telos settings. Please try again later.";
+} else if (telosBatch.data && targetHasDebt && !telosUpdateMeetsBcr) {
+  telosUpdateDisableReason = `Increase collateral or reduce debt to reach at least ${telosRequirementPercent.toFixed(2)}% collateral ratio required by Telos.`;
+}
+
+const telosManagedDisabled = Boolean(telosUpdateDisableReason);
+const nowSeconds = Math.floor(Date.now() / 1000);
+const telosCooldownRemainingSeconds = telosBatch.data
+  ? Math.max(0, telosBatch.data.cooldownEndsAt - nowSeconds)
+  : 0;
+
+const formatDuration = (seconds: number) => {
+  if (seconds <= 0) return "0s";
+  if (seconds < 60) return `${seconds}s`;
+  if (seconds < 3600) {
+    const minutes = Math.round(seconds / 60);
+    return `${minutes} min${minutes === 1 ? "" : "s"}`;
+  }
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.round((seconds % 3600) / 60);
+  if (minutes === 0) {
+    return `${hours} hr${hours === 1 ? "" : "s"}`;
+  }
+  return `${hours} hr${hours === 1 ? "" : "s"} ${minutes} min`;
+};
 
   // Initialize form with empty values using Big for precision
   const form = useForm({
     defaultValues: {
       collateralAmount: undefined as Big | undefined,
       borrowAmount: undefined as Big | undefined,
-      interestRate:
-        interestRate ??
-        (position ? getInterestRatePercentage(position) : new Big(5)),
+      interestRate: manualInterestRate,
     },
     onSubmit: async ({ value }) => {
       if (!address) {
@@ -260,8 +360,10 @@ function UpdatePosition() {
     collateralAmount:
       collateralAmount && collateralAmount.gt(0) ? targetCollateral : undefined,
     borrowAmount: borrowAmount && borrowAmount.gt(0) ? targetDebt : undefined,
-    interestRate: interestRate ?? new Big(5),
+    interestRate: activeRateMode === "managed" ? undefined : interestRate,
     collateralToken: selectedCollateral,
+    targetBatchManager:
+      activeRateMode === "managed" ? telosBatchManagerAddress : null,
   });
 
   // Revalidate fields when wallet connection changes
@@ -755,15 +857,14 @@ function UpdatePosition() {
                 {/* Interest Rate Section */}
                 <div className="space-y-4">
                   <InterestRateSelector
-                    interestRate={
-                      interestRate ? Number(interestRate.toString()) : 5
-                    }
+                    interestRate={Number(manualInterestRate.toFixed(3))}
                     onInterestRateChange={(rate) => {
-                      if (!isSending && !isPending) {
-                        const rateBig = new Big(rate).round(2);
-                        form.setFieldValue("interestRate", rateBig);
-                        setInterestRate(rateBig);
+                      if (activeRateMode !== "manual" || isSending || isPending) {
+                        return;
                       }
+                      const rateBig = new Big(rate).round(2);
+                      form.setFieldValue("interestRate", rateBig);
+                      setInterestRate(rateBig);
                     }}
                     disabled={
                       isSending ||
@@ -784,8 +885,21 @@ function UpdatePosition() {
                         : undefined
                     }
                     isZombie={isZombie}
+                    rateMode={activeRateMode}
+                    onRateModeChange={(mode) => setRateModeSelection(mode)}
+                    managedInfo={managedInterestInfo}
+                    isManagedOptionDisabled={telosManagedDisabled}
+                    managedDisableReason={telosUpdateDisableReason}
                   />
                 </div>
+                {position?.batchManager &&
+                  activeRateMode === "manual" &&
+                  telosCooldownRemainingSeconds > 0 && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
+                      Leaving Telos right now may incur a cooldown fee. Fee-free
+                      adjustments resume in {formatDuration(telosCooldownRemainingSeconds)}.
+                    </div>
+                  )}
 
                 {/* Update Button */}
                 <div className="flex flex-col items-start space-y-4 mt-4">
@@ -808,13 +922,19 @@ function UpdatePosition() {
                         !changes ||
                         (!changes.hasCollateralChange &&
                           !changes.hasDebtChange &&
-                          !changes.hasInterestRateChange)
+                          !changes.hasInterestRateChange &&
+                          !changes.hasBatchManagerChange)
                       ) {
                         buttonText = "No changes made";
                       } else if (collateralErrors.length > 0) {
                         buttonText = collateralErrors[0];
                       } else if (borrowErrors.length > 0) {
                         buttonText = borrowErrors[0];
+                      } else if (
+                        activeRateMode === "managed" &&
+                        telosUpdateDisableReason
+                      ) {
+                        buttonText = telosUpdateDisableReason;
                       }
 
                       return (
@@ -829,7 +949,10 @@ function UpdatePosition() {
                               !changes ||
                               (!changes.hasCollateralChange &&
                                 !changes.hasDebtChange &&
-                                !changes.hasInterestRateChange))
+                                !changes.hasInterestRateChange &&
+                                !changes.hasBatchManagerChange) ||
+                              (activeRateMode === "managed" &&
+                                Boolean(telosUpdateDisableReason)))
                           }
                           className="w-full h-12 bg-token-bg-blue hover:bg-blue-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all whitespace-nowrap"
                         >
@@ -934,9 +1057,11 @@ function UpdatePosition() {
                   ? getInterestRatePercentage(position)
                   : new Big(5),
                 to:
-                  interestRate ||
-                  (position ? getInterestRatePercentage(position) : new Big(5)),
+                  activeRateMode === "managed" && telosAprPercent
+                    ? telosAprPercent
+                    : manualInterestRate,
               },
+              batchManager: summaryBatchManager,
             }}
             liquidationPrice={metrics.liquidationPrice}
             previousLiquidationPrice={previousMetrics.liquidationPrice}
