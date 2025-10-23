@@ -1,3 +1,5 @@
+import { backOff } from "exponential-backoff";
+
 interface RetryOptions {
   maxRetries: number;
   initialDelay: number;
@@ -34,58 +36,91 @@ export async function retryWithBackoff<T>(
   options: RetryOptions = DEFAULT_RETRY_OPTIONS,
   context?: string
 ): Promise<T | null> {
-  for (let attempt = 0; attempt <= options.maxRetries; attempt++) {
-    try {
-      if (attempt > 0) {
-        console.log(
-          `[retryWithBackoff] ${
-            context || "Function"
-          } - Retry attempt ${attempt}/${options.maxRetries}`
-        );
-      }
-      return await fn();
-    } catch (error) {
-      const shouldRetry = options.shouldRetry?.(error) ?? true;
-      const isLastAttempt = attempt === options.maxRetries;
+  const resolvedOptions = {
+    ...DEFAULT_RETRY_OPTIONS,
+    ...options,
+  };
 
-      console.log(
-        `[retryWithBackoff] ${context || "Function"} - Attempt ${
-          attempt + 1
-        } failed:`,
-        {
-          error: error,
-          shouldRetry,
-          isLastAttempt,
+  const {
+    maxRetries,
+    initialDelay,
+    maxDelay,
+    backoffFactor,
+    shouldRetry,
+  } = resolvedOptions;
+
+  const shouldRetryFn = shouldRetry ?? (() => true);
+  const contextLabel = context || "Function";
+
+  let attemptCount = 0;
+  let lastError: unknown;
+
+  try {
+    const result = await backOff(
+      async () => {
+        if (attemptCount > 0) {
+          console.log(
+            `[retryWithBackoff] ${contextLabel} - Retry attempt ${attemptCount}/${maxRetries}`
+          );
         }
-      );
 
-      if (isLastAttempt || !shouldRetry) {
-        console.error(
-          `[retryWithBackoff] ${context || "Function"} - Failed after ${
-            attempt + 1
-          } attempts:`,
-          error
-        );
-        return null;
+        attemptCount += 1;
+
+        try {
+          return await fn();
+        } catch (error) {
+          lastError = error;
+          throw error;
+        }
+      },
+      {
+        startingDelay: initialDelay,
+        maxDelay,
+        timeMultiple: backoffFactor,
+        numOfAttempts: maxRetries + 1,
+        jitter: "full",
+        delayFirstAttempt: false,
+        retry: (error, attemptNumber) => {
+          const attemptJustFailed = Math.max(1, attemptNumber - 1);
+          const retriesUsed = attemptJustFailed - 1;
+          const isLastAttempt = retriesUsed >= maxRetries;
+          const shouldRetryResult = shouldRetryFn(error);
+
+          console.log(
+            `[retryWithBackoff] ${contextLabel} - Attempt ${attemptJustFailed} failed:`,
+            {
+              error,
+              shouldRetry: shouldRetryResult,
+              isLastAttempt,
+            }
+          );
+
+          if (!shouldRetryResult || isLastAttempt) {
+            return false;
+          }
+
+          const baseDelay = Math.min(
+            initialDelay * Math.pow(backoffFactor, retriesUsed),
+            maxDelay
+          );
+
+          console.log(
+            `[retryWithBackoff] ${contextLabel} - Waiting up to ${Math.round(
+              baseDelay
+            )}ms before retry...`
+          );
+
+          return true;
+        },
       }
+    );
 
-      const delay = Math.min(
-        options.initialDelay * Math.pow(options.backoffFactor, attempt),
-        options.maxDelay
-      );
-
-      // Add jitter to prevent thundering herd
-      const jitter = Math.random() * 0.3 * delay;
-      const totalDelay = delay + jitter;
-
-      console.log(
-        `[retryWithBackoff] ${context || "Function"} - Waiting ${Math.round(
-          totalDelay
-        )}ms before retry...`
-      );
-      await new Promise((resolve) => setTimeout(resolve, totalDelay));
-    }
+    return result;
+  } catch (error) {
+    console.error(
+      `[retryWithBackoff] ${contextLabel} - Failed after ${attemptCount} attempts:`,
+      lastError ?? error
+    );
+    return null;
   }
-
-  return null;
 }
