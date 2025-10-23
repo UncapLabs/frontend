@@ -5,6 +5,7 @@ import type {
   TransactionStatus,
 } from "~/types/transaction";
 import type { ProviderInterface } from "starknet";
+import Big from "big.js";
 
 const STORAGE_KEY = "uncap-transactions";
 const MAX_COMPLETED_TRANSACTIONS = 50;
@@ -49,6 +50,61 @@ function validateTransaction(
   }
 
   return errors;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return (
+    Object.prototype.toString.call(value) === "[object Object]" &&
+    value !== null
+  );
+}
+
+function normalizeDetailValue(value: unknown): unknown {
+  if (typeof value === "bigint") {
+    return value.toString();
+  }
+
+  if (value instanceof Big) {
+    return value.toString();
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => normalizeDetailValue(item));
+  }
+
+  if (isPlainObject(value)) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [
+        key,
+        normalizeDetailValue(item),
+      ])
+    );
+  }
+
+  return value;
+}
+
+function normalizeTransactionDetails(
+  details: Record<string, any> | undefined
+): Record<string, any> | undefined {
+  if (!details) {
+    return details;
+  }
+
+  return normalizeDetailValue(details) as Record<string, any>;
+}
+
+function normalizeTransaction(
+  transaction: NewTransaction
+): NewTransaction {
+  if (!transaction.details) {
+    return transaction;
+  }
+
+  return {
+    ...transaction,
+    details: normalizeTransactionDetails(transaction.details),
+  };
 }
 
 export interface TransactionStore {
@@ -98,8 +154,9 @@ export function createTransactionStore(): TransactionStore {
     }
 
     updateTransactions(account, (transactions) => {
+      const sanitizedTransaction = normalizeTransaction(transaction);
       const newTx: StarknetTransaction = {
-        ...transaction,
+        ...sanitizedTransaction,
         status: "pending",
         timestamp: Date.now(),
         accountAddress: account,
