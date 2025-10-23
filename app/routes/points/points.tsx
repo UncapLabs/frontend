@@ -8,7 +8,7 @@ import {
   CardFooter,
 } from "~/components/ui/card";
 import { NumericFormat } from "react-number-format";
-import WalletNotConnectedCTA from "~/components/dashboard/wallet-not-connected-cta";
+import FeatureDiscoveryCards from "~/components/dashboard/feature-discovery-cards";
 
 export default function RewardsPage() {
   const { address } = useAccount();
@@ -361,13 +361,13 @@ export default function RewardsPage() {
           </div>
 
           <div>
-            <WalletNotConnectedCTA />
+            <FeatureDiscoveryCards />
           </div>
         </div>
 
         {/* CTAs - Third on mobile */}
         <div className="w-full lg:hidden order-3">
-          <WalletNotConnectedCTA />
+          <FeatureDiscoveryCards />
         </div>
       </div>
     </div>

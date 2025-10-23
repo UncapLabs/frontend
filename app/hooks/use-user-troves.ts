@@ -23,6 +23,7 @@ export function useUserTroves(address: `0x${string}` | undefined) {
     refetchIntervalInBackground: false, // Don't refetch in background to save resources
     refetchOnWindowFocus: true, // Refetch when user comes back to the tab
     refetchOnReconnect: true, // Refetch on network reconnect
+    retry: 0, // No retries on frontend - backend handles retries for both indexer and RPC calls
   });
 
   const troves = trovesData?.positions || [];

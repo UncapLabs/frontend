@@ -1,7 +1,7 @@
 import { Button } from "~/components/ui/button";
 import { useNavigate } from "react-router";
 
-export default function WalletNotConnectedCTA() {
+export default function FeatureDiscoveryCards() {
   const navigate = useNavigate();
 
   return (

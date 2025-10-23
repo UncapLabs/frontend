@@ -346,7 +346,19 @@ export async function fetchLoansByAccount(
 ): Promise<{ positions: Position[]; errors: PositionWithError["error"][] }> {
   if (!account) return { positions: [], errors: [] };
 
-  const troves = await getIndexedTrovesByAccount(graphqlClient, account);
+  // Retry indexer calls with same logic as RPC calls for consistent error handling
+  const troves = await retryWithBackoff(
+    () => getIndexedTrovesByAccount(graphqlClient, account),
+    {
+      ...DEFAULT_RETRY_OPTIONS,
+      maxRetries: 2, // Match RPC retry count for consistency
+    },
+    `Indexer query for ${account}`
+  );
+
+  if (!troves) {
+    throw new Error("Failed to fetch trove list from indexer after retries");
+  }
 
   // Filter to only process active troves - no need to make RPC calls for closed/liquidated positions
   const activeTroves = troves.filter((trove) => trove.status === "active");

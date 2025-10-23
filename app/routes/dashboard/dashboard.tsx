@@ -8,14 +8,15 @@ import {
 import { useNavigate } from "react-router";
 import { useAccount } from "@starknet-react/core";
 import { useUserTroves } from "~/hooks/use-user-troves";
-import { Plus, AlertCircle } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useAllStabilityPoolPositions } from "~/hooks/use-stability-pool";
 import { useFetchPrices } from "~/hooks/use-fetch-prices";
 import BorrowCard from "~/components/dashboard/borrow-card";
 import StabilityPoolCard from "~/components/dashboard/stability-pool-card";
 import Stats from "~/components/dashboard/stats";
 import LiquidationWarning from "~/components/dashboard/liquidation-warning";
-import WalletNotConnectedCTA from "~/components/dashboard/wallet-not-connected-cta";
+import FeatureDiscoveryCards from "~/components/dashboard/feature-discovery-cards";
+import BottomBanner from "~/components/ui/bottom-banner";
 import {
   Select,
   SelectContent,
@@ -33,15 +34,8 @@ export default function Dashboard() {
   const [filter, setFilter] = useQueryState("filter", {
     defaultValue: "all" as FilterType,
   });
-  const {
-    troves,
-    isLoading,
-    hasActiveTroves,
-    partialDataAvailable,
-    failedTroves,
-    refetch,
-    error,
-  } = useUserTroves(address);
+  const { troves, isLoading, failedTroves, refetch, error } =
+    useUserTroves(address);
 
   const allStabilityPoolPositions = useAllStabilityPoolPositions();
 
@@ -62,13 +56,27 @@ export default function Dashboard() {
   // Separate liquidated from active/zombie positions
   const liquidatedTroves = troves.filter((t) => t.status === "liquidated");
   const activeTroves = troves.filter((t) => t.status !== "liquidated");
+  const hasActiveTroves = activeTroves.length > 0;
+
+  const hasFailedTroves = failedTroves.length > 0;
+  const hasSuccessfulTroves = troves.length > 0;
+  const showPartialDataWarning = hasFailedTroves && hasSuccessfulTroves;
+  const showRpcOutageBanner =
+    hasFailedTroves && !hasSuccessfulTroves && !!address;
+  const showIndexerFailure =
+    !!error && !hasFailedTroves && !isLoading && !hasActiveTroves && !!address;
+  const showOutageBanner = showRpcOutageBanner || showIndexerFailure;
 
   // Check if user has any stability pool positions
   const hasStabilityPoolPositions =
     allStabilityPoolPositions.WWBTC?.userDeposit.gt(0);
 
-  // Check if user has no positions at all
-  const noPositions = activeTroves.length === 0 && !hasStabilityPoolPositions;
+  // Show CTA when wallet is disconnected, loading, or genuinely empty
+  const showWalletCTA =
+    !address ||
+    isLoading ||
+    showOutageBanner ||
+    (!hasFailedTroves && !hasActiveTroves && !hasStabilityPoolPositions);
 
   const handleCreateNew = () => {
     navigate("/borrow");
@@ -138,7 +146,7 @@ export default function Dashboard() {
           {/* Right Section: Positions */}
           <div className="flex-1 lg:flex-[2] order-1 lg:order-none">
             {/* Error Alert for partial data */}
-            {partialDataAvailable && (
+            {showPartialDataWarning && (
               <Alert variant="warning" className="mb-6">
                 <AlertIcon variant="warning">
                   <svg
@@ -186,44 +194,9 @@ export default function Dashboard() {
               </Alert>
             )}
 
-            {/* Complete failure error */}
-            {error && !hasActiveTroves && !isLoading && address && (
-              <Alert variant="destructive" className="mb-6">
-                <AlertIcon variant="destructive">
-                  <AlertCircle className="w-4 h-4 text-red-600" />
-                </AlertIcon>
-                <AlertContent>
-                  <AlertDescription>
-                    <strong>Failed to load positions</strong>
-                    <p>Unable to fetch your position data. Please try again.</p>
-                    <div className="mt-4">
-                      <button
-                        onClick={() => refetch()}
-                        className="inline-flex items-center gap-2 border-b border-[#FF9300] pb-2 text-[#FF9300] text-xs font-medium font-sora leading-tight hover:opacity-80 transition-opacity"
-                      >
-                        Retry
-                        <svg
-                          width="9"
-                          height="7"
-                          viewBox="0 0 9 7"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M5.74364e-05 4.27055L5.75291e-05 3.20992L6.80296 3.20992L5.08314 1.4901L5.83354 0.740233L8.83301 3.74023L5.83354 6.74023L5.08314 5.99037L6.80296 4.27055L5.74364e-05 4.27055Z"
-                            fill="#FF9300"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </AlertDescription>
-                </AlertContent>
-              </Alert>
-            )}
-
             {/* Position Cards */}
-            {!address || noPositions ? (
-              <WalletNotConnectedCTA />
+            {showWalletCTA ? (
+              <FeatureDiscoveryCards />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Show active positions when wallet is connected */}
@@ -318,6 +291,24 @@ export default function Dashboard() {
       <LiquidationWarning
         liquidatedCount={liquidatedTroves.length}
         onViewDetails={handleLiquidatedPosition}
+      />
+      <BottomBanner
+        show={showOutageBanner}
+        variant="warning"
+        title={
+          showIndexerFailure
+            ? "Indexer connection issue"
+            : "Starknet RPC connection issue"
+        }
+        description={
+          showIndexerFailure
+            ? "We couldn't load your position list from our indexer. Your funds are safe; please retry shortly."
+            : `We couldn't load details for ${failedTroves.length} position${
+                failedTroves.length > 1 ? "s" : ""
+              } from Starknet. Your funds are safe; please retry shortly.`
+        }
+        buttonText="Retry"
+        onButtonClick={refetch}
       />
     </>
   );

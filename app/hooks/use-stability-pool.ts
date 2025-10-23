@@ -343,6 +343,7 @@ export function useAllStabilityPoolPositions() {
     }),
     enabled: !!address,
     refetchInterval: 30000,
+    retry: 0, // No retries on frontend - backend handles retries for RPC calls
   });
 
   // Return default structure if no data

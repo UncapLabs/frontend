@@ -7,6 +7,7 @@ import {
 } from "~/lib/collateral";
 import { bigintToBig } from "~/lib/decimal";
 import { getAverageInterestRateForBranch } from "./interest";
+import { DEFAULT_RETRY_OPTIONS, retryWithBackoff } from "./retry";
 import Big from "big.js";
 
 export async function fetchPoolPosition(
@@ -15,11 +16,27 @@ export async function fetchPoolPosition(
   collateralType: CollateralId
 ) {
   try {
-    const position = await contractRead.stabilityPool.getUserPosition(
-      provider,
-      userAddress,
-      collateralType
+    // Retry RPC calls with same logic as trove fetching
+    const position = await retryWithBackoff(
+      () =>
+        contractRead.stabilityPool.getUserPosition(
+          provider,
+          userAddress,
+          collateralType
+        ),
+      {
+        ...DEFAULT_RETRY_OPTIONS,
+        maxRetries: 2, // Match RPC retry count for consistency
+      },
+      `Stability pool position for ${collateralType}`
     );
+
+    if (!position) {
+      console.error(
+        `Failed to fetch stability pool position for ${collateralType} after retries`
+      );
+      return null;
+    }
 
     const userDeposit = bigintToBig(position.deposit, TOKENS.USDU.decimals);
     const usduRewards = bigintToBig(position.usduGain, TOKENS.USDU.decimals);
