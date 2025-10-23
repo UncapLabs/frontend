@@ -421,23 +421,55 @@ function ClosePosition() {
               </div>
 
               {/* Action Button */}
-              <Button
-                onClick={handleClosePosition}
-                disabled={
-                  (address && !hasEnoughBalance) || isSending || isPending
-                }
-                className="w-full h-12 bg-red-500 hover:bg-red-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all whitespace-nowrap mt-6"
-              >
-                {!address
-                  ? "Connect Wallet"
-                  : isSending
-                  ? "Confirm in wallet..."
-                  : isPending
-                  ? "Transaction pending..."
-                  : !hasEnoughBalance
-                  ? "Insufficient USDU Balance"
-                  : "Close Position"}
-              </Button>
+              <div className="flex flex-col items-start space-y-2 mt-6">
+                <Button
+                  onClick={handleClosePosition}
+                  disabled={
+                    (address && !hasEnoughBalance) || isSending || isPending
+                  }
+                  className="w-full h-12 bg-red-500 hover:bg-red-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all whitespace-nowrap"
+                >
+                  {!address
+                    ? "Connect Wallet"
+                    : isSending
+                    ? "Confirm in wallet..."
+                    : isPending
+                    ? "Transaction pending..."
+                    : !hasEnoughBalance
+                    ? "Insufficient USDU Balance"
+                    : "Close Position"}
+                </Button>
+
+                {/* Show swap suggestion when insufficient balance */}
+                {address && !hasEnoughBalance && (
+                  <a
+                    href="https://app.avnu.fi/en/usdc-usdu"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full text-left text-neutral-800 text-sm font-normal font-sora hover:opacity-70 transition-opacity cursor-pointer flex items-center gap-1.5"
+                  >
+                    <span>Not enough USDU.</span>
+                    <span className="underline flex items-center gap-1">
+                      Swap to get USDU
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 12 12"
+                        fill="none"
+                        className="inline-block"
+                      >
+                        <path
+                          d="M3 9L9 3M9 3H4.5M9 3V7.5"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  </a>
+                )}
+              </div>
             </div>
           )}
         </div>

@@ -30,7 +30,7 @@ export function RateModeSelector({
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="manual">Advanced</SelectItem>
-        <SelectItem value="managed">Managed by Telos</SelectItem>
+        <SelectItem value="managed">Managed by TelosC</SelectItem>
       </SelectContent>
     </Select>
   );
