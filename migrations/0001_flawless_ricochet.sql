@@ -1,0 +1,1 @@
+ALTER TABLE `user_total_points` DROP COLUMN `total_referrals`;

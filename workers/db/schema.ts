@@ -85,6 +85,38 @@ export const referrals = sqliteTable(
   })
 );
 
+export const referralPointBreakdowns = sqliteTable(
+  "referral_point_breakdowns",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    referrerAddress: text("referrer_address").notNull(),
+    refereeAddress: text("referee_address").notNull(),
+    weekStart: text("week_start").notNull(),
+    seasonNumber: integer("season_number").notNull(),
+    weekNumber: integer("week_number").notNull(),
+    refereeBasePoints: real("referee_base_points").notNull().default(0),
+    bonusPoints: real("bonus_points").notNull().default(0),
+    calculatedAt: integer("calculated_at", { mode: "timestamp_ms" }),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql`(unixepoch() * 1000)`)
+      .notNull(),
+  },
+  (table) => ({
+    uniqueBreakdown: uniqueIndex("idx_referral_breakdown_unique").on(
+      table.referrerAddress,
+      table.refereeAddress,
+      table.weekStart
+    ),
+    referrerIdx: index("idx_referral_breakdown_referrer").on(
+      table.referrerAddress
+    ),
+    refereeIdx: index("idx_referral_breakdown_referee").on(
+      table.refereeAddress
+    ),
+    weekIdx: index("idx_referral_breakdown_week").on(table.weekStart),
+  })
+);
+
 // ============================================
 // Aggregated User Stats (for quick lookups)
 // ============================================
@@ -96,8 +128,6 @@ export const userTotalPoints = sqliteTable(
     season2Points: real("season_2_points").notNull().default(0),
     season3Points: real("season_3_points").notNull().default(0),
     allTimePoints: real("all_time_points").notNull().default(0),
-    currentSeasonRank: integer("current_season_rank"),
-    totalReferrals: integer("total_referrals").notNull().default(0),
     lastUpdated: integer("last_updated", { mode: "timestamp_ms" })
       .default(sql`(unixepoch() * 1000)`)
       .notNull(),
@@ -116,6 +146,11 @@ export type NewReferralCode = typeof referralCodes.$inferInsert;
 
 export type Referral = typeof referrals.$inferSelect;
 export type NewReferral = typeof referrals.$inferInsert;
+
+export type ReferralPointBreakdown =
+  typeof referralPointBreakdowns.$inferSelect;
+export type NewReferralPointBreakdown =
+  typeof referralPointBreakdowns.$inferInsert;
 
 export type UserTotalPoints = typeof userTotalPoints.$inferSelect;
 export type NewUserTotalPoints = typeof userTotalPoints.$inferInsert;

@@ -247,12 +247,6 @@ function Header() {
   ];
 
   const howToItems = [
-    // {
-    //   name: "How to bridge bitcoin?",
-    //   href: "https://uncap.finance/docs/blog/borrowing-at-0-5-percent",
-    //   icon: <Video className="h-4 w-4" />,
-    //   description: "Step-by-step guide to bridge your Bitcoin to Starknet.",
-    // },
     {
       name: "How to borrow?",
       href: "https://uncap.finance/docs/blog/launch-guide-borrow-bitcoin-cheapest-rates",
@@ -270,6 +264,12 @@ function Header() {
       href: "https://uncap.finance/docs/FAQ/usdu-and-earn#how-can-i-earn-with-uncap",
       icon: <PiggyBank className="h-4 w-4" />,
       description: "Discover ways to earn yield on your USDU deposits.",
+    },
+    {
+      name: "How to bridge bitcoin?",
+      href: "https://uncap.finance/docs/blog/bridge-btc-to-starknet",
+      icon: <BitcoinIcon className="h-4 w-4 lg:text-white" />,
+      description: "Learn how to bridge your Bitcoin to Starknet.",
     },
   ];
 

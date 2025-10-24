@@ -99,15 +99,12 @@ Join the BTC economy: ${url}`;
               Referral points refresh every Friday at 10:00 UTC after the weekly calculation.
             </p>
             {/* Table Header */}
-            <div className="hidden md:grid md:grid-cols-4 gap-4 pb-3 border-b border-[#E5E5E5]">
+            <div className="hidden md:grid md:grid-cols-3 gap-4 pb-3 border-b border-[#E5E5E5]">
               <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider">
                 User
               </p>
               <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider">
                 Joined
-              </p>
-              <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider">
-                Points Since Referral
               </p>
               <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider text-right">
                 Your Bonus
@@ -118,7 +115,7 @@ Join the BTC economy: ${url}`;
             {referralInfo.referees.map((referee, idx) => (
               <div
                 key={idx}
-                className="md:grid md:grid-cols-4 gap-4 py-4 border-b border-[#E5E5E5] last:border-0 space-y-2 md:space-y-0 md:items-center"
+                className="md:grid md:grid-cols-3 gap-4 py-4 border-b border-[#E5E5E5] last:border-0 space-y-2 md:space-y-0 md:items-center"
               >
                 <div>
                   <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider md:hidden mb-1">
@@ -149,28 +146,13 @@ Join the BTC economy: ${url}`;
                   </p>
                 </div>
 
-                <div>
-                  <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider md:hidden mb-1">
-                    Points Since Referral
-                  </p>
-                  {referee.pointsSinceReferral > 0 ? (
-                    <p className="text-sm font-medium font-sora text-[#242424]">
-                      {referee.pointsSinceReferral.toFixed(2)} pts
-                    </p>
-                  ) : (
-                    <p className="text-sm font-medium font-sora text-[#94938D]">
-                      Pending weekly update
-                    </p>
-                  )}
-                </div>
-
                 <div className="md:text-right">
                   <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider md:hidden mb-1">
                     Your Bonus
                   </p>
-                  {referee.bonusEarned > 0 ? (
-                    <p className="text-sm font-bold font-sora text-[#00C853]">
-                      +{referee.bonusEarned.toFixed(2)} pts
+                  {referee.hasCalculation ? (
+                    <p className={`text-sm font-bold font-sora ${referee.bonusEarned > 0 ? 'text-[#00C853]' : 'text-[#242424]'}`}>
+                      {referee.bonusEarned > 0 ? '+' : ''}{referee.bonusEarned.toFixed(2)} pts
                     </p>
                   ) : (
                     <p className="text-sm font-medium font-sora text-[#94938D]">

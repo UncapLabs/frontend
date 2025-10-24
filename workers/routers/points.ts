@@ -6,7 +6,7 @@ import {
   getReferralInfo,
 } from "../services/referral-service";
 import { createDbClient } from "../db/client";
-import { userPoints, userTotalPoints, referralCodes } from "../db/schema";
+import { userPoints, userTotalPoints, referralCodes, referrals } from "../db/schema";
 import { eq, sql, desc } from "drizzle-orm";
 
 const LEADERBOARD_DEFAULT_LIMIT = 50;
@@ -105,14 +105,28 @@ export const pointsRouter = router({
 
       const positivePointsFilter = sql`${pointsColumn} > 0`;
 
+      // Create a subquery for counting referrals
+      const referralCountSubquery = db
+        .select({
+          referrerAddress: referrals.referrerAddress,
+          count: sql<number>`COUNT(*)`.as("referral_count"),
+        })
+        .from(referrals)
+        .groupBy(referrals.referrerAddress)
+        .as("referral_counts");
+
       const [rows, countResult] = await Promise.all([
         db
           .select({
             userAddress: userTotalPoints.userAddress,
             points: pointsColumn,
-            totalReferrals: userTotalPoints.totalReferrals,
+            totalReferrals: sql<number>`COALESCE(${referralCountSubquery.count}, 0)`,
           })
           .from(userTotalPoints)
+          .leftJoin(
+            referralCountSubquery,
+            eq(userTotalPoints.userAddress, referralCountSubquery.referrerAddress)
+          )
           .where(positivePointsFilter)
           .orderBy(desc(pointsColumn))
           .limit(normalizedLimit)

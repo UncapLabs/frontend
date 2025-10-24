@@ -2,10 +2,9 @@ import { createDbClient } from "../db/client";
 import {
   referralCodes,
   referrals,
-  userTotalPoints,
-  userPoints,
+  referralPointBreakdowns,
 } from "../db/schema";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sum } from "drizzle-orm";
 
 const CODE_LENGTH = 7;
 const CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -220,21 +219,6 @@ export async function applyReferralCode(
       appliedRetroactively: false,
     });
 
-    // Update referrer's total referral count
-    await db
-      .insert(userTotalPoints)
-      .values({
-        userAddress: referrerData.userAddress,
-        totalReferrals: 1,
-      })
-      .onConflictDoUpdate({
-        target: userTotalPoints.userAddress,
-        set: {
-          totalReferrals: sql`${userTotalPoints.totalReferrals} + 1`,
-          lastUpdated: new Date(),
-        },
-      });
-
     return { success: true, message: "Referral code applied successfully" };
   } catch (error: unknown) {
     console.error("[Referral] Error applying code:", error);
@@ -254,8 +238,8 @@ export async function applyReferralCode(
 type ReferralInfoReferee = {
   anonymousName: string;
   appliedAt: number;
-  pointsSinceReferral: number;
   bonusEarned: number;
+  hasCalculation: boolean; // Whether any weekly calculation has been done for this referee
 };
 
 type ReferralInfo = {
@@ -287,6 +271,7 @@ export async function getReferralInfo(userAddress: string, env: Env): Promise<Re
     .where(eq(referrals.refereeAddress, normalizedAddress))
     .get();
 
+  // Get base referral relationships
   const baseReferrals = await db
     .select({
       refereeAnonymousName: referrals.refereeAnonymousName,
@@ -309,91 +294,30 @@ export async function getReferralInfo(userAddress: string, env: Env): Promise<Re
     };
   }
 
-  const refereeWeeklyPoints = await db
+  // Get aggregated bonus points per referee from the breakdown table
+  const bonusBreakdown = await db
     .select({
-      refereeAddress: referrals.refereeAddress,
-      weekStart: userPoints.weekStart,
-      totalPoints: userPoints.totalPoints,
+      refereeAddress: referralPointBreakdowns.refereeAddress,
+      totalBonus: sum(referralPointBreakdowns.bonusPoints).as("totalBonus"),
     })
-    .from(referrals)
-    .innerJoin(
-      userPoints,
-      and(
-        eq(referrals.refereeAddress, userPoints.userAddress),
-        sql`strftime('%s', ${userPoints.weekStart}) >= (${referrals.appliedAt} / 1000)`
-      )
-    )
-    .where(eq(referrals.referrerAddress, normalizedAddress))
+    .from(referralPointBreakdowns)
+    .where(eq(referralPointBreakdowns.referrerAddress, normalizedAddress))
+    .groupBy(referralPointBreakdowns.refereeAddress)
     .all();
 
-  const referrerWeeklyBonuses = await db
-    .select({
-      weekStart: userPoints.weekStart,
-      referralBonus: userPoints.referralBonus,
-    })
-    .from(userPoints)
-    .where(eq(userPoints.userAddress, normalizedAddress))
-    .all();
-
-  const pointsByReferee = new Map<string, number>();
-  const weeklyPointsByReferee = new Map<string, Map<string, number>>();
-
-  for (const row of refereeWeeklyPoints) {
-    const weekKey = row.weekStart;
-    const refereeAddress = row.refereeAddress;
-    if (!weekKey || !refereeAddress) continue;
-
-    const points = Number(row.totalPoints ?? 0);
-    if (!Number.isFinite(points)) continue;
-
-    pointsByReferee.set(
-      refereeAddress,
-      (pointsByReferee.get(refereeAddress) ?? 0) + points
-    );
-
-    const weekMap =
-      weeklyPointsByReferee.get(weekKey) ?? new Map<string, number>();
-    weekMap.set(refereeAddress, (weekMap.get(refereeAddress) ?? 0) + points);
-    weeklyPointsByReferee.set(weekKey, weekMap);
-  }
-
-  const weeklyBonusMap = new Map<string, number>();
+  // Create maps for referee data
+  const bonusByReferee = new Map<string, number>();
+  const hasCalculationByReferee = new Map<string, boolean>();
   let totalBonusEarned = 0;
 
-  for (const row of referrerWeeklyBonuses) {
-    const weekKey = row.weekStart;
-    if (!weekKey) continue;
-
-    const bonus = Number(row.referralBonus ?? 0);
-    if (!Number.isFinite(bonus) || bonus === 0) continue;
-
-    weeklyBonusMap.set(weekKey, (weeklyBonusMap.get(weekKey) ?? 0) + bonus);
-    totalBonusEarned += bonus;
-  }
-
-  const bonusByReferee = new Map<string, number>();
-
-  for (const [weekKey, weekMap] of weeklyPointsByReferee) {
-    const creditedBonus = weeklyBonusMap.get(weekKey) ?? 0;
-    if (creditedBonus <= 0) {
-      continue;
-    }
-
-    let weekTotalPoints = 0;
-    for (const value of weekMap.values()) {
-      weekTotalPoints += value;
-    }
-
-    if (weekTotalPoints <= 0) {
-      continue;
-    }
-
-    for (const [refereeAddress, refereePoints] of weekMap) {
-      const allocation = (refereePoints / weekTotalPoints) * creditedBonus;
-      bonusByReferee.set(
-        refereeAddress,
-        (bonusByReferee.get(refereeAddress) ?? 0) + allocation
-      );
+  for (const row of bonusBreakdown) {
+    const bonus = Number(row.totalBonus ?? 0);
+    if (Number.isFinite(bonus)) {
+      bonusByReferee.set(row.refereeAddress, bonus);
+      hasCalculationByReferee.set(row.refereeAddress, true);
+      if (bonus > 0) {
+        totalBonusEarned += bonus;
+      }
     }
   }
 
@@ -402,8 +326,7 @@ export async function getReferralInfo(userAddress: string, env: Env): Promise<Re
     appliedReferralCode: appliedReferralData?.referralCode || null,
     referees: baseReferrals.map((ref) => {
       const bonus = bonusByReferee.get(ref.refereeAddress) ?? 0;
-      const points =
-        bonus > 0 ? pointsByReferee.get(ref.refereeAddress) ?? 0 : 0;
+      const hasCalculation = hasCalculationByReferee.get(ref.refereeAddress) ?? false;
 
       return {
         anonymousName: ref.refereeAnonymousName,
@@ -411,8 +334,8 @@ export async function getReferralInfo(userAddress: string, env: Env): Promise<Re
           typeof ref.appliedAt === "number"
             ? ref.appliedAt
             : new Date(ref.appliedAt).getTime(),
-        pointsSinceReferral: points,
         bonusEarned: bonus,
+        hasCalculation,
       };
     }),
     totalReferrals: baseReferrals.length,

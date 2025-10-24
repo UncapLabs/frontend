@@ -8,6 +8,27 @@
       "when": 1760690059704,
       "tag": "0000_good_the_stranger",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1761301903566,
+      "tag": "0001_flawless_ricochet",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1761301999808,
+      "tag": "0002_confused_zodiak",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1761304041273,
+      "tag": "0003_unusual_toro",
+      "breakpoints": true
     }
   ]
 }
