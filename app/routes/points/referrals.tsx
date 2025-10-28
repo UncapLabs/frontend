@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { useAccount } from "@starknet-react/core";
 import { useReferral } from "~/hooks/use-referral";
-import { Check, Copy, Users } from "lucide-react";
+import { Check, Copy, Info, Users } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ReferralsPage() {
@@ -54,130 +54,62 @@ Join the BTC economy: ${url}`;
         </div>
       </div>
 
-      {/* Your Referrals List */}
-      <div className="bg-white rounded-2xl p-6 lg:p-8 mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-6 gap-4">
-          <div>
-            <h2 className="text-xl font-medium font-sora text-[#242424] mb-2">
-              Your Referrals
-            </h2>
-            <p className="text-sm text-[#94938D] font-sora">
-              Users you've referred. Points are calculated weekly on Friday.
-            </p>
-          </div>
-          <div className="flex items-end gap-6">
-            <div className="flex flex-col gap-1">
-              <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight leading-none mb-2">
-                Total Referrals
-              </p>
-              <p className="text-2xl font-medium font-sora text-[#242424] leading-none">
-                {!address
-                  ? "—"
-                  : isLoading
-                  ? "..."
-                  : referralInfo?.totalReferrals || 0}
-              </p>
+      {/* Referral Code Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* How it Works - Explainer */}
+        <div className="bg-white rounded-2xl p-6 lg:p-8">
+          <h2 className="text-xl font-medium font-sora text-[#242424] mb-6">
+            How Referrals Work
+          </h2>
+
+          <div className="space-y-4">
+            <div className="bg-[#F5F3EE] rounded-xl p-4 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-[#006CFF] flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-base font-bold">1</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-[#242424] font-sora mb-1">
+                  Generate Your Code
+                </p>
+                <p className="text-xs text-[#94938D] font-sora">
+                  Create your unique referral link
+                </p>
+              </div>
             </div>
-            <div className="flex flex-col gap-1">
-              <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight leading-none mb-2">
-                Total Points
-              </p>
-              <p className="text-2xl font-medium font-sora text-[#242424] leading-none">
-                {!address
-                  ? "—"
-                  : isLoading
-                  ? "..."
-                  : referralInfo?.totalBonusEarned.toFixed(2) || "0.00"}
-              </p>
+
+            <div className="bg-[#F5F3EE] rounded-xl p-4 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-[#006CFF] flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-base font-bold">2</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-[#242424] font-sora mb-1">
+                  Share with Friends
+                </p>
+                <p className="text-xs text-[#94938D] font-sora">
+                  Send your link to people you want to refer
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-[#F5F3EE] rounded-xl p-4 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-[#006CFF] flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-base font-bold">3</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-[#242424] font-sora mb-1">
+                  Earn Bonus Points
+                </p>
+                <p className="text-xs text-[#94938D] font-sora">
+                  Earn <strong>10%</strong> of the base points your referrals
+                  earn from their own activity (borrowing, lending, providing
+                  liquidity, etc.)
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        {referralInfo?.referees && referralInfo.referees.length > 0 ? (
-          <div className="space-y-4">
-            <p className="text-xs text-[#AAA28E] font-sora uppercase tracking-tight">
-              Referral points refresh every Friday at 10:00 UTC after the weekly calculation.
-            </p>
-            {/* Table Header */}
-            <div className="hidden md:grid md:grid-cols-3 gap-4 pb-3 border-b border-[#E5E5E5]">
-              <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider">
-                User
-              </p>
-              <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider">
-                Joined
-              </p>
-              <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider text-right">
-                Your Bonus
-              </p>
-            </div>
-
-            {/* Table Rows */}
-            {referralInfo.referees.map((referee, idx) => (
-              <div
-                key={idx}
-                className="md:grid md:grid-cols-3 gap-4 py-4 border-b border-[#E5E5E5] last:border-0 space-y-2 md:space-y-0 md:items-center"
-              >
-                <div>
-                  <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider md:hidden mb-1">
-                    User
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-[#006CFF]/10 rounded-full flex items-center justify-center">
-                      <span className="text-xs font-bold text-[#006CFF]">
-                        {referee.anonymousName.charAt(0)}
-                      </span>
-                    </div>
-                    <span className="text-sm font-medium font-sora text-[#242424]">
-                      {referee.anonymousName}
-                    </span>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider md:hidden mb-1">
-                    Joined
-                  </p>
-                  <p className="text-sm font-sora text-[#242424]">
-                    {new Date(referee.appliedAt).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </p>
-                </div>
-
-                <div className="md:text-right">
-                  <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider md:hidden mb-1">
-                    Your Bonus
-                  </p>
-                  {referee.hasCalculation ? (
-                    <p className={`text-sm font-bold font-sora ${referee.bonusEarned > 0 ? 'text-[#00C853]' : 'text-[#242424]'}`}>
-                      {referee.bonusEarned > 0 ? '+' : ''}{referee.bonusEarned.toFixed(2)} pts
-                    </p>
-                  ) : (
-                    <p className="text-sm font-medium font-sora text-[#94938D]">
-                      Pending weekly update
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-[#F5F5F5] rounded-full flex items-center justify-center mx-auto mb-4">
-              <Users className="w-8 h-8 text-[#94938D]" />
-            </div>
-            <p className="text-sm text-[#94938D] font-sora">
-              {!address
-                ? "Connect your wallet to refer and view your referrals"
-                : "No referrals yet. Share your code to start earning!"}
-            </p>
-          </div>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 mb-6">
+        {/* Share Your Code */}
         <div className="bg-[#006CFF] rounded-2xl p-6 lg:p-8 relative overflow-hidden">
           {/* Decorative background */}
           <div className="absolute inset-0 pointer-events-none opacity-10">
@@ -246,7 +178,7 @@ Join the BTC economy: ${url}`;
 
                 <p className="text-white/70 text-xs font-sora leading-relaxed">
                   Share this code with friends. When they earn points, you'll
-                  earn {bonusPercent}% bonus points too!
+                  earn 10% bonus points too!
                 </p>
               </div>
             ) : (
@@ -260,6 +192,138 @@ Join the BTC economy: ${url}`;
             )}
           </div>
         </div>
+      </div>
+
+      {/* Your Referrals List */}
+      <div className="bg-white rounded-2xl p-6 lg:p-8">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-6 gap-4">
+          <div>
+            <h2 className="text-xl font-medium font-sora text-[#242424] mb-2">
+              Your Referrals
+            </h2>
+            <p className="text-sm text-[#94938D] font-sora">
+              Users you've referred. Points are calculated weekly on Friday at
+              10:00 UTC.
+            </p>
+          </div>
+          <div className="flex items-end gap-6">
+            <div className="flex flex-col gap-1">
+              <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight leading-none mb-2">
+                Total Referrals
+              </p>
+              <p className="text-2xl font-medium font-sora text-[#242424] leading-none">
+                {!address
+                  ? "—"
+                  : isLoading
+                  ? "..."
+                  : referralInfo?.totalReferrals || 0}
+              </p>
+            </div>
+            <div className="flex flex-col gap-1">
+              <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight leading-none mb-2">
+                Total Points
+              </p>
+              <p className="text-2xl font-medium font-sora text-[#242424] leading-none">
+                {!address
+                  ? "—"
+                  : isLoading
+                  ? "..."
+                  : referralInfo?.totalBonusEarned.toFixed(2) || "0.00"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {referralInfo?.referees && referralInfo.referees.length > 0 ? (
+          <div className="space-y-4">
+            <p className="text-xs text-[#AAA28E] font-sora uppercase tracking-tight">
+              Referral points refresh every Friday at 10:00 UTC after the weekly
+              calculation.
+            </p>
+            {/* Table Header */}
+            <div className="hidden md:grid md:grid-cols-3 gap-4 pb-3 border-b border-[#E5E5E5]">
+              <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider">
+                User
+              </p>
+              <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider">
+                Joined
+              </p>
+              <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider text-right">
+                Your Bonus
+              </p>
+            </div>
+
+            {/* Table Rows */}
+            {referralInfo.referees.map((referee, idx) => (
+              <div
+                key={idx}
+                className="md:grid md:grid-cols-3 gap-4 py-4 border-b border-[#E5E5E5] last:border-0 space-y-2 md:space-y-0 md:items-center"
+              >
+                <div>
+                  <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider md:hidden mb-1">
+                    User
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-[#006CFF]/10 rounded-full flex items-center justify-center">
+                      <span className="text-xs font-bold text-[#006CFF]">
+                        {referee.anonymousName.charAt(0)}
+                      </span>
+                    </div>
+                    <span className="text-sm font-medium font-sora text-[#242424]">
+                      {referee.anonymousName}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider md:hidden mb-1">
+                    Joined
+                  </p>
+                  <p className="text-sm font-sora text-[#242424]">
+                    {new Date(referee.appliedAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
+
+                <div className="md:text-right">
+                  <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-wider md:hidden mb-1">
+                    Your Bonus
+                  </p>
+                  {referee.hasCalculation ? (
+                    <p
+                      className={`text-sm font-bold font-sora ${
+                        referee.bonusEarned > 0
+                          ? "text-[#00C853]"
+                          : "text-[#242424]"
+                      }`}
+                    >
+                      {referee.bonusEarned > 0 ? "+" : ""}
+                      {referee.bonusEarned.toFixed(2)} pts
+                    </p>
+                  ) : (
+                    <p className="text-sm font-medium font-sora text-[#94938D]">
+                      Pending weekly update
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-[#F5F5F5] rounded-full flex items-center justify-center mx-auto mb-4">
+              <Users className="w-8 h-8 text-[#94938D]" />
+            </div>
+            <p className="text-sm text-[#94938D] font-sora">
+              {!address
+                ? "Connect your wallet to refer and view your referrals"
+                : "No referrals yet. Share your code to start earning!"}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
