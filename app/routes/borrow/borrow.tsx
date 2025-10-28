@@ -130,8 +130,8 @@ function Borrow() {
 
   const form = useForm({
     defaultValues: {
-      collateralAmount: undefined as Big | undefined,
-      borrowAmount: undefined as Big | undefined,
+      collateralAmount: collateralAmount ?? undefined,
+      borrowAmount: borrowAmount ?? undefined,
       interestRate: manualInterestRate,
     },
     onSubmit: async ({ value }) => {

@@ -6,6 +6,14 @@
 import { createParser } from "nuqs";
 import Big from "big.js";
 
+const URL_DECIMAL_PRECISION = 18;
+
+function formatForUrl(value: Big) {
+  const rounded = value.round(URL_DECIMAL_PRECISION, Big.roundDown);
+  const fixed = rounded.toFixed(URL_DECIMAL_PRECISION);
+  return fixed.includes(".") ? fixed.replace(/\.?0+$/, "") : fixed;
+}
+
 /**
  * Parser for decimal numbers using big.js library for full precision
  * Stores values as strings in URL, returns Big objects for calculations
@@ -29,7 +37,7 @@ export const parseAsBig = createParser({
   },
   serialize: (value: Big | null): string => {
     if (value === null || value === undefined) return "";
-    return value.toString();
+    return formatForUrl(value);
   },
 });
 
