@@ -495,9 +495,28 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
               <h3 className="text-white text-base font-medium font-sora leading-none">
                 Provide Liquidity
               </h3>
+              <div className="flex items-center gap-1 px-2 py-1 rounded bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M6 1L7.545 4.13L11 4.635L8.5 7.07L9.09 10.51L6 8.885L2.91 10.51L3.5 7.07L1 4.635L4.455 4.13L6 1Z"
+                    fill="#FCD34D"
+                    stroke="#FCD34D"
+                    strokeWidth="0.5"
+                  />
+                </svg>
+                <span className="text-yellow-400 text-[10px] font-semibold font-sora">
+                  Points Boost
+                </span>
+              </div>
             </div>
             <p className="text-xs text-[#B2B2B2]">
-              Provide liquidity to the USDU/USDC pool on Ekubo.
+              Provide liquidity to the USDU/USDC pool on Ekubo and earn bonus points.
             </p>
           </div>
 
