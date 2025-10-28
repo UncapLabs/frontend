@@ -344,7 +344,7 @@ function Borrow() {
                         },
                         {
                           label: "Interest Rate (APR)",
-                          value: `${formData.interestRate.toString()}%`,
+                          value: `${formData.interestRate.toFixed(2)}%`,
                         },
                       ]
                     : undefined

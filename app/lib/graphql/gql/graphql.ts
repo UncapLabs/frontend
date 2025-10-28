@@ -17,6 +17,42 @@ export type Scalars = {
   BigDecimalU256: { input: any; output: any; }
 };
 
+export type BatchManager = {
+  __typename?: 'BatchManager';
+  _indexer: Scalars['String']['output'];
+  collId: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+};
+
+export type BatchManager_Filter = {
+  _indexer?: InputMaybe<Scalars['String']['input']>;
+  _indexer_contains?: InputMaybe<Scalars['String']['input']>;
+  _indexer_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  _indexer_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  _indexer_not?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_contains?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  _indexer_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  collId?: InputMaybe<Scalars['String']['input']>;
+  collId_contains?: InputMaybe<Scalars['String']['input']>;
+  collId_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  collId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  collId_not?: InputMaybe<Scalars['String']['input']>;
+  collId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  collId_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  collId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id?: InputMaybe<Scalars['ID']['input']>;
+  id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  id_not?: InputMaybe<Scalars['ID']['input']>;
+  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+};
+
+export enum BatchManager_OrderBy {
+  Indexer = '_indexer',
+  CollId = 'collId',
+  Id = 'id'
+}
+
 export type BorrowerInfo = {
   __typename?: 'BorrowerInfo';
   _indexer: Scalars['String']['output'];
@@ -68,6 +104,7 @@ export type Collateral = {
 export type CollateralAddresses = {
   __typename?: 'CollateralAddresses';
   _indexer: Scalars['String']['output'];
+  batchManager: Scalars['String']['output'];
   borrowerOperations: Scalars['String']['output'];
   collateral: Collateral;
   id: Scalars['ID']['output'];
@@ -125,6 +162,14 @@ export type CollateralAddresses_Filter = {
   _indexer_not_contains?: InputMaybe<Scalars['String']['input']>;
   _indexer_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
   _indexer_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  batchManager?: InputMaybe<Scalars['String']['input']>;
+  batchManager_contains?: InputMaybe<Scalars['String']['input']>;
+  batchManager_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  batchManager_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  batchManager_not?: InputMaybe<Scalars['String']['input']>;
+  batchManager_not_contains?: InputMaybe<Scalars['String']['input']>;
+  batchManager_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  batchManager_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   borrowerOperations?: InputMaybe<Scalars['String']['input']>;
   borrowerOperations_contains?: InputMaybe<Scalars['String']['input']>;
   borrowerOperations_contains_nocase?: InputMaybe<Scalars['String']['input']>;
@@ -210,6 +255,7 @@ export type CollateralAddresses_Filter = {
 
 export enum CollateralAddresses_OrderBy {
   Indexer = '_indexer',
+  BatchManager = 'batchManager',
   BorrowerOperations = 'borrowerOperations',
   Collateral = 'collateral',
   Id = 'id',
@@ -232,6 +278,14 @@ export type Collateral_CollateralAddresses_Filter = {
   _indexer_not_contains?: InputMaybe<Scalars['String']['input']>;
   _indexer_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
   _indexer_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  batchManager?: InputMaybe<Scalars['String']['input']>;
+  batchManager_contains?: InputMaybe<Scalars['String']['input']>;
+  batchManager_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  batchManager_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  batchManager_not?: InputMaybe<Scalars['String']['input']>;
+  batchManager_not_contains?: InputMaybe<Scalars['String']['input']>;
+  batchManager_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  batchManager_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   borrowerOperations?: InputMaybe<Scalars['String']['input']>;
   borrowerOperations_contains?: InputMaybe<Scalars['String']['input']>;
   borrowerOperations_contains_nocase?: InputMaybe<Scalars['String']['input']>;
@@ -358,146 +412,6 @@ export enum Collateral_OrderBy {
   MinCollRatio = 'minCollRatio'
 }
 
-export type EkuboPosition = {
-  __typename?: 'EkuboPosition';
-  _indexer: Scalars['String']['output'];
-  earningRate: Scalars['BigDecimalU256']['output'];
-  id: Scalars['ID']['output'];
-  lastUpdateTime: Scalars['Int']['output'];
-  pointsEarned: Scalars['BigDecimalU256']['output'];
-  pool: Scalars['String']['output'];
-  poolAddress: Scalars['String']['output'];
-  user: User;
-  value: Scalars['BigDecimalU256']['output'];
-};
-
-export type EkuboPosition_User_Filter = {
-  _indexer?: InputMaybe<Scalars['String']['input']>;
-  _indexer_contains?: InputMaybe<Scalars['String']['input']>;
-  _indexer_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  _indexer_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  _indexer_not?: InputMaybe<Scalars['String']['input']>;
-  _indexer_not_contains?: InputMaybe<Scalars['String']['input']>;
-  _indexer_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  _indexer_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  id?: InputMaybe<Scalars['ID']['input']>;
-  id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  id_not?: InputMaybe<Scalars['ID']['input']>;
-  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  lastUpdateTime?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_gt?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_gte?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
-  lastUpdateTime_lt?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_lte?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_not?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
-  totalPoints?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  totalPoints_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  totalRate?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  totalRate_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  totalValue?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  totalValue_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-};
-
-export type EkuboPosition_Filter = {
-  _indexer?: InputMaybe<Scalars['String']['input']>;
-  _indexer_contains?: InputMaybe<Scalars['String']['input']>;
-  _indexer_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  _indexer_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  _indexer_not?: InputMaybe<Scalars['String']['input']>;
-  _indexer_not_contains?: InputMaybe<Scalars['String']['input']>;
-  _indexer_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  _indexer_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  earningRate?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  earningRate_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  earningRate_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  earningRate_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  earningRate_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  earningRate_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  earningRate_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  earningRate_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  id?: InputMaybe<Scalars['ID']['input']>;
-  id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  id_not?: InputMaybe<Scalars['ID']['input']>;
-  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  lastUpdateTime?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_gt?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_gte?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
-  lastUpdateTime_lt?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_lte?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_not?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
-  pointsEarned?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  pointsEarned_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  pointsEarned_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  pointsEarned_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  pointsEarned_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  pointsEarned_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  pointsEarned_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  pointsEarned_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  pool?: InputMaybe<Scalars['String']['input']>;
-  poolAddress?: InputMaybe<Scalars['String']['input']>;
-  poolAddress_contains?: InputMaybe<Scalars['String']['input']>;
-  poolAddress_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  poolAddress_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  poolAddress_not?: InputMaybe<Scalars['String']['input']>;
-  poolAddress_not_contains?: InputMaybe<Scalars['String']['input']>;
-  poolAddress_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  poolAddress_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  pool_contains?: InputMaybe<Scalars['String']['input']>;
-  pool_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  pool_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  pool_not?: InputMaybe<Scalars['String']['input']>;
-  pool_not_contains?: InputMaybe<Scalars['String']['input']>;
-  pool_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  pool_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  user?: InputMaybe<Scalars['ID']['input']>;
-  user_?: InputMaybe<EkuboPosition_User_Filter>;
-  user_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  user_not?: InputMaybe<Scalars['ID']['input']>;
-  user_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  value?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  value_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  value_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  value_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  value_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  value_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  value_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  value_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-};
-
-export enum EkuboPosition_OrderBy {
-  Indexer = '_indexer',
-  EarningRate = 'earningRate',
-  Id = 'id',
-  LastUpdateTime = 'lastUpdateTime',
-  PointsEarned = 'pointsEarned',
-  Pool = 'pool',
-  PoolAddress = 'poolAddress',
-  User = 'user',
-  Value = 'value'
-}
-
 export type InterestBatch = {
   __typename?: 'InterestBatch';
   _indexer: Scalars['String']['output'];
@@ -508,6 +422,7 @@ export type InterestBatch = {
   collateral: Collateral;
   debt: Scalars['BigDecimalU256']['output'];
   id: Scalars['ID']['output'];
+  total_debt_shares: Scalars['BigDecimalU256']['output'];
   troves: Array<Trove>;
   updatedAt: Scalars['Int']['output'];
 };
@@ -605,6 +520,14 @@ export type InterestBatch_Filter = {
   id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
   id_not?: InputMaybe<Scalars['ID']['input']>;
   id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  total_debt_shares?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  total_debt_shares_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  total_debt_shares_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  total_debt_shares_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  total_debt_shares_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  total_debt_shares_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  total_debt_shares_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  total_debt_shares_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
   updatedAt?: InputMaybe<Scalars['Int']['input']>;
   updatedAt_gt?: InputMaybe<Scalars['Int']['input']>;
   updatedAt_gte?: InputMaybe<Scalars['Int']['input']>;
@@ -624,6 +547,7 @@ export enum InterestBatch_OrderBy {
   Collateral = 'collateral',
   Debt = 'debt',
   Id = 'id',
+  TotalDebtShares = 'total_debt_shares',
   UpdatedAt = 'updatedAt'
 }
 
@@ -756,29 +680,25 @@ export type Query = {
   _checkpoints: Array<_Checkpoint>;
   _metadata?: Maybe<_Metadata>;
   _metadatas: Array<_Metadata>;
+  batchmanager?: Maybe<BatchManager>;
+  batchmanagers: Array<BatchManager>;
   borrowerinfo?: Maybe<BorrowerInfo>;
   borrowerinfos: Array<BorrowerInfo>;
   collateral?: Maybe<Collateral>;
   collateraladdresses: Array<CollateralAddresses>;
   collaterals: Array<Collateral>;
-  ekuboposition?: Maybe<EkuboPosition>;
-  ekubopositions: Array<EkuboPosition>;
   interestbatch?: Maybe<InterestBatch>;
   interestbatches: Array<InterestBatch>;
   interestratebracket?: Maybe<InterestRateBracket>;
   interestratebrackets: Array<InterestRateBracket>;
-  stabilitypoolposition?: Maybe<StabilityPoolPosition>;
-  stabilitypoolpositions: Array<StabilityPoolPosition>;
   trove?: Maybe<Trove>;
   trovemanagereventsemitter?: Maybe<TroveManagerEventsEmitter>;
   trovemanagereventsemitters: Array<TroveManagerEventsEmitter>;
   trovenft?: Maybe<TroveNft>;
   trovenfts: Array<TroveNft>;
   troves: Array<Trove>;
-  user?: Maybe<User>;
-  users: Array<User>;
-  vesuposition?: Maybe<VesuPosition>;
-  vesupositions: Array<VesuPosition>;
+  trovesqueue?: Maybe<TrovesQueue>;
+  trovesqueues: Array<TrovesQueue>;
 };
 
 
@@ -815,6 +735,24 @@ export type Query_MetadatasArgs = {
   orderDirection?: InputMaybe<OrderDirection>;
   skip?: InputMaybe<Scalars['Int']['input']>;
   where?: InputMaybe<_Metadata_Filter>;
+};
+
+
+export type QueryBatchmanagerArgs = {
+  block?: InputMaybe<Scalars['Int']['input']>;
+  id: Scalars['ID']['input'];
+  indexer?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryBatchmanagersArgs = {
+  block?: InputMaybe<Scalars['Int']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  indexer?: InputMaybe<Scalars['String']['input']>;
+  orderBy?: InputMaybe<BatchManager_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  where?: InputMaybe<BatchManager_Filter>;
 };
 
 
@@ -865,24 +803,6 @@ export type QueryCollateralsArgs = {
 };
 
 
-export type QueryEkubopositionArgs = {
-  block?: InputMaybe<Scalars['Int']['input']>;
-  id: Scalars['ID']['input'];
-  indexer?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type QueryEkubopositionsArgs = {
-  block?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  indexer?: InputMaybe<Scalars['String']['input']>;
-  orderBy?: InputMaybe<EkuboPosition_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  where?: InputMaybe<EkuboPosition_Filter>;
-};
-
-
 export type QueryInterestbatchArgs = {
   block?: InputMaybe<Scalars['Int']['input']>;
   id: Scalars['ID']['input'];
@@ -916,24 +836,6 @@ export type QueryInterestratebracketsArgs = {
   orderDirection?: InputMaybe<OrderDirection>;
   skip?: InputMaybe<Scalars['Int']['input']>;
   where?: InputMaybe<InterestRateBracket_Filter>;
-};
-
-
-export type QueryStabilitypoolpositionArgs = {
-  block?: InputMaybe<Scalars['Int']['input']>;
-  id: Scalars['ID']['input'];
-  indexer?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type QueryStabilitypoolpositionsArgs = {
-  block?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  indexer?: InputMaybe<Scalars['String']['input']>;
-  orderBy?: InputMaybe<StabilityPoolPosition_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  where?: InputMaybe<StabilityPoolPosition_Filter>;
 };
 
 
@@ -991,180 +893,22 @@ export type QueryTrovesArgs = {
 };
 
 
-export type QueryUserArgs = {
+export type QueryTrovesqueueArgs = {
   block?: InputMaybe<Scalars['Int']['input']>;
   id: Scalars['ID']['input'];
   indexer?: InputMaybe<Scalars['String']['input']>;
 };
 
 
-export type QueryUsersArgs = {
+export type QueryTrovesqueuesArgs = {
   block?: InputMaybe<Scalars['Int']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   indexer?: InputMaybe<Scalars['String']['input']>;
-  orderBy?: InputMaybe<User_OrderBy>;
+  orderBy?: InputMaybe<TrovesQueue_OrderBy>;
   orderDirection?: InputMaybe<OrderDirection>;
   skip?: InputMaybe<Scalars['Int']['input']>;
-  where?: InputMaybe<User_Filter>;
+  where?: InputMaybe<TrovesQueue_Filter>;
 };
-
-
-export type QueryVesupositionArgs = {
-  block?: InputMaybe<Scalars['Int']['input']>;
-  id: Scalars['ID']['input'];
-  indexer?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type QueryVesupositionsArgs = {
-  block?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  indexer?: InputMaybe<Scalars['String']['input']>;
-  orderBy?: InputMaybe<VesuPosition_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  where?: InputMaybe<VesuPosition_Filter>;
-};
-
-export type StabilityPoolPosition = {
-  __typename?: 'StabilityPoolPosition';
-  _indexer: Scalars['String']['output'];
-  earningRate: Scalars['BigDecimalU256']['output'];
-  id: Scalars['ID']['output'];
-  lastUpdateTime: Scalars['Int']['output'];
-  pointsEarned: Scalars['BigDecimalU256']['output'];
-  poolAddress: Scalars['String']['output'];
-  stashedColl: Scalars['BigDecimalU256']['output'];
-  user: User;
-  value: Scalars['BigDecimalU256']['output'];
-};
-
-export type StabilityPoolPosition_User_Filter = {
-  _indexer?: InputMaybe<Scalars['String']['input']>;
-  _indexer_contains?: InputMaybe<Scalars['String']['input']>;
-  _indexer_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  _indexer_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  _indexer_not?: InputMaybe<Scalars['String']['input']>;
-  _indexer_not_contains?: InputMaybe<Scalars['String']['input']>;
-  _indexer_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  _indexer_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  id?: InputMaybe<Scalars['ID']['input']>;
-  id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  id_not?: InputMaybe<Scalars['ID']['input']>;
-  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  lastUpdateTime?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_gt?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_gte?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
-  lastUpdateTime_lt?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_lte?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_not?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
-  totalPoints?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  totalPoints_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  totalRate?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  totalRate_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  totalValue?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  totalValue_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-};
-
-export type StabilityPoolPosition_Filter = {
-  _indexer?: InputMaybe<Scalars['String']['input']>;
-  _indexer_contains?: InputMaybe<Scalars['String']['input']>;
-  _indexer_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  _indexer_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  _indexer_not?: InputMaybe<Scalars['String']['input']>;
-  _indexer_not_contains?: InputMaybe<Scalars['String']['input']>;
-  _indexer_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  _indexer_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  earningRate?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  earningRate_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  earningRate_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  earningRate_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  earningRate_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  earningRate_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  earningRate_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  earningRate_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  id?: InputMaybe<Scalars['ID']['input']>;
-  id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  id_not?: InputMaybe<Scalars['ID']['input']>;
-  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  lastUpdateTime?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_gt?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_gte?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
-  lastUpdateTime_lt?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_lte?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_not?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
-  pointsEarned?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  pointsEarned_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  pointsEarned_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  pointsEarned_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  pointsEarned_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  pointsEarned_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  pointsEarned_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  pointsEarned_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  poolAddress?: InputMaybe<Scalars['String']['input']>;
-  poolAddress_contains?: InputMaybe<Scalars['String']['input']>;
-  poolAddress_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  poolAddress_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  poolAddress_not?: InputMaybe<Scalars['String']['input']>;
-  poolAddress_not_contains?: InputMaybe<Scalars['String']['input']>;
-  poolAddress_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  poolAddress_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  stashedColl?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  stashedColl_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  stashedColl_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  stashedColl_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  stashedColl_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  stashedColl_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  stashedColl_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  stashedColl_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  user?: InputMaybe<Scalars['ID']['input']>;
-  user_?: InputMaybe<StabilityPoolPosition_User_Filter>;
-  user_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  user_not?: InputMaybe<Scalars['ID']['input']>;
-  user_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  value?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  value_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  value_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  value_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  value_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  value_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  value_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  value_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-};
-
-export enum StabilityPoolPosition_OrderBy {
-  Indexer = '_indexer',
-  EarningRate = 'earningRate',
-  Id = 'id',
-  LastUpdateTime = 'lastUpdateTime',
-  PointsEarned = 'pointsEarned',
-  PoolAddress = 'poolAddress',
-  StashedColl = 'stashedColl',
-  User = 'user',
-  Value = 'value'
-}
 
 export type Trove = {
   __typename?: 'Trove';
@@ -1185,6 +929,7 @@ export type Trove = {
   redeemedColl: Scalars['BigDecimalU256']['output'];
   redeemedDebt: Scalars['BigDecimalU256']['output'];
   redemptionCount: Scalars['Int']['output'];
+  shares?: Maybe<Scalars['BigDecimalU256']['output']>;
   stake: Scalars['BigDecimalU256']['output'];
   status: Scalars['String']['output'];
   troveId: Scalars['String']['output'];
@@ -1355,6 +1100,14 @@ export type Trove_InterestBatch_Filter = {
   id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
   id_not?: InputMaybe<Scalars['ID']['input']>;
   id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+  total_debt_shares?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  total_debt_shares_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  total_debt_shares_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  total_debt_shares_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  total_debt_shares_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  total_debt_shares_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  total_debt_shares_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  total_debt_shares_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
   updatedAt?: InputMaybe<Scalars['Int']['input']>;
   updatedAt_gt?: InputMaybe<Scalars['Int']['input']>;
   updatedAt_gte?: InputMaybe<Scalars['Int']['input']>;
@@ -1488,6 +1241,14 @@ export type Trove_Filter = {
   redemptionCount_lte?: InputMaybe<Scalars['Int']['input']>;
   redemptionCount_not?: InputMaybe<Scalars['Int']['input']>;
   redemptionCount_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  shares?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  shares_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  shares_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  shares_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
+  shares_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  shares_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  shares_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
+  shares_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
   stake?: InputMaybe<Scalars['BigDecimalU256']['input']>;
   stake_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
   stake_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
@@ -1540,26 +1301,21 @@ export enum Trove_OrderBy {
   RedeemedColl = 'redeemedColl',
   RedeemedDebt = 'redeemedDebt',
   RedemptionCount = 'redemptionCount',
+  Shares = 'shares',
   Stake = 'stake',
   Status = 'status',
   TroveId = 'troveId',
   UpdatedAt = 'updatedAt'
 }
 
-export type User = {
-  __typename?: 'User';
+export type TrovesQueue = {
+  __typename?: 'TrovesQueue';
   _indexer: Scalars['String']['output'];
-  ekuboPositions: Array<EkuboPosition>;
   id: Scalars['ID']['output'];
-  lastUpdateTime: Scalars['Int']['output'];
-  stabilityPoolPositions: Array<StabilityPoolPosition>;
-  totalPoints: Scalars['BigDecimalU256']['output'];
-  totalRate: Scalars['BigDecimalU256']['output'];
-  totalValue: Scalars['BigDecimalU256']['output'];
-  vesuPositions: Array<VesuPosition>;
+  troves?: Maybe<Array<Maybe<Trove>>>;
 };
 
-export type User_Filter = {
+export type TrovesQueue_Filter = {
   _indexer?: InputMaybe<Scalars['String']['input']>;
   _indexer_contains?: InputMaybe<Scalars['String']['input']>;
   _indexer_contains_nocase?: InputMaybe<Scalars['String']['input']>;
@@ -1572,187 +1328,11 @@ export type User_Filter = {
   id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
   id_not?: InputMaybe<Scalars['ID']['input']>;
   id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  lastUpdateTime?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_gt?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_gte?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
-  lastUpdateTime_lt?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_lte?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_not?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
-  totalPoints?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  totalPoints_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  totalRate?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  totalRate_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  totalValue?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  totalValue_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
 };
 
-export enum User_OrderBy {
+export enum TrovesQueue_OrderBy {
   Indexer = '_indexer',
-  Id = 'id',
-  LastUpdateTime = 'lastUpdateTime',
-  TotalPoints = 'totalPoints',
-  TotalRate = 'totalRate',
-  TotalValue = 'totalValue'
-}
-
-export type VesuPosition = {
-  __typename?: 'VesuPosition';
-  _indexer: Scalars['String']['output'];
-  earningRate: Scalars['BigDecimalU256']['output'];
-  id: Scalars['ID']['output'];
-  lastUpdateTime: Scalars['Int']['output'];
-  market: Scalars['String']['output'];
-  pointsEarned: Scalars['BigDecimalU256']['output'];
-  positionType: Scalars['String']['output'];
-  user: User;
-  value: Scalars['BigDecimalU256']['output'];
-};
-
-export type VesuPosition_User_Filter = {
-  _indexer?: InputMaybe<Scalars['String']['input']>;
-  _indexer_contains?: InputMaybe<Scalars['String']['input']>;
-  _indexer_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  _indexer_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  _indexer_not?: InputMaybe<Scalars['String']['input']>;
-  _indexer_not_contains?: InputMaybe<Scalars['String']['input']>;
-  _indexer_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  _indexer_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  id?: InputMaybe<Scalars['ID']['input']>;
-  id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  id_not?: InputMaybe<Scalars['ID']['input']>;
-  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  lastUpdateTime?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_gt?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_gte?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
-  lastUpdateTime_lt?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_lte?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_not?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
-  totalPoints?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  totalPoints_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalPoints_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  totalRate?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  totalRate_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalRate_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  totalValue?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  totalValue_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  totalValue_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-};
-
-export type VesuPosition_Filter = {
-  _indexer?: InputMaybe<Scalars['String']['input']>;
-  _indexer_contains?: InputMaybe<Scalars['String']['input']>;
-  _indexer_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  _indexer_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  _indexer_not?: InputMaybe<Scalars['String']['input']>;
-  _indexer_not_contains?: InputMaybe<Scalars['String']['input']>;
-  _indexer_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  _indexer_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  earningRate?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  earningRate_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  earningRate_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  earningRate_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  earningRate_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  earningRate_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  earningRate_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  earningRate_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  id?: InputMaybe<Scalars['ID']['input']>;
-  id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  id_not?: InputMaybe<Scalars['ID']['input']>;
-  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  lastUpdateTime?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_gt?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_gte?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
-  lastUpdateTime_lt?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_lte?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_not?: InputMaybe<Scalars['Int']['input']>;
-  lastUpdateTime_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
-  market?: InputMaybe<Scalars['String']['input']>;
-  market_contains?: InputMaybe<Scalars['String']['input']>;
-  market_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  market_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  market_not?: InputMaybe<Scalars['String']['input']>;
-  market_not_contains?: InputMaybe<Scalars['String']['input']>;
-  market_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  market_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  pointsEarned?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  pointsEarned_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  pointsEarned_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  pointsEarned_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  pointsEarned_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  pointsEarned_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  pointsEarned_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  pointsEarned_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  positionType?: InputMaybe<Scalars['String']['input']>;
-  positionType_contains?: InputMaybe<Scalars['String']['input']>;
-  positionType_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  positionType_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  positionType_not?: InputMaybe<Scalars['String']['input']>;
-  positionType_not_contains?: InputMaybe<Scalars['String']['input']>;
-  positionType_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  positionType_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  user?: InputMaybe<Scalars['ID']['input']>;
-  user_?: InputMaybe<VesuPosition_User_Filter>;
-  user_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  user_not?: InputMaybe<Scalars['ID']['input']>;
-  user_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  value?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  value_gt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  value_gte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  value_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-  value_lt?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  value_lte?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  value_not?: InputMaybe<Scalars['BigDecimalU256']['input']>;
-  value_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigDecimalU256']['input']>>>;
-};
-
-export enum VesuPosition_OrderBy {
-  Indexer = '_indexer',
-  EarningRate = 'earningRate',
-  Id = 'id',
-  LastUpdateTime = 'lastUpdateTime',
-  Market = 'market',
-  PointsEarned = 'pointsEarned',
-  PositionType = 'positionType',
-  User = 'user',
-  Value = 'value'
+  Id = 'id'
 }
 
 /** Contract and Block where its event is found. */

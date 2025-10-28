@@ -43,6 +43,8 @@ import {
 } from "~/hooks/use-telos-batch-manager";
 import type { RateMode } from "~/components/borrow/rate-mode-selector";
 
+const DEFAULT_INTEREST_RATE = new Big(2.5);
+
 // Helper component for action toggle buttons
 const ActionToggle = ({
   actions,
@@ -130,7 +132,7 @@ function UpdatePosition() {
 
   const manualInterestRate =
     interestRate ??
-    (position ? getInterestRatePercentage(position) : new Big(5));
+    (position ? getInterestRatePercentage(position) : DEFAULT_INTEREST_RATE);
 
   // Action state for collateral and debt
   const [collateralAction, setCollateralAction] = useQueryState(
@@ -318,7 +320,9 @@ function UpdatePosition() {
     collateralAmount:
       collateralAmount && collateralAmount.gt(0) ? targetCollateral : undefined,
     borrowAmount: borrowAmount && borrowAmount.gt(0) ? targetDebt : undefined,
-    interestRate: activeRateMode === "managed" ? undefined : interestRate,
+    interestRate: activeRateMode === "managed" ? undefined : manualInterestRate,
+    managedInterestRate:
+      activeRateMode === "managed" ? effectiveInterestRate : undefined,
     collateralToken: selectedCollateral,
     targetBatchManager:
       activeRateMode === "managed" ? telosBatchManagerAddress : null,
@@ -396,7 +400,7 @@ function UpdatePosition() {
                       },
                       {
                         label: "Interest Rate (APR)",
-                        value: `${formData.interestRate.toString()}%`,
+                        value: `${formData.interestRate.toFixed(2)}%`,
                       },
                       changes?.hasCollateralChange && {
                         label: changes.isCollIncrease
@@ -1013,7 +1017,7 @@ function UpdatePosition() {
               interestRate: {
                 from: position
                   ? getInterestRatePercentage(position)
-                  : new Big(5),
+                  : DEFAULT_INTEREST_RATE,
                 to: effectiveInterestRate,
               },
             }}

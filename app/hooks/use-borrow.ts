@@ -13,6 +13,8 @@ import { bigToBigint } from "~/lib/decimal";
 import Big from "big.js";
 import { generateDepositCallsFromBigint } from "~/lib/collateral/wrapping";
 
+const DEFAULT_INTEREST_RATE = new Big(2.5);
+
 export interface BorrowFormData {
   collateralAmount?: Big;
   borrowAmount?: Big;
@@ -62,7 +64,7 @@ export function useBorrow({
     initialFormData: {
       collateralAmount: undefined,
       borrowAmount: undefined,
-      interestRate: new Big(5), // Default to 5% APR as Big instance
+      interestRate: DEFAULT_INTEREST_RATE, // Default to 2.5% APR as Big instance
       selectedCollateralToken: collateral?.symbol || DEFAULT_COLLATERAL.id,
       rateMode,
       interestBatchManager: defaultBatchManager,
