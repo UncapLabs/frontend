@@ -10,6 +10,8 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "~/components/ui/accordion";
+import { createMeta } from "~/lib/utils/meta";
+import type { Route } from "./+types/referrals";
 
 export default function ReferralsPage() {
   const { address } = useAccount();
@@ -395,4 +397,12 @@ Join the BTC economy: ${url}`;
       </div>
     </div>
   );
+}
+
+export function meta(args: Route.MetaArgs) {
+  return createMeta(args, {
+    title: "Uncap - Referrals",
+    description:
+      "Refer users to Uncap Finance and earn 10% bonus points from their activity",
+  });
 }

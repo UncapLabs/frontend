@@ -9,6 +9,8 @@ import {
 } from "~/components/ui/card";
 import { NumericFormat } from "react-number-format";
 import FeatureDiscoveryCards from "~/components/dashboard/feature-discovery-cards";
+import { createMeta } from "~/lib/utils/meta";
+import type { Route } from "./+types/points";
 
 export default function RewardsPage() {
   const { address } = useAccount();
@@ -373,4 +375,12 @@ export default function RewardsPage() {
       </div>
     </div>
   );
+}
+
+export function meta(args: Route.MetaArgs) {
+  return createMeta(args, {
+    title: "Uncap - Your Rewards",
+    description:
+      "Track your points, leaderboard ranking, and weekly earnings on Uncap Finance",
+  });
 }
