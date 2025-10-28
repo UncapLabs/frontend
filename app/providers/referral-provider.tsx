@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAccount } from "@starknet-react/core";
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { useLocalStorage } from "usehooks-ts";
 import { useTRPC, useTRPCClient } from "~/lib/trpc";
 import { REFERRAL_STORAGE_KEY, normalizeReferralCode } from "~/lib/referrals";
 import { useLocation, useNavigate } from "react-router";
+import { ReferralWelcomeDialog } from "~/components/referral-welcome-dialog";
 
 export function ReferralProvider({ children }: { children: React.ReactNode }) {
   const { address } = useAccount();
@@ -18,6 +18,8 @@ export function ReferralProvider({ children }: { children: React.ReactNode }) {
     REFERRAL_STORAGE_KEY,
     null
   );
+  const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
+  const [alreadyHasReferral, setAlreadyHasReferral] = useState(false);
 
   useEffect(() => {
     const search = location.search;
@@ -37,6 +39,9 @@ export function ReferralProvider({ children }: { children: React.ReactNode }) {
     }
 
     setStoredCode((current) => (current === normalized ? current : normalized));
+
+    // Show welcome dialog for anyone visiting a referral link
+    setShowWelcomeDialog(true);
 
     params.delete("ref");
     const nextSearch = params.toString();
@@ -74,8 +79,8 @@ export function ReferralProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (result.success) {
-          toast.success(`Referral code ${normalizedCode} applied!`);
           setStoredCode(null);
+          setAlreadyHasReferral(false);
           queryClient.invalidateQueries({
             queryKey: trpc.pointsRouter.getReferralInfo.queryKey({
               userAddress: address,
@@ -89,9 +94,7 @@ export function ReferralProvider({ children }: { children: React.ReactNode }) {
         } else {
           const message = result.message || "Failed to apply referral code";
           if (message === "You have already used a referral code") {
-            toast.info(message);
-          } else {
-            toast.error(message);
+            setAlreadyHasReferral(true);
           }
           setStoredCode(null);
         }
@@ -107,5 +110,15 @@ export function ReferralProvider({ children }: { children: React.ReactNode }) {
     };
   }, [address, storedCode, trpc, trpcClient, queryClient, setStoredCode]);
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <ReferralWelcomeDialog
+        open={showWelcomeDialog}
+        onClose={() => setShowWelcomeDialog(false)}
+        alreadyHasReferral={alreadyHasReferral}
+        isWalletConnected={!!address}
+      />
+    </>
+  );
 }
