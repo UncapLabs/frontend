@@ -48,11 +48,12 @@ export default function RewardsPage() {
 
   // Determine rank tier based on total points
   const getRankTier = (points: number) => {
-    if (points >= 10000) return { name: "Diamond", color: "#B9F2FF" };
-    if (points >= 5000) return { name: "Platinum", color: "#E5E4E2" };
-    if (points >= 2500) return { name: "Gold", color: "#FFD700" };
-    if (points >= 1000) return { name: "Silver", color: "#C0C0C0" };
-    if (points >= 500) return { name: "Bronze", color: "#CD7F32" };
+    if (points >= 500000) return { name: "Proof of Satoshi", color: "#F7931A" };
+    if (points >= 200000) return { name: "Taproot Magician", color: "#9333EA" };
+    if (points >= 50000) return { name: "Lambo Hunter", color: "#10B981" };
+    if (points >= 17000) return { name: "Validity Chad", color: "#3B82F6" };
+    if (points >= 5000) return { name: "Anon Stacker", color: "#C0C0C0" };
+    if (points >= 1500) return { name: "Smol Pleb", color: "#CD7F32" };
     return { name: "Starter", color: "#94938D" };
   };
 
