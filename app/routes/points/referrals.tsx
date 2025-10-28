@@ -4,6 +4,12 @@ import { useAccount } from "@starknet-react/core";
 import { useReferral } from "~/hooks/use-referral";
 import { Check, Copy, Info, Users } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "~/components/ui/accordion";
 
 export default function ReferralsPage() {
   const { address } = useAccount();
@@ -324,6 +330,68 @@ Join the BTC economy: ${url}`;
             </p>
           </div>
         )}
+      </div>
+
+      {/* FAQ Section */}
+      <div className="bg-white rounded-2xl p-6 lg:p-8 mt-6">
+        <h2 className="text-xl font-medium font-sora text-neutral-800 mb-6">
+          Frequently Asked Questions
+        </h2>
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="item-1" className="border-neutral-200">
+            <AccordionTrigger className="text-neutral-800 font-sora hover:no-underline">
+              How do referral points work?
+            </AccordionTrigger>
+            <AccordionContent className="text-neutral-600 font-sora text-sm">
+              When someone uses your referral code and earns points through their activity (borrowing, lending, providing liquidity), you automatically earn 10% of their base points. This bonus is calculated weekly every Friday at 10:00 UTC.
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="item-2" className="border-neutral-200">
+            <AccordionTrigger className="text-neutral-800 font-sora hover:no-underline">
+              Do I earn points from my referrals' referrals?
+            </AccordionTrigger>
+            <AccordionContent className="text-neutral-600 font-sora text-sm">
+              No, you only earn 10% of the base points from users who directly use your referral code. You do not earn points from their referrals (no multi-level rewards).
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="item-3" className="border-neutral-200">
+            <AccordionTrigger className="text-neutral-800 font-sora hover:no-underline">
+              When can someone use my referral code?
+            </AccordionTrigger>
+            <AccordionContent className="text-neutral-600 font-sora text-sm">
+              When someone clicks your referral link, you'll get credit for referring them. They can connect their wallet right away or come back later—as long as they use the same browser and device, your referral will be properly attributed to you.
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="item-4" className="border-neutral-200">
+            <AccordionTrigger className="text-neutral-800 font-sora hover:no-underline">
+              How often are referral points calculated?
+            </AccordionTrigger>
+            <AccordionContent className="text-neutral-600 font-sora text-sm">
+              Referral bonus points are calculated weekly every Friday at 10:00 UTC. Your dashboard will update shortly after the calculation completes.
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="item-5" className="border-neutral-200">
+            <AccordionTrigger className="text-neutral-800 font-sora hover:no-underline">
+              Is there a limit to how many people I can refer?
+            </AccordionTrigger>
+            <AccordionContent className="text-neutral-600 font-sora text-sm">
+              No, there is no limit! You can refer as many users as you want and earn 10% bonus points from all of their activity.
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="item-6" className="border-neutral-200">
+            <AccordionTrigger className="text-neutral-800 font-sora hover:no-underline">
+              Can I see which activities my referrals are earning points from?
+            </AccordionTrigger>
+            <AccordionContent className="text-neutral-600 font-sora text-sm">
+              For privacy reasons, you can only see the total bonus points you've earned from each referral, not their wallet addresses, specific activities, or amounts.
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </div>
     </div>
   );
