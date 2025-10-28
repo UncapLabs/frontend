@@ -2,10 +2,7 @@ import { NumericFormat } from "react-number-format";
 import { InterestSlider } from "~/components/borrow/interest-slider";
 import { useMemo, useCallback } from "react";
 import * as dn from "dnum";
-import {
-  findPositionInChart,
-  getRateFromPosition,
-} from "~/lib/interest-rate-visualization";
+import { findPositionInChart } from "~/lib/interest-rate-visualization";
 import Big from "big.js";
 
 interface ManualRateControlsProps {
@@ -108,24 +105,35 @@ export function ManualRateControls({
         const barIndex = Math.round(value * (totalBars - 1));
         const barsInPreciseRange = 45;
 
-        let rate: number;
+        let rateBig: Big;
         if (barIndex < barsInPreciseRange) {
           // Precision range: 0.5% to 5%
-          rate = 0.5 + barIndex * 0.1;
+          rateBig = new Big("0.5").plus(
+            new Big(barIndex).times("0.1")
+          );
         } else {
           // Normal range: 5% to 20%
           const normalBarIndex = barIndex - barsInPreciseRange;
-          rate = 5 + normalBarIndex * 0.5;
+          rateBig = new Big("5").plus(
+            new Big(normalBarIndex).times("0.5")
+          );
         }
 
-        onInterestRateChange(rate);
+        onInterestRateChange(Number(rateBig.toFixed(2)));
         return;
       }
 
-      const rate = getRateFromPosition(value, visualizationData.chartBars);
-      // Convert from decimal to percentage
-      const ratePercentage = rate * 100;
-      onInterestRateChange(ratePercentage);
+      const chartBars = visualizationData.chartBars;
+      const totalBars = chartBars.length;
+      const barIndex = Math.round(value * (totalBars - 1));
+      const clampedIndex = Math.max(0, Math.min(totalBars - 1, barIndex));
+      const selectedBar = chartBars[clampedIndex];
+
+      const ratePercentage = new Big(selectedBar.rate)
+        .times(100)
+        .toFixed(2);
+
+      onInterestRateChange(Number(ratePercentage));
     },
     [visualizationData, onInterestRateChange]
   );
