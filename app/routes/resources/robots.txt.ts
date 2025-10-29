@@ -8,7 +8,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     "Allow: /",
     `Sitemap: ${origin}/sitemap.xml`,
     `Sitemap: ${origin}/sitemap-app.xml`,
-    `Sitemap: ${origin}/docs/sitemap.xml`,
+    `Sitemap: ${origin}/resources/sitemap.xml`,
   ].join("\n");
 
   return new Response(robots, {
@@ -19,4 +19,3 @@ export async function loader({ request }: LoaderFunctionArgs) {
     },
   });
 }
-

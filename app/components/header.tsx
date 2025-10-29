@@ -249,26 +249,26 @@ function Header() {
   const howToItems = [
     {
       name: "How to borrow?",
-      href: "https://uncap.finance/docs/blog/launch-guide-borrow-bitcoin-cheapest-rates",
+      href: "https://uncap.finance/resources/docs/blog/launch-guide-borrow-bitcoin-cheapest-rates",
       icon: <BitcoinIcon className="h-4 w-4 lg:text-white" />,
       description: "Learn how to borrow USDU against your Bitcoin collateral.",
     },
     {
       name: "How to set your interest rate?",
-      href: "https://uncap.finance/docs/FAQ/borrowing-liquidations#what-are-user-set-rates",
+      href: "https://uncap.finance/resources/docs/FAQ/borrowing-liquidations#what-are-user-set-rates",
       icon: <Percent className="h-4 w-4" />,
       description: "Understand how to manage and optimize your interest rate.",
     },
     {
       name: "How to earn yield?",
-      href: "https://uncap.finance/docs/FAQ/usdu-and-earn#how-can-i-earn-with-uncap",
+      href: "https://uncap.finance/resources/docs/FAQ/usdu-and-earn#how-can-i-earn-with-uncap",
       icon: <PiggyBank className="h-4 w-4" />,
       description: "Discover ways to earn yield on your USDU deposits.",
     },
     {
       name: "How to bridge bitcoin?",
-      href: "https://uncap.finance/docs/blog/bridge-btc-to-starknet",
-      icon: <BitcoinIcon className="h-4 w-4 lg:text-white" />,
+      href: "https://uncap.finance/resources/docs/blog/bridge-btc-to-starknet",
+      icon: <BitcoinIcon className="h-4 w-4" />,
       description: "Learn how to bridge your Bitcoin to Starknet.",
     },
   ];

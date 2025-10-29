@@ -38,11 +38,11 @@ app.use(
   })
 );
 
-// Handle ALL /docs requests by forwarding to docs worker
-app.all("/docs*", async (c) => {
-  // Strip /docs prefix: /docs/intro becomes /intro, /docs becomes /
+// Handle ALL /resources requests by forwarding to docs worker
+app.all("/resources*", async (c) => {
+  // Strip /resources prefix:
   const url = new URL(c.req.url);
-  url.pathname = url.pathname.replace(/^\/docs/, "") || "/";
+  url.pathname = url.pathname.replace(/^\/resources/, "") || "/";
 
   const newRequest = new Request(url.toString(), {
     method: c.req.method,

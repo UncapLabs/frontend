@@ -6,16 +6,13 @@ interface RedemptionInfoProps {
   children?: React.ReactNode;
 }
 
-export function RedemptionInfo({
-  className,
-  children,
-}: RedemptionInfoProps) {
+export function RedemptionInfo({ className, children }: RedemptionInfoProps) {
   return (
     <InfoBox
       title="Setting Your Interest Rate"
       variant="blue"
       className={className}
-      learnMoreUrl="https://uncap.finance/docs/FAQ/redemptions-and-delegations"
+      learnMoreUrl="https://uncap.finance/resources/docs/how-to/redemptions-and-delegations"
       learnMoreText="Learn more about interest rates and redemptions"
     >
       {children && (

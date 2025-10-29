@@ -151,7 +151,7 @@ function Earn() {
           <InfoBox
             title="How Stability Pool Yields Work"
             variant="blue"
-            learnMoreUrl="https://uncap.finance/docs/FAQ/usdu-and-earn"
+            learnMoreUrl="https://uncap.finance/resources/docs/how-to/usdu-and-earn"
             learnMoreText="Learn more about the Stability Pool"
           >
             <div className="text-[#004BB2] text-sm font-normal leading-relaxed font-sora space-y-4">

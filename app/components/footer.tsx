@@ -21,7 +21,7 @@ export default function Footer() {
           </a>
           <a
             className="hover:text-white/90"
-            href="https://uncap.finance/docs"
+            href="https://uncap.finance/resources/docs"
             target="_blank"
             rel="noopener noreferrer"
           >

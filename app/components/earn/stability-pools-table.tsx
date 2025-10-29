@@ -31,7 +31,7 @@ export function StabilityPoolsTable() {
             Earn rewards from loan fees and liquidations while helping maintain
             system stability.{" "}
             <a
-              href="https://uncap.finance/docs/FAQ/usdu-and-earn#what-generates-the-yield-for-stability-pool-participants"
+              href="https://uncap.finance/resources/docs/how-to/usdu-and-earn#what-generates-the-yield-for-stability-pool-participants"
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-400 hover:text-blue-300 underline"

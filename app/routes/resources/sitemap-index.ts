@@ -14,7 +14,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     const sitemaps: SitemapEntry[] = [
       { loc: `${origin}/sitemap-app.xml`, lastmod: generatedAt },
-      { loc: `${origin}/docs/sitemap.xml` },
+      { loc: `${origin}/resources/sitemap.xml` },
     ];
 
     const xml = `${XML_HEADER}
@@ -56,4 +56,3 @@ function escapeXml(value: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 }
-
