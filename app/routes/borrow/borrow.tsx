@@ -71,6 +71,7 @@ function Borrow() {
 
   const telosBatch = useTelosBatchMetadata({
     branchId: collateral.branchId,
+    enabled: rateMode === "managed",
   });
 
   // Get balance token address and decimals

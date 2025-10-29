@@ -52,6 +52,11 @@ export function useTelosManagedInfo({
   hasBorrowValues = false,
 }: UseTelosManagedInfoOptions) {
   return useMemo(() => {
+    const isLoadingTelosData =
+      rateMode === "managed" &&
+      !telosBatch.data &&
+      (telosBatch.isPending || telosBatch.isFetching);
+
     const telosAprPercent = telosBatch.data
       ? telosBatch.data.annualInterestRate.times(100)
       : undefined;
@@ -80,7 +85,7 @@ export function useTelosManagedInfo({
       cooldownEndsAt: telosBatch.data?.cooldownEndsAt,
       bcr: telosBcrPercent,
       batchManagerLabel: "Telos",
-      isLoading: telosBatch.isLoading,
+      isLoading: telosBatch.isLoading || isLoadingTelosData,
       isError: telosBatch.isError,
       managedDebt: telosBatch.data?.managedDebt,
     };
@@ -96,7 +101,9 @@ export function useTelosManagedInfo({
         : true;
 
     let telosDisableReason: string | undefined;
-    if (telosBatch.isError) {
+    if (isLoadingTelosData) {
+      telosDisableReason = "Loading Telos settings...";
+    } else if (telosBatch.isError) {
       telosDisableReason =
         "Unable to load Telos settings. Please try again later.";
     } else if (hasBorrowValues && telosBatch.data && !telosMeetsBcr) {
@@ -115,10 +122,10 @@ export function useTelosManagedInfo({
       telosManagedDisabled,
     };
   }, [
+    rateMode,
     telosBatch,
     collateral,
     manualInterestRate,
-    rateMode,
     collateralRatio,
     hasBorrowValues,
   ]);

@@ -112,16 +112,17 @@ function UpdatePosition() {
   // Use default collateral if not found
   const selectedCollateral = collateral || getCollateralByBranchId(0)!;
 
-  const telosBatch = useTelosBatchMetadata({
-    branchId: selectedCollateral.branchId,
-  });
-
   const [rateModeSelection, setRateModeSelection] = useState<RateMode | null>(
     null
   );
   const activeRateMode: RateMode =
     rateModeSelection ??
     (position?.batchManager ? "managed" : "manual");
+
+  const telosBatch = useTelosBatchMetadata({
+    branchId: selectedCollateral.branchId,
+    enabled: activeRateMode === "managed",
+  });
 
   // Use local state for amounts with Big.js for precision
   const [collateralAmount, setCollateralAmount] = useState<Big | undefined>(
