@@ -27,7 +27,7 @@ import { ReferralProvider } from "./providers/referral-provider";
 
 export const meta: Route.MetaFunction = () => {
   return [
-    { title: "Uncap Finance - Do More With Bitcoin" },
+    { title: "Uncap Finance - Do more with Bitcoin" },
     {
       name: "description",
       content:
@@ -35,7 +35,7 @@ export const meta: Route.MetaFunction = () => {
     },
 
     // Open Graph
-    { property: "og:title", content: "Uncap Finance - Do More With Bitcoin" },
+    { property: "og:title", content: "Uncap Finance - Do more with Bitcoin" },
     {
       property: "og:description",
       content:
@@ -50,7 +50,7 @@ export const meta: Route.MetaFunction = () => {
     // Twitter Card
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:site", content: "@UncapFinance" },
-    { name: "twitter:title", content: "Uncap Finance - Do More With Bitcoin" },
+    { name: "twitter:title", content: "Uncap Finance - Do more with Bitcoin" },
     {
       name: "twitter:description",
       content:
