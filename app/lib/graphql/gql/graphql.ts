@@ -697,8 +697,6 @@ export type Query = {
   trovenft?: Maybe<TroveNft>;
   trovenfts: Array<TroveNft>;
   troves: Array<Trove>;
-  trovesqueue?: Maybe<TrovesQueue>;
-  trovesqueues: Array<TrovesQueue>;
 };
 
 
@@ -890,24 +888,6 @@ export type QueryTrovesArgs = {
   orderDirection?: InputMaybe<OrderDirection>;
   skip?: InputMaybe<Scalars['Int']['input']>;
   where?: InputMaybe<Trove_Filter>;
-};
-
-
-export type QueryTrovesqueueArgs = {
-  block?: InputMaybe<Scalars['Int']['input']>;
-  id: Scalars['ID']['input'];
-  indexer?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type QueryTrovesqueuesArgs = {
-  block?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  indexer?: InputMaybe<Scalars['String']['input']>;
-  orderBy?: InputMaybe<TrovesQueue_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  where?: InputMaybe<TrovesQueue_Filter>;
 };
 
 export type Trove = {
@@ -1306,33 +1286,6 @@ export enum Trove_OrderBy {
   Status = 'status',
   TroveId = 'troveId',
   UpdatedAt = 'updatedAt'
-}
-
-export type TrovesQueue = {
-  __typename?: 'TrovesQueue';
-  _indexer: Scalars['String']['output'];
-  id: Scalars['ID']['output'];
-  troves?: Maybe<Array<Maybe<Trove>>>;
-};
-
-export type TrovesQueue_Filter = {
-  _indexer?: InputMaybe<Scalars['String']['input']>;
-  _indexer_contains?: InputMaybe<Scalars['String']['input']>;
-  _indexer_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  _indexer_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  _indexer_not?: InputMaybe<Scalars['String']['input']>;
-  _indexer_not_contains?: InputMaybe<Scalars['String']['input']>;
-  _indexer_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  _indexer_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  id?: InputMaybe<Scalars['ID']['input']>;
-  id_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  id_not?: InputMaybe<Scalars['ID']['input']>;
-  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-};
-
-export enum TrovesQueue_OrderBy {
-  Indexer = '_indexer',
-  Id = 'id'
 }
 
 /** Contract and Block where its event is found. */
