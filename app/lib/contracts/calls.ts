@@ -1,4 +1,8 @@
-import { Contract, type AccountInterface, type RpcProvider } from "starknet";
+import {
+  Contract,
+  type AccountInterface,
+  type RpcProvider,
+} from "starknet";
 import {
   getCollateralAddresses,
   getBranchId,
@@ -17,7 +21,9 @@ import {
   USDU_ABI,
   COLLATERAL_WRAPPER_ABI,
   BATCH_MANAGER_ABI,
+  CLAIM_DISTRIBUTOR_ABI,
 } from ".";
+import { CLAIM_DISTRIBUTOR_ADDRESS } from "./constants";
 
 interface InterestBatchManagerStruct {
   min_interest_rate: bigint;
@@ -75,6 +81,24 @@ export const contractCall = {
         address: tokenAddress,
       });
       return contract.populate("approve", [spender, amount]);
+    },
+  },
+
+  claimDistributor: {
+    /**
+     * Claim STRK rewards using merkle proof
+     */
+    claim: (amount: bigint, proof: string[]) => {
+      if (!CLAIM_DISTRIBUTOR_ADDRESS) {
+        throw new Error("Claim distributor address is not configured");
+      }
+
+      const contract = new Contract({
+        abi: CLAIM_DISTRIBUTOR_ABI,
+        address: CLAIM_DISTRIBUTOR_ADDRESS,
+      });
+
+      return contract.populate("claim", [amount, proof]);
     },
   },
 
@@ -508,7 +532,7 @@ export const contractCall = {
       });
       return contract.populate("get_collateral", [borrower]);
     },
-  },
+ },
 };
 
 /**
@@ -516,6 +540,29 @@ export const contractCall = {
  * These use the contract instances with provider to get properly parsed data
  */
 export const contractRead = {
+  claimDistributor: {
+    /**
+     * Read the already-claimed STRK amount for a claimee
+     */
+    amountAlreadyClaimed: async (
+      provider: RpcProvider | AccountInterface,
+      claimee: string
+    ): Promise<bigint> => {
+      if (!CLAIM_DISTRIBUTOR_ADDRESS) {
+        throw new Error("Claim distributor address is not configured");
+      }
+
+      const contract = new Contract({
+        abi: CLAIM_DISTRIBUTOR_ABI,
+        address: CLAIM_DISTRIBUTOR_ADDRESS,
+        providerOrAccount: provider,
+      });
+
+      const result = await contract.call("amount_already_claimed", [claimee]);
+      return result as bigint;
+    },
+  },
+
   borrowerOperations: {
     /**
      * Get the batch manager of a trove with parsed response

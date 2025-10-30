@@ -1,6 +1,7 @@
 {
   "USDU": "0x2f94539f80158f9a48a7acf3747718dfbec9b6f639e2742c1fb44ae7ab5aa04",
   "gasToken": "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
+  "claimDistributor": "0x03e942530ef96da8e65e453f0fbbb198994515c69edd1dcf3be353b0956fbd1a",
   "collateralRegistry": "0x76512e6722f1891ce15ca7e7ff6514b6898872fb8e6ce881d16108e26457e90",
   "WWBTC": {
     "collateral": "0x75d9e518f46a9ca0404fb0a7d386ce056dadf57fd9a0e8659772cb517be4a18",

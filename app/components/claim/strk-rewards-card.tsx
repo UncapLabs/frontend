@@ -1,14 +1,5 @@
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Separator } from "~/components/ui/separator";
-import { Badge } from "~/components/ui/badge";
-import {
-  Sparkles,
-  TrendingUp,
-  Clock,
-  CheckCircle2,
-  Loader2,
-} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -20,87 +11,136 @@ import {
 import { NumericFormat } from "react-number-format";
 import { useAccount } from "@starknet-react/core";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
+import { useClaimStrk, useStrkAlreadyClaimed } from "~/hooks/use-claim-strk";
+import {
+  useStrkClaimCalldata,
+  useStrkAllocationAmount,
+  useStrkRoundBreakdown,
+} from "~/hooks/use-strk-claim";
+import { TransactionStatus } from "~/components/borrow/transaction-status";
+import { TOKENS } from "~/lib/collateral";
+import { bigintToBig } from "~/lib/decimal";
+import { useCallback, useMemo } from "react";
+import type Big from "big.js";
 
-// Placeholder data structure for STRK rewards
-interface WeeklyReward {
-  weekNumber: number;
-  weekStartDate: string;
-  weekEndDate: string;
-  amount: number;
-  status: "claimable" | "claimed" | "pending";
-  claimedAt?: string;
+// Helper to get week dates - Week 1 starts Nov 5, 2025
+function getWeekDates(weekNumber: number): { start: string; end: string } {
+  const weekStartDate = new Date("2025-11-05");
+  const startDate = new Date(weekStartDate);
+  startDate.setDate(weekStartDate.getDate() + (weekNumber - 1) * 7);
+
+  const endDate = new Date(startDate);
+  endDate.setDate(startDate.getDate() + 7);
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  };
+
+  return {
+    start: formatDate(startDate),
+    end: formatDate(endDate),
+  };
 }
 
 export function STRKRewardsCard() {
   const { address } = useAccount();
   const { connectWallet } = useWalletConnect();
 
-  // TODO: Replace with actual hook when backend is ready
-  // const { rewards, totalClaimable, isLoading, error, claim } = useSTRKRewards(address);
+  // Fetch data from hooks
+  const { alreadyClaimed, refetch: refetchClaimed } = useStrkAlreadyClaimed();
 
-  // Check if this is the specific address with hardcoded rewards
-  const isTargetAddress =
-    address?.toLowerCase() ===
-    "0x033446F12430CE62862707d5B0495ba79d9965671c558BA163Ab99EF06434144".toLowerCase();
+  const { data: allocationData, refetch: refetchAllocation } =
+    useStrkAllocationAmount();
 
-  // Placeholder data for UI development
-  const isLoading = false;
+  const { data: calldataResponse, refetch: refetchCalldata } =
+    useStrkClaimCalldata();
 
-  // Hardcoded rewards for the specific address
-  const weeklyRewards: WeeklyReward[] = isTargetAddress
-    ? [
-        {
-          weekNumber: 1,
-          weekStartDate: "2025-08-19",
-          weekEndDate: "2025-08-25",
-          amount: 125.75,
-          status: "claimed",
-          claimedAt: "2025-08-26",
-        },
-        {
-          weekNumber: 2,
-          weekStartDate: "2025-08-26",
-          weekEndDate: "2025-09-01",
-          amount: 148.32,
-          status: "claimed",
-          claimedAt: "2025-09-02",
-        },
-        {
-          weekNumber: 3,
-          weekStartDate: "2025-09-02",
-          weekEndDate: "2025-09-08",
-          amount: 165.4,
-          status: "claimed",
-          claimedAt: "2025-09-09",
-        },
-        {
-          weekNumber: 4,
-          weekStartDate: "2025-09-09",
-          weekEndDate: "2025-09-15",
-          amount: 189.25,
-          status: "claimable",
-        },
-        {
-          weekNumber: 5,
-          weekStartDate: "2025-09-16",
-          weekEndDate: "2025-09-22",
-          amount: 195.5,
-          status: "pending",
-        },
-      ]
-    : [];
+  const { data: roundBreakdown } = useStrkRoundBreakdown();
 
-  // Calculate total claimable
-  const totalClaimable = weeklyRewards
-    .filter((r) => r.status === "claimable")
-    .reduce((sum, r) => sum + r.amount, 0);
+  // Allocation amount comes as Big from TRPC
+  const totalAllocation = useMemo(() => {
+    if (!allocationData) return 0n;
+    try {
+      // Convert Big to bigint for calculations
+      return BigInt(allocationData.toFixed(0));
+    } catch {
+      return 0n;
+    }
+  }, [allocationData]);
 
-  const hasRewards = weeklyRewards.length > 0;
+  // The backend pre-calculates this in the calldata response
+  const claimableAmount = useMemo(() => {
+    if (calldataResponse?.amount) {
+      try {
+        return BigInt(calldataResponse.amount);
+      } catch {
+        return 0n;
+      }
+    }
+    // Fallback: calculate manually if calldata not available
+    if (totalAllocation > 0n && alreadyClaimed >= 0n) {
+      const claimable = totalAllocation - alreadyClaimed;
+      return claimable > 0n ? claimable : 0n;
+    }
+    return 0n;
+  }, [calldataResponse, totalAllocation, alreadyClaimed]);
+
+  // Claim transaction hook
+  const {
+    send,
+    isPending,
+    isSending,
+    error: transactionError,
+    transactionHash,
+    currentState,
+    formData,
+    reset,
+  } = useClaimStrk({
+    amount: calldataResponse?.amount,
+    proof: calldataResponse?.proof,
+    enabled: Boolean(
+      address && calldataResponse?.amount && calldataResponse?.proof
+    ),
+    onSuccess: () => {
+      // Refresh data after successful claim
+      refetchClaimed();
+      refetchAllocation();
+      refetchCalldata();
+    },
+  });
+
+  // Convert amounts to Big for display
+  const claimableBig = bigintToBig(claimableAmount, TOKENS.STRK.decimals);
+  const alreadyClaimedBig = bigintToBig(alreadyClaimed, TOKENS.STRK.decimals);
+  const hasClaimableRewards = claimableAmount > 0n;
 
   const handleClaimAll = async () => {
-    // TODO: Implement claim logic
-    console.log("Claiming STRK rewards...");
+    if (!address) {
+      await connectWallet();
+      return;
+    }
+
+    if (!calldataResponse?.amount || !calldataResponse?.proof) {
+      console.error("Missing claim calldata");
+      return;
+    }
+
+    try {
+      await send();
+    } catch (error) {
+      console.error("Claim error:", error);
+    }
   };
+
+  const handleComplete = useCallback(() => {
+    if (currentState === "error") {
+      // Reset for retry
+      reset();
+    } else {
+      // Stay on page after success
+      reset();
+    }
+  }, [currentState, reset]);
 
   const handleButtonClick = async () => {
     if (!address) {
@@ -121,90 +161,46 @@ export function STRKRewardsCard() {
       <div className="flex flex-col lg:flex-row gap-5">
         {/* Left Panel - Main Content */}
         <div className="flex-1 lg:flex-[2]">
-          {isLoading ? (
-            <Card className="rounded-2xl border-0 shadow-none bg-white">
-              <CardContent className="pt-6">
-                <div className="text-center space-y-4 py-8">
-                  <Sparkles className="h-12 w-12 text-token-strk mx-auto animate-pulse" />
-                  <p className="text-sm font-sora text-neutral-600">
-                    Loading STRK rewards data...
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ) : !hasRewards ? (
-            <div className="bg-white rounded-2xl p-8">
-              <div className="text-center space-y-5">
-                <div className="w-16 h-16 bg-neutral-100 border border-neutral-200 rounded-xl mx-auto flex items-center justify-center">
-                  <img
-                    src="/starknet.png"
-                    alt="STRK"
-                    className="w-8 h-8 object-contain"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-lg font-medium font-sora text-neutral-800">
-                    No STRK Rewards Yet
-                  </h3>
-                  <p className="text-sm font-sora text-neutral-600 max-w-md mx-auto leading-relaxed">
-                    Earn STRK by borrowing USDU. Get 40% of interest back and 2%
-                    of collateral value annually, paid weekly.
-                  </p>
-                </div>
-
-                {/* Compact highlights as chips */}
-                <div className="flex flex-wrap items-center justify-center gap-2 mt-1">
-                  <span className="px-2.5 py-1 rounded-md bg-neutral-50 border border-neutral-200 text-[11px] font-medium font-sora text-neutral-700">
-                    40% Interest Rebate
-                  </span>
-                  <span className="px-2.5 py-1 rounded-md bg-neutral-50 border border-neutral-200 text-[11px] font-medium font-sora text-neutral-700">
-                    2% Collateral APR
-                  </span>
-                </div>
-
-                {/* How to earn - simple left-aligned numbered list (no box) */}
-                <div className="max-w-md mx-auto text-left">
-                  <div className="mb-1.5">
-                    <span className="text-sm font-medium font-sora text-neutral-800">
-                      How to start
-                    </span>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-start gap-2.5">
-                      <span className="w-5 h-5 rounded-full bg-neutral-200 text-neutral-800 text-[11px] font-medium font-sora flex items-center justify-center mt-0.5">
-                        1
-                      </span>
-                      <span className="text-sm font-sora text-neutral-700">
-                        Open a borrowing position with BTC collateral
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-2.5">
-                      <span className="w-5 h-5 rounded-full bg-neutral-200 text-neutral-800 text-[11px] font-medium font-sora flex items-center justify-center mt-0.5">
-                        2
-                      </span>
-                      <span className="text-sm font-sora text-neutral-700">
-                        Earn 40% interest rebate + 2% collateral rewards
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-2.5">
-                      <span className="w-5 h-5 rounded-full bg-neutral-200 text-neutral-800 text-[11px] font-medium font-sora flex items-center justify-center mt-0.5">
-                        3
-                      </span>
-                      <span className="text-sm font-sora text-neutral-700">
-                        Claim STRK weekly from this page
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <Button
-                  onClick={() => (window.location.href = "/borrow")}
-                  className="h-11 bg-token-bg-blue hover:bg-blue-600 text-white text-sm font-medium font-sora py-3 px-6 rounded-xl transition-all"
-                >
-                  Start Borrowing to Earn STRK
-                </Button>
-              </div>
-            </div>
+          {/* Transaction Status - Show during pending/success/error */}
+          {["pending", "success", "error"].includes(currentState) ? (
+            <TransactionStatus
+              transactionHash={transactionHash}
+              isError={currentState === "error"}
+              isSuccess={currentState === "success"}
+              error={
+                transactionError ? new Error(transactionError.message) : null
+              }
+              successTitle="STRK Claimed Successfully!"
+              successSubtitle="Your STRK rewards have been claimed and sent to your wallet."
+              details={
+                currentState === "success" && formData.amount
+                  ? [
+                      {
+                        label: "Amount Claimed",
+                        value: (
+                          <>
+                            <NumericFormat
+                              displayType="text"
+                              value={bigintToBig(
+                                BigInt(formData.amount),
+                                TOKENS.STRK.decimals
+                              ).toString()}
+                              thousandSeparator=","
+                              decimalScale={2}
+                              fixedDecimalScale
+                            />{" "}
+                            STRK
+                          </>
+                        ),
+                      },
+                    ]
+                  : undefined
+              }
+              onComplete={handleComplete}
+              completeButtonText={
+                currentState === "error" ? "Try Again" : "Done"
+              }
+            />
           ) : (
             <div className="space-y-6">
               {/* Rewards Claim Card */}
@@ -237,7 +233,7 @@ export function STRKRewardsCard() {
                     <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal font-sora leading-8 sm:leading-9 md:leading-10 text-neutral-800">
                       <NumericFormat
                         displayType="text"
-                        value={totalClaimable}
+                        value={claimableBig.toString()}
                         thousandSeparator=","
                         decimalScale={2}
                         fixedDecimalScale
@@ -246,30 +242,29 @@ export function STRKRewardsCard() {
                   </div>
                 </div>
 
-                {/* Bottom row: USD value on left, Available info on right */}
+                {/* Bottom row: Already claimed info on right */}
                 <div className="flex justify-between items-center">
-                  {/* USD value on bottom left */}
+                  {/* Placeholder for symmetry */}
                   <span className="text-neutral-800 text-sm font-medium font-sora leading-none">
-                    = ${(totalClaimable * 0.5).toFixed(2)}
+                    {/* Could add USD value here if price feed available */}
                   </span>
 
-                  {/* Available info on bottom right */}
+                  {/* Already claimed info on bottom right */}
                   <div className="flex items-center gap-1">
                     <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
-                      Available:
+                      Already claimed:
                     </span>
                     <span className="text-neutral-800 text-base font-medium font-sora leading-none">
-                      {
-                        weeklyRewards.filter((r) => r.status === "claimable")
-                          .length
-                      }
+                      <NumericFormat
+                        displayType="text"
+                        value={alreadyClaimedBig.toString()}
+                        thousandSeparator=","
+                        decimalScale={2}
+                        fixedDecimalScale
+                      />
                     </span>
                     <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
-                      week
-                      {weeklyRewards.filter((r) => r.status === "claimable")
-                        .length !== 1
-                        ? "s"
-                        : ""}
+                      STRK
                     </span>
                   </div>
                 </div>
@@ -278,100 +273,79 @@ export function STRKRewardsCard() {
               {/* Claim Button */}
               <Button
                 onClick={handleButtonClick}
-                disabled={address && totalClaimable === 0}
-                className="w-full h-12 bg-token-bg-blue hover:bg-blue-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all"
+                disabled={
+                  (address && !hasClaimableRewards) || isSending || isPending
+                }
+                className="w-full h-12 bg-token-bg-blue hover:bg-blue-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all disabled:opacity-50"
               >
                 {!address
                   ? "Connect Wallet"
-                  : totalClaimable > 0
-                  ? `Claim ${totalClaimable.toFixed(2)} STRK`
+                  : isSending
+                  ? "Confirm in wallet..."
+                  : isPending
+                  ? "Transaction pending..."
+                  : hasClaimableRewards
+                  ? `Claim ${claimableBig.toFixed(2)} STRK`
                   : "No Rewards to Claim"}
               </Button>
 
               {/* Weekly Rewards History */}
               <Card className="rounded-2xl border-0 shadow-none bg-white">
-                <CardHeader className="pb-2">
+                <CardHeader className="border-b border-[#F5F3EE]">
                   <CardTitle className="text-lg font-medium font-sora text-neutral-800 flex items-center gap-2">
                     Weekly Rewards History
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0">
-                  {weeklyRewards.length > 0 ? (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="font-sora text-xs font-medium uppercase tracking-tight text-neutral-800">
-                            Week
-                          </TableHead>
-                          <TableHead className="font-sora text-xs font-medium uppercase tracking-tight text-neutral-800">
-                            Period
-                          </TableHead>
-                          <TableHead className="text-right font-sora text-xs font-medium uppercase tracking-tight text-neutral-800">
-                            Amount
-                          </TableHead>
-                          <TableHead className="text-center font-sora text-xs font-medium uppercase tracking-tight text-neutral-800">
-                            Status
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {weeklyRewards.map((reward) => (
-                          <TableRow key={reward.weekNumber}>
-                            <TableCell className="font-medium font-sora text-neutral-800">
-                              Week {reward.weekNumber}
-                            </TableCell>
-                            <TableCell className="text-sm font-sora text-neutral-600">
-                              {new Date(
-                                reward.weekStartDate
-                              ).toLocaleDateString()}{" "}
-                              -{" "}
-                              {new Date(
-                                reward.weekEndDate
-                              ).toLocaleDateString()}
-                            </TableCell>
-                            <TableCell className="text-right font-medium font-sora text-neutral-800">
-                              <NumericFormat
-                                displayType="text"
-                                value={reward.amount}
-                                thousandSeparator=","
-                                decimalScale={2}
-                                fixedDecimalScale
-                              />{" "}
-                              STRK
-                            </TableCell>
-                            <TableCell className="text-center">
-                              {reward.status === "claimed" ? (
-                                <Badge variant="success" className="gap-1">
-                                  <CheckCircle2 className="h-3 w-3" />
-                                  Claimed
-                                </Badge>
-                              ) : reward.status === "claimable" ? (
-                                <Badge className="gap-1 bg-token-bg-strk/10 text-token-strk hover:bg-token-bg-strk/10">
-                                  <Sparkles className="h-3 w-3" />
-                                  Claimable
-                                </Badge>
-                              ) : (
-                                <Badge variant="pending" className="gap-1">
-                                  <Loader2 className="h-3 w-3 animate-spin" />
-                                  Pending
-                                </Badge>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  ) : (
-                    <div className="text-center py-8">
-                      <Clock className="h-8 w-8 text-neutral-400 mx-auto mb-3" />
-                      <p className="text-sm font-sora text-neutral-600">
-                        No rewards history yet
-                      </p>
-                      <p className="text-xs font-sora text-neutral-500 mt-2">
-                        Your weekly rewards will appear here
-                      </p>
-                    </div>
-                  )}
+                <CardContent className="">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="font-sora text-xs font-medium uppercase tracking-tight text-neutral-800">
+                          Week
+                        </TableHead>
+                        <TableHead className="font-sora text-xs font-medium uppercase tracking-tight text-neutral-800">
+                          Period
+                        </TableHead>
+                        <TableHead className="text-right font-sora text-xs font-medium uppercase tracking-tight text-neutral-800">
+                          Amount
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {Array.from({ length: 10 }, (_, i) => i + 1).map(
+                        (weekNumber) => {
+                          const dates = getWeekDates(weekNumber);
+                          // Find matching data from backend
+                          const weekData = roundBreakdown?.rounds?.find(
+                            (r: { round: number; amount: Big }) =>
+                              r.round === weekNumber
+                          );
+                          const amount = weekData?.amount || "0";
+
+                          return (
+                            <TableRow key={weekNumber}>
+                              <TableCell className="font-medium font-sora text-neutral-800">
+                                Week {weekNumber}
+                              </TableCell>
+                              <TableCell className="text-sm font-sora text-neutral-600">
+                                {dates.start} - {dates.end}
+                              </TableCell>
+                              <TableCell className="text-right font-medium font-sora text-neutral-800">
+                                <NumericFormat
+                                  displayType="text"
+                                  value={amount.toString()}
+                                  thousandSeparator=","
+                                  decimalScale={2}
+                                  fixedDecimalScale
+                                />{" "}
+                                STRK
+                              </TableCell>
+                            </TableRow>
+                          );
+                        }
+                      )}
+                    </TableBody>
+                  </Table>
                 </CardContent>
               </Card>
             </div>
@@ -467,8 +441,6 @@ export function STRKRewardsCard() {
                   </div>
                 </div>
               </div>
-
-              {/* Removed low-value bullet points */}
             </CardContent>
           </Card>
         </div>
