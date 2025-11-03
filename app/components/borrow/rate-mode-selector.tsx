@@ -25,7 +25,7 @@ export function RateModeSelector({
       onValueChange={(value) => onModeChange(value as RateMode)}
       disabled={disabled}
     >
-      <SelectTrigger className="h-8 w-44 border border-neutral-800/10 rounded-lg">
+      <SelectTrigger className="h-8 w-48 border border-neutral-800/10 rounded-lg">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
