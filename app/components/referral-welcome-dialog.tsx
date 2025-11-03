@@ -144,7 +144,7 @@ export function ReferralWelcomeDialog({
           heroImage={
             <div className="relative w-full h-48 bg-gradient-to-br from-orange-50 to-amber-50">
               <img
-                src="/do_more_with.gif"
+                src="/live.png"
                 alt="Welcome to Uncap"
                 className="w-full h-full object-cover"
               />

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { useAccount } from "@starknet-react/core";
 import { useReferral } from "~/hooks/use-referral";
-import { Check, Copy, Info, Users } from "lucide-react";
+import { Check, Copy, Users } from "lucide-react";
 import { toast } from "sonner";
 import {
   Accordion,
@@ -70,46 +70,52 @@ Join the BTC economy: ${url}`;
             How Referrals Work
           </h2>
 
-          <div className="space-y-4">
-            <div className="bg-[#F5F3EE] rounded-xl p-4 flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-[#006CFF] flex items-center justify-center flex-shrink-0">
-                <span className="text-white text-base font-bold">1</span>
+          <div className="space-y-5">
+            <div className="flex gap-4">
+              <div className="w-8 h-8 rounded-lg bg-[#006CFF] flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-sm font-bold font-sora">
+                  1
+                </span>
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-[#242424] font-sora mb-1">
+              <div className="flex-1 pt-0.5">
+                <p className="text-base font-semibold text-[#242424] font-sora mb-1">
                   Generate Your Code
                 </p>
-                <p className="text-xs text-[#94938D] font-sora">
-                  Create your unique referral link
+                <p className="text-sm text-[#6B7280] font-sora">
+                  Create your unique referral link in seconds
                 </p>
               </div>
             </div>
 
-            <div className="bg-[#F5F3EE] rounded-xl p-4 flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-[#006CFF] flex items-center justify-center flex-shrink-0">
-                <span className="text-white text-base font-bold">2</span>
+            <div className="flex gap-4">
+              <div className="w-8 h-8 rounded-lg bg-[#006CFF] flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-sm font-bold font-sora">
+                  2
+                </span>
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-[#242424] font-sora mb-1">
+              <div className="flex-1 pt-0.5">
+                <p className="text-base font-semibold text-[#242424] font-sora mb-1">
                   Share with Friends
                 </p>
-                <p className="text-xs text-[#94938D] font-sora">
+                <p className="text-sm text-[#6B7280] font-sora">
                   Send your link to people you want to refer
                 </p>
               </div>
             </div>
 
-            <div className="bg-[#F5F3EE] rounded-xl p-4 flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-[#006CFF] flex items-center justify-center flex-shrink-0">
-                <span className="text-white text-base font-bold">3</span>
+            <div className="flex gap-4">
+              <div className="w-8 h-8 rounded-lg bg-[#006CFF] flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-sm font-bold font-sora">
+                  3
+                </span>
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-[#242424] font-sora mb-1">
+              <div className="flex-1 pt-0.5">
+                <p className="text-base font-semibold text-[#242424] font-sora mb-1">
                   Earn Bonus Points
                 </p>
-                <p className="text-xs text-[#94938D] font-sora">
+                <p className="text-sm text-[#6B7280] font-sora">
                   Earn <strong>10%</strong> of the base points your referrals
-                  earn from their own activity (borrowing, lending, providing
+                  earn from their activity (borrowing, lending, providing
                   liquidity, etc.)
                 </p>
               </div>
@@ -345,7 +351,10 @@ Join the BTC economy: ${url}`;
               How do referral points work?
             </AccordionTrigger>
             <AccordionContent className="text-neutral-600 font-sora text-sm">
-              When someone uses your referral code and earns points through their activity (borrowing, lending, providing liquidity), you automatically earn 10% of their base points. This bonus is calculated weekly every Friday at 10:00 UTC.
+              When someone uses your referral code and earns points through
+              their activity (borrowing, lending, providing liquidity), you
+              automatically earn 10% of their base points. This bonus is
+              calculated weekly every Friday at 10:00 UTC.
             </AccordionContent>
           </AccordionItem>
 
@@ -354,7 +363,9 @@ Join the BTC economy: ${url}`;
               Do I earn points from my referrals' referrals?
             </AccordionTrigger>
             <AccordionContent className="text-neutral-600 font-sora text-sm">
-              No, you only earn 10% of the base points from users who directly use your referral code. You do not earn points from their referrals (no multi-level rewards).
+              No, you only earn 10% of the base points from users who directly
+              use your referral code. You do not earn points from their
+              referrals (no multi-level rewards).
             </AccordionContent>
           </AccordionItem>
 
@@ -363,7 +374,10 @@ Join the BTC economy: ${url}`;
               When can someone use my referral code?
             </AccordionTrigger>
             <AccordionContent className="text-neutral-600 font-sora text-sm">
-              When someone clicks your referral link, you'll get credit for referring them. They can connect their wallet right away or come back later—as long as they use the same browser and device, your referral will be properly attributed to you.
+              When someone clicks your referral link, you'll get credit for
+              referring them. They can connect their wallet right away or come
+              back later—as long as they use the same browser and device, your
+              referral will be properly attributed to you.
             </AccordionContent>
           </AccordionItem>
 
@@ -372,7 +386,9 @@ Join the BTC economy: ${url}`;
               How often are referral points calculated?
             </AccordionTrigger>
             <AccordionContent className="text-neutral-600 font-sora text-sm">
-              Referral bonus points are calculated weekly every Friday at 10:00 UTC. Your dashboard will update shortly after the calculation completes.
+              Referral bonus points are calculated weekly every Friday at 10:00
+              UTC. Your dashboard will update shortly after the calculation
+              completes.
             </AccordionContent>
           </AccordionItem>
 
@@ -381,7 +397,8 @@ Join the BTC economy: ${url}`;
               Is there a limit to how many people I can refer?
             </AccordionTrigger>
             <AccordionContent className="text-neutral-600 font-sora text-sm">
-              No, there is no limit! You can refer as many users as you want and earn 10% bonus points from all of their activity.
+              No, there is no limit! You can refer as many users as you want and
+              earn 10% bonus points from all of their activity.
             </AccordionContent>
           </AccordionItem>
 
@@ -390,7 +407,9 @@ Join the BTC economy: ${url}`;
               Can I see which activities my referrals are earning points from?
             </AccordionTrigger>
             <AccordionContent className="text-neutral-600 font-sora text-sm">
-              For privacy reasons, you can only see the total bonus points you've earned from each referral, not their wallet addresses, specific activities, or amounts.
+              For privacy reasons, you can only see the total bonus points
+              you've earned from each referral, not their wallet addresses,
+              specific activities, or amounts.
             </AccordionContent>
           </AccordionItem>
         </Accordion>
