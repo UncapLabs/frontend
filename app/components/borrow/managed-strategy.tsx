@@ -27,11 +27,6 @@ export function ManagedStrategy({
       ? borrowAmount.times(aprDecimal)
       : new Big(0);
 
-  const annualFeeUSD =
-    managedDebt && managedDebt.gt(0) && managementFee
-      ? managedDebt.times(managementFee.div(100))
-      : new Big(0);
-
   return (
     <div className="w-full flex flex-col gap-3">
       {/* Interest Rate Display */}
@@ -91,23 +86,7 @@ export function ManagedStrategy({
                 "—"
               )}
               , Annual Fee:{" "}
-              {managementFee && managedDebt && managedDebt.gt(0) ? (
-                <>
-                  {formatPercentage(feePercent)} ($
-                  <NumericFormat
-                    displayType="text"
-                    value={annualFeeUSD.toString()}
-                    thousandSeparator=","
-                    decimalScale={2}
-                    fixedDecimalScale
-                  />
-                  )
-                </>
-              ) : managementFee ? (
-                formatPercentage(feePercent)
-              ) : (
-                "—"
-              )}
+              {managementFee ? `${formatPercentage(feePercent)} on your debt` : "—"}
             </p>
           </div>
           <img
