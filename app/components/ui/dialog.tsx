@@ -47,21 +47,35 @@ function DialogOverlay({
 function DialogContent({
   className,
   children,
+  heroImage,
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Content>) {
+}: React.ComponentProps<typeof DialogPrimitive.Content> & {
+  heroImage?: React.ReactNode;
+}) {
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay>
         <DialogPrimitive.Content
           data-slot="dialog-content"
           className={cn(
-            "bg-white data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 relative z-50 grid gap-4 sm:gap-6 w-full rounded-2xl border-0 p-4 sm:p-8 shadow-2xl duration-200 sm:max-w-2xl",
+            "bg-white data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 relative z-50 grid w-full rounded-2xl border-0 shadow-2xl duration-200 sm:max-w-2xl",
+            heroImage ? "gap-0 p-0 overflow-hidden" : "gap-4 sm:gap-6 p-4 sm:p-8",
             className
           )}
           {...props}
         >
-          {children}
-          <DialogPrimitive.Close className="absolute top-4 right-4 sm:top-6 sm:right-6 rounded-full p-2 opacity-70 transition-all hover:opacity-100 hover:bg-neutral-100 focus:ring-2 focus:ring-[#006CFF] focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5">
+          {heroImage && <div className="w-full">{heroImage}</div>}
+          {heroImage ? (
+            <div className="p-4 sm:p-8 grid gap-4 sm:gap-6">
+              {children}
+            </div>
+          ) : (
+            children
+          )}
+          <DialogPrimitive.Close className={cn(
+            "absolute rounded-full p-2 opacity-70 transition-all hover:opacity-100 hover:bg-neutral-100 focus:ring-2 focus:ring-[#006CFF] focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
+            heroImage ? "top-4 right-4" : "top-4 right-4 sm:top-6 sm:right-6"
+          )}>
             <XIcon className="text-neutral-600" />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>

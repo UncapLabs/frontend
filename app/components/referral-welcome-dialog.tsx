@@ -14,20 +14,18 @@ import {
 } from "~/components/ui/drawer";
 import { Button } from "~/components/ui/button";
 import { useMediaQuery } from "~/hooks/use-media-query";
-import { Check, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 
 interface ReferralWelcomeDialogProps {
   open: boolean;
   onClose: () => void;
   alreadyHasReferral?: boolean;
-  isWalletConnected?: boolean;
 }
 
 export function ReferralWelcomeDialog({
   open,
   onClose,
   alreadyHasReferral = false,
-  isWalletConnected = false,
 }: ReferralWelcomeDialogProps) {
   const isDesktop = useMediaQuery("(min-width: 640px)");
 
@@ -48,7 +46,9 @@ export function ReferralWelcomeDialog({
             What is Uncap Finance?
           </h3>
           <p className="text-sm font-normal font-sora text-neutral-700 mb-4">
-            A decentralized lending protocol where you can borrow USDU (a BTC-backed stablecoin) against your Bitcoin at ultra-low interest rates—starting from just 0.5%.
+            A decentralized lending protocol where you can borrow USDU (a
+            BTC-backed stablecoin) against your Bitcoin at ultra-low interest
+            rates—starting from just 0.5%.
           </p>
 
           <div className="space-y-3">
@@ -110,7 +110,8 @@ export function ReferralWelcomeDialog({
       {alreadyHasReferral && (
         <div className="bg-amber-50 rounded-xl p-6 border border-amber-200">
           <p className="text-sm font-normal font-sora text-amber-900">
-            <strong>Note:</strong> You've already been referred by someone else, so your original referrer won't change.
+            <strong>Note:</strong> You've already been referred by someone else,
+            so your original referrer won't change.
           </p>
         </div>
       )}
@@ -138,13 +139,25 @@ export function ReferralWelcomeDialog({
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="max-w-lg">
+        <DialogContent
+          className="max-w-lg"
+          heroImage={
+            <div className="relative w-full h-48 bg-gradient-to-br from-orange-50 to-amber-50">
+              <img
+                src="/do_more_with.gif"
+                alt="Welcome to Uncap"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          }
+        >
           <DialogHeader>
             <DialogTitle className="text-2xl font-medium font-sora text-[#242424]">
               Welcome to Uncap Finance
             </DialogTitle>
             <DialogDescription className="text-neutral-600 text-sm font-normal font-sora">
-              You've been referred by a friend! Your friend will earn 10% bonus points from your activity on Uncap.
+              You've been referred by a friend! Your friend will earn 10% bonus
+              points from your activity on Uncap.
             </DialogDescription>
           </DialogHeader>
           {content}
@@ -162,7 +175,8 @@ export function ReferralWelcomeDialog({
               Welcome to Uncap Finance
             </DrawerTitle>
             <DrawerDescription className="text-neutral-800 text-sm font-normal font-sora">
-              You've been referred by a friend! Your friend will earn 10% bonus points from your activity on Uncap.
+              You've been referred by a friend! Your friend will earn 10% bonus
+              points from your activity on Uncap.
             </DrawerDescription>
           </DrawerHeader>
           <div className="px-4 pb-8">{content}</div>
