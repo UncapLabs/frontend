@@ -11,6 +11,18 @@ export interface RootResult {
   [key: string]: unknown;
 }
 
+export interface RoundBreakdownEntry {
+  round: number;
+  amount: string;
+  cumulative: string;
+  [key: string]: unknown;
+}
+
+export interface RoundBreakdownResponse {
+  rounds: RoundBreakdownEntry[];
+  [key: string]: unknown;
+}
+
 type ClaimParams = {
   address: string;
   round?: number;
@@ -71,4 +83,15 @@ export function getAllocationAmount(
 
 export function getRoot(env: Env, params: RootParams): Promise<RootResult> {
   return requestClaimApi<RootResult>(env, "get_root", params);
+}
+
+export function getRoundBreakdown(
+  env: Env,
+  params: ClaimParams
+): Promise<RoundBreakdownResponse> {
+  return requestClaimApi<RoundBreakdownResponse>(
+    env,
+    "get_round_breakdown",
+    params
+  );
 }

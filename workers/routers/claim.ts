@@ -4,10 +4,12 @@ import {
   getAllocationAmount,
   getClaimCalldata,
   getRoot,
+  getRoundBreakdown,
 } from "../services/claim";
 import { bigintToBig } from "~/lib/decimal";
 import { RpcProvider } from "starknet";
 import { contractRead } from "~/lib/contracts/calls";
+import Big from "big.js";
 
 const addressSchema = z
   .string()
@@ -63,23 +65,23 @@ export const claimRouter = router({
         round: roundSchema,
       })
     )
-    .query(async ({ input }) => {
-      // TODO: Replace with getRoundBreakdown(ctx.env, input) once API endpoint is available
-      // Hardcoded data for 10 weeks starting Nov 5, 2025
+    .query(async ({ input, ctx }) => {
+      const response = await getRoundBreakdown(ctx.env, input);
+      const toBig = (value: string) => {
+        try {
+          return bigintToBig(BigInt(value), 18);
+        } catch {
+          return new Big(value);
+        }
+      };
+
       return {
         address: input.address,
-        rounds: [
-          { round: 1, amount: bigintToBig(BigInt("125750000000000000000"), 18) },
-          { round: 2, amount: bigintToBig(BigInt("148320000000000000000"), 18) },
-          { round: 3, amount: bigintToBig(BigInt("165400000000000000000"), 18) },
-          { round: 4, amount: bigintToBig(BigInt("189250000000000000000"), 18) },
-          { round: 5, amount: bigintToBig(BigInt("195500000000000000000"), 18) },
-          { round: 6, amount: bigintToBig(BigInt("210000000000000000000"), 18) },
-          { round: 7, amount: bigintToBig(BigInt("198750000000000000000"), 18) },
-          { round: 8, amount: bigintToBig(BigInt("225300000000000000000"), 18) },
-          { round: 9, amount: bigintToBig(BigInt("240000000000000000000"), 18) },
-          { round: 10, amount: bigintToBig(BigInt("258500000000000000000"), 18) },
-        ],
+        rounds: response.rounds.map((round) => ({
+          round: round.round,
+          amount: toBig(round.amount),
+          cumulative: toBig(round.cumulative),
+        })),
       };
     }),
 
