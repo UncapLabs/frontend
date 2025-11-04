@@ -19,7 +19,6 @@ export default function ReferralsPage() {
   const [copied, setCopied] = useState(false);
 
   const normalizedBonusRate = referralInfo?.bonusRate ?? 0.15;
-  const bonusPercent = Math.round(normalizedBonusRate * 100);
 
   const handleCopy = () => {
     if (referralInfo?.referralCode) {

@@ -46,14 +46,20 @@ export function ReferralProvider({ children }: { children: React.ReactNode }) {
     params.delete("ref");
     const nextSearch = params.toString();
     const currentUrl = `${location.pathname}${location.search}${location.hash}`;
-    const nextUrl = `${location.pathname}${
-      nextSearch ? `?${nextSearch}` : ""
-    }${location.hash}`;
+    const nextUrl = `${location.pathname}${nextSearch ? `?${nextSearch}` : ""}${
+      location.hash
+    }`;
 
     if (nextUrl !== currentUrl) {
       navigate(nextUrl, { replace: true });
     }
-  }, [location.pathname, location.search, location.hash, navigate, setStoredCode]);
+  }, [
+    location.pathname,
+    location.search,
+    location.hash,
+    navigate,
+    setStoredCode,
+  ]);
 
   useEffect(() => {
     if (!address) {
@@ -117,7 +123,6 @@ export function ReferralProvider({ children }: { children: React.ReactNode }) {
         open={showWelcomeDialog}
         onClose={() => setShowWelcomeDialog(false)}
         alreadyHasReferral={alreadyHasReferral}
-        isWalletConnected={!!address}
       />
     </>
   );
