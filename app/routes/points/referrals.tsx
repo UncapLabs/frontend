@@ -18,8 +18,6 @@ export default function ReferralsPage() {
   const { referralInfo, isLoading, generateCode, isGenerating } = useReferral();
   const [copied, setCopied] = useState(false);
 
-  const normalizedBonusRate = referralInfo?.bonusRate ?? 0.15;
-
   const handleCopy = () => {
     if (referralInfo?.referralCode) {
       const url = `https://uncap.finance/?ref=${referralInfo.referralCode}`;

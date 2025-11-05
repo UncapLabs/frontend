@@ -1,5 +1,8 @@
+import type Big from "big.js";
+import { bigintToBig } from "~/lib/decimal";
+
 export interface ClaimCalldata {
-  amount: string;
+  amount: Big;
   proof: string[];
   round?: number;
   [key: string]: unknown;
@@ -65,11 +68,21 @@ async function requestClaimApi<T>(
   return (await response.json()) as T;
 }
 
-export function getClaimCalldata(
+export async function getClaimCalldata(
   env: Env,
   params: ClaimParams
 ): Promise<ClaimCalldata> {
-  return requestClaimApi<ClaimCalldata>(env, "get_calldata", params);
+  // Backend returns amount as string, we need to convert to Big
+  const result = await requestClaimApi<{ amount: string; proof: string[] }>(
+    env,
+    "get_calldata",
+    params
+  );
+
+  return {
+    ...result,
+    amount: bigintToBig(BigInt(result.amount), 18), // STRK has 18 decimals
+  };
 }
 
 export function getAllocationAmount(

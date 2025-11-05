@@ -11,18 +11,21 @@ import { CLAIM_DISTRIBUTOR_ADDRESS } from "~/lib/contracts/constants";
 import { toHexAddress } from "~/lib/utils/address";
 import { useTRPC } from "~/lib/trpc";
 import { useQuery } from "@tanstack/react-query";
+import type Big from "big.js";
 
 const DUMMY_ADDRESS = "0x0";
 
 interface UseClaimStrkParams {
-  amount?: string;
+  cumulativeAmount?: Big; // Cumulative amount from backend (for contract call)
+  claimableAmount?: Big; // The actual amount being claimed (for display)
   proof?: string[];
   enabled?: boolean;
   onSuccess?: () => void;
 }
 
 export function useClaimStrk({
-  amount,
+  cumulativeAmount,
+  claimableAmount,
   proof,
   enabled = true,
   onSuccess,
@@ -39,7 +42,7 @@ export function useClaimStrk({
     if (
       !enabled ||
       !address ||
-      !amount ||
+      !cumulativeAmount ||
       !proof ||
       proof.length === 0 ||
       !CLAIM_DISTRIBUTOR_ADDRESS
@@ -48,7 +51,8 @@ export function useClaimStrk({
     }
 
     try {
-      const amountBigint = BigInt(amount);
+      // Convert Big to bigint for contract call
+      const amountBigint = bigToBigint(cumulativeAmount, TOKENS.STRK.decimals);
       const call = contractCall.claimDistributor.claim(amountBigint, proof);
 
       return { calls: [call], amountBigint };
@@ -56,7 +60,7 @@ export function useClaimStrk({
       console.error("Failed to prepare STRK claim call:", error);
       return undefined;
     }
-  }, [address, amount, proof, enabled, CLAIM_DISTRIBUTOR_ADDRESS]);
+  }, [address, cumulativeAmount, proof, enabled, CLAIM_DISTRIBUTOR_ADDRESS]);
 
   const transaction = useTransaction(preparedCall?.calls);
 
@@ -67,24 +71,21 @@ export function useClaimStrk({
 
     const hash = await transaction.send();
 
-    if (hash && address && preparedCall) {
-      transactionState.updateFormData({ amount });
+    if (hash && address && claimableAmount) {
+      // Store the claimable amount (not cumulative) for display
+      const claimableBigint = bigToBigint(claimableAmount, TOKENS.STRK.decimals);
+      transactionState.updateFormData({ amount: claimableBigint.toString() });
       transactionState.setPending(hash);
-
-      const formattedAmount = bigintToBig(
-        preparedCall.amountBigint,
-        TOKENS.STRK.decimals
-      );
 
       transactionStore.addTransaction(address, {
         hash,
         type: "claim",
         description: createTransactionDescription("claim", {
-          amount: formattedAmount.toFixed(4),
+          amount: claimableAmount.toFixed(4),
           token: TOKENS.STRK.symbol,
         }),
         details: {
-          amount: formattedAmount.toString(),
+          amount: claimableAmount.toString(),
           token: TOKENS.STRK.symbol,
           proofLength: proof?.length ?? 0,
         },
@@ -98,7 +99,7 @@ export function useClaimStrk({
     transactionStore,
     preparedCall,
     address,
-    amount,
+    claimableAmount,
     proof,
   ]);
 
@@ -139,19 +140,9 @@ export function useStrkAlreadyClaimed() {
     refetchInterval: 60_000, // Refetch every minute
   });
 
-  // Data comes back as STRK (18 decimals) from TRPC, convert to base units
-  const alreadyClaimed = data
-    ? (() => {
-        try {
-          return bigToBigint(data, TOKENS.STRK.decimals);
-        } catch {
-          return 0n;
-        }
-      })()
-    : 0n;
-
+  // Data comes back as Big from TRPC, keep it as Big
   return {
-    alreadyClaimed,
+    alreadyClaimed: data,
     isLoading,
     isError,
     refetch,

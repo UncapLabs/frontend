@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from "react";
 import { sepolia, mainnet } from "@starknet-react/chains";
 import {
   StarknetConfig,
-  publicProvider,
+  jsonRpcProvider,
   voyager,
   useAccount,
   useWalletRequest,
@@ -66,12 +66,26 @@ function NetworkChecker() {
 
 export function StarknetProvider({ children }: { children: React.ReactNode }) {
   const chains = [mainnet, sepolia];
-  const providers = publicProvider();
+
+  const apiKey = import.meta.env.VITE_ALCHEMY_API;
+  if (!apiKey) {
+    throw new Error("VITE_ALCHEMY_API is not set");
+  }
+
+  // Construct Alchemy URL based on environment
+  const envChainId = import.meta.env.VITE_CHAIN_ID;
+  const network =
+    envChainId === "SN_MAIN" ? "starknet-mainnet" : "starknet-sepolia";
+  const alchemyUrl = `https://${network}.g.alchemy.com/starknet/version/rpc/v0_9/${apiKey}`;
+
+  const provider = jsonRpcProvider({
+    rpc: () => ({ nodeUrl: alchemyUrl }),
+  });
 
   return (
     <StarknetConfig
       chains={chains}
-      provider={providers}
+      provider={provider}
       connectors={connectors}
       explorer={voyager}
       autoConnect={true}

@@ -19,9 +19,8 @@ import {
 } from "~/hooks/use-strk-claim";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { TOKENS } from "~/lib/collateral";
-import { bigintToBig, bigToBigint } from "~/lib/decimal";
+import { bigintToBig } from "~/lib/decimal";
 import { useCallback, useMemo } from "react";
-import type Big from "big.js";
 
 // Helper to get week dates - Week 1 starts Nov 5, 2025
 function getWeekDates(weekNumber: number): { start: string; end: string } {
@@ -46,7 +45,7 @@ export function STRKRewardsCard() {
   const { address } = useAccount();
   const { connectWallet } = useWalletConnect();
 
-  // Fetch data from hooks
+  // Fetch data from hooks - all return Big from TRPC
   const { alreadyClaimed, refetch: refetchClaimed } = useStrkAlreadyClaimed();
 
   const { data: allocationData, refetch: refetchAllocation } =
@@ -57,43 +56,21 @@ export function STRKRewardsCard() {
 
   const { data: roundBreakdown } = useStrkRoundBreakdown();
 
-  // Allocation amount comes as Big from TRPC
-  const totalAllocation = useMemo(() => {
-    if (!allocationData) return 0n;
-    try {
-      return bigToBigint(allocationData, TOKENS.STRK.decimals);
-    } catch {
-      return 0n;
-    }
-  }, [allocationData]);
+  // Calculate claimable amount: cumulative - alreadyClaimed (all in Big)
+  const claimableAmount = useMemo(() => {
+    // Use calldata amount (cumulative) if available, otherwise fallback to allocation
+    const cumulativeAmount = calldataResponse?.amount ?? allocationData;
 
-  // Calldata returns the cumulative allocation; subtract what’s already claimed
-  const calldataAmount = useMemo(() => {
-    if (!calldataResponse?.amount) return undefined;
+    if (!cumulativeAmount) return undefined;
+    if (!alreadyClaimed) return cumulativeAmount;
+
     try {
-      return BigInt(calldataResponse.amount);
+      const remaining = cumulativeAmount.minus(alreadyClaimed);
+      return remaining.gt(0) ? remaining : undefined;
     } catch {
       return undefined;
     }
-  }, [calldataResponse]);
-
-  const claimableAmount = useMemo(() => {
-    const remainingFromCalldata =
-      calldataAmount !== undefined
-        ? calldataAmount - alreadyClaimed
-        : undefined;
-
-    if (remainingFromCalldata !== undefined) {
-      return remainingFromCalldata > 0n ? remainingFromCalldata : 0n;
-    }
-
-    if (totalAllocation > 0n && alreadyClaimed >= 0n) {
-      const fallbackRemaining = totalAllocation - alreadyClaimed;
-      return fallbackRemaining > 0n ? fallbackRemaining : 0n;
-    }
-
-    return 0n;
-  }, [calldataAmount, totalAllocation, alreadyClaimed]);
+  }, [calldataResponse?.amount, allocationData, alreadyClaimed]);
 
   // Claim transaction hook
   const {
@@ -106,7 +83,8 @@ export function STRKRewardsCard() {
     formData,
     reset,
   } = useClaimStrk({
-    amount: calldataResponse?.amount,
+    cumulativeAmount: calldataResponse?.amount, // Cumulative for contract
+    claimableAmount, // Actual claimed amount for display
     proof: calldataResponse?.proof,
     enabled: Boolean(
       address && calldataResponse?.amount && calldataResponse?.proof
@@ -119,10 +97,8 @@ export function STRKRewardsCard() {
     },
   });
 
-  // Convert amounts to Big for display
-  const claimableBig = bigintToBig(claimableAmount, TOKENS.STRK.decimals);
-  const alreadyClaimedBig = bigintToBig(alreadyClaimed, TOKENS.STRK.decimals);
-  const hasClaimableRewards = claimableAmount > 0n;
+  // Already in Big format, no conversion needed
+  const hasClaimableRewards = claimableAmount ? claimableAmount.gt(0) : false;
 
   const handleClaimAll = async () => {
     if (!address) {
@@ -243,7 +219,7 @@ export function STRKRewardsCard() {
                     <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal font-sora leading-8 sm:leading-9 md:leading-10 text-neutral-800">
                       <NumericFormat
                         displayType="text"
-                        value={claimableBig.toString()}
+                        value={claimableAmount?.toString() ?? "0"}
                         thousandSeparator=","
                         decimalScale={2}
                         fixedDecimalScale
@@ -267,7 +243,7 @@ export function STRKRewardsCard() {
                     <span className="text-neutral-800 text-base font-medium font-sora leading-none">
                       <NumericFormat
                         displayType="text"
-                        value={alreadyClaimedBig.toString()}
+                        value={alreadyClaimed?.toString() ?? "0"}
                         thousandSeparator=","
                         decimalScale={2}
                         fixedDecimalScale
@@ -295,7 +271,7 @@ export function STRKRewardsCard() {
                   : isPending
                   ? "Transaction pending..."
                   : hasClaimableRewards
-                  ? `Claim ${claimableBig.toFixed(2)} STRK`
+                  ? `Claim ${claimableAmount?.toFixed(2) ?? "0.00"} STRK`
                   : "No Rewards to Claim"}
               </Button>
 
