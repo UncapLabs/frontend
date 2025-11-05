@@ -48,20 +48,6 @@ export function useStrkAllocationAmount(round?: number) {
   });
 }
 
-export function useStrkClaimRoot(round?: number) {
-  const trpc = useTRPC();
-
-  return useQuery({
-    ...trpc.claimRouter.getRoot.queryOptions(
-      {
-        round,
-      },
-      {}
-    ),
-    staleTime: 120_000,
-  });
-}
-
 export function useStrkRoundBreakdown(round?: number) {
   const { address } = useAccount();
   const trpc = useTRPC();

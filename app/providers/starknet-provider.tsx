@@ -1,7 +1,13 @@
 import React, { useEffect, useRef } from "react";
 
 import { sepolia, mainnet } from "@starknet-react/chains";
-import { StarknetConfig, publicProvider, voyager, useAccount, useWalletRequest } from "@starknet-react/core";
+import {
+  StarknetConfig,
+  publicProvider,
+  voyager,
+  useAccount,
+  useWalletRequest,
+} from "@starknet-react/core";
 import { connectors } from "../lib/wallet/connectors";
 import { TransactionStoreProvider } from "./transaction-provider";
 import { constants } from "starknet";
@@ -14,9 +20,10 @@ function NetworkChecker() {
 
   // Get the required chain ID from environment variable
   const envChainId = import.meta.env.VITE_CHAIN_ID;
-  const requiredChainId = envChainId === "SN_MAIN"
-    ? constants.StarknetChainId.SN_MAIN
-    : constants.StarknetChainId.SN_SEPOLIA;
+  const requiredChainId =
+    envChainId === "SN_MAIN"
+      ? constants.StarknetChainId.SN_MAIN
+      : constants.StarknetChainId.SN_SEPOLIA;
 
   const switchNetwork = useWalletRequest({
     type: "wallet_switchStarknetChain",

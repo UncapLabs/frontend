@@ -19,7 +19,7 @@ import {
 } from "~/hooks/use-strk-claim";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { TOKENS } from "~/lib/collateral";
-import { bigintToBig } from "~/lib/decimal";
+import { bigintToBig, bigToBigint } from "~/lib/decimal";
 import { useCallback, useMemo } from "react";
 import type Big from "big.js";
 
@@ -61,29 +61,39 @@ export function STRKRewardsCard() {
   const totalAllocation = useMemo(() => {
     if (!allocationData) return 0n;
     try {
-      // Convert Big to bigint for calculations
-      return BigInt(allocationData.toFixed(0));
+      return bigToBigint(allocationData, TOKENS.STRK.decimals);
     } catch {
       return 0n;
     }
   }, [allocationData]);
 
-  // The backend pre-calculates this in the calldata response
+  // Calldata returns the cumulative allocation; subtract what’s already claimed
+  const calldataAmount = useMemo(() => {
+    if (!calldataResponse?.amount) return undefined;
+    try {
+      return BigInt(calldataResponse.amount);
+    } catch {
+      return undefined;
+    }
+  }, [calldataResponse]);
+
   const claimableAmount = useMemo(() => {
-    if (calldataResponse?.amount) {
-      try {
-        return BigInt(calldataResponse.amount);
-      } catch {
-        return 0n;
-      }
+    const remainingFromCalldata =
+      calldataAmount !== undefined
+        ? calldataAmount - alreadyClaimed
+        : undefined;
+
+    if (remainingFromCalldata !== undefined) {
+      return remainingFromCalldata > 0n ? remainingFromCalldata : 0n;
     }
-    // Fallback: calculate manually if calldata not available
+
     if (totalAllocation > 0n && alreadyClaimed >= 0n) {
-      const claimable = totalAllocation - alreadyClaimed;
-      return claimable > 0n ? claimable : 0n;
+      const fallbackRemaining = totalAllocation - alreadyClaimed;
+      return fallbackRemaining > 0n ? fallbackRemaining : 0n;
     }
+
     return 0n;
-  }, [calldataResponse, totalAllocation, alreadyClaimed]);
+  }, [calldataAmount, totalAllocation, alreadyClaimed]);
 
   // Claim transaction hook
   const {

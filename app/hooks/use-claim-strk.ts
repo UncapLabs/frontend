@@ -5,7 +5,7 @@ import { useTransaction } from "./use-transaction";
 import { useTransactionState } from "./use-transaction-state";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
-import { bigintToBig } from "~/lib/decimal";
+import { bigintToBig, bigToBigint } from "~/lib/decimal";
 import { TOKENS } from "~/lib/collateral";
 import { CLAIM_DISTRIBUTOR_ADDRESS } from "~/lib/contracts/constants";
 import { toHexAddress } from "~/lib/utils/address";
@@ -50,6 +50,7 @@ export function useClaimStrk({
     try {
       const amountBigint = BigInt(amount);
       const call = contractCall.claimDistributor.claim(amountBigint, proof);
+
       return { calls: [call], amountBigint };
     } catch (error) {
       console.error("Failed to prepare STRK claim call:", error);
@@ -138,8 +139,16 @@ export function useStrkAlreadyClaimed() {
     refetchInterval: 60_000, // Refetch every minute
   });
 
-  // Data comes as Big from TRPC, convert to bigint
-  const alreadyClaimed = data ? BigInt(data.toFixed(0)) : 0n;
+  // Data comes back as STRK (18 decimals) from TRPC, convert to base units
+  const alreadyClaimed = data
+    ? (() => {
+        try {
+          return bigToBigint(data, TOKENS.STRK.decimals);
+        } catch {
+          return 0n;
+        }
+      })()
+    : 0n;
 
   return {
     alreadyClaimed,

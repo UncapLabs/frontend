@@ -3,7 +3,6 @@ import * as z from "zod";
 import {
   getAllocationAmount,
   getClaimCalldata,
-  getRoot,
   getRoundBreakdown,
 } from "../services/claim";
 import { bigintToBig } from "~/lib/decimal";
@@ -48,16 +47,6 @@ export const claimRouter = router({
       return bigintToBig(BigInt(amountString), 18); // STRK has 18 decimals
     }),
 
-  getRoot: publicProcedure
-    .input(
-      z.object({
-        round: roundSchema,
-      })
-    )
-    .query(async ({ input, ctx }) => {
-      return getRoot(ctx.env, input);
-    }),
-
   getRoundBreakdown: publicProcedure
     .input(
       z.object({
@@ -93,10 +82,11 @@ export const claimRouter = router({
     )
     .query(async ({ input, ctx }) => {
       const provider = new RpcProvider({ nodeUrl: ctx.env.NODE_URL });
-      const alreadyClaimed = await contractRead.claimDistributor.amountAlreadyClaimed(
-        provider,
-        input.address
-      );
+      const alreadyClaimed =
+        await contractRead.claimDistributor.amountAlreadyClaimed(
+          provider,
+          input.address
+        );
       // Convert bigint to Big for consistent type system
       return bigintToBig(alreadyClaimed, 18); // STRK has 18 decimals
     }),

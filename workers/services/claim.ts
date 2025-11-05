@@ -28,10 +28,6 @@ type ClaimParams = {
   round?: number;
 };
 
-type RootParams = {
-  round?: number;
-};
-
 function getBaseUrl(env: Env): string {
   const base = env.CLAIM_BACKEND_URL || process.env.CLAIM_BACKEND_URL || "";
 
@@ -61,7 +57,9 @@ async function requestClaimApi<T>(
 
   if (!response.ok) {
     const message = await response.text();
-    throw new Error(`Claim API request failed (${response.status}): ${message}`);
+    throw new Error(
+      `Claim API request failed (${response.status}): ${message}`
+    );
   }
 
   return (await response.json()) as T;
@@ -79,10 +77,6 @@ export function getAllocationAmount(
   params: ClaimParams
 ): Promise<string> {
   return requestClaimApi<string>(env, "get_allocation_amount", params);
-}
-
-export function getRoot(env: Env, params: RootParams): Promise<RootResult> {
-  return requestClaimApi<RootResult>(env, "get_root", params);
 }
 
 export function getRoundBreakdown(
