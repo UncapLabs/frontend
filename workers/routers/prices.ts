@@ -1,5 +1,6 @@
 import { publicProcedure, router } from "../trpc";
-import { CollateralIdSchema, getBitcoinprice } from "workers/services/utils";
+import { getBitcoinprice } from "workers/services/utils";
+import { CollateralIdSchema } from "~/lib/collateral";
 import * as z from "zod";
 import { bigintToBig } from "~/lib/decimal";
 import { RpcProvider } from "starknet";

@@ -2,15 +2,14 @@ import { publicProcedure, router } from "../trpc";
 import * as z from "zod";
 import { RpcProvider } from "starknet";
 import { contractRead } from "~/lib/contracts/calls";
-import { CollateralTypeSchema } from "~/lib/contracts/constants";
-import { type CollateralId } from "~/lib/collateral";
+import { CollateralIdSchema, type CollateralId } from "~/lib/collateral";
 import { bigintToBig } from "~/lib/decimal";
 
 export const feesRouter = router({
   predictOpenTroveUpfrontFee: publicProcedure
     .input(
       z.object({
-        collateralType: CollateralTypeSchema,
+        collateralType: CollateralIdSchema,
         borrowedAmount: z.string(), // BigInt as string for JSON serialization
         interestRate: z.string(), // BigInt as string for JSON serialization
       })
@@ -44,7 +43,7 @@ export const feesRouter = router({
   predictAdjustTroveUpfrontFee: publicProcedure
     .input(
       z.object({
-        collateralType: CollateralTypeSchema,
+        collateralType: CollateralIdSchema,
         troveId: z.string(), // BigInt as string for JSON serialization
         debtIncrease: z.string(), // BigInt as string for JSON serialization
       })

@@ -1,9 +1,14 @@
 import { Label } from "~/components/ui/label";
 import { useAccount, useBalance } from "@starknet-react/core";
-import { TOKENS, COLLATERALS, type CollateralId } from "~/lib/collateral";
+import {
+  TOKENS,
+  DEFAULT_COLLATERAL,
+  COLLATERAL_LIST,
+  getCollateralByAddress,
+} from "~/lib/collateral";
 import { useAllStabilityPoolPositions } from "~/hooks/use-stability-pool";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
-import { useFetchPrices } from "~/hooks/use-fetch-prices";
+import { useCollateralPrice, useUsduPrice } from "~/hooks/use-fetch-prices";
 import { StabilityPoolsTable } from "~/components/earn/stability-pools-table";
 import { useQueryState, parseAsString, parseAsBoolean } from "nuqs";
 import { DepositFlow } from "~/components/earn/deposit-flow";
@@ -23,14 +28,23 @@ function Earn() {
     "action",
     parseAsString.withDefault("deposit")
   ) as [ActionType, (value: ActionType | null) => void];
-  const [selectedCollateral] = useQueryState(
-    "collateral",
-    parseAsString.withDefault("WWBTC")
-  ) as [CollateralId, (value: CollateralId | null) => void];
+
+  // Use address-based collateral selection
+  const [selectedCollateralAddress, setSelectedCollateralAddress] =
+    useQueryState(
+      "collateral",
+      parseAsString.withDefault(DEFAULT_COLLATERAL.addresses.token)
+    );
+
   const [claimRewards, setClaimRewards] = useQueryState(
     "claim",
     parseAsBoolean.withDefault(true)
   );
+
+  // Get collateral object from address (fallback to default if invalid)
+  const collateral =
+    getCollateralByAddress(selectedCollateralAddress || "") ||
+    DEFAULT_COLLATERAL;
 
   const { data: usduBalance } = useBalance({
     token: TOKENS.USDU.address,
@@ -39,14 +53,11 @@ function Earn() {
   });
 
   const allPositions = useAllStabilityPoolPositions();
-  const selectedPosition = allPositions[selectedCollateral];
-  const selectedCollateralSymbol = COLLATERALS[selectedCollateral].symbol;
+  const selectedPosition = allPositions[collateral.id];
+  const selectedCollateralSymbol = collateral.symbol;
 
-  const { usdu: usduPrice, bitcoin: bitcoinPrice } = useFetchPrices({
-    collateralType: selectedCollateral,
-    fetchBitcoin: true,
-    fetchUsdu: true,
-  });
+  const usduPrice = useUsduPrice();
+  const bitcoinPrice = useCollateralPrice(collateral.id);
 
   return (
     <div className="w-full mx-auto max-w-7xl py-8 lg:py-12 px-4 sm:px-6 lg:px-8 pb-32">
@@ -65,6 +76,44 @@ function Earn() {
               <Label className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight block">
                 Choose Action
               </Label>
+
+              {/* Pool Selection Row - Dynamic */}
+              {/* <div className="border-t border-neutral-100 p-4 pt-3">
+                <div className="flex gap-3">
+                  {COLLATERAL_LIST.map((pool) => (
+                    <button
+                      key={pool.id}
+                      type="button"
+                      onClick={() => setSelectedCollateralAddress(pool.addresses.token)}
+                      className={`flex-1 p-3 rounded-lg transition-all flex items-center gap-3 ${
+                        collateral.id === pool.id
+                          ? "bg-token-bg border-2 border-token-orange"
+                          : "bg-neutral-50 border-2 border-transparent hover:bg-neutral-100"
+                      }`}
+                    >
+                      <img
+                        src={pool.icon}
+                        alt={pool.symbol}
+                        className="w-8 h-8 object-contain"
+                      />
+                      <div className="text-left">
+                        <span
+                          className={`text-sm font-medium font-sora block ${
+                            collateral.id === pool.id
+                              ? "text-token-orange"
+                              : "text-neutral-800"
+                          }`}
+                        >
+                          {pool.symbol} Pool
+                        </span>
+                        <span className="text-xs text-neutral-500 font-sora">
+                          {pool.name}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div> */}
 
               {/* Action Tabs Row */}
               <div className="flex gap-2">
@@ -111,7 +160,7 @@ function Earn() {
                 usduBalance={usduBalance}
                 usduPrice={usduPrice}
                 selectedPosition={selectedPosition}
-                selectedCollateral={selectedCollateral}
+                selectedCollateral={collateral.id}
                 selectedCollateralSymbol={selectedCollateralSymbol}
                 claimRewards={claimRewards}
                 setClaimRewards={setClaimRewards}
@@ -123,7 +172,7 @@ function Earn() {
                 address={address}
                 usduPrice={usduPrice}
                 selectedPosition={selectedPosition}
-                selectedCollateral={selectedCollateral}
+                selectedCollateral={collateral.id}
                 selectedCollateralSymbol={selectedCollateralSymbol}
                 claimRewards={claimRewards}
                 setClaimRewards={setClaimRewards}
@@ -136,7 +185,7 @@ function Earn() {
                 usduPrice={usduPrice}
                 bitcoinPrice={bitcoinPrice}
                 selectedPosition={selectedPosition}
-                selectedCollateral={selectedCollateral}
+                selectedCollateral={collateral.id}
                 selectedCollateralSymbol={selectedCollateralSymbol}
                 claimRewards={claimRewards}
                 setClaimRewards={setClaimRewards}

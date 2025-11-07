@@ -1,9 +1,11 @@
 import type { Address } from "@starknet-react/chains";
 import Big from "big.js";
+import { z } from "zod";
 import deploymentData from "../contracts/deployment_addresses";
 import { USDU_ADDRESS, GAS_TOKEN_ADDRESS } from "../contracts/constants";
 
-export type CollateralId = "WWBTC"; // | "UBTC" | "GBTC";
+// CollateralId type
+export type CollateralId = "WWBTC"; // | "UBTC";
 
 // Base Token type - can be used for any token (collateral, stablecoin, etc.)
 export interface Token {
@@ -134,38 +136,13 @@ export const COLLATERALS = {
   //       .troveManagerEventsEmitter as Address,
   //   },
   // }),
-  // GBTC: createCollateral({
-  //   id: "GBTC",
-  //   symbol: "GBTC",
-  //   name: "Grayscale Bitcoin",
-  //   decimals: 18,
-  //   icon: "/starknet.png",
-  //   branchId: 2,
-  //   minCollateralizationRatio: new Big(1.1), // 110%
-  //   addresses: {
-  //     token: deploymentData.GBTC.collateral as Address,
-  //     addressesRegistry: deploymentData.GBTC.addressesRegistry as Address,
-  //     borrowerOperations: deploymentData.GBTC.borrowerOperations as Address,
-  //     troveManager: deploymentData.GBTC.troveManager as Address,
-  //     troveNft: deploymentData.GBTC.troveNft as Address,
-  //     stabilityPool: deploymentData.GBTC.stabilityPool as Address,
-  //     sortedTroves: deploymentData.GBTC.sortedTroves as Address,
-  //     activePool: deploymentData.GBTC.activePool as Address,
-  //     defaultPool: deploymentData.GBTC.defaultPool as Address,
-  //     collSurplusPool: deploymentData.GBTC.collSurplusPool as Address,
-  //     gasPool: deploymentData.GBTC.gasPool as Address,
-  //     interestRouter: deploymentData.GBTC.interestRouter as Address,
-  //     liquidationManager: deploymentData.GBTC.liquidationManager as Address,
-  //     redemptionManager: deploymentData.GBTC.redemptionManager as Address,
-  //     batchManager: deploymentData.GBTC.batchManager as Address,
-  //     priceFeed: deploymentData.GBTC.priceFeed as Address,
-  //     hintHelpers: deploymentData.GBTC.hintHelpers as Address,
-  //     multiTroveGetter: deploymentData.GBTC.multiTroveGetter as Address,
-  //     troveManagerEventsEmitter: deploymentData.GBTC
-  //       .troveManagerEventsEmitter as Address,
-  //   },
-  // }),
 } as const;
+
+// Create Zod schema dynamically from COLLATERALS for backend validation
+// This ensures schema stays in sync with COLLATERALS automatically
+export const CollateralIdSchema = z.enum(
+  Object.keys(COLLATERALS) as [CollateralId, ...CollateralId[]]
+);
 
 // Non-collateral tokens (USDU, STRK, etc.)
 export const TOKENS = {
@@ -188,17 +165,15 @@ export const TOKENS = {
 // Branch ID mappings (for contract interactions)
 export const COLLATERAL_TO_BRANCH = {
   WWBTC: 0,
-  // UBTC: 1,
-  // GBTC: 2,
+  UBTC: 1,
 } as const;
 
 export const BRANCH_TO_COLLATERAL = {
   0: "WWBTC",
-  // 1: "UBTC",
-  // 2: "GBTC",
+  1: "UBTC",
 } as const;
 
-export type BranchId = 0; // | 1 | 2;
+export type BranchId = 0 | 1;
 
 // Helper functions
 export function getCollateral(id: CollateralId): Collateral {

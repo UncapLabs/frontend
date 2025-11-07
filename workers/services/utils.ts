@@ -1,13 +1,10 @@
 import { Contract, RpcProvider } from "starknet";
 import { PRICE_FEED_ABI } from "~/lib/contracts";
 import { getCollateral, type CollateralId } from "~/lib/collateral";
-import * as z from "zod";
 
 // Prefixed trove ID format: "branchId:troveId"
 type PrefixedTroveId = string;
 type BranchId = string; // "0" for WWBTC, "1" for UBTC, "2" for GBTC
-
-export const CollateralIdSchema = z.enum(["WWBTC"]); //, "UBTC", "GBTC"]);
 
 const PRICE_CACHE_TTL_MS = 10_000;
 

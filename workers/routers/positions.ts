@@ -2,6 +2,7 @@ import * as z from "zod";
 import { publicProcedure, router } from "../trpc";
 import { RpcProvider } from "starknet";
 import { createGraphQLClient } from "~/lib/graphql/client";
+import { CollateralIdSchema } from "~/lib/collateral";
 import {
   fetchPositionById,
   getNextOwnerIndex,
@@ -50,7 +51,7 @@ export const positionsRouter = router({
     .input(
       z.object({
         borrower: z.string(),
-        collateralType: z.enum(["WWBTC"]), // "UBTC", "GBTC"
+        collateralType: CollateralIdSchema,
       })
     )
     .query(async ({ input }) => {

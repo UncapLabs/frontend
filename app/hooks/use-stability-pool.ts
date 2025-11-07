@@ -5,6 +5,7 @@ import { contractCall } from "~/lib/contracts/calls";
 import {
   type CollateralId,
   TOKENS,
+  COLLATERAL_LIST,
   getCollateralAddresses,
   getCollateral,
 } from "~/lib/collateral";
@@ -346,13 +347,13 @@ export function useAllStabilityPoolPositions() {
     retry: 0, // No retries on frontend - backend handles retries for RPC calls
   });
 
-  // Return default structure if no data
+  // Return default structure if no data - dynamically build for all collaterals
   if (!data) {
-    return {
-      // UBTC: null,
-      // GBTC: null,
-      WWBTC: null,
-    };
+    const result = {} as Record<CollateralId, null>;
+    COLLATERAL_LIST.forEach((collateral) => {
+      result[collateral.id] = null;
+    });
+    return result;
   }
 
   return data;

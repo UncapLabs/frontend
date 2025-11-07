@@ -10,7 +10,7 @@ import { useAccount } from "@starknet-react/core";
 import { useUserTroves } from "~/hooks/use-user-troves";
 import { Plus } from "lucide-react";
 import { useAllStabilityPoolPositions } from "~/hooks/use-stability-pool";
-import { useFetchPrices } from "~/hooks/use-fetch-prices";
+import { useUsduPrice } from "~/hooks/use-fetch-prices";
 import BorrowCard from "~/components/dashboard/borrow-card";
 import StabilityPoolCard from "~/components/dashboard/stability-pool-card";
 import Stats from "~/components/dashboard/stats";
@@ -39,19 +39,8 @@ export default function Dashboard() {
 
   const allStabilityPoolPositions = useAllStabilityPoolPositions();
 
-  const { bitcoin: wbtcPrice } = useFetchPrices({
-    collateralType: "WWBTC",
-    fetchUsdu: false,
-  });
-  // const { bitcoin: ubtcPrice } = useFetchPrices({
-  //   collateralType: "UBTC",
-  //   fetchUsdu: false,
-  // });
-  // const { bitcoin: gbtcPrice } = useFetchPrices({
-  //   collateralType: "GBTC",
-  //   fetchUsdu: false,
-  // });
-  const { usdu } = useFetchPrices({ fetchBitcoin: false, fetchUsdu: true });
+  // Fetch USDU price (shared across all stability pool cards)
+  const usduPrice = useUsduPrice();
 
   // Separate liquidated from active/zombie positions
   const liquidatedTroves = troves.filter((t) => t.status === "liquidated");
@@ -205,7 +194,6 @@ export default function Dashboard() {
                     <BorrowCard
                       key={trove.id}
                       trove={trove}
-                      collateralPrice={wbtcPrice}
                       onUpdatePosition={handleUpdatePosition}
                       onClosePosition={handleClosePosition}
                     />
@@ -228,7 +216,7 @@ export default function Dashboard() {
                           collateralRewards={
                             allStabilityPoolPositions.UBTC.rewards.collateral
                           }
-                          usduPrice={usdu?.price}
+                          usduPrice={usduPrice?.price}
                           onManagePosition={() => navigate("/earn")}
                         />
                       )} */}
@@ -247,7 +235,7 @@ export default function Dashboard() {
                           collateralRewards={
                             allStabilityPoolPositions.GBTC.rewards.collateral
                           }
-                          usduPrice={usdu?.price}
+                          usduPrice={usduPrice?.price}
                           onManagePosition={() =>
                             navigate("/earn?collateral=GBTC")
                           }
@@ -268,7 +256,7 @@ export default function Dashboard() {
                           collateralRewards={
                             allStabilityPoolPositions.WWBTC.rewards.collateral
                           }
-                          usduPrice={usdu?.price}
+                          usduPrice={usduPrice?.price}
                           onManagePosition={() =>
                             navigate("/earn?collateral=WWBTC")
                           }

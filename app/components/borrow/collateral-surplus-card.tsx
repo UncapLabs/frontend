@@ -8,9 +8,62 @@ import { useClaimAllSurplus } from "~/hooks/use-claim-surplus";
 import { useCollateralSurplus } from "~/hooks/use-collateral-surplus";
 import { useCallback } from "react";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
-import { getCollateral } from "~/lib/collateral";
-import { useFetchPrices } from "~/hooks/use-fetch-prices";
+import { getCollateral, type CollateralId } from "~/lib/collateral";
+import { useCollateralPrice } from "~/hooks/use-fetch-prices";
 import Big from "big.js";
+
+// Component for individual surplus item - fetches its own price
+function SurplusItem({ surplus }: { surplus: { collateralType: CollateralId; formatted: Big } }) {
+  const collateral = getCollateral(surplus.collateralType);
+  const collateralPrice = useCollateralPrice(surplus.collateralType);
+
+  return (
+    <div className="bg-white rounded-2xl p-6 space-y-6">
+      <div className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight">
+        COLLATERAL SURPLUS TO CLAIM
+      </div>
+
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2 p-2.5 bg-token-bg rounded-lg">
+          <img
+            src={collateral.icon}
+            alt={collateral.symbol}
+            className="w-5 h-5 object-contain"
+          />
+          <span className="text-token-orange text-xs font-medium font-sora">
+            {collateral.symbol}
+          </span>
+        </div>
+
+        <div className="flex-1">
+          <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal font-sora text-neutral-800 w-full">
+            <NumericFormat
+              displayType="text"
+              value={surplus.formatted.toString()}
+              thousandSeparator=","
+              decimalScale={7}
+              fixedDecimalScale={false}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-between items-center">
+        <NumericFormat
+          className="text-neutral-800 text-sm font-medium font-sora leading-none"
+          displayType="text"
+          value={surplus.formatted
+            .times(collateralPrice?.price || new Big(0))
+            .toString()}
+          prefix="= $"
+          thousandSeparator=","
+          decimalScale={3}
+          fixedDecimalScale
+        />
+      </div>
+    </div>
+  );
+}
 
 export function CollateralSurplusCard() {
   const { address } = useAccount();
@@ -19,13 +72,6 @@ export function CollateralSurplusCard() {
 
   const { availableSurpluses, totalSurplusesCount, isLoading, error, refetch } =
     useCollateralSurplus(address);
-
-  // Fetch prices for all collaterals - we'll use the first one's collateral type or default
-  const firstCollateralType = availableSurpluses[0]?.collateralType;
-  const { bitcoin: collateralPrice } = useFetchPrices({
-    collateralType: firstCollateralType,
-    enabled: !!firstCollateralType,
-  });
 
   // Hook for claiming all surpluses at once
   const {
@@ -127,62 +173,9 @@ export function CollateralSurplusCard() {
         <>
           {/* Surplus Items - always show, even if empty */}
           {availableSurpluses.length > 0 ? (
-            availableSurpluses.map((surplus) => {
-              const collateral = getCollateral(surplus.collateralType);
-              return (
-                <div
-                  key={surplus.collateralType}
-                  className="bg-white rounded-2xl p-6 space-y-6"
-                >
-                  <div className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight">
-                    COLLATERAL SURPLUS TO CLAIM
-                  </div>
-
-                  {/* Main content area - matching TokenInput style */}
-                  <div className="flex items-center gap-6">
-                    {/* Token selector on the left */}
-                    <div className="flex items-center gap-2 p-2.5 bg-token-bg rounded-lg">
-                      <img
-                        src={collateral.icon}
-                        alt={collateral.symbol}
-                        className="w-5 h-5 object-contain"
-                      />
-                      <span className="text-token-orange text-xs font-medium font-sora">
-                        {collateral.symbol}
-                      </span>
-                    </div>
-
-                    {/* Amount on the right */}
-                    <div className="flex-1">
-                      <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal font-sora text-neutral-800 w-full">
-                        <NumericFormat
-                          displayType="text"
-                          value={surplus.formatted.toString()}
-                          thousandSeparator=","
-                          decimalScale={7}
-                          fixedDecimalScale={false}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Bottom row: USD value */}
-                  <div className="flex justify-between items-center">
-                    <NumericFormat
-                      className="text-neutral-800 text-sm font-medium font-sora leading-none"
-                      displayType="text"
-                      value={surplus.formatted
-                        .times(collateralPrice?.price || new Big(0))
-                        .toString()}
-                      prefix="= $"
-                      thousandSeparator=","
-                      decimalScale={3}
-                      fixedDecimalScale
-                    />
-                  </div>
-                </div>
-              );
-            })
+            availableSurpluses.map((surplus) => (
+              <SurplusItem key={surplus.collateralType} surplus={surplus} />
+            ))
           ) : (
             <div className="bg-white rounded-2xl p-6 space-y-6">
               <div className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight">

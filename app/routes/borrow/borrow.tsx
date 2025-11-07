@@ -10,7 +10,7 @@ import { FloatingInfoButton } from "~/components/floating-info-button";
 import { InfoDialog } from "~/components/info-dialog";
 import { useEffect, useCallback } from "react";
 import { useForm } from "@tanstack/react-form";
-import { useFetchPrices } from "~/hooks/use-fetch-prices";
+import { useCollateralPrice, useUsduPrice } from "~/hooks/use-fetch-prices";
 import { computeDebtLimit } from "~/lib/utils/calc";
 import { MAX_LIMIT } from "~/lib/contracts/constants";
 import { validators } from "~/lib/validators";
@@ -83,16 +83,18 @@ function Borrow() {
     refetchInterval: 30000,
   });
 
-  const { bitcoin, usdu } = useFetchPrices({
-    collateralType: collateral.id,
-    enabled:
-      (collateralAmount !== null &&
-        collateralAmount !== undefined &&
-        collateralAmount.gt(0)) ||
-      (borrowAmount !== null &&
-        borrowAmount !== undefined &&
-        borrowAmount.gt(0)),
+  const enablePrices =
+    (collateralAmount !== null &&
+      collateralAmount !== undefined &&
+      collateralAmount.gt(0)) ||
+    (borrowAmount !== null &&
+      borrowAmount !== undefined &&
+      borrowAmount.gt(0));
+
+  const bitcoin = useCollateralPrice(collateral.id, {
+    enabled: enablePrices,
   });
+  const usdu = useUsduPrice({ enabled: enablePrices });
   const minCollateralizationRatio = collateral.minCollateralizationRatio;
 
   const metrics = usePositionMetrics({

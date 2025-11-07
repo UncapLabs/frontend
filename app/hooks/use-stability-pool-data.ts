@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "~/lib/trpc";
-import { type CollateralId } from "~/lib/collateral";
+import { COLLATERAL_LIST, type CollateralId } from "~/lib/collateral";
 import Big from "big.js";
 
 export interface StabilityPoolDataQuery {
@@ -9,74 +9,42 @@ export interface StabilityPoolDataQuery {
   isLoading: boolean;
 }
 
-export interface UseStabilityPoolDataResult {
-  // UBTC: StabilityPoolDataQuery;
-  // GBTC: StabilityPoolDataQuery;
-  WWBTC: StabilityPoolDataQuery;
-}
+export type UseStabilityPoolDataResult = Record<CollateralId, StabilityPoolDataQuery>;
 
 export function useStabilityPoolData(): UseStabilityPoolDataResult {
   const trpc = useTRPC();
 
-  // const ubtcTotalDepositsQuery = useQuery({
-  //   ...trpc.stabilityPoolRouter.getTotalDeposits.queryOptions({
-  //     collateralType: "UBTC",
-  //   }),
-  //   refetchInterval: 30000,
-  // });
+  // Create queries dynamically for all collaterals
+  const depositQueries = COLLATERAL_LIST.map((collateral) =>
+    useQuery({
+      ...trpc.stabilityPoolRouter.getTotalDeposits.queryOptions({
+        collateralType: collateral.id,
+      }),
+      refetchInterval: 30000,
+    })
+  );
 
-  // const gbtcTotalDepositsQuery = useQuery({
-  //   ...trpc.stabilityPoolRouter.getTotalDeposits.queryOptions({
-  //     collateralType: "GBTC",
-  //   }),
-  //   refetchInterval: 30000,
-  // });
+  const aprQueries = COLLATERAL_LIST.map((collateral) =>
+    useQuery({
+      ...trpc.stabilityPoolRouter.getPoolApr.queryOptions({
+        collateralType: collateral.id,
+      }),
+      refetchInterval: 30000,
+    })
+  );
 
-  // const ubtcAprQuery = useQuery({
-  //   ...trpc.stabilityPoolRouter.getPoolApr.queryOptions({
-  //     collateralType: "UBTC",
-  //   }),
-  //   refetchInterval: 30000,
-  // });
+  // Build result object dynamically
+  const result = {} as Record<CollateralId, StabilityPoolDataQuery>;
 
-  // const gbtcAprQuery = useQuery({
-  //   ...trpc.stabilityPoolRouter.getPoolApr.queryOptions({
-  //     collateralType: "GBTC",
-  //   }),
-  //   refetchInterval: 30000,
-  // });
-
-  const wwbtcTotalDepositsQuery = useQuery({
-    ...trpc.stabilityPoolRouter.getTotalDeposits.queryOptions({
-      collateralType: "WWBTC",
-    }),
-    refetchInterval: 30000,
+  COLLATERAL_LIST.forEach((collateral, index) => {
+    result[collateral.id] = {
+      totalDeposits: depositQueries[index].data,
+      apr: aprQueries[index].data,
+      isLoading: depositQueries[index].isLoading || aprQueries[index].isLoading,
+    };
   });
 
-  const wwbtcAprQuery = useQuery({
-    ...trpc.stabilityPoolRouter.getPoolApr.queryOptions({
-      collateralType: "WWBTC",
-    }),
-    refetchInterval: 30000,
-  });
-
-  return {
-    // UBTC: {
-    //   totalDeposits: ubtcTotalDepositsQuery.data,
-    //   apr: ubtcAprQuery.data,
-    //   isLoading: ubtcTotalDepositsQuery.isLoading || ubtcAprQuery.isLoading,
-    // },
-    // GBTC: {
-    //   totalDeposits: gbtcTotalDepositsQuery.data,
-    //   apr: gbtcAprQuery.data,
-    //   isLoading: gbtcTotalDepositsQuery.isLoading || gbtcAprQuery.isLoading,
-    // },
-    WWBTC: {
-      totalDeposits: wwbtcTotalDepositsQuery.data,
-      apr: wwbtcAprQuery.data,
-      isLoading: wwbtcTotalDepositsQuery.isLoading || wwbtcAprQuery.isLoading,
-    },
-  };
+  return result;
 }
 
 export function useStabilityPoolDataByType(

@@ -26,7 +26,7 @@ import {
   AlertContent,
 } from "~/components/ui/alert";
 import { BorrowingRestrictionsAlert } from "~/components/borrow/borrowing-restrictions-alert";
-import { useFetchPrices } from "~/hooks/use-fetch-prices";
+import { useCollateralPrice, useUsduPrice } from "~/hooks/use-fetch-prices";
 import { Skeleton } from "~/components/ui/skeleton";
 import Big from "big.js";
 import { bigintToBig } from "~/lib/decimal";
@@ -55,10 +55,10 @@ function ClosePosition() {
   });
 
   // Fetch prices for display
-  const { bitcoin, usdu } = useFetchPrices({
-    collateralType: selectedCollateral.id,
+  const bitcoin = useCollateralPrice(selectedCollateral.id, {
     enabled: !!position,
   });
+  const usdu = useUsduPrice({ enabled: !!position });
 
   const {
     send,

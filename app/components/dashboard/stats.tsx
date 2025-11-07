@@ -8,12 +8,12 @@ import {
 } from "~/components/ui/table";
 import { useNavigate } from "react-router";
 import {
-  useAverageInterestRate,
-  useInterestRateVisualizationData,
-} from "~/hooks/use-interest-rate";
+  useAllBranchTCRs,
+  useAllAverageInterestRates,
+  useAllInterestRateVisualization,
+} from "~/hooks/use-all-branch-stats";
 import { useStabilityPoolData } from "~/hooks/use-stability-pool-data";
-import { useBranchTCR } from "~/hooks/use-branch-tcr";
-import { COLLATERALS, COLLATERAL_LIST } from "~/lib/collateral";
+import { COLLATERAL_LIST } from "~/lib/collateral";
 import Big from "big.js";
 import { NumericFormat } from "react-number-format";
 
@@ -659,25 +659,10 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
 }
 
 export default function Stats() {
-  // Fetch interest rate and visualization data for all collaterals
-  const interestRateData = {
-    // UBTC: useAverageInterestRate(COLLATERALS.UBTC.branchId),
-    // GBTC: useAverageInterestRate(COLLATERALS.GBTC.branchId),
-    WWBTC: useAverageInterestRate(COLLATERALS.WWBTC.branchId),
-  };
-
-  const visualizationData = {
-    // UBTC: useInterestRateVisualizationData(COLLATERALS.UBTC.branchId),
-    // GBTC: useInterestRateVisualizationData(COLLATERALS.GBTC.branchId),
-    WWBTC: useInterestRateVisualizationData(COLLATERALS.WWBTC.branchId),
-  };
-
-  const tcrData = {
-    // UBTC: useBranchTCR("UBTC"),
-    // GBTC: useBranchTCR("GBTC"),
-    WWBTC: useBranchTCR("WWBTC"),
-  };
-
+  // Fetch data for all collaterals dynamically
+  const interestRateData = useAllAverageInterestRates();
+  const visualizationData = useAllInterestRateVisualization();
+  const tcrData = useAllBranchTCRs();
   const stabilityPoolData = useStabilityPoolData();
 
   // Helper function to format currency values

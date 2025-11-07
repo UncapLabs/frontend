@@ -14,7 +14,7 @@ import { RedemptionInfo } from "~/components/borrow/redemption-info";
 import { TokenInput } from "~/components/token-input";
 import { useEffect, useCallback, useState } from "react";
 import { useForm } from "@tanstack/react-form";
-import { useFetchPrices } from "~/hooks/use-fetch-prices";
+import { useCollateralPrice, useUsduPrice } from "~/hooks/use-fetch-prices";
 import { computeDebtLimit } from "~/lib/utils/calc";
 import { MAX_LIMIT } from "~/lib/contracts/constants";
 import { validators } from "~/lib/validators";
@@ -169,10 +169,10 @@ function UpdatePosition() {
     refetchInterval: 30000,
   });
 
-  const { bitcoin, usdu } = useFetchPrices({
-    collateralType: selectedCollateral.id,
+  const bitcoin = useCollateralPrice(selectedCollateral.id, {
     enabled: position !== undefined,
   });
+  const usdu = useUsduPrice({ enabled: position !== undefined });
 
   const minCollateralizationRatio =
     selectedCollateral.minCollateralizationRatio;

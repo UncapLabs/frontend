@@ -9,6 +9,7 @@ import { truncateTroveId } from "~/lib/utils/trove-id";
 import { Edit3, X } from "lucide-react";
 import { MIN_DEBT } from "~/lib/contracts/constants";
 import { COLLATERAL_LIST } from "~/lib/collateral";
+import { useCollateralPrice } from "~/hooks/use-fetch-prices";
 import Big from "big.js";
 
 interface BorrowCardProps {
@@ -20,9 +21,6 @@ interface BorrowCardProps {
     collateralAsset: string;
     interestRate: Big;
     liquidationPrice: Big;
-  };
-  collateralPrice?: {
-    price: Big;
   };
   onUpdatePosition: (troveId: string, collateralAsset: string) => void;
   onClosePosition: (troveId: string, collateralAsset: string) => void;
@@ -41,13 +39,16 @@ export default function BorrowCard(props: Props) {
   }
 
   // Otherwise, render the actual card
-  const { trove, collateralPrice, onUpdatePosition, onClosePosition } =
+  const { trove, onUpdatePosition, onClosePosition } =
     props as BorrowCardProps;
 
   // Get collateral config - match by symbol or id
   const collateral = COLLATERAL_LIST.find(
     (c) => c.symbol === trove.collateralAsset || c.id === trove.collateralAsset
   )!;
+
+  // Fetch price for this specific collateral
+  const collateralPrice = useCollateralPrice(collateral.id);
 
   // Zombie = redeemed trove with debt < MIN_DEBT
   const isZombie =

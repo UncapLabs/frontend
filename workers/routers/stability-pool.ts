@@ -2,8 +2,7 @@ import * as z from "zod";
 import { router, publicProcedure } from "../trpc";
 import { RpcProvider } from "starknet";
 import { contractRead } from "~/lib/contracts/calls";
-import { CollateralTypeSchema } from "~/lib/contracts/constants";
-import { TOKENS } from "~/lib/collateral";
+import { CollateralIdSchema, TOKENS, COLLATERAL_LIST, type CollateralId } from "~/lib/collateral";
 import { bigintToBig } from "~/lib/decimal";
 import Big from "big.js";
 import {
@@ -23,27 +22,24 @@ export const stabilityPoolRouter = router({
       const provider = new RpcProvider({ nodeUrl: ctx.env.NODE_URL });
 
       // Fetch positions for all collateral types in parallel
-      // const [ubtcPosition, gbtcPosition, wmwbtcPosition] = await Promise.all([
-      //   fetchPoolPosition(provider, userAddress, "UBTC"),
-      //   fetchPoolPosition(provider, userAddress, "GBTC"),
-      //   fetchPoolPosition(provider, userAddress, "WWBTC"),
-      // ]);
-
-      const wwbtcPosition = await fetchPoolPosition(
-        provider,
-        userAddress,
-        "WWBTC"
+      const positions = await Promise.all(
+        COLLATERAL_LIST.map((collateral) =>
+          fetchPoolPosition(provider, userAddress, collateral.id)
+        )
       );
-      return {
-        // UBTC: ubtcPosition,
-        // GBTC: gbtcPosition,
-        WWBTC: wwbtcPosition,
-      };
+
+      // Build result object dynamically
+      const result = {} as Record<CollateralId, typeof positions[0]>;
+      COLLATERAL_LIST.forEach((collateral, index) => {
+        result[collateral.id] = positions[index];
+      });
+
+      return result;
     }),
   getTotalDeposits: publicProcedure
     .input(
       z.object({
-        collateralType: CollateralTypeSchema,
+        collateralType: CollateralIdSchema,
       })
     )
     .query(async ({ input, ctx }) => {
@@ -68,7 +64,7 @@ export const stabilityPoolRouter = router({
   getPoolApr: publicProcedure
     .input(
       z.object({
-        collateralType: CollateralTypeSchema,
+        collateralType: CollateralIdSchema,
       })
     )
     .query(async ({ input, ctx }) => {

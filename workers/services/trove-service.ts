@@ -17,7 +17,7 @@ import {
   getBranchIdForCollateral,
   getCollateral,
   getCollateralByBranchId,
-  COLLATERALS,
+  COLLATERAL_LIST,
   TOKENS,
 } from "~/lib/collateral";
 import {
@@ -463,42 +463,38 @@ export async function getNextOwnerIndex(
 export async function getCollateralSurplus(
   provider: RpcProvider,
   borrower: string
-): Promise<{
-  // UBTC: Big;
-  // GBTC: Big;
-  WWBTC: Big;
-}> {
+): Promise<Record<CollateralId, Big>> {
   try {
     // Fetch surplus for all collateral types in parallel
-    // const [ubtcSurplusRaw, gbtcSurplusRaw, wmwbtcSurplusRaw] =
-    //   await Promise.all([
-    //     contractRead.collSurplusPool.getCollateral(provider, borrower, "UBTC"),
-    //     contractRead.collSurplusPool.getCollateral(provider, borrower, "GBTC"),
-    //     contractRead.collSurplusPool.getCollateral(
-    //       provider,
-    //       borrower,
-    //       "WWBTC"
-    //     ),
-    //   ]);
-
-    const wwbtcSurplusRaw = await contractRead.collSurplusPool.getCollateral(
-      provider,
-      borrower,
-      "WWBTC"
+    const surplusRawValues = await Promise.all(
+      COLLATERAL_LIST.map((collateral) =>
+        contractRead.collSurplusPool.getCollateral(
+          provider,
+          borrower,
+          collateral.id
+        )
+      )
     );
 
-    // Convert from blockchain integers to human-readable Big decimals
-    return {
-      // UBTC: bigintToBig(ubtcSurplusRaw, COLLATERALS.UBTC.decimals),
-      // GBTC: bigintToBig(gbtcSurplusRaw, COLLATERALS.GBTC.decimals),
-      WWBTC: bigintToBig(wwbtcSurplusRaw, COLLATERALS.WWBTC.decimals),
-    };
+    // Build result object dynamically
+    const result = {} as Record<CollateralId, Big>;
+    COLLATERAL_LIST.forEach((collateral, index) => {
+      result[collateral.id] = bigintToBig(
+        surplusRawValues[index],
+        collateral.decimals
+      );
+    });
+
+    return result;
   } catch (error) {
     console.error(`Error fetching collateral surplus for ${borrower}:`, error);
-    return {
-      // UBTC: new Big(0),
-      // GBTC: new Big(0),
-      WWBTC: new Big(0),
-    };
+
+    // Return zeros for all collaterals on error
+    const result = {} as Record<CollateralId, Big>;
+    COLLATERAL_LIST.forEach((collateral) => {
+      result[collateral.id] = new Big(0);
+    });
+
+    return result;
   }
 }
