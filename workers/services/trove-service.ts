@@ -113,8 +113,10 @@ export async function getIndexedTroveById(
   graphqlClient: GraphQLClient,
   fullTroveId: string
 ): Promise<IndexedTrove | null> {
+  const indexer = process.env.NETWORK || "sepolia";
   const { trove } = await graphqlClient.request<TroveByIdQuery>(TROVE_BY_ID, {
     id: fullTroveId,
+    indexer,
   });
 
   return !trove
@@ -143,15 +145,18 @@ export async function getIndexedTrovesByAccount(
   graphqlClient: GraphQLClient,
   account: string
 ): Promise<IndexedTrove[]> {
+  const indexer = process.env.NETWORK || "sepolia";
   // Execute both queries in parallel to get all troves associated with the account
   const [borrowerResult, previousOwnerResult] = await Promise.all([
     graphqlClient.request<TrovesAsBorrowerQuery>(TROVES_AS_BORROWER, {
       account: account.toLowerCase(),
+      indexer,
     }),
     graphqlClient.request<TrovesAsPreviousOwnerQuery>(
       TROVES_AS_PREVIOUS_OWNER,
       {
         account: account.toLowerCase(),
+        indexer,
       }
     ),
   ]);
@@ -364,7 +369,11 @@ export async function fetchLoansByAccount(
   const activeTroves = troves.filter((trove) => trove.status === "active");
 
   console.log(
-    `[fetchLoansByAccount] Found ${troves.length} total troves, ${activeTroves.length} active. Skipping RPC calls for ${troves.length - activeTroves.length} non-active troves.`
+    `[fetchLoansByAccount] Found ${troves.length} total troves, ${
+      activeTroves.length
+    } active. Skipping RPC calls for ${
+      troves.length - activeTroves.length
+    } non-active troves.`
   );
 
   // Process only active troves with individual error handling
@@ -430,7 +439,11 @@ export async function fetchLoansByAccount(
   });
 
   console.log(
-    `[fetchLoansByAccount] Returning ${positions.length} active positions (filtered ${troves.length - activeTroves.length} non-active), ${errors.length} errors`
+    `[fetchLoansByAccount] Returning ${
+      positions.length
+    } active positions (filtered ${
+      troves.length - activeTroves.length
+    } non-active), ${errors.length} errors`
   );
 
   return { positions, errors };
@@ -442,12 +455,13 @@ export async function getNextOwnerIndex(
   collateralType: CollateralId
 ): Promise<number> {
   const branchId = getBranchIdForCollateral(collateralType);
+  const indexer = process.env.NETWORK || "sepolia";
 
   try {
     const { borrowerinfo } =
       await graphqlClient.request<NextOwnerIndexesByBorrowerQuery>(
         NEXT_OWNER_INDEX_BY_BORROWER,
-        { id: borrower.toLowerCase() }
+        { id: borrower.toLowerCase(), indexer }
       );
 
     return Number(borrowerinfo?.nextOwnerIndexes[branchId] ?? 0);

@@ -19,8 +19,11 @@ export async function fetchAllInterestRateBrackets(): Promise<{
   const graphqlEndpoint =
     process.env.GRAPHQL_ENDPOINT || "http://localhost:3000/graphql";
   const graphqlClient = createGraphQLClient(graphqlEndpoint);
+  const indexer = process.env.NETWORK || "sepolia";
 
-  const result = await graphqlClient.request(ALL_INTEREST_RATE_BRACKETS);
+  const result = await graphqlClient.request(ALL_INTEREST_RATE_BRACKETS, {
+    indexer,
+  });
 
   if (!result.interestratebrackets) {
     return {

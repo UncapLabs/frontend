@@ -2,9 +2,9 @@ import { graphql } from "./gql";
 
 // Query for troves where the user is the current borrower (active/redeemed)
 export const TROVES_AS_BORROWER = graphql(/* GraphQL */ `
-  query TrovesAsBorrower($account: String!) {
+  query TrovesAsBorrower($account: String!, $indexer: String!) {
     troves(
-      where: { borrower: $account, status_in: ["active", "redeemed"] }
+      where: { borrower: $account, status_in: ["active", "redeemed"], _indexer: $indexer }
       orderBy: updatedAt
       orderDirection: desc
     ) {
@@ -32,9 +32,9 @@ export const TROVES_AS_BORROWER = graphql(/* GraphQL */ `
 
 // Query for troves where the user was the previous owner (liquidated)
 export const TROVES_AS_PREVIOUS_OWNER = graphql(/* GraphQL */ `
-  query TrovesAsPreviousOwner($account: String!) {
+  query TrovesAsPreviousOwner($account: String!, $indexer: String!) {
     troves(
-      where: { previousOwner: $account, status: "liquidated" }
+      where: { previousOwner: $account, status: "liquidated", _indexer: $indexer }
       orderBy: updatedAt
       orderDirection: desc
     ) {
@@ -62,8 +62,8 @@ export const TROVES_AS_PREVIOUS_OWNER = graphql(/* GraphQL */ `
 `);
 
 export const TROVE_BY_ID = graphql(/* GraphQL */ `
-  query TroveById($id: ID!) {
-    trove(id: $id) {
+  query TroveById($id: ID!, $indexer: String!) {
+    trove(id: $id, indexer: $indexer) {
       id
       borrower
       closedAt
@@ -80,8 +80,8 @@ export const TROVE_BY_ID = graphql(/* GraphQL */ `
 `);
 
 export const NEXT_OWNER_INDEX_BY_BORROWER = graphql(/* GraphQL */ `
-  query NextOwnerIndexesByBorrower($id: ID!) {
-    borrowerinfo(id: $id) {
+  query NextOwnerIndexesByBorrower($id: ID!, $indexer: String!) {
+    borrowerinfo(id: $id, indexer: $indexer) {
       nextOwnerIndexes
     }
   }
@@ -89,10 +89,10 @@ export const NEXT_OWNER_INDEX_BY_BORROWER = graphql(/* GraphQL */ `
 
 // Query for all interest rate brackets
 export const ALL_INTEREST_RATE_BRACKETS = graphql(/* GraphQL */ `
-  query AllInterestRateBrackets {
+  query AllInterestRateBrackets($indexer: String!) {
     interestratebrackets(
       first: 1000
-      where: { totalDebt_gt: 0 }
+      where: { totalDebt_gt: 0, _indexer: $indexer }
       orderBy: rate
     ) {
       rate
