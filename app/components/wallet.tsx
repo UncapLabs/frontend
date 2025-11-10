@@ -4,7 +4,7 @@ import {
   useStarkProfile,
 } from "@starknet-react/core";
 import { toHexChainid, isMainnet } from "../lib/utils/chain-id";
-import { formatTruncatedAddress } from "../lib/utils/format-address";
+import { formatTruncatedAddress } from "../lib/utils/address";
 import { useState } from "react";
 import {
   Dialog,

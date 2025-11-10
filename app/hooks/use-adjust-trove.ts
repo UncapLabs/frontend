@@ -10,6 +10,7 @@ import {
 } from "~/lib/collateral/wrapping";
 import Big from "big.js";
 import { bigToBigint } from "~/lib/decimal";
+import { areAddressesEqual } from "~/lib/utils/address";
 
 interface UseAdjustTroveParams {
   troveId?: bigint;
@@ -241,9 +242,10 @@ export function useAdjustTrove({
         ? currentManager
         : targetBatchManager ?? "0x0";
     const hasBatchManagerChange =
-      targetBatchManager !== undefined && targetManager !== currentManager;
+      targetBatchManager !== undefined &&
+      !areAddressesEqual(targetManager, currentManager);
     const leavingBatchManager =
-      targetBatchManager === null && currentManager !== "0x0";
+      targetBatchManager === null && !areAddressesEqual(currentManager, "0x0");
 
     return {
       collateralChange: bigToBigint(collateralDiff.abs(), collateralDecimals),
