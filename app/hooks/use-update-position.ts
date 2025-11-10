@@ -20,9 +20,16 @@ import type { Position } from "workers/services/trove-service";
 const DEFAULT_INTEREST_RATE = new Big(2.5);
 
 export interface UpdateFormData {
+  // Previous values (snapshot at transaction time)
+  previousCollateral?: Big;
+  previousDebt?: Big;
+  previousInterestRate?: Big;
+  previousLiquidationPrice?: Big;
+  // Target values (snapshot at transaction time)
   collateralAmount?: Big;
   borrowAmount?: Big;
   interestRate: Big;
+  liquidationPrice?: Big;
   selectedCollateralToken: string;
   targetBatchManager?: string;
 }
@@ -36,6 +43,9 @@ interface UseUpdatePositionParams {
   collateralToken?: Collateral;
   onSuccess?: () => void;
   targetBatchManager?: string | null;
+  // Liquidation prices for snapshot
+  liquidationPrice?: Big;
+  previousLiquidationPrice?: Big;
 }
 
 export function useUpdatePosition({
@@ -47,6 +57,8 @@ export function useUpdatePosition({
   collateralToken,
   onSuccess,
   targetBatchManager,
+  liquidationPrice,
+  previousLiquidationPrice,
 }: UseUpdatePositionParams) {
   const { address } = useAccount();
   const transactionStore = useTransactionStore();
@@ -117,11 +129,16 @@ export function useUpdatePosition({
         DEFAULT_INTEREST_RATE;
 
       // Transaction was sent successfully, move to pending
-      // Use the final values (either updated or original from position)
+      // Capture snapshot of both previous and target values
       transactionState.updateFormData({
+        previousCollateral: position?.collateralAmount,
+        previousDebt: position?.borrowedAmount,
+        previousInterestRate: position ? getInterestRatePercentage(position) : undefined,
+        previousLiquidationPrice,
         collateralAmount: collateralAmount || position?.collateralAmount,
         borrowAmount: borrowAmount || position?.borrowedAmount,
         interestRate: finalInterestRate,
+        liquidationPrice,
         selectedCollateralToken: collateralToken?.symbol || DEFAULT_COLLATERAL.symbol,
         targetBatchManager: normalizedTargetBatchManager,
       });
@@ -183,6 +200,8 @@ export function useUpdatePosition({
     changes,
     targetBatchManager,
     normalizedTargetBatchManager,
+    liquidationPrice,
+    previousLiquidationPrice,
   ]);
 
   // Check if we need to update state based on transaction status

@@ -327,6 +327,8 @@ function UpdatePosition() {
     collateralToken: selectedCollateral,
     targetBatchManager:
       activeRateMode === "managed" ? telosBatchManagerAddress : null,
+    liquidationPrice: metrics.liquidationPrice,
+    previousLiquidationPrice: previousMetrics.liquidationPrice,
   });
 
   // Revalidate fields when wallet connection changes
@@ -997,33 +999,73 @@ function UpdatePosition() {
         <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px] space-y-4">
           <TransactionSummary
             type="update"
-            changes={{
-              collateral: {
-                from: position?.collateralAmount || new Big(0),
-                to: targetCollateral,
-                token: selectedCollateral.symbol,
-              },
-              collateralValueUSD: bitcoin?.price
-                ? {
-                    from: position
-                      ? position.collateralAmount.times(bitcoin.price)
-                      : new Big(0),
-                    to: targetCollateral.times(bitcoin.price),
-                  }
-                : undefined,
-              debt: {
-                from: position?.borrowedAmount || new Big(0),
-                to: targetDebt,
-              },
-              interestRate: {
-                from: position
-                  ? getInterestRatePercentage(position)
-                  : DEFAULT_INTEREST_RATE,
-                to: effectiveInterestRate,
-              },
-            }}
-            liquidationPrice={metrics.liquidationPrice}
-            previousLiquidationPrice={previousMetrics.liquidationPrice}
+            changes={(() => {
+              // Use snapshot when transaction is pending/success/error
+              const useSnapshot = ["pending", "success", "error"].includes(currentState);
+
+              if (useSnapshot && formData) {
+                return {
+                  collateral: {
+                    from: formData.previousCollateral || new Big(0),
+                    to: formData.collateralAmount || new Big(0),
+                    token: selectedCollateral.symbol,
+                  },
+                  collateralValueUSD: bitcoin?.price
+                    ? {
+                        from: (formData.previousCollateral || new Big(0)).times(bitcoin.price),
+                        to: (formData.collateralAmount || new Big(0)).times(bitcoin.price),
+                      }
+                    : undefined,
+                  debt: {
+                    from: formData.previousDebt || new Big(0),
+                    to: formData.borrowAmount || new Big(0),
+                  },
+                  interestRate: {
+                    from: formData.previousInterestRate || DEFAULT_INTEREST_RATE,
+                    to: formData.interestRate,
+                  },
+                };
+              }
+
+              // Use live calculations during editing
+              return {
+                collateral: {
+                  from: position?.collateralAmount || new Big(0),
+                  to: targetCollateral,
+                  token: selectedCollateral.symbol,
+                },
+                collateralValueUSD: bitcoin?.price
+                  ? {
+                      from: position
+                        ? position.collateralAmount.times(bitcoin.price)
+                        : new Big(0),
+                      to: targetCollateral.times(bitcoin.price),
+                    }
+                  : undefined,
+                debt: {
+                  from: position?.borrowedAmount || new Big(0),
+                  to: targetDebt,
+                },
+                interestRate: {
+                  from: position
+                    ? getInterestRatePercentage(position)
+                    : DEFAULT_INTEREST_RATE,
+                  to: effectiveInterestRate,
+                },
+              };
+            })()}
+            liquidationPrice={(() => {
+              const useSnapshot = ["pending", "success", "error"].includes(currentState);
+              return useSnapshot && formData?.liquidationPrice
+                ? formData.liquidationPrice
+                : metrics.liquidationPrice;
+            })()}
+            previousLiquidationPrice={(() => {
+              const useSnapshot = ["pending", "success", "error"].includes(currentState);
+              return useSnapshot && formData?.previousLiquidationPrice
+                ? formData.previousLiquidationPrice
+                : previousMetrics.liquidationPrice;
+            })()}
             collateralType={selectedCollateral.id}
             troveId={position ? extractTroveId(position.id) : undefined}
             warnings={
