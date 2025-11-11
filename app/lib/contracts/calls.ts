@@ -465,20 +465,6 @@ export const contractCall = {
     },
   },
 
-  troveManager: {
-    /**
-     * Get the latest trove data
-     */
-    getLatestTroveData: (troveId: bigint, collateralType: CollateralId) => {
-      const addresses = getCollateralAddresses(collateralType);
-      const contract = new Contract({
-        abi: TROVE_MANAGER_ABI,
-        address: addresses.troveManager,
-      });
-      return contract.populate("get_latest_trove_data", [troveId]);
-    },
-  },
-
   stabilityPool: {
     /**
      * Deposit USDU into the Stability Pool
