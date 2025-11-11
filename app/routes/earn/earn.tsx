@@ -84,7 +84,9 @@ function Earn() {
                     <button
                       key={pool.id}
                       type="button"
-                      onClick={() => setSelectedCollateralAddress(pool.addresses.token)}
+                      onClick={() =>
+                        setSelectedCollateralAddress(pool.addresses.token)
+                      }
                       className={`flex-1 p-3 rounded-lg transition-all flex items-center gap-3 ${
                         collateral.id === pool.id
                           ? "bg-token-bg border-2 border-token-orange"

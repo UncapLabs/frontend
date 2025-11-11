@@ -202,46 +202,24 @@ export default function Dashboard() {
                 {/* Stability Pool Positions */}
                 {filter !== "borrow" && (
                   <>
-                    {/* {allStabilityPoolPositions.UBTC &&
-                      allStabilityPoolPositions.UBTC.userDeposit.gt(0) && (
+                    {/* {allStabilityPoolPositions.WXLBTC &&
+                      allStabilityPoolPositions.WXLBTC.userDeposit.gt(0) && (
                         <StabilityPoolCard
-                          poolType="UBTC"
+                          poolType="WXLBTC"
                           userDeposit={
-                            allStabilityPoolPositions.UBTC.userDeposit
+                            allStabilityPoolPositions.WXLBTC.userDeposit
                           }
-                          poolShare={allStabilityPoolPositions.UBTC.poolShare}
+                          poolShare={allStabilityPoolPositions.WXLBTC.poolShare}
                           usduRewards={
-                            allStabilityPoolPositions.UBTC.rewards.usdu
+                            allStabilityPoolPositions.WXLBTC.rewards.usdu
                           }
                           collateralRewards={
-                            allStabilityPoolPositions.UBTC.rewards.collateral
+                            allStabilityPoolPositions.WXLBTC.rewards.collateral
                           }
                           usduPrice={usduPrice?.price}
                           onManagePosition={() => navigate("/earn")}
                         />
                       )} */}
-
-                    {/* {allStabilityPoolPositions.GBTC &&
-                      allStabilityPoolPositions.GBTC.userDeposit.gt(0) && (
-                        <StabilityPoolCard
-                          poolType="GBTC"
-                          userDeposit={
-                            allStabilityPoolPositions.GBTC.userDeposit
-                          }
-                          poolShare={allStabilityPoolPositions.GBTC.poolShare}
-                          usduRewards={
-                            allStabilityPoolPositions.GBTC.rewards.usdu
-                          }
-                          collateralRewards={
-                            allStabilityPoolPositions.GBTC.rewards.collateral
-                          }
-                          usduPrice={usduPrice?.price}
-                          onManagePosition={() =>
-                            navigate("/earn?collateral=GBTC")
-                          }
-                        />
-                      )} */}
-
                     {allStabilityPoolPositions.WWBTC &&
                       allStabilityPoolPositions.WWBTC.userDeposit.gt(0) && (
                         <StabilityPoolCard

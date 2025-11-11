@@ -3,6 +3,7 @@ import { COLLATERALS } from "~/lib/collateral";
 import { useAccount } from "@starknet-react/core";
 import { useAllStabilityPoolPositions } from "~/hooks/use-stability-pool";
 import { useStabilityPoolData } from "~/hooks/use-stability-pool-data";
+import Big from "big.js";
 
 export function StabilityPoolsTable() {
   const { address } = useAccount();
@@ -15,7 +16,7 @@ export function StabilityPoolsTable() {
     totalDeposits:
       stabilityPoolData[collateral.id]?.totalDeposits ??
       allPositions[collateral.id]?.totalDeposits ??
-      0,
+      new Big(0),
     apr: stabilityPoolData[collateral.id]?.apr ?? 0,
     position: allPositions[collateral.id],
   }));
@@ -122,7 +123,8 @@ export function StabilityPoolsTable() {
                     <div className="text-white text-sm font-medium">
                       {address &&
                       pool.position &&
-                      pool.position.userDeposit.gt(0) ? (
+                      pool.position.userDeposit.gt(0) &&
+                      pool.totalDeposits.gt(0) ? (
                         <NumericFormat
                           displayType="text"
                           value={pool.position.userDeposit

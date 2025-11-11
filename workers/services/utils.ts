@@ -4,7 +4,7 @@ import { getCollateral, type CollateralId } from "~/lib/collateral";
 
 // Prefixed trove ID format: "branchId:troveId"
 type PrefixedTroveId = string;
-type BranchId = string; // "0" for WWBTC, "1" for UBTC, "2" for GBTC
+type BranchId = string; // "0" for WWBTC, "1" for WXLBTC
 
 const PRICE_CACHE_TTL_MS = 10_000;
 

@@ -20,6 +20,8 @@ export const branchRouter = router({
       try {
         // Get current price
         const priceResult = await getBitcoinprice(provider, input.branchId);
+        console.log("provider", provider);
+        console.log("input.branchId", input.branchId);
         console.log("priceResult", priceResult);
         const priceBig = bigintToBig(priceResult, 18);
 

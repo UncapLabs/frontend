@@ -5,7 +5,7 @@ import deploymentData from "../contracts/deployment_addresses";
 import { USDU_ADDRESS, GAS_TOKEN_ADDRESS } from "../contracts/constants";
 
 // CollateralId type
-export type CollateralId = "WWBTC"; // | "UBTC";
+export type CollateralId = "WWBTC"; // | "WXLBTC";
 
 // Base Token type - can be used for any token (collateral, stablecoin, etc.)
 export interface Token {
@@ -71,7 +71,7 @@ export const COLLATERALS = {
   WWBTC: createCollateral({
     id: "WWBTC",
     symbol: "wBTC", // User-facing name
-    name: "Wrapped MWBitcoin",
+    name: "Wrapped Bitcoin",
     decimals: 18, // Wrapped token decimals
     icon: "/wbtc.webp",
     branchId: 0,
@@ -105,35 +105,41 @@ export const COLLATERALS = {
       decimals: 8,
     },
   }),
-  // UBTC: createCollateral({
-  //   id: "UBTC",
-  //   symbol: "UBTC",
-  //   name: "Universal Bitcoin",
-  //   decimals: 18,
-  //   icon: "/bitcoin.png",
+  // WXLBTC: createCollateral({
+  //   id: "WXLBTC",
+  //   symbol: "xLBTC",
+  //   name: "Endur xLBTC",
+  //   decimals: 18, // Wrapped token decimals
+  //   icon: "/xlbtc.svg",
   //   branchId: 1,
-  //   minCollateralizationRatio: new Big(1.1), // 110%
+  //   minCollateralizationRatio: new Big(1.25), // 125%
   //   addresses: {
-  //     token: deploymentData.UBTC.collateral as Address,
-  //     addressesRegistry: deploymentData.UBTC.addressesRegistry as Address,
-  //     borrowerOperations: deploymentData.UBTC.borrowerOperations as Address,
-  //     troveManager: deploymentData.UBTC.troveManager as Address,
-  //     troveNft: deploymentData.UBTC.troveNft as Address,
-  //     stabilityPool: deploymentData.UBTC.stabilityPool as Address,
-  //     sortedTroves: deploymentData.UBTC.sortedTroves as Address,
-  //     activePool: deploymentData.UBTC.activePool as Address,
-  //     defaultPool: deploymentData.UBTC.defaultPool as Address,
-  //     collSurplusPool: deploymentData.UBTC.collSurplusPool as Address,
-  //     gasPool: deploymentData.UBTC.gasPool as Address,
-  //     interestRouter: deploymentData.UBTC.interestRouter as Address,
-  //     liquidationManager: deploymentData.UBTC.liquidationManager as Address,
-  //     redemptionManager: deploymentData.UBTC.redemptionManager as Address,
-  //     batchManager: deploymentData.UBTC.batchManager as Address,
-  //     priceFeed: deploymentData.UBTC.priceFeed as Address,
-  //     hintHelpers: deploymentData.UBTC.hintHelpers as Address,
-  //     multiTroveGetter: deploymentData.UBTC.multiTroveGetter as Address,
-  //     troveManagerEventsEmitter: deploymentData.UBTC
+  //     token: deploymentData.WXLBTC.collateral as Address,
+  //     addressesRegistry: deploymentData.WXLBTC.addressesRegistry as Address,
+  //     borrowerOperations: deploymentData.WXLBTC.borrowerOperations as Address,
+  //     troveManager: deploymentData.WXLBTC.troveManager as Address,
+  //     troveNft: deploymentData.WXLBTC.troveNft as Address,
+  //     stabilityPool: deploymentData.WXLBTC.stabilityPool as Address,
+  //     sortedTroves: deploymentData.WXLBTC.sortedTroves as Address,
+  //     activePool: deploymentData.WXLBTC.activePool as Address,
+  //     defaultPool: deploymentData.WXLBTC.defaultPool as Address,
+  //     collSurplusPool: deploymentData.WXLBTC.collSurplusPool as Address,
+  //     gasPool: deploymentData.WXLBTC.gasPool as Address,
+  //     interestRouter: deploymentData.WXLBTC.interestRouter as Address,
+  //     liquidationManager: deploymentData.WXLBTC.liquidationManager as Address,
+  //     redemptionManager: deploymentData.WXLBTC.redemptionManager as Address,
+  //     batchManager: deploymentData.WXLBTC.batchManager as Address,
+  //     priceFeed: deploymentData.WXLBTC.priceFeed as Address,
+  //     hintHelpers: deploymentData.WXLBTC.hintHelpers as Address,
+  //     multiTroveGetter: deploymentData.WXLBTC.multiTroveGetter as Address,
+  //     troveManagerEventsEmitter: deploymentData.WXLBTC
   //       .troveManagerEventsEmitter as Address,
+  //   },
+  //   defaultInterestManager: deploymentData.WXLBTC
+  //     .defaultInterestManager as Address,
+  //   underlyingToken: {
+  //     address: deploymentData.WXLBTC.underlyingAddress as Address,
+  //     decimals: 8,
   //   },
   // }),
 } as const;
@@ -165,12 +171,12 @@ export const TOKENS = {
 // Branch ID mappings (for contract interactions)
 export const COLLATERAL_TO_BRANCH = {
   WWBTC: 0,
-  UBTC: 1,
+  WXLBTC: 1,
 } as const;
 
 export const BRANCH_TO_COLLATERAL = {
   0: "WWBTC",
-  1: "UBTC",
+  1: "WXLBTC",
 } as const;
 
 export type BranchId = 0 | 1;

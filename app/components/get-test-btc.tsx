@@ -31,9 +31,8 @@ export function GetTestBtc() {
   );
   const [amount, setAmount] = useState<string>("1");
 
-  // For WWBTC, we mint the underlying token (8 decimals)
-  const tokenConfig =
-    selectedToken === "WWBTC" ? COLLATERALS.WWBTC : DEFAULT_COLLATERAL;
+  // Get the config for the selected token
+  const tokenConfig = COLLATERALS[selectedToken] || DEFAULT_COLLATERAL;
 
   // Get the actual token to mint (underlying for wrapped tokens)
   const mintTokenAddress = tokenConfig.underlyingToken
@@ -119,9 +118,8 @@ export function GetTestBtc() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {/* <SelectItem value="UBTC">UBTC</SelectItem> */}
-              {/* <SelectItem value="GBTC">GBTC</SelectItem> */}
               <SelectItem value="WWBTC">wBTC (8 decimals)</SelectItem>
+              <SelectItem value="WXLBTC">wXLBTC</SelectItem>
             </SelectContent>
           </Select>
         </div>

@@ -8,7 +8,7 @@ interface CollateralPriceOptions {
 
 /**
  * Hook to fetch collateral price for a specific collateral type
- * @param collateralType - The type of collateral (WWBTC, UBTC, GBTC)
+ * @param collateralType - The type of collateral (WWBTC, WXLBTC, etc.)
  * @param options - Optional configuration
  */
 export function useCollateralPrice(
