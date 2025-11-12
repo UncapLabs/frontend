@@ -348,8 +348,8 @@ export async function fetchLoansByAccount(
   provider: RpcProvider,
   graphqlClient: GraphQLClient,
   account: string | null | undefined
-): Promise<{ positions: Position[]; errors: PositionWithError["error"][] }> {
-  if (!account) return { positions: [], errors: [] };
+): Promise<{ positions: Position[]; errors: PositionWithError["error"][]; liquidatedCount: number }> {
+  if (!account) return { positions: [], errors: [], liquidatedCount: 0 };
 
   // Retry indexer calls with same logic as RPC calls for consistent error handling
   const troves = await retryWithBackoff(
@@ -367,11 +367,12 @@ export async function fetchLoansByAccount(
 
   // Filter to only process active troves - no need to make RPC calls for closed/liquidated positions
   const activeTroves = troves.filter((trove) => trove.status === "active");
+  const liquidatedCount = troves.filter((trove) => trove.status === "liquidated").length;
 
   console.log(
     `[fetchLoansByAccount] Found ${troves.length} total troves, ${
       activeTroves.length
-    } active. Skipping RPC calls for ${
+    } active, ${liquidatedCount} liquidated. Skipping RPC calls for ${
       troves.length - activeTroves.length
     } non-active troves.`
   );
@@ -446,7 +447,7 @@ export async function fetchLoansByAccount(
     } non-active), ${errors.length} errors`
   );
 
-  return { positions, errors };
+  return { positions, errors, liquidatedCount };
 }
 
 export async function getNextOwnerIndex(

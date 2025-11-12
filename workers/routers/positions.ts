@@ -27,7 +27,7 @@ export const positionsRouter = router({
         const graphqlEndpoint = ctx.env.GRAPHQL_ENDPOINT;
         const graphqlClient = createGraphQLClient(graphqlEndpoint);
 
-        const { positions, errors } = await fetchLoansByAccount(
+        const { positions, errors, liquidatedCount } = await fetchLoansByAccount(
           provider,
           graphqlClient,
           userAddress
@@ -41,7 +41,7 @@ export const positionsRouter = router({
           );
         }
 
-        return { positions, errors };
+        return { positions, errors, liquidatedCount };
       } catch (error) {
         console.error("Error fetching user positions:", error);
         throw new Error("Failed to fetch on-chain positions");

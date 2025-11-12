@@ -8,7 +8,11 @@ import {
 } from "~/components/ui/tooltip";
 import { usePredictUpfrontFee } from "~/hooks/use-predict-upfront-fee";
 import { bigToBigint, bigintToBig } from "~/lib/decimal";
-import { DEFAULT_COLLATERAL, type CollateralId } from "~/lib/collateral";
+import {
+  DEFAULT_COLLATERAL,
+  getCollateral,
+  type CollateralId,
+} from "~/lib/collateral";
 import Big from "big.js";
 
 interface PositionChange {
@@ -59,6 +63,13 @@ export function TransactionSummary({
       : type === "update"
       ? "Position Changes"
       : "Close Position";
+
+  // Calculate max LTV based on selected collateral's min collateralization ratio
+  const selectedCollateral = getCollateral(
+    collateralType || DEFAULT_COLLATERAL.id
+  );
+  const maxDisplayLTV =
+    new Big(1).div(selectedCollateral.minCollateralizationRatio).times(100).toNumber();
 
   const annualInterestCost =
     changes.debt?.to && changes.interestRate?.to
@@ -500,8 +511,7 @@ export function TransactionSummary({
                     .times(100)
                 : new Big(0);
 
-            // Calculate the position percentage (scale to max 87% for display)
-            const maxDisplayLTV = 87;
+            // Calculate the position percentage relative to max LTV
             const position = Math.min(
               (currentLTV.toNumber() / maxDisplayLTV) * 100,
               100

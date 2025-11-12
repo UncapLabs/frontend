@@ -28,6 +28,7 @@ export function useUserTroves(address: `0x${string}` | undefined) {
 
   const troves = trovesData?.positions || [];
   const fetchErrors = trovesData?.errors || [];
+  const liquidatedCount = trovesData?.liquidatedCount || 0;
 
   // Log errors to console for debugging
   if (fetchErrors.length > 0) {
@@ -46,5 +47,6 @@ export function useUserTroves(address: `0x${string}` | undefined) {
     hasActiveTroves: troves.length > 0,
     partialDataAvailable: fetchErrors.length > 0 && troves.length > 0,
     failedTroves: fetchErrors,
+    liquidatedCount,
   };
 }

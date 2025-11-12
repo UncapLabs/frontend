@@ -25,5 +25,28 @@
     "troveManagerEventsEmitter": "0x4d86c9b70f1d2fcb741127b2f920b572baf0ff35489ec11afb605cccacfd551",
     "underlyingAddress": "0x138a381fb3b06c59c626c5038ad718fd587e1366857113a584b317de04db46c",
     "defaultInterestManager": "0x305aca6cadcd7d6f4ebd60fd7ea32e020b8eff3fc3709733fc37e0102628f10"
+  },
+  "WXLBTC": {
+    "collateral": "0x2d4cef5f28442f6fd2f22b22c796f5bee60095f03eb5f070c13f64a1427873e",
+    "addressesRegistry": "0x67f2cebda5cb9e29f442caf2644fc8184fa89c4fe36b6828caebcd7e4b254ae",
+    "borrowerOperations": "0x52b7a02804ce35c1421221a6a91b339d4b594bcaae3fc14bbbd3c76c4e5c070",
+    "troveManager": "0x42db76c6c00ffa494ac07218c6165b36fa4ab03ed995b2cb6feb447453abc01",
+    "troveNft": "0x388d09d92ad5ded31e3af36de7e5f200a7cc671a57a0b14b6294ea5ebd99b06",
+    "stabilityPool": "0x78ccbc4075c00712a39e740ad6bcb24e1e96b68c7768da7bd57817255e8b980",
+    "sortedTroves": "0x58d44b855ce725ef13e1ff6d69ee7aa995b9d1c18f730e0082037aa2a8a9ca6",
+    "activePool": "0x7a165bfaeb48ef3262b87ee80986a93d1d63e1a3f9f0655904cf091b779f108",
+    "defaultPool": "0x1c5bfcf415d6cf18ac69ea3c433fe925ec737fb2196a26902abe0d99fee8777",
+    "collSurplusPool": "0x78577b214811d4c4fb1325c1a023f4f8507c90328e6bab5db155cd80bf76efb",
+    "gasPool": "0x7104c05051f055706dee9002fd5ec5f9e9334a62947b7cf920badb49eb8b07a",
+    "interestRouter": "0x03Bb8724887FE0f9DcFC3806053314Ce7F091fB876fc128c5080B27fa77203f2",
+    "liquidationManager": "0x58d3cce963f09fea312bb374592cbc54c4d87aa892aaf3250a5df768edbf71e",
+    "redemptionManager": "0x288837971e260e1013639c44fcff039a0d3c932107377237cd381ab4a2bce46",
+    "batchManager": "0x52e606730c5e2b94f5fcab4c61189295e0fe2a5da74d1b4ef21bbdf2452b63",
+    "priceFeed": "0x55538ded9fd8db7d26ac3ecac0a035aad301db9deef44ee5b969c10722098a",
+    "hintHelpers": "0x2a6315c1f4323be9fa5fc3fe5152854628945d73f3df851364cdd9bbb9c450f",
+    "multiTroveGetter": "0x7a165bfaeb48ef3262b87ee80986a93d1d63e1a3f9f0655904cf091b779f108",
+    "troveManagerEventsEmitter": "0x22ce6fc0261745477a05adb72cb8b0d49e021560009012c51b9889c5af47af4",
+    "underlyingAddress": "0x34c38b1b64c0bc824f01d2bc31a94dc8ec770f84efaad6f2ab89aa55eec856c",
+    "defaultInterestManager": "0x305aca6cadcd7d6f4ebd60fd7ea32e020b8eff3fc3709733fc37e0102628f10"
   }
 }

@@ -34,7 +34,7 @@ export default function Dashboard() {
   const [filter, setFilter] = useQueryState("filter", {
     defaultValue: "all" as FilterType,
   });
-  const { troves, isLoading, failedTroves, refetch, error } =
+  const { troves, isLoading, failedTroves, refetch, error, liquidatedCount } =
     useUserTroves(address);
 
   const allStabilityPoolPositions = useAllStabilityPoolPositions();
@@ -42,10 +42,7 @@ export default function Dashboard() {
   // Fetch USDU price (shared across all stability pool cards)
   const usduPrice = useUsduPrice();
 
-  // Separate liquidated from active/zombie positions
-  const liquidatedTroves = troves.filter((t) => t.status === "liquidated");
-  const activeTroves = troves.filter((t) => t.status !== "liquidated");
-  const hasActiveTroves = activeTroves.length > 0;
+  const hasActiveTroves = troves.length > 0;
 
   const hasFailedTroves = failedTroves.length > 0;
   const hasSuccessfulTroves = troves.length > 0;
@@ -190,7 +187,7 @@ export default function Dashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Show active positions when wallet is connected */}
                 {filter !== "earn" &&
-                  activeTroves.map((trove) => (
+                  troves.map((trove) => (
                     <BorrowCard
                       key={trove.id}
                       trove={trove}
@@ -255,7 +252,7 @@ export default function Dashboard() {
       </div>
 
       <LiquidationWarning
-        liquidatedCount={liquidatedTroves.length}
+        liquidatedCount={liquidatedCount}
         onViewDetails={handleLiquidatedPosition}
       />
       <BottomBanner
