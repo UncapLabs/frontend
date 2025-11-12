@@ -82,7 +82,7 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
               </h3>
             </div>
             <p className="text-xs text-[#B2B2B2]">
-              Borrow USDU against your wBTC at the interest rate of your choice.
+              Borrow USDU against your WBTC at the interest rate of your choice.
             </p>
           </div>
 
@@ -516,7 +516,8 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
               </div>
             </div>
             <p className="text-xs text-[#B2B2B2]">
-              Provide liquidity to the USDU/USDC pool on Ekubo and earn bonus points.
+              Provide liquidity to the USDU/USDC pool on Ekubo and earn bonus
+              points.
             </p>
           </div>
 

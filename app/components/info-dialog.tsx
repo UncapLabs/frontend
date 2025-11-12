@@ -161,11 +161,11 @@ export function InfoDialog({
                     2
                   </div>
                   <p className="text-sm font-medium font-sora text-neutral-800">
-                    Bridge wBTC to Starknet
+                    Bridge WBTC to Starknet
                   </p>
                 </div>
                 <p className="text-xs font-normal font-sora text-neutral-600 ml-8">
-                  Visit Atomiq Exchange and swap BTC → wBTC on Starknet
+                  Visit Atomiq Exchange and swap BTC → WBTC on Starknet
                 </p>
                 <a
                   href="https://app.atomiq.exchange/?utm_source=uncap.finance"
@@ -226,7 +226,7 @@ export function InfoDialog({
 
         <div>
           <p className="text-sm font-normal font-sora text-neutral-700 mb-4">
-            Bridge wBTC from Ethereum or other EVM chains using official
+            Bridge WBTC from Ethereum or other EVM chains using official
             Starknet bridges
           </p>
 
@@ -271,8 +271,8 @@ export function InfoDialog({
                   </p>
                 </div>
                 <p className="text-xs font-normal font-sora text-neutral-600 ml-8">
-                  Bridge wBTC directly, or bridge any token (like ETH) and swap
-                  to wBTC on AVNU
+                  Bridge WBTC directly, or bridge any token (like ETH) and swap
+                  to WBTC on AVNU
                 </p>
                 <div className="flex flex-wrap gap-2 mt-1 ml-8">
                   <a
@@ -329,7 +329,7 @@ export function InfoDialog({
 
           <div className="max-w-md">
             <p className="text-sm font-normal font-sora text-neutral-700 text-justify">
-              Deposit wBTC as collateral to open a borrowing position. Your
+              Deposit WBTC as collateral to open a borrowing position. Your
               Bitcoin remains under your control. You can adjust your loan,
               including your interest rate, or repay your debt at any time.
             </p>

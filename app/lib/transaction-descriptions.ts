@@ -67,8 +67,11 @@ export function createTransactionDescription(
           const usduAmount = Number(details.usduRewards).toFixed(2);
           parts.push(`${usduAmount} USDU`);
         }
-        if (details.collateralRewards && Number(details.collateralRewards) > 0) {
-          const collateralSymbol = details.collateralToken || "wBTC";
+        if (
+          details.collateralRewards &&
+          Number(details.collateralRewards) > 0
+        ) {
+          const collateralSymbol = details.collateralToken || "WBTC";
           const collateralAmount = Number(details.collateralRewards).toFixed(7);
           parts.push(`${collateralAmount} ${collateralSymbol}`);
         }

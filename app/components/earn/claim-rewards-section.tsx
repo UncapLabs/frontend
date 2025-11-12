@@ -32,7 +32,7 @@ export function ClaimRewardsSection({
   const collateralRewardsUSD = collateralRewards.times(collateralPrice);
   const totalUSD = usduRewardsUSD.plus(collateralRewardsUSD);
 
-  // Get user-facing symbol (e.g., "wBTC" instead of "WWBTC")
+  // Get user-facing symbol (e.g., "WBTC" instead of "WWBTC")
   const collateral = getCollateral(selectedCollateral);
   const collateralSymbol = collateral.symbol;
 

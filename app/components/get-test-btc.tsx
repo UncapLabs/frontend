@@ -118,7 +118,7 @@ export function GetTestBtc() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="WWBTC">wBTC (8 decimals)</SelectItem>
+              <SelectItem value="WWBTC">WBTC (8 decimals)</SelectItem>
               <SelectItem value="WXLBTC">wXLBTC</SelectItem>
             </SelectContent>
           </Select>

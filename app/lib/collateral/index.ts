@@ -70,7 +70,7 @@ function createCollateral(config: Omit<Collateral, "address">): Collateral {
 export const COLLATERALS = {
   WWBTC: createCollateral({
     id: "WWBTC",
-    symbol: "wBTC", // User-facing name
+    symbol: "WBTC", // User-facing name
     name: "Wrapped Bitcoin",
     decimals: 18, // Wrapped token decimals
     icon: "/wbtc.webp",

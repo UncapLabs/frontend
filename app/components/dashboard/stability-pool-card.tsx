@@ -33,7 +33,7 @@ export default function StabilityPoolCard({
   onDepositClick,
   onRewardsClick,
 }: StabilityPoolCardProps) {
-  // Get user-facing symbol (e.g., "wBTC" instead of "WWBTC")
+  // Get user-facing symbol (e.g., "WBTC" instead of "WWBTC")
   const collateral = getCollateral(poolType);
   const poolSymbol = collateral.symbol;
   return (

@@ -242,7 +242,7 @@ function formatTransactionDetails(
       return (
         <div className="space-y-0.5">
           {/* Handle stability pool claims with separate rewards */}
-          {(details.usduRewards || details.collateralRewards) ? (
+          {details.usduRewards || details.collateralRewards ? (
             <>
               {details.usduRewards && Number(details.usduRewards) > 0 && (
                 <div className="text-xs font-sora text-neutral-600">
@@ -252,17 +252,18 @@ function formatTransactionDetails(
                   </span>
                 </div>
               )}
-              {details.collateralRewards && Number(details.collateralRewards) > 0 && (
-                <div className="text-xs font-sora text-neutral-600">
-                  <span className="text-neutral-500">
-                    {details.collateralToken || "wBTC"}:
-                  </span>{" "}
-                  <span className="font-medium text-neutral-800">
-                    <FormattedNumber value={details.collateralRewards} />{" "}
-                    {details.collateralToken || "wBTC"}
-                  </span>
-                </div>
-              )}
+              {details.collateralRewards &&
+                Number(details.collateralRewards) > 0 && (
+                  <div className="text-xs font-sora text-neutral-600">
+                    <span className="text-neutral-500">
+                      {details.collateralToken || "WBTC"}:
+                    </span>{" "}
+                    <span className="font-medium text-neutral-800">
+                      <FormattedNumber value={details.collateralRewards} />{" "}
+                      {details.collateralToken || "WBTC"}
+                    </span>
+                  </div>
+                )}
               {details.pool && (
                 <div className="text-xs font-sora text-neutral-600">
                   <span className="text-neutral-500">Pool:</span>{" "}
@@ -275,7 +276,8 @@ function formatTransactionDetails(
             </>
           ) : (
             /* Handle simple claims */
-            details.amount && details.token && (
+            details.amount &&
+            details.token && (
               <div className="text-xs font-sora text-neutral-600">
                 <span className="text-neutral-500">Claimed:</span>{" "}
                 <span className="font-medium text-neutral-800">
@@ -351,17 +353,18 @@ function formatTransactionDetails(
               </span>
             </div>
           )}
-          {details.collateralRewards && Number(details.collateralRewards) > 0 && (
-            <div className="text-xs font-sora text-neutral-600">
-              <span className="text-neutral-500">
-                + {details.collateralToken || "wBTC"} rewards:
-              </span>{" "}
-              <span className="font-medium text-neutral-800">
-                <FormattedNumber value={details.collateralRewards} />{" "}
-                {details.collateralToken || "wBTC"}
-              </span>
-            </div>
-          )}
+          {details.collateralRewards &&
+            Number(details.collateralRewards) > 0 && (
+              <div className="text-xs font-sora text-neutral-600">
+                <span className="text-neutral-500">
+                  + {details.collateralToken || "WBTC"} rewards:
+                </span>{" "}
+                <span className="font-medium text-neutral-800">
+                  <FormattedNumber value={details.collateralRewards} />{" "}
+                  {details.collateralToken || "WBTC"}
+                </span>
+              </div>
+            )}
           {details.pool && (
             <div className="text-xs font-sora text-neutral-600">
               <span className="text-neutral-500">Pool:</span>{" "}
