@@ -24,6 +24,8 @@ import {
 } from "lucide-react";
 import { Link, useLocation } from "react-router";
 import { TransactionHistoryButton } from "./transaction-history-button";
+import { Banner1 } from "~/components/banner1";
+import { useFeatureFlag } from "~/lib/use-feature-flag";
 
 function Logo() {
   return (
@@ -293,6 +295,7 @@ function Header() {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { data: outageBannerFlag } = useFeatureFlag("show_outage_banner");
 
   const isMoreActive = moreNavItems.some(
     (item) => item.href === location.pathname
@@ -300,6 +303,15 @@ function Header() {
 
   return (
     <header className="bg-[#F5F3EE]/80 sticky top-0 z-50 backdrop-blur-lg backdrop-saturate-150">
+      {outageBannerFlag?.enabled && (
+        <Banner1
+          title="Service Update"
+          description="We're currently experiencing technical difficulties."
+          linkText="Check our Twitter for updates"
+          linkUrl="https://x.com/uncapfinance"
+          defaultVisible={true}
+        />
+      )}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-14">
           {/* Left side: Navigation Links (Desktop) */}

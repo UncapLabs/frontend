@@ -8,6 +8,7 @@ import { stabilityPoolRouter } from "./routers/stability-pool";
 import { createCallerFactory, router } from "./trpc";
 import { contentRouter } from "./routers/content";
 import { claimRouter } from "./routers/claim";
+import { featureFlagsRouter } from "./routers/feature-flags";
 
 // Define our app's router
 export const appRouter = router({
@@ -20,6 +21,7 @@ export const appRouter = router({
   stabilityPoolRouter,
   contentRouter,
   claimRouter,
+  featureFlagsRouter,
 });
 
 // Export type of AppRouter for client-side use
