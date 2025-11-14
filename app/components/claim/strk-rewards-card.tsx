@@ -144,7 +144,7 @@ export function STRKRewardsCard() {
     <>
       <div className="flex justify-between pb-6 items-baseline">
         <h1 className="text-3xl md:text-4xl lg:text-5xl font-medium leading-10 font-sora text-[#242424]">
-          STRK Rewards
+          BTCFi Season Rewards
         </h1>
       </div>
 
