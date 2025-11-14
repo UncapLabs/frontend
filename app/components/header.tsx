@@ -179,6 +179,25 @@ function LeaderboardIcon() {
   );
 }
 
+// STRK Rewards Icon (Starknet-style logo)
+function StrkRewardsIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 12 12"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M6 0L7.236 4.764L12 6L7.236 7.236L6 12L4.764 7.236L0 6L4.764 4.764L6 0Z"
+        fill="currentColor"
+      />
+      <circle cx="6" cy="6" r="1.5" fill="currentColor" opacity="0.5" />
+    </svg>
+  );
+}
+
 function NavLink({
   children,
   href = "#",
@@ -276,6 +295,11 @@ function Header() {
   ];
 
   const moreNavItems = [
+    {
+      name: "STRK Rewards",
+      href: "/claim",
+      icon: <StrkRewardsIcon />,
+    },
     {
       name: "Points",
       href: "/points",

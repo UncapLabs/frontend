@@ -312,7 +312,7 @@ export function InterestRateSelector({
         )}
 
         {/* STRK Rebate - shared between both modes */}
-        {/* {borrowAmount && borrowAmount.gt(0) && rebateData && (
+        {borrowAmount && borrowAmount.gt(0) && rebateData && (
           <STRKRebateInfo
             yearlyInterestUSD={rebateData.yearlyInterestUSD}
             yearlyRebateUSD={rebateData.yearlyRebateUSD}
@@ -327,7 +327,7 @@ export function InterestRateSelector({
                 : undefined
             }
           />
-        )} */}
+        )}
       </div>
     </div>
   );

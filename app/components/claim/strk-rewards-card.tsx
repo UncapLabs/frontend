@@ -22,9 +22,9 @@ import { TOKENS } from "~/lib/collateral";
 import { bigintToBig } from "~/lib/decimal";
 import { useCallback, useMemo } from "react";
 
-// Helper to get week dates - Week 1 starts Nov 5, 2025
+// Helper to get week dates - Week 1 starts Nov 12, 2025
 function getWeekDates(weekNumber: number): { start: string; end: string } {
-  const weekStartDate = new Date("2025-11-05");
+  const weekStartDate = new Date("2025-11-12");
   const startDate = new Date(weekStartDate);
   startDate.setDate(weekStartDate.getDate() + (weekNumber - 1) * 7);
 
@@ -32,7 +32,11 @@ function getWeekDates(weekNumber: number): { start: string; end: string } {
   endDate.setDate(startDate.getDate() + 7);
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   };
 
   return {
