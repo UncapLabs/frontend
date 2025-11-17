@@ -68,6 +68,10 @@
 		{
 			"binding": "FEATURE_FLAGS",
 			"id": "a20c216a8ab64032974258b05228b618"
+		},
+		{
+			"binding": "CACHE",
+			"id": "1fe3011279004ff490a11b66abd5af16"
 		}
 	],
 	/**

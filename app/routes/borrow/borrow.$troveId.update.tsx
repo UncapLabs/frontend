@@ -839,8 +839,8 @@ function UpdatePosition() {
                           borrowAmount.eq(0) ||
                           targetDebt.lt(MIN_DEBT)))
                     }
-                    borrowAmount={borrowAmount}
-                    collateralAmount={collateralAmount}
+                    borrowAmount={targetDebt}
+                    collateralAmount={targetCollateral}
                     collateralPriceUSD={bitcoin?.price}
                     collateralType={selectedCollateral.id}
                     lastInterestRateAdjTime={position?.lastInterestRateAdjTime}

@@ -7,12 +7,13 @@ import {
   CollapsibleTrigger,
 } from "~/components/ui/collapsible";
 import Big from "big.js";
+import { useUncapIncentiveRates } from "~/hooks/use-incentive-rates";
 
 interface STRKRebateInfoProps {
   yearlyInterestUSD: Big;
   yearlyRebateUSD: Big;
-  collateralValueUSD?: Big;
-  yearlyCollateralRebateUSD?: Big;
+  collateralValueUSD: Big;
+  yearlyCollateralRebateUSD: Big;
 }
 
 export function STRKRebateInfo({
@@ -21,7 +22,12 @@ export function STRKRebateInfo({
   collateralValueUSD = new Big(0),
   yearlyCollateralRebateUSD = new Big(0),
 }: STRKRebateInfoProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
+
+  // Fetch dynamic rates from API with fallbacks to hardcoded values
+  const { data: rates } = useUncapIncentiveRates();
+  const borrowRatePercent = (rates?.borrowRate ?? 0.4) * 100; // Fallback: 40%
+  const supplyRatePercent = (rates?.supplyRate ?? 0.02) * 100; // Fallback: 2%
 
   // Total rebate is interest rebate + collateral rebate
   const totalYearlyRebateUSD = yearlyRebateUSD.plus(yearlyCollateralRebateUSD);
@@ -65,15 +71,55 @@ export function STRKRebateInfo({
       <CollapsibleContent>
         <div className="px-3 pb-3 border-t border-neutral-100">
           <p className="text-xs text-neutral-600 font-sora mt-3 mb-3">
-            You get a 40% discount on your interest rate + 2% rebate on your
-            collateral value, paid as STRK tokens claimable weekly.
+            You get up to a {borrowRatePercent}% discount on your interest rate +
+            up to {supplyRatePercent}% rebate on your collateral value, paid as
+            STRK tokens claimable weekly.
           </p>
 
           <div className="space-y-3">
+            {/* Collateral Rebate Section */}
+            <div className="space-y-2 pt-2 border-t border-neutral-100">
+              <div className="text-xs font-medium text-neutral-800 font-sora">
+                Collateral Rebate (up to {supplyRatePercent}%)
+              </div>
+
+              <div className="flex justify-between items-center pl-3">
+                <span className="text-xs text-neutral-600 font-sora">
+                  Collateral Value
+                </span>
+                <span className="text-xs text-neutral-600 font-sora">
+                  $
+                  <NumericFormat
+                    displayType="text"
+                    value={collateralValueUSD.toString()}
+                    thousandSeparator=","
+                    decimalScale={2}
+                    fixedDecimalScale
+                  />
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center pl-3">
+                <span className="text-xs text-neutral-600 font-sora">
+                  Collateral Rebate
+                </span>
+                <span className="text-xs font-medium text-green-600 font-sora">
+                  +$
+                  <NumericFormat
+                    displayType="text"
+                    value={yearlyCollateralRebateUSD.toString()}
+                    thousandSeparator=","
+                    decimalScale={2}
+                    fixedDecimalScale
+                  />
+                </span>
+              </div>
+            </div>
+
             {/* Interest Rebate Section */}
             <div className="space-y-2">
               <div className="text-xs font-medium text-neutral-800 font-sora">
-                Interest Rebate (40%)
+                Interest Rebate (up to {borrowRatePercent}%)
               </div>
 
               <div className="flex justify-between items-center pl-3">
@@ -108,47 +154,6 @@ export function STRKRebateInfo({
                 </span>
               </div>
             </div>
-
-            {/* Collateral Rebate Section */}
-            {collateralValueUSD.gt(0) && (
-              <div className="space-y-2 pt-2 border-t border-neutral-100">
-                <div className="text-xs font-medium text-neutral-800 font-sora">
-                  Collateral Rebate (2%)
-                </div>
-
-                <div className="flex justify-between items-center pl-3">
-                  <span className="text-xs text-neutral-600 font-sora">
-                    Collateral Value
-                  </span>
-                  <span className="text-xs text-neutral-600 font-sora">
-                    $
-                    <NumericFormat
-                      displayType="text"
-                      value={collateralValueUSD.toString()}
-                      thousandSeparator=","
-                      decimalScale={2}
-                      fixedDecimalScale
-                    />
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center pl-3">
-                  <span className="text-xs text-neutral-600 font-sora">
-                    Collateral Rebate
-                  </span>
-                  <span className="text-xs font-medium text-green-600 font-sora">
-                    +$
-                    <NumericFormat
-                      displayType="text"
-                      value={yearlyCollateralRebateUSD.toString()}
-                      thousandSeparator=","
-                      decimalScale={2}
-                      fixedDecimalScale
-                    />
-                  </span>
-                </div>
-              </div>
-            )}
 
             {/* Total Section */}
             <div className="space-y-2 pt-2 border-t border-neutral-100">

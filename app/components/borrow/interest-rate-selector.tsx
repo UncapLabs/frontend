@@ -311,23 +311,21 @@ export function InterestRateSelector({
           </div>
         )}
 
-        {/* STRK Rebate - shared between both modes */}
-        {borrowAmount && borrowAmount.gt(0) && rebateData && (
-          <STRKRebateInfo
-            yearlyInterestUSD={rebateData.yearlyInterestUSD}
-            yearlyRebateUSD={rebateData.yearlyRebateUSD}
-            collateralValueUSD={
-              collateralAmount && collateralPriceUSD
-                ? collateralAmount.times(collateralPriceUSD)
-                : undefined
-            }
-            yearlyCollateralRebateUSD={
-              collateralAmount && collateralPriceUSD
-                ? collateralAmount.times(collateralPriceUSD).times(0.02)
-                : undefined
-            }
-          />
-        )}
+        {/* STRK Rebate */}
+        <STRKRebateInfo
+          yearlyInterestUSD={rebateData?.yearlyInterestUSD ?? new Big(0)}
+          yearlyRebateUSD={rebateData?.yearlyRebateUSD ?? new Big(0)}
+          collateralValueUSD={
+            collateralAmount && collateralPriceUSD
+              ? collateralAmount.times(collateralPriceUSD)
+              : new Big(0)
+          }
+          yearlyCollateralRebateUSD={
+            collateralAmount && collateralPriceUSD
+              ? collateralAmount.times(collateralPriceUSD).times(0.02)
+              : new Big(0)
+          }
+        />
       </div>
     </div>
   );

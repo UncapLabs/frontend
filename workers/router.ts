@@ -9,6 +9,7 @@ import { createCallerFactory, router } from "./trpc";
 import { contentRouter } from "./routers/content";
 import { claimRouter } from "./routers/claim";
 import { featureFlagsRouter } from "./routers/feature-flags";
+import { incentivesRouter } from "./routers/incentives";
 
 // Define our app's router
 export const appRouter = router({
@@ -22,6 +23,7 @@ export const appRouter = router({
   contentRouter,
   claimRouter,
   featureFlagsRouter,
+  incentivesRouter,
 });
 
 // Export type of AppRouter for client-side use

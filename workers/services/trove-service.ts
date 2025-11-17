@@ -348,7 +348,11 @@ export async function fetchLoansByAccount(
   provider: RpcProvider,
   graphqlClient: GraphQLClient,
   account: string | null | undefined
-): Promise<{ positions: Position[]; errors: PositionWithError["error"][]; liquidatedCount: number }> {
+): Promise<{
+  positions: Position[];
+  errors: PositionWithError["error"][];
+  liquidatedCount: number;
+}> {
   if (!account) return { positions: [], errors: [], liquidatedCount: 0 };
 
   // Retry indexer calls with same logic as RPC calls for consistent error handling
@@ -367,7 +371,9 @@ export async function fetchLoansByAccount(
 
   // Filter to only process active troves - no need to make RPC calls for closed/liquidated positions
   const activeTroves = troves.filter((trove) => trove.status === "active");
-  const liquidatedCount = troves.filter((trove) => trove.status === "liquidated").length;
+  const liquidatedCount = troves.filter(
+    (trove) => trove.status === "liquidated"
+  ).length;
 
   console.log(
     `[fetchLoansByAccount] Found ${troves.length} total troves, ${

@@ -21,6 +21,7 @@ import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { TOKENS } from "~/lib/collateral";
 import { bigintToBig } from "~/lib/decimal";
 import { useCallback, useMemo } from "react";
+import { useUncapIncentiveRates } from "~/hooks/use-incentive-rates";
 
 // Helper to get week dates - Week 1 starts Nov 12, 2025
 function getWeekDates(weekNumber: number): { start: string; end: string } {
@@ -48,6 +49,11 @@ function getWeekDates(weekNumber: number): { start: string; end: string } {
 export function STRKRewardsCard() {
   const { address } = useAccount();
   const { connectWallet } = useWalletConnect();
+
+  // Fetch dynamic incentive rates with fallbacks
+  const { data: rates } = useUncapIncentiveRates();
+  const borrowRatePercent = (rates?.borrowRate ?? 0.4) * 100; // Fallback: 40%
+  const supplyRatePercent = (rates?.supplyRate ?? 0.02) * 100; // Fallback: 2%
 
   // Fetch data from hooks - all return Big from TRPC
   const { alreadyClaimed, refetch: refetchClaimed } = useStrkAlreadyClaimed();
@@ -352,14 +358,15 @@ export function STRKRewardsCard() {
             </CardHeader>
             <CardContent className="space-y-2">
               <p className="text-sm font-sora text-neutral-700">
-                Earn STRK rewards by borrowing USDU. Get 40% of your interest
-                back plus 2% of your collateral value annually, paid weekly.
+                Earn STRK rewards by borrowing USDU. Get up to {borrowRatePercent}
+                % of your interest back plus up to {supplyRatePercent}% of your
+                collateral value annually, paid weekly.
               </p>
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="rounded-md p-2.5 text-center bg-neutral-50 border border-neutral-200">
                   <div className="text-lg font-medium font-sora text-neutral-800 leading-none">
-                    40%
+                    {borrowRatePercent}%
                   </div>
                   <div className="text-[11px] font-sora text-neutral-600 mt-1">
                     Interest Rebate
@@ -367,7 +374,7 @@ export function STRKRewardsCard() {
                 </div>
                 <div className="rounded-md p-2.5 text-center bg-neutral-50 border border-neutral-200">
                   <div className="text-lg font-medium font-sora text-neutral-800 leading-none">
-                    2%
+                    {supplyRatePercent}%
                   </div>
                   <div className="text-[11px] font-sora text-neutral-600 mt-1">
                     Collateral APR
@@ -406,7 +413,7 @@ export function STRKRewardsCard() {
                   <div className="mt-2.5 pt-2.5 border-t border-neutral-200 space-y-1.5 text-[13px] font-sora">
                     <div className="flex justify-between">
                       <span className="text-neutral-600">
-                        Interest Rebate (40%)
+                        Interest Rebate ({borrowRatePercent}%)
                       </span>
                       <span className="font-medium text-neutral-800">
                         $1,000/yr
@@ -414,7 +421,7 @@ export function STRKRewardsCard() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-neutral-600">
-                        Collateral Rewards (2%)
+                        Collateral Rewards ({supplyRatePercent}%)
                       </span>
                       <span className="font-medium text-neutral-800">
                         $2,000/yr
