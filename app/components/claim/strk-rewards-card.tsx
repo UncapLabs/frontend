@@ -382,6 +382,10 @@ export function STRKRewardsCard() {
                 </div>
               </div>
 
+              <p className="text-[11px] text-neutral-500 font-sora italic mt-2">
+                * Rates are subject to change
+              </p>
+
               <div className="mt-4 md:mt-5">
                 <h4 className="text-xs font-medium font-sora uppercase tracking-tight text-neutral-800 mb-2">
                   Example with $100k BTC

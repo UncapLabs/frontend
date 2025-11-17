@@ -43,7 +43,7 @@ interface LendingIncentivesResponse {
 }
 
 const API_BASE_URL = "https://www.data-openblocklabs.com";
-const CACHE_TTL = 30 * 60; // 30 minutes (API caches for 30 mins)
+const CACHE_TTL = 30 * 60 * 12; // 12 hours
 
 /**
  * Fetches Uncap protocol incentive rates from the Starknet API
@@ -75,8 +75,6 @@ export async function getUncapIncentiveRates(
   }
 
   const data = (await response.json()) as LendingIncentivesResponse;
-
-  console.log("data", data);
 
   // Extract rates from the response
   // Find first entry for each incentivized side
