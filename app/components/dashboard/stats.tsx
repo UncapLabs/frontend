@@ -7,12 +7,9 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { useNavigate } from "react-router";
-import {
-  useAllBranchTCRs,
-  useAllAverageInterestRates,
-  useAllInterestRateVisualization,
-} from "~/hooks/use-all-branch-stats";
+import { useAllBranchTCRs } from "~/hooks/use-all-branch-stats";
 import { useStabilityPoolData } from "~/hooks/use-stability-pool-data";
+import { useUncapIncentiveRates } from "~/hooks/use-incentive-rates";
 import { COLLATERAL_LIST } from "~/lib/collateral";
 import Big from "big.js";
 import { NumericFormat } from "react-number-format";
@@ -20,9 +17,7 @@ import { NumericFormat } from "react-number-format";
 interface BorrowRateItem {
   collateral: string;
   icon: string;
-  borrowRate: Big | undefined;
-  totalDebt: string;
-  maxLTV: string;
+  supplyAPR: Big | undefined;
   totalCollateral: string;
   collateralAddress?: string;
 }
@@ -42,6 +37,10 @@ interface RatesTableProps {
 
 export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
   const navigate = useNavigate();
+
+  // Fetch incentive rates for description
+  const { data: rates } = useUncapIncentiveRates();
+  const supplyRatePercent = (rates?.supplyRate ?? 0.02) * 100; // Fallback: 2%
 
   const handleBorrowClick = (collateralAddress?: string) => {
     if (collateralAddress) {
@@ -82,7 +81,8 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
               </h3>
             </div>
             <p className="text-xs text-[#B2B2B2]">
-              Borrow USDU against your WBTC at the interest rate of your choice.
+              Borrow USDU against your WBTC at the interest rate of your choice
+              and earn up to {supplyRatePercent}% APR on your collateral.
             </p>
           </div>
 
@@ -95,10 +95,10 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                     Collateral
                   </TableHead>
                   <TableHead className="text-[#B2B2B2] text-[7px] leading-[7px] font-normal font-sora uppercase h-6 text-right">
-                    Total Collateral
+                    Supply APR
                   </TableHead>
                   <TableHead className="text-[#B2B2B2] text-[7px] leading-[7px] font-normal font-sora uppercase h-6 text-right">
-                    Total debt
+                    Total Collateral
                   </TableHead>
                   <TableHead className="text-[#B2B2B2] text-[7px] leading-[7px] font-normal font-sora uppercase h-6 text-right">
                     Borrow
@@ -125,11 +125,24 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-white text-sm font-normal font-sora text-right tabular-nums min-w-[70px]">
-                      {rate.totalCollateral}
+                    <TableCell className="text-white text-sm font-normal font-sora text-right tabular-nums min-w-[100px]">
+                      {rate.supplyAPR ? (
+                        <>
+                          <NumericFormat
+                            displayType="text"
+                            value={rate.supplyAPR.toString()}
+                            thousandSeparator=","
+                            decimalScale={2}
+                            fixedDecimalScale
+                          />
+                          %
+                        </>
+                      ) : (
+                        "—"
+                      )}
                     </TableCell>
                     <TableCell className="text-white text-sm font-normal font-sora text-right tabular-nums min-w-[70px]">
-                      {rate.totalDebt}
+                      {rate.totalCollateral}
                     </TableCell>
                     <TableCell className="text-right pr-0 py-3">
                       <button
@@ -186,18 +199,31 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                   <div className="flex justify-between gap-6">
                     <div className="flex-1">
                       <div className="text-[#B2B2B2] text-xs mb-1">
-                        Total Coll.
+                        Supply APR
                       </div>
                       <div className="text-white text-sm font-medium">
-                        {rate.totalCollateral}
+                        {rate.supplyAPR ? (
+                          <>
+                            <NumericFormat
+                              displayType="text"
+                              value={rate.supplyAPR.toString()}
+                              thousandSeparator=","
+                              decimalScale={2}
+                              fixedDecimalScale
+                            />
+                            %
+                          </>
+                        ) : (
+                          "—"
+                        )}
                       </div>
                     </div>
                     <div className="flex-1 text-right">
                       <div className="text-[#B2B2B2] text-xs mb-1">
-                        Total Debt
+                        Total Collateral
                       </div>
                       <div className="text-white text-sm font-medium">
-                        {rate.totalDebt}
+                        {rate.totalCollateral}
                       </div>
                     </div>
                   </div>
@@ -661,10 +687,12 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
 
 export default function Stats() {
   // Fetch data for all collaterals dynamically
-  const interestRateData = useAllAverageInterestRates();
-  const visualizationData = useAllInterestRateVisualization();
   const tcrData = useAllBranchTCRs();
   const stabilityPoolData = useStabilityPoolData();
+
+  // Fetch incentive rates for supply APR
+  const { data: rates } = useUncapIncentiveRates();
+  const supplyRatePercent = rates?.supplyRate ?? 0.02; // Fallback: 2%
 
   // Helper function to format currency values
   const formatCurrency = (value: Big | undefined): string => {
@@ -681,18 +709,12 @@ export default function Stats() {
 
   // Build borrow rates dynamically using COLLATERAL_LIST
   const borrowRates: BorrowRateItem[] = COLLATERAL_LIST.map((collateral) => {
-    const rateData = interestRateData[collateral.id];
-    const vizData = visualizationData[collateral.id];
     const tcr = tcrData[collateral.id];
-    const minCollatRatio = collateral.minCollateralizationRatio.toNumber();
-    const maxLTV = (1 / minCollatRatio) * 100;
 
     return {
       collateral: collateral.symbol,
       icon: collateral.icon,
-      borrowRate: rateData.data,
-      totalDebt: formatCurrency(vizData.data?.totalDebt),
-      maxLTV: `${maxLTV.toFixed(2)}%`,
+      supplyAPR: new Big(supplyRatePercent * 100), // Convert to percentage
       totalCollateral: formatCurrency(tcr.data?.totalCollateralUSD),
       collateralAddress: collateral.address,
     };

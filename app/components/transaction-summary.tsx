@@ -7,6 +7,7 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { usePredictUpfrontFee } from "~/hooks/use-predict-upfront-fee";
+import { useUncapIncentiveRates } from "~/hooks/use-incentive-rates";
 import { bigToBigint, bigintToBig } from "~/lib/decimal";
 import {
   DEFAULT_COLLATERAL,
@@ -75,6 +76,28 @@ export function TransactionSummary({
     changes.debt?.to && changes.interestRate?.to
       ? changes.debt.to.times(changes.interestRate.to).div(100)
       : new Big(0);
+
+  // Fetch STRK reward rates
+  const { data: rates } = useUncapIncentiveRates();
+  const borrowRate = rates?.borrowRate ?? 0.4; // 40% fallback
+  const supplyRate = rates?.supplyRate ?? 0.02; // 2% fallback
+
+  // Calculate STRK rewards
+  const yearlyInterestRebateUSD =
+    changes.debt?.to && changes.interestRate?.to
+      ? changes.debt.to
+          .times(changes.interestRate.to)
+          .div(100)
+          .times(borrowRate)
+      : new Big(0);
+
+  const yearlyCollateralRebateUSD = changes.collateralValueUSD?.to
+    ? changes.collateralValueUSD.to.times(supplyRate)
+    : new Big(0);
+
+  const totalYearlyRebateUSD = yearlyInterestRebateUSD.plus(
+    yearlyCollateralRebateUSD
+  );
 
   // Determine if we're increasing debt (for updates)
   const isDebtIncrease =
@@ -365,6 +388,38 @@ export function TransactionSummary({
                 </div>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* STRK Rewards */}
+        <div className="flex justify-between items-start">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-neutral-800 text-sm font-normal font-sora cursor-help">
+                STRK Rewards
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>
+                Annual STRK rewards from interest rebate ({(borrowRate * 100).toFixed(0)}
+                %) and collateral rewards ({(supplyRate * 100).toFixed(0)}%)
+              </p>
+            </TooltipContent>
+          </Tooltip>
+          <div className="text-right">
+            <div className="space-y-0.5">
+              <div className="text-base font-medium font-sora text-green-600">
+                +$
+                <NumericFormat
+                  displayType="text"
+                  value={totalYearlyRebateUSD.toString()}
+                  thousandSeparator=","
+                  decimalScale={2}
+                  fixedDecimalScale
+                />
+                /year
+              </div>
+            </div>
           </div>
         </div>
 
