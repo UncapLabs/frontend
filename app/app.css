@@ -24,6 +24,19 @@
   --color-token-bg-blue: #3b82f6;
   --color-token-bg-strk: #ec796b;
   --color-token-strk: #ec796b;
+
+  --animate-float-slow: float 6s ease-in-out infinite;
+  --animate-float-delayed: float 7s ease-in-out 3s infinite;
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
 }
 
 html,
