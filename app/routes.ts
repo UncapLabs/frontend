@@ -7,16 +7,17 @@ import {
 
 export default [
   // Landing page without header/layout
-  // index("routes/landing.tsx"),
-
+  
   // Resource routes
   route("/robots.txt", "routes/resources/robots.txt.ts"),
   route("/sitemap.xml", "routes/resources/sitemap-index.ts"),
   route("/sitemap-app.xml", "routes/resources/sitemap.ts"),
-
+  
   // All other pages with header/layout
   layout("routes/app.tsx", [
-    index("routes/dashboard/dashboard.tsx"),
+    index("routes/landing.tsx"),
+    // index("routes/dashboard/dashboard.tsx"),
+    route("/dashboard", "routes/dashboard/dashboard.tsx"),
     route("/borrow", "routes/borrow/borrow.tsx"),
     route("borrow/liquidated", "routes/borrow/borrow.liquidated.tsx"),
     route("borrow/:troveId", "routes/borrow/borrow.$troveId.tsx", [
