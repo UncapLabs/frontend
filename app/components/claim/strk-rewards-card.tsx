@@ -23,14 +23,14 @@ import { bigintToBig } from "~/lib/decimal";
 import { useCallback, useMemo } from "react";
 import { useUncapIncentiveRates } from "~/hooks/use-incentive-rates";
 
-// Helper to get week dates - Week 1 starts Nov 12, 2025
+// Helper to get week dates - Week 1 starts Thursday Nov 13, 2025
 function getWeekDates(weekNumber: number): { start: string; end: string } {
-  const weekStartDate = new Date("2025-11-12");
+  const weekStartDate = new Date("2025-11-13");
   const startDate = new Date(weekStartDate);
   startDate.setDate(weekStartDate.getDate() + (weekNumber - 1) * 7);
 
   const endDate = new Date(startDate);
-  endDate.setDate(startDate.getDate() + 7);
+  endDate.setDate(startDate.getDate() + 6); // 6 days later for Thursday-Wednesday week
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString("en-US", {
