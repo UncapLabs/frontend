@@ -3,8 +3,9 @@ import { Heading, Lead, Subheading } from "~/components/landing/text";
 
 export default function Problem() {
   return (
-    <Container className="mt-16">
-      <Heading as="h1">Your Bitcoin Shouldn't Just Sit There.</Heading>
+    <div id="problem-section">
+      <Container className="mt-16">
+        <Heading as="h1">Your Bitcoin Shouldn't Just Sit There.</Heading>
       <Lead className="mt-6 max-w-3xl">
         For years, Bitcoin holders faced an impossible choice: Sell and lose
         your position, or watch your capital sit idle.
@@ -226,6 +227,7 @@ export default function Problem() {
           </dl>
         </div>
       </section>
-    </Container>
+      </Container>
+    </div>
   );
 }
