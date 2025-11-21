@@ -10,6 +10,7 @@ import { contentRouter } from "./routers/content";
 import { claimRouter } from "./routers/claim";
 import { featureFlagsRouter } from "./routers/feature-flags";
 import { incentivesRouter } from "./routers/incentives";
+import { cacheRouter } from "./routers/cache";
 
 // Define our app's router
 export const appRouter = router({
@@ -24,6 +25,7 @@ export const appRouter = router({
   claimRouter,
   featureFlagsRouter,
   incentivesRouter,
+  cacheRouter,
 });
 
 // Export type of AppRouter for client-side use

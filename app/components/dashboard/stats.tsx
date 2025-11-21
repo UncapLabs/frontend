@@ -13,12 +13,13 @@ import { useUncapIncentiveRates } from "~/hooks/use-incentive-rates";
 import { COLLATERAL_LIST } from "~/lib/collateral";
 import Big from "big.js";
 import { NumericFormat } from "react-number-format";
+import { FormattedNumber } from "~/components/ui/formatted-number";
 
 interface BorrowRateItem {
   collateral: string;
   icon: string;
   supplyAPR: Big | undefined;
-  totalCollateral: string;
+  totalCollateral: Big | undefined;
   collateralAddress?: string;
 }
 
@@ -26,7 +27,7 @@ interface EarnRateItem {
   pool: string;
   icon: string;
   supplyAPR: Big | undefined;
-  totalDeposits: string;
+  totalDeposits: Big | undefined;
   collateralParam?: string;
 }
 
@@ -142,7 +143,7 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                       )}
                     </TableCell>
                     <TableCell className="text-white text-sm font-normal font-sora text-right tabular-nums min-w-[70px]">
-                      {rate.totalCollateral}
+                      <FormattedNumber value={rate.totalCollateral} prefix="$" />
                     </TableCell>
                     <TableCell className="text-right pr-0 py-3">
                       <button
@@ -223,7 +224,7 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                         Total Collateral
                       </div>
                       <div className="text-white text-sm font-medium">
-                        {rate.totalCollateral}
+                        <FormattedNumber value={rate.totalCollateral} prefix="$" />
                       </div>
                     </div>
                   </div>
@@ -364,7 +365,11 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                       )}
                     </TableCell>
                     <TableCell className="text-white text-sm font-normal font-sora text-right tabular-nums min-w-[90px]">
-                      {rate.totalDeposits}
+                      <FormattedNumber
+                        value={rate.totalDeposits}
+                        suffix=" USDU"
+                        decimals={0}
+                      />
                     </TableCell>
                     <TableCell className="text-right pr-0 py-3">
                       <button
@@ -465,7 +470,11 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                         Total Deposits
                       </div>
                       <div className="text-white text-sm font-medium">
-                        {rate.totalDeposits}
+                        <FormattedNumber
+                          value={rate.totalDeposits}
+                          suffix=" USDU"
+                          decimals={0}
+                        />
                       </div>
                     </div>
                   </div>
@@ -694,19 +703,6 @@ export default function Stats() {
   const { data: rates } = useUncapIncentiveRates();
   const supplyRatePercent = rates?.supplyRate ?? 0.02; // Fallback: 2%
 
-  // Helper function to format currency values
-  const formatCurrency = (value: Big | undefined): string => {
-    if (value === undefined || value === null) return "—";
-
-    if (value.gte(1_000_000)) {
-      return `$${value.div(1_000_000).toFixed(1)}M`;
-    } else if (value.gte(1_000)) {
-      return `$${value.div(1_000).toFixed(1)}K`;
-    } else {
-      return `$${value.toFixed(0)}`;
-    }
-  };
-
   // Build borrow rates dynamically using COLLATERAL_LIST
   const borrowRates: BorrowRateItem[] = COLLATERAL_LIST.map((collateral) => {
     const tcr = tcrData[collateral.id];
@@ -715,7 +711,7 @@ export default function Stats() {
       collateral: collateral.symbol,
       icon: collateral.icon,
       supplyAPR: new Big(supplyRatePercent * 100), // Convert to percentage
-      totalCollateral: formatCurrency(tcr.data?.totalCollateralUSD),
+      totalCollateral: tcr.data?.totalCollateralUSD,
       collateralAddress: collateral.address,
     };
   });
@@ -729,7 +725,7 @@ export default function Stats() {
       icon: collateral.icon,
       supplyAPR:
         poolData?.apr !== undefined ? new Big(poolData.apr) : undefined,
-      totalDeposits: formatCurrency(poolData?.totalDeposits),
+      totalDeposits: poolData?.totalDeposits,
     };
   });
 

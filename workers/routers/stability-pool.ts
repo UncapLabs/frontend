@@ -1,13 +1,11 @@
 import * as z from "zod";
 import { router, publicProcedure } from "../trpc";
 import { RpcProvider } from "starknet";
-import { contractRead } from "~/lib/contracts/calls";
-import { CollateralIdSchema, TOKENS, COLLATERAL_LIST, type CollateralId } from "~/lib/collateral";
-import { bigintToBig } from "~/lib/decimal";
-import Big from "big.js";
+import { CollateralIdSchema, COLLATERAL_LIST, type CollateralId } from "~/lib/collateral";
 import {
   fetchPoolPosition,
-  calculateStabilityPoolAPR,
+  getCachedTotalDeposits,
+  getCachedPoolApr,
 } from "workers/services/stability-pool";
 
 export const stabilityPoolRouter = router({
@@ -46,20 +44,7 @@ export const stabilityPoolRouter = router({
       const { collateralType } = input;
       const provider = new RpcProvider({ nodeUrl: ctx.env.NODE_URL });
 
-      try {
-        const totalDeposits = await contractRead.stabilityPool.getTotalDeposits(
-          provider,
-          collateralType
-        );
-        // Return Big instance to preserve precision
-        return bigintToBig(totalDeposits, TOKENS.USDU.decimals);
-      } catch (error) {
-        console.error(
-          `Error fetching total deposits for ${collateralType}:`,
-          error
-        );
-        return new Big(0);
-      }
+      return getCachedTotalDeposits(ctx.env, provider, collateralType);
     }),
   getPoolApr: publicProcedure
     .input(
@@ -70,6 +55,6 @@ export const stabilityPoolRouter = router({
     .query(async ({ input, ctx }) => {
       const { collateralType } = input;
       const provider = new RpcProvider({ nodeUrl: ctx.env.NODE_URL });
-      return calculateStabilityPoolAPR(provider, collateralType);
+      return getCachedPoolApr(ctx.env, provider, collateralType);
     }),
 });

@@ -9,7 +9,10 @@ export interface StabilityPoolDataQuery {
   isLoading: boolean;
 }
 
-export type UseStabilityPoolDataResult = Record<CollateralId, StabilityPoolDataQuery>;
+export type UseStabilityPoolDataResult = Record<
+  CollateralId,
+  StabilityPoolDataQuery
+>;
 
 export function useStabilityPoolData(): UseStabilityPoolDataResult {
   const trpc = useTRPC();
@@ -45,11 +48,4 @@ export function useStabilityPoolData(): UseStabilityPoolDataResult {
   });
 
   return result;
-}
-
-export function useStabilityPoolDataByType(
-  collateralType: CollateralId
-): StabilityPoolDataQuery {
-  const data = useStabilityPoolData();
-  return data[collateralType];
 }

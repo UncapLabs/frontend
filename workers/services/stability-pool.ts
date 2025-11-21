@@ -10,6 +10,8 @@ import { getAverageInterestRateForBranch } from "./interest";
 import { DEFAULT_RETRY_OPTIONS, retryWithBackoff } from "./retry";
 import Big from "big.js";
 
+const CACHE_TTL = 5 * 60; // 5 minutes
+
 export async function fetchPoolPosition(
   provider: RpcProvider,
   userAddress: string,
@@ -117,4 +119,70 @@ export async function calculateStabilityPoolAPR(
     console.error(`Error calculating APR for ${collateralType}:`, error);
     return 0;
   }
+}
+
+/**
+ * Get total deposits with caching support
+ */
+export async function getCachedTotalDeposits(
+  env: Env,
+  provider: RpcProvider,
+  collateralType: CollateralId
+): Promise<Big> {
+  const cacheKey = `stability-pool-deposits-${collateralType}`;
+
+  // Try to get from KV store first
+  const cached = await env.CACHE.get(cacheKey, "text");
+  if (cached) {
+    return new Big(cached);
+  }
+
+  // Fetch fresh data from blockchain
+  try {
+    const totalDeposits = await contractRead.stabilityPool.getTotalDeposits(
+      provider,
+      collateralType
+    );
+    const result = bigintToBig(totalDeposits, TOKENS.USDU.decimals);
+
+    // Cache the result as text
+    await env.CACHE.put(cacheKey, result.toString(), {
+      expirationTtl: CACHE_TTL,
+    });
+
+    return result;
+  } catch (error) {
+    console.error(
+      `Error fetching total deposits for ${collateralType}:`,
+      error
+    );
+    return new Big(0);
+  }
+}
+
+/**
+ * Get pool APR with caching support
+ */
+export async function getCachedPoolApr(
+  env: Env,
+  provider: RpcProvider,
+  collateralType: CollateralId
+): Promise<number> {
+  const cacheKey = `stability-pool-apr-${collateralType}`;
+
+  // Try to get from KV store first
+  const cached = await env.CACHE.get(cacheKey, "text");
+  if (cached) {
+    return Number(cached);
+  }
+
+  // Calculate fresh APR
+  const apr = await calculateStabilityPoolAPR(provider, collateralType);
+
+  // Cache the result as text
+  await env.CACHE.put(cacheKey, apr.toString(), {
+    expirationTtl: CACHE_TTL,
+  });
+
+  return apr;
 }

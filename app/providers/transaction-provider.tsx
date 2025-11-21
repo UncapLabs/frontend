@@ -5,7 +5,7 @@ import {
   type TransactionStore,
   createTransactionStore,
 } from "~/lib/transaction-store";
-import { useTRPC } from "~/lib/trpc";
+import { useTRPC, useTRPCClient } from "~/lib/trpc";
 import type { TransactionStatus } from "~/types/transaction";
 import { getBranchId, type CollateralId } from "~/lib/collateral";
 
@@ -26,6 +26,7 @@ export function TransactionStoreProvider({
   const { address } = useAccount();
   const queryClient = useQueryClient();
   const trpc = useTRPC();
+  const trpcClient = useTRPCClient();
 
   // Use existing store if it exists, or lazily create one
   const [store] = React.useState(
@@ -193,27 +194,34 @@ export function TransactionStoreProvider({
           transaction?.type === "withdraw"
         ) {
           // For stability pool transactions, wait a bit for the chain to update
-          // then invalidate queries
-          setTimeout(() => {
-            // Invalidate all stability pool positions
-            queryClient.invalidateQueries({
-              queryKey: trpc.stabilityPoolRouter.getAllPositions.queryKey({
-                userAddress: address,
-              }),
-            });
+          // then clear server cache and invalidate queries
+          setTimeout(async () => {
+            // Bust server-side cache if pool (collateral type) is known
+            if (transaction.details?.pool) {
+              // Clear server-side KV cache for this collateral type
+              await trpcClient.cacheRouter.clearKeys.mutate({
+                keys: [
+                  `stability-pool-deposits-${transaction.details.pool}`,
+                  `stability-pool-apr-${transaction.details.pool}`,
+                ],
+              });
 
-            // Also invalidate total deposits queries if collateral type is known
-            if (transaction.details?.collateralType) {
+              // Now invalidate client-side queries to trigger refetch with fresh data
               queryClient.invalidateQueries({
-                queryKey: trpc.stabilityPoolRouter.getPoolApr.queryKey({
-                  collateralType: transaction.details.collateralType,
+                queryKey: trpc.stabilityPoolRouter.getAllPositions.queryKey({
+                  userAddress: address,
                 }),
               });
 
-              // Invalidate total deposits for that collateral
+              queryClient.invalidateQueries({
+                queryKey: trpc.stabilityPoolRouter.getPoolApr.queryKey({
+                  collateralType: transaction.details.pool,
+                }),
+              });
+
               queryClient.invalidateQueries({
                 queryKey: trpc.stabilityPoolRouter.getTotalDeposits.queryKey({
-                  collateralType: transaction.details.collateralType,
+                  collateralType: transaction.details.pool,
                 }),
               });
             }
@@ -221,7 +229,7 @@ export function TransactionStoreProvider({
         }
       }
     },
-    [address, queryClient, trpc, store, pollForTrove]
+    [address, queryClient, trpc, trpcClient, store, pollForTrove]
   );
 
   // Keep store provider up to date

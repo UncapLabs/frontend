@@ -4,6 +4,7 @@ import { useAccount } from "@starknet-react/core";
 import { useAllStabilityPoolPositions } from "~/hooks/use-stability-pool";
 import { useStabilityPoolData } from "~/hooks/use-stability-pool-data";
 import Big from "big.js";
+import { FormattedNumber } from "~/components/ui/formatted-number";
 
 export function StabilityPoolsTable() {
   const { address } = useAccount();
@@ -14,9 +15,7 @@ export function StabilityPoolsTable() {
     collateralType: collateral.id,
     collateral,
     totalDeposits:
-      stabilityPoolData[collateral.id]?.totalDeposits ??
-      allPositions[collateral.id]?.totalDeposits ??
-      new Big(0),
+      stabilityPoolData[collateral.id]?.totalDeposits ?? new Big(0),
     apr: stabilityPoolData[collateral.id]?.apr ?? 0,
     position: allPositions[collateral.id],
   }));
@@ -87,12 +86,10 @@ export function StabilityPoolsTable() {
                       Total Value Locked
                     </div>
                     <div className="text-white text-sm font-medium">
-                      <NumericFormat
-                        displayType="text"
-                        value={pool.totalDeposits.toString()}
-                        thousandSeparator=","
-                        decimalScale={0}
+                      <FormattedNumber
+                        value={pool.totalDeposits}
                         suffix=" USDU"
+                        decimals={0}
                       />
                     </div>
                   </div>
@@ -104,12 +101,10 @@ export function StabilityPoolsTable() {
                       {address &&
                       pool.position &&
                       pool.position.userDeposit.gt(0) ? (
-                        <NumericFormat
-                          displayType="text"
-                          value={pool.position.userDeposit.toString()}
-                          thousandSeparator=","
+                        <FormattedNumber
+                          value={pool.position.userDeposit}
                           suffix=" USDU"
-                          decimalScale={0}
+                          decimals={0}
                         />
                       ) : (
                         <span className="text-[#B2B2B2]">—</span>
