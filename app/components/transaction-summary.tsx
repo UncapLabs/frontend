@@ -69,8 +69,10 @@ export function TransactionSummary({
   const selectedCollateral = getCollateral(
     collateralType || DEFAULT_COLLATERAL.id
   );
-  const maxDisplayLTV =
-    new Big(1).div(selectedCollateral.minCollateralizationRatio).times(100).toNumber();
+  const maxDisplayLTV = new Big(1)
+    .div(selectedCollateral.minCollateralizationRatio)
+    .times(100)
+    .toNumber();
 
   const annualInterestCost =
     changes.debt?.to && changes.interestRate?.to
@@ -391,34 +393,60 @@ export function TransactionSummary({
           </div>
         </div>
 
-        {/* STRK Rewards */}
+        {/* Net Cost of Borrowing */}
         <div className="flex justify-between items-start">
           <Tooltip>
             <TooltipTrigger asChild>
               <span className="text-neutral-800 text-sm font-normal font-sora cursor-help">
-                STRK Rewards
+                Net Cost of Borrowing
               </span>
             </TooltipTrigger>
             <TooltipContent>
               <p>
-                Annual STRK rewards from interest rebate ({(borrowRate * 100).toFixed(0)}
-                %) and collateral rewards ({(supplyRate * 100).toFixed(0)}%)
+                Annual net cost of borrowing (interest cost minus STRK rewards from interest rebate ({(borrowRate * 100).toFixed(0)}%) and collateral rewards ({(supplyRate * 100).toFixed(0)}%))
               </p>
             </TooltipContent>
           </Tooltip>
           <div className="text-right">
             <div className="space-y-0.5">
-              <div className="text-base font-medium font-sora text-green-600">
-                +$
-                <NumericFormat
-                  displayType="text"
-                  value={totalYearlyRebateUSD.toString()}
-                  thousandSeparator=","
-                  decimalScale={2}
-                  fixedDecimalScale
-                />
-                /year
-              </div>
+              {(() => {
+                const netCost = annualInterestCost.minus(totalYearlyRebateUSD);
+                const isEarning = netCost.lte(0);
+
+                return (
+                  <>
+                    <div className={cn(
+                      "text-base font-medium font-sora",
+                      isEarning ? "text-green-600" : "text-neutral-800"
+                    )}>
+                      {isEarning && "+"}$
+                      <NumericFormat
+                        displayType="text"
+                        value={netCost.abs().toString()}
+                        thousandSeparator=","
+                        decimalScale={2}
+                        fixedDecimalScale
+                      />
+                      /year
+                    </div>
+                    <div className="text-xs text-neutral-800/70 font-sora">
+                      $<NumericFormat
+                        displayType="text"
+                        value={totalYearlyRebateUSD.toString()}
+                        thousandSeparator=","
+                        decimalScale={2}
+                        fixedDecimalScale
+                      /> rewards - <NumericFormat
+                        displayType="text"
+                        value={annualInterestCost.toString()}
+                        thousandSeparator=","
+                        decimalScale={2}
+                        fixedDecimalScale
+                      /> USDU interest
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -561,9 +589,7 @@ export function TransactionSummary({
               changes.collateralValueUSD?.to &&
               changes.debt?.to &&
               changes.collateralValueUSD.to.gt(0)
-                ? changes.debt.to
-                    .div(changes.collateralValueUSD.to)
-                    .times(100)
+                ? changes.debt.to.div(changes.collateralValueUSD.to).times(100)
                 : new Big(0);
 
             // Calculate the position percentage relative to max LTV
@@ -574,9 +600,23 @@ export function TransactionSummary({
 
             // Determine risk status and colors
             const getRiskStatus = (ltv: number) => {
-              if (ltv >= 75) return { label: "Aggressive", color: "text-red-600", gradient: "from-red-400 to-red-600" };
-              if (ltv >= 50) return { label: "Moderate", color: "text-amber-600", gradient: "from-amber-400 to-amber-600" };
-              return { label: "Conservative", color: "text-green-600", gradient: "from-green-400 to-green-600" };
+              if (ltv >= 75)
+                return {
+                  label: "Aggressive",
+                  color: "text-red-600",
+                  gradient: "from-red-400 to-red-600",
+                };
+              if (ltv >= 50)
+                return {
+                  label: "Moderate",
+                  color: "text-amber-600",
+                  gradient: "from-amber-400 to-amber-600",
+                };
+              return {
+                label: "Conservative",
+                color: "text-green-600",
+                gradient: "from-green-400 to-green-600",
+              };
             };
 
             const riskStatus = getRiskStatus(currentLTV.toNumber());
@@ -586,7 +626,10 @@ export function TransactionSummary({
                 {/* Bar with gradient */}
                 <div className="relative h-2 bg-neutral-100 rounded-full overflow-hidden">
                   <div
-                    className={cn("h-full transition-all duration-300 bg-gradient-to-r", riskStatus.gradient)}
+                    className={cn(
+                      "h-full transition-all duration-300 bg-gradient-to-r",
+                      riskStatus.gradient
+                    )}
                     style={{ width: `${position}%` }}
                   />
                 </div>

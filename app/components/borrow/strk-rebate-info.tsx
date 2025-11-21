@@ -71,9 +71,9 @@ export function STRKRebateInfo({
       <CollapsibleContent>
         <div className="px-3 pb-3 border-t border-neutral-100">
           <p className="text-xs text-neutral-600 font-sora mt-3 mb-3">
-            You get up to a {borrowRatePercent}% discount on your interest rate +
-            up to {supplyRatePercent}% rebate on your collateral value, paid as
-            STRK tokens claimable weekly.
+            You get up to a {borrowRatePercent}% discount on your interest rate
+            + up to {supplyRatePercent}% rebate on your collateral value, paid
+            as STRK tokens claimable weekly.
           </p>
 
           <div className="space-y-3">
@@ -126,7 +126,7 @@ export function STRKRebateInfo({
                 <span className="text-xs text-neutral-600 font-sora">
                   Original Annual Interest
                 </span>
-                <span className="text-xs text-neutral-500 line-through font-sora">
+                <span className="text-xs text-neutral-500 font-sora">
                   $
                   <NumericFormat
                     displayType="text"
