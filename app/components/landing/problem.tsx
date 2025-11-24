@@ -33,22 +33,6 @@ export default function Problem() {
                     d="M6 18L18 6M6 6l12 12"
                   />
                 </svg>
-                <span>Custodial lenders that collapsed</span>
-              </div>
-              <div className="flex items-center gap-3 text-base text-[#001B40]/80">
-                <svg
-                  className="h-5 w-5 flex-shrink-0 text-[#FF4800]"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
                 <span>Give up control of your Bitcoin</span>
               </div>
               <div className="flex items-center gap-3 text-base text-[#001B40]/80">
@@ -65,7 +49,7 @@ export default function Problem() {
                     d="M6 18L18 6M6 6l12 12"
                   />
                 </svg>
-                <span>High rates set by governance</span>
+                <span>Custodial lenders that collapsed</span>
               </div>
               <div className="flex items-center gap-3 text-base text-[#001B40]/80">
                 <svg
@@ -82,6 +66,22 @@ export default function Problem() {
                   />
                 </svg>
                 <span>Your Bitcoin gets lent out</span>
+              </div>
+              <div className="flex items-center gap-3 text-base text-[#001B40]/80">
+                <svg
+                  className="h-5 w-5 flex-shrink-0 text-[#FF4800]"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+                <span>High interest rates</span>
               </div>
             </div>
 
@@ -107,7 +107,7 @@ export default function Problem() {
                       strokeWidth="2.25"
                     />
                   </svg>
-                  <span>You set your own interest rate</span>
+                  <span>Full custody and control</span>
                 </div>
                 <div className="flex items-center gap-3 text-base text-[#001B40]/80">
                   <svg
@@ -125,7 +125,7 @@ export default function Problem() {
                       strokeWidth="2.25"
                     />
                   </svg>
-                  <span>Full custody and control</span>
+                  <span>100% transparent on-chain</span>
                 </div>
                 <div className="flex items-center gap-3 text-base text-[#001B40]/80">
                   <svg
@@ -161,7 +161,7 @@ export default function Problem() {
                       strokeWidth="2.25"
                     />
                   </svg>
-                  <span>100% transparent on-chain</span>
+                  <span>You set your own interest rate</span>
                 </div>
               </div>
             </div>
