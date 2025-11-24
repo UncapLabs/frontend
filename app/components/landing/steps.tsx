@@ -58,10 +58,10 @@ function Card({
         <Subheading as="h3" dark={dark}>
           {eyebrow}
         </Subheading>
-        <p className="mt-1 text-2xl/8 font-medium tracking-tight text-gray-950 group-data-dark:text-white">
+        <p className="mt-1 text-2xl/8 font-medium tracking-tight text-[#001B40] group-data-dark:text-white">
           {title}
         </p>
-        <p className="mt-2 max-w-[600px] text-sm/6 text-gray-600 group-data-dark:text-gray-400">
+        <p className="mt-2 max-w-[600px] text-sm/6 text-[#001B40]/80 group-data-dark:text-gray-400">
           {description}
         </p>
       </div>
@@ -109,7 +109,7 @@ export function Steps() {
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
             <Subheading>How it works</Subheading>
-            <Heading as="h3" className="mt-2 max-w-3xl">
+            <Heading as="h3" className="mt-2 max-w-3xl text-[#001B40]">
               Borrow at the Lowest Rates in Four Steps
             </Heading>
           </div>

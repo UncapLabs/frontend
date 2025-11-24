@@ -40,7 +40,7 @@ const products = [
 function Header() {
   return (
     <Container className="mt-16">
-      <Heading as="h1" className="text-center">
+      <Heading as="h1" className="text-center text-[#001B40]">
         Your Bitcoin, Your Way.
       </Heading>
     </Container>
@@ -122,14 +122,14 @@ function ProductCard({ product }: { product: (typeof products)[number] }) {
               >
                 {product.subheadline}
               </Subheading>
-              <h3 className="mt-2 text-2xl font-medium text-gray-950 font-sora">
+              <h3 className="mt-2 text-2xl font-medium text-[#001B40] font-sora">
                 {product.name}
               </h3>
             </div>
           </div>
 
           {/* Description */}
-          <p className="mt-6 text-base/7 text-gray-600">
+          <p className="mt-6 text-base/7 text-[#001B40]/80">
             {product.description}
           </p>
 
@@ -138,7 +138,7 @@ function ProductCard({ product }: { product: (typeof products)[number] }) {
             {product.stats.map((stat) => (
               <li
                 key={stat}
-                className="flex items-start gap-3 text-sm/6 text-gray-900 font-medium"
+                className="flex items-start gap-3 text-sm/6 text-[#001B40] font-medium"
               >
                 <CheckIcon
                   className={cn(

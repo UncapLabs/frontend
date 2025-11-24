@@ -70,7 +70,7 @@ export function BentoSection() {
 
 export function DarkBentoSection() {
   return (
-    <div className="mx-2 mt-2 rounded-4xl bg-gray-900 py-32">
+    <div className="mx-2 mt-2 rounded-4xl bg-[#001B40] py-32">
       <Container>
         <Subheading dark>USDU - The Stablecoin That Powers It All</Subheading>
         <Heading as="h3" dark className="mt-2 max-w-3xl">

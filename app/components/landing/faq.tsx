@@ -15,7 +15,7 @@ export default function FrequentlyAskedQuestions() {
           <Subheading className="text-center">
             Frequently asked questions
           </Subheading>
-          <Heading as="div" className="mt-2 text-center">
+          <Heading as="div" className="mt-2 text-center text-[#001B40]">
             Your questions answered.
           </Heading>
           <div className="mx-auto mt-16 mb-32 max-w-4xl">
@@ -24,10 +24,10 @@ export default function FrequentlyAskedQuestions() {
                 value="item-1"
                 className="border-none rounded-3xl bg-gray-50 px-8"
               >
-                <AccordionTrigger className="text-xl font-medium text-gray-900 font-sora hover:no-underline py-6">
+                <AccordionTrigger className="text-xl font-medium text-[#001B40] font-sora hover:no-underline py-6">
                   Is my Bitcoin safe? What are the risks?
                 </AccordionTrigger>
-                <AccordionContent className="text-lg text-gray-600 font-sora pb-8">
+                <AccordionContent className="text-lg text-[#001B40]/80 font-sora pb-8">
                   Your Bitcoin is never rehypothecated or lent out—it stays in
                   the protocol as your collateral. The main risks are:
                   liquidation if Bitcoin price drops significantly, and smart
@@ -41,10 +41,10 @@ export default function FrequentlyAskedQuestions() {
                 value="item-2"
                 className="border-none rounded-3xl bg-gray-50 px-8"
               >
-                <AccordionTrigger className="text-xl font-medium text-gray-900 font-sora hover:no-underline py-6">
+                <AccordionTrigger className="text-xl font-medium text-[#001B40] font-sora hover:no-underline py-6">
                   How does USDU maintain its $1 peg?
                 </AccordionTrigger>
-                <AccordionContent className="text-lg text-gray-600 font-sora pb-8">
+                <AccordionContent className="text-lg text-[#001B40]/80 font-sora pb-8">
                   USDU maintains its peg through redemptions. Anyone can always
                   redeem 1 USDU for $1 worth of Bitcoin. If USDU trades below
                   $1, arbitrageurs buy it and redeem for $1 of BTC, pushing the
@@ -58,10 +58,10 @@ export default function FrequentlyAskedQuestions() {
                 value="item-3"
                 className="border-none rounded-3xl bg-gray-50 px-8"
               >
-                <AccordionTrigger className="text-xl font-medium text-gray-900 font-sora hover:no-underline py-6">
+                <AccordionTrigger className="text-xl font-medium text-[#001B40] font-sora hover:no-underline py-6">
                   How is Uncap different from other Bitcoin lending platforms?
                 </AccordionTrigger>
-                <AccordionContent className="text-lg text-gray-600 font-sora pb-8">
+                <AccordionContent className="text-lg text-[#001B40]/80 font-sora pb-8">
                   Unlike custodial lenders (Celsius, BlockFi), you keep full
                   control of your Bitcoin. Unlike other DeFi protocols where
                   committees or algorithms set rates, YOU choose your own
@@ -75,10 +75,10 @@ export default function FrequentlyAskedQuestions() {
                 value="item-4"
                 className="border-none rounded-3xl bg-gray-50 px-8"
               >
-                <AccordionTrigger className="text-xl font-medium text-gray-900 font-sora hover:no-underline py-6">
+                <AccordionTrigger className="text-xl font-medium text-[#001B40] font-sora hover:no-underline py-6">
                   Why should I trust USDU over USDC or USDT?
                 </AccordionTrigger>
-                <AccordionContent className="text-lg text-gray-600 font-sora pb-8">
+                <AccordionContent className="text-lg text-[#001B40]/80 font-sora pb-8">
                   USDC and USDT are backed by fiat in bank accounts and
                   controlled by centralized companies that can freeze your
                   funds. USDU is overcollateralized by Bitcoin, fully
@@ -92,10 +92,10 @@ export default function FrequentlyAskedQuestions() {
                 value="item-5"
                 className="border-none rounded-3xl bg-gray-50 px-8"
               >
-                <AccordionTrigger className="text-xl font-medium text-gray-900 font-sora hover:no-underline py-6">
+                <AccordionTrigger className="text-xl font-medium text-[#001B40] font-sora hover:no-underline py-6">
                   Why is Uncap built on Starknet?
                 </AccordionTrigger>
-                <AccordionContent className="text-lg text-gray-600 font-sora pb-8">
+                <AccordionContent className="text-lg text-[#001B40]/80 font-sora pb-8">
                   Starknet provides the scalability and security needed for a
                   Bitcoin DeFi protocol. It offers low transaction costs, high
                   throughput, and advanced cryptographic proofs. Uncap is built
