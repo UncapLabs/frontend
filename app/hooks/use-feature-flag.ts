@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useTRPC } from "./trpc";
+import { useTRPC } from "../lib/trpc";
 
 /**
  * Hook to fetch a single feature flag value from Cloudflare KV

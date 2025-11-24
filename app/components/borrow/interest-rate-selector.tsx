@@ -4,6 +4,7 @@ import { ManualRateControls } from "./manual-rate-controls";
 import { STRKRebateInfo } from "./strk-rebate-info";
 import { ManagedStrategy } from "./managed-strategy";
 import { Info, AlertTriangle } from "lucide-react";
+import { FormattedNumber } from "~/components/ui/formatted-number";
 import {
   useInterestRateVisualizationData,
   useRedemptionRiskOfInterestRate,
@@ -181,9 +182,10 @@ export function InterestRateSelector({
                   <span className="sm:hidden">Ahead:</span>
                 </span>
                 <span className="text-xs font-medium text-neutral-800 font-sora">
-                  {debtInFront.gt(0)
-                    ? `$${debtInFront.div(1_000_000).toFixed(2)}M`
-                    : "—"}
+                  <FormattedNumber
+                    value={debtInFront.gt(0) ? debtInFront : undefined}
+                    prefix="$"
+                  />
                 </span>
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2">
@@ -271,9 +273,10 @@ export function InterestRateSelector({
                   <span className="sm:hidden">Ahead:</span>
                 </span>
                 <span className="text-xs font-medium text-neutral-800 font-sora">
-                  {debtInFront.gt(0)
-                    ? `$${debtInFront.div(1_000_000).toFixed(2)}M`
-                    : "—"}
+                  <FormattedNumber
+                    value={debtInFront.gt(0) ? debtInFront : undefined}
+                    prefix="$"
+                  />
                 </span>
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2">

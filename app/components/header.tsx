@@ -25,7 +25,7 @@ import {
 import { Link, useLocation } from "react-router";
 import { TransactionHistoryButton } from "./transaction-history-button";
 import { Banner1 } from "~/components/banner1";
-import { useFeatureFlag } from "~/lib/use-feature-flag";
+import { useFeatureFlag } from "~/hooks/use-feature-flag";
 
 function Logo() {
   return (
