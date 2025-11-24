@@ -13,9 +13,9 @@ export default [
 
   // All other pages with header/layout
   layout("routes/app.tsx", [
-    // index("routes/landing.tsx"),
-    index("routes/dashboard/dashboard.tsx"),
-    // route("/dashboard", "routes/dashboard/dashboard.tsx"),
+    index("routes/landing.tsx"),
+    // index("routes/dashboard/dashboard.tsx"),
+    route("/dashboard", "routes/dashboard/dashboard.tsx"),
     route("/borrow", "routes/borrow/borrow.tsx"),
     route("borrow/liquidated", "routes/borrow/borrow.liquidated.tsx"),
     route("borrow/:troveId", "routes/borrow/borrow.$troveId.tsx", [

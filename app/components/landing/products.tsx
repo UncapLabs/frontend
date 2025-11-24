@@ -1,75 +1,49 @@
+import { Link } from "react-router";
+import { cn } from "~/lib/utils";
 import { Container } from "~/components/landing/container";
 import { Gradient } from "~/components/landing/gradient";
 import { LogoCloud } from "~/components/landing/logo-cloud";
-import { Heading, Lead, Subheading } from "~/components/landing/text";
+import { Heading, Subheading } from "~/components/landing/text";
 
-const tiers = [
+const products = [
   {
-    name: "Starter" as const,
-    slug: "starter",
-    description: "Everything you need to start selling.",
-    priceMonthly: 99,
-    href: "#",
-    highlights: [
-      { description: "Up to 3 team members" },
-      { description: "Up to 5 deal progress boards" },
-      { description: "Source leads from select platforms" },
-      { description: "RadiantAI integrations", disabled: true },
-      { description: "Competitor analysis", disabled: true },
+    name: "BORROW AGAINST YOUR BITCOIN",
+    subheadline: "Set Your Own Interest Rate",
+    description:
+      "Deposit Bitcoin and borrow USDU at rates you choose—from 0.5%. Your Bitcoin is never lent out or rehypothecated. You get it back when you repay. Swap USDU to USDC, use in DeFi, or hold it.",
+    stats: [
+      "Interest rates from 0.5% (you choose)",
+      "Tax-free liquidity without selling",
+      "Non-custodial (Your keys, your coins)",
     ],
-    features: [
-      { section: "Features", name: "Accounts", value: 3 },
-      { section: "Features", name: "Deal progress boards", value: 5 },
-      { section: "Features", name: "Sourcing platforms", value: "Select" },
-      { section: "Features", name: "Contacts", value: 100 },
-      { section: "Features", name: "AI assisted outreach", value: false },
-      { section: "Analysis", name: "Competitor analysis", value: false },
-      { section: "Analysis", name: "Dashboard reporting", value: false },
-      { section: "Analysis", name: "Community insights", value: false },
-      { section: "Analysis", name: "Performance analysis", value: false },
-      { section: "Support", name: "Email support", value: true },
-      { section: "Support", name: "24 / 7 call center support", value: false },
-      { section: "Support", name: "Dedicated account manager", value: false },
-    ],
+    cta: "Start Borrowing",
+    href: "/borrow",
+    image: "/bitcoin.png",
+    theme: "orange",
   },
   {
-    name: "Enterprise" as const,
-    slug: "enterprise",
-    description: "Added flexibility to close deals at scale.",
-    priceMonthly: 299,
-    href: "#",
-    highlights: [
-      { description: "Unlimited active team members" },
-      { description: "Unlimited deal progress boards" },
-      { description: "Source leads from over 100 verified platforms" },
-      { description: "RadiantAI integrations" },
-      { description: "Unlimited competitor analyses" },
+    name: "USDU STABLECOIN",
+    subheadline: "Bitcoin-Backed & Uncensorable",
+    description:
+      "Every USDU is backed by over $1 of Bitcoin and pegged 1:1 to USD. Always redeemable. Can't be frozen or censored. Earn real yield from borrower interest.",
+    stats: [
+      "Backed by over-collateralized Bitcoin",
+      "Censorship-resistant & immutable",
+      "Earn native yield from protocol revenue",
     ],
-    features: [
-      { section: "Features", name: "Accounts", value: "Unlimited" },
-      { section: "Features", name: "Deal progress boards", value: "Unlimited" },
-      { section: "Features", name: "Sourcing platforms", value: "100+" },
-      { section: "Features", name: "Contacts", value: "Unlimited" },
-      { section: "Features", name: "AI assisted outreach", value: true },
-      { section: "Analysis", name: "Competitor analysis", value: "Unlimited" },
-      { section: "Analysis", name: "Dashboard reporting", value: true },
-      { section: "Analysis", name: "Community insights", value: true },
-      { section: "Analysis", name: "Performance analysis", value: true },
-      { section: "Support", name: "Email support", value: true },
-      { section: "Support", name: "24 / 7 call center support", value: true },
-      { section: "Support", name: "Dedicated account manager", value: true },
-    ],
+    cta: "Get USDU",
+    href: "/#usdu-section",
+    image: "/usdu.png",
+    theme: "blue",
   },
-];
+] as const;
 
 function Header() {
   return (
     <Container className="mt-16">
-      <Heading as="h1">Your Bitcoin, Your Way.</Heading>
-      <Lead className="mt-6 max-w-3xl">
-        Companies all over the world have closed millions of deals with Radiant.
-        Sign up today and start selling smarter.
-      </Lead>
+      <Heading as="h1" className="text-center">
+        Your Bitcoin, Your Way.
+      </Heading>
     </Container>
   );
 }
@@ -80,8 +54,8 @@ function ProductCards() {
       <Gradient className="absolute inset-x-2 top-48 bottom-0 rounded-4xl ring-1 ring-black/5 ring-inset" />
       <Container className="relative">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          {tiers.map((tier, tierIndex) => (
-            <ProductCard key={tierIndex} tier={tier} />
+          {products.map((product) => (
+            <ProductCard key={product.name} product={product} />
           ))}
         </div>
         <LogoCloud className="mt-24" />
@@ -90,67 +64,115 @@ function ProductCards() {
   );
 }
 
-function ProductCard({ tier }: { tier: (typeof tiers)[number] }) {
+function CheckIcon({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<"svg">) {
   return (
-    <div className="-m-2 grid grid-cols-1 rounded-4xl shadow-[inset_0_0_2px_1px_#ffffff4d] ring-1 ring-black/5 max-lg:mx-auto max-lg:w-full max-lg:max-w-md">
-      <div className="grid grid-cols-1 rounded-4xl p-2 shadow-md shadow-black/5">
-        <div className="rounded-3xl bg-white p-10 pb-9 shadow-2xl ring-1 ring-black/5">
-          <Subheading>{tier.name}</Subheading>
-          <p className="mt-2 text-sm/6 text-gray-950/75">{tier.description}</p>
-          <div className="mt-8 flex items-center gap-4">
-            <div className="text-5xl font-medium text-gray-950">
-              ${tier.priceMonthly}
-            </div>
-            <div className="text-sm/5 text-gray-950/75">
-              <p>USD</p>
-              <p>per month</p>
+    <svg
+      viewBox="0 0 18 14"
+      fill="none"
+      aria-hidden="true"
+      className={className}
+      {...props}
+    >
+      <path
+        d="M1 6.76191L6.33333 12L17 1"
+        stroke="currentColor"
+        strokeWidth="2.25"
+      />
+    </svg>
+  );
+}
+
+function ProductCard({ product }: { product: (typeof products)[number] }) {
+  const isOrange = product.theme === "orange";
+
+  return (
+    <div
+      className={cn(
+        "grid grid-cols-1 rounded-4xl p-2 shadow-md shadow-black/5",
+        isOrange ? "bg-orange-50/50" : "bg-blue-50/50"
+      )}
+    >
+      <div
+        className={cn(
+          "flex flex-col rounded-3xl shadow-2xl ring-1 overflow-hidden bg-white h-full",
+          isOrange ? "ring-orange-100" : "ring-blue-100"
+        )}
+      >
+        {/* Image Section - Top Half */}
+        <div
+          className={cn(
+            "flex h-64 sm:h-80 w-full items-center justify-center p-8",
+            isOrange ? "bg-orange-100/50" : "bg-blue-100/50"
+          )}
+        >
+          <img
+            src={product.image}
+            alt={product.name}
+            className="h-full w-auto object-contain drop-shadow-xl transform transition-transform duration-500 hover:scale-105"
+          />
+        </div>
+
+        {/* Content Section */}
+        <div className="flex flex-1 flex-col p-8 sm:p-10">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <Subheading
+                className={cn(isOrange ? "text-orange-600" : "text-blue-600")}
+              >
+                {product.subheadline}
+              </Subheading>
+              <h3 className="mt-2 text-2xl font-medium text-gray-950 font-sora">
+                {product.name}
+              </h3>
             </div>
           </div>
+
+          {/* Description */}
+          <p className="mt-6 text-base/7 text-gray-600">
+            {product.description}
+          </p>
+
+          {/* Stats Section */}
+          <ul className="mt-6 space-y-3">
+            {product.stats.map((stat) => (
+              <li
+                key={stat}
+                className="flex items-start gap-3 text-sm/6 text-gray-900 font-medium"
+              >
+                <CheckIcon
+                  className={cn(
+                    "h-4 w-auto flex-none mt-1",
+                    isOrange ? "text-orange-600" : "text-blue-600"
+                  )}
+                />
+                {stat}
+              </li>
+            ))}
+          </ul>
+
+          <div className="flex-1" />
+
+          {/* CTA */}
           <div className="mt-8">
-            <a href={tier.href}>Start a free trial</a>
-          </div>
-          <div className="mt-8">
-            <h3 className="text-sm/6 font-medium text-gray-950">
-              Start selling with:
-            </h3>
-            <ul className="mt-3 space-y-3">
-              {tier.highlights.map((props, featureIndex) => (
-                <FeatureItem key={featureIndex} {...props} />
-              ))}
-            </ul>
+            <Link
+              to={product.href}
+              className={cn(
+                "inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white transition-colors",
+                isOrange
+                  ? "bg-orange-600 hover:bg-orange-500 focus-visible:outline-orange-600"
+                  : "bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-600"
+              )}
+            >
+              {product.cta}
+              <span aria-hidden="true">→</span>
+            </Link>
           </div>
         </div>
       </div>
     </div>
-  );
-}
-
-function FeatureItem({
-  description,
-  disabled = false,
-}: {
-  description: string;
-  disabled?: boolean;
-}) {
-  return (
-    <li
-      data-disabled={disabled ? true : undefined}
-      className="flex items-start gap-4 text-sm/6 text-gray-950/75 data-disabled:text-gray-950/25"
-    >
-      <span className="inline-flex h-6 items-center">
-        <PlusIcon className="size-3.75 shrink-0 fill-gray-950/25" />
-      </span>
-      {disabled && <span className="sr-only">Not included:</span>}
-      {description}
-    </li>
-  );
-}
-
-function PlusIcon(props: React.ComponentPropsWithoutRef<"svg">) {
-  return (
-    <svg viewBox="0 0 15 15" aria-hidden="true" {...props}>
-      <path clipRule="evenodd" d="M8 0H7v7H0v1h7v7h1V8h7V7H8V0z" />
-    </svg>
   );
 }
 
