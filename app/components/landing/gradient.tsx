@@ -10,11 +10,10 @@ export function Gradient({
       className={clsx(
         className,
         'bg-[#FFFBF5]',
-        // Sophisticated mesh-like gradient using multiple radial fills
-        'bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#FFE8CC] via-[#FFFBF5] to-[#E5F0FF]',
-        'before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] before:from-[#FFFBF5] before:via-transparent before:to-transparent',
-        // Subtle noise texture for premium feel (optional, simulating with opacity)
-        'after:absolute after:inset-0 after:bg-white/30'
+        // Linear gradient from Orange (left/Borrow) to Blue (right/USDU) to match the cards
+        'bg-gradient-to-r from-[#FFE8CC]/80 via-[#FFFBF5] to-[#E5F0FF]/80',
+        // Subtle noise texture for premium feel
+        'after:absolute after:inset-0 after:bg-white/40 after:mix-blend-overlay'
       )}
     />
   )

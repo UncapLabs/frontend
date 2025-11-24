@@ -32,7 +32,7 @@ const products = [
     ],
     cta: "Get USDU",
     href: "/#usdu-section",
-    image: "/illustrations/test3.jpeg",
+    image: "/illustrations/test4.jpeg",
     theme: "blue",
   },
 ] as const;
@@ -102,14 +102,14 @@ function ProductCard({ product }: { product: (typeof products)[number] }) {
         {/* Image Section - Top Half */}
         <div
           className={cn(
-            "flex h-64 sm:h-80 w-full items-center justify-center",
+            "flex h-64 sm:h-80 w-full items-center justify-center overflow-hidden",
             isOrange ? "bg-orange-100/50" : "bg-blue-100/50"
           )}
         >
           <img
             src={product.image}
             alt={product.name}
-            className="h-full w-auto object-fill drop-shadow-xl transform transition-transform duration-500 hover:scale-105"
+            className="size-full object-cover transform transition-transform duration-500 hover:scale-105"
           />
         </div>
 
