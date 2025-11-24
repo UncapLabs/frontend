@@ -1,6 +1,3 @@
-import { LogoCluster } from "~/components/landing/logo-cluster";
-import { Map } from "~/components/landing/map";
-import { Keyboard } from "~/components/landing/keyboard";
 import { Heading, Subheading } from "~/components/landing/text";
 import { Container } from "./container";
 
@@ -104,7 +101,11 @@ export function Steps() {
               title="Deposit Your Bitcoin"
               description="Connect your wallet and deposit WBTC as collateral. Your Bitcoin stays under your control—no custody, no rehypothecation."
               graphic={
-                <div className="h-80 bg-[url(/screenshots/profile.png)] bg-size-[1000px_560px] bg-position-[left_-109px_top_-112px] bg-no-repeat" />
+                <img
+                  src="/illustrations/step1.jpeg"
+                  alt="Deposit Bitcoin"
+                  className="size-full object-cover"
+                />
               }
               fade={["bottom"]}
               className="min-w-[400px] md:min-w-[500px] rounded-lg"
@@ -114,7 +115,11 @@ export function Steps() {
               title="Choose How Much to Borrow"
               description="Decide how much USDU to mint against your Bitcoin. Borrow what you need while maintaining a safe collateral ratio."
               graphic={
-                <div className="absolute inset-0 bg-[url(/screenshots/competitors.png)] bg-size-[1100px_650px] bg-position-[left_-38px_top_-73px] bg-no-repeat" />
+                <img
+                  src="/illustrations/step2.jpeg"
+                  alt="Choose Borrow Amount"
+                  className="size-full object-cover"
+                />
               }
               fade={["bottom"]}
               className="min-w-[400px] md:min-w-[500px] rounded-lg"
@@ -124,9 +129,11 @@ export function Steps() {
               title="Set Your Own Interest Rate"
               description="Choose the rate you want to pay—starting from 0.5%. Lower rates mean cheaper borrowing. This is what makes Uncap the lowest-cost way to borrow against Bitcoin."
               graphic={
-                <div className="flex size-full pt-10 pl-10">
-                  <Keyboard highlighted={["LeftCommand", "LeftShift", "D"]} />
-                </div>
+                <img
+                  src="/illustrations/step3.jpeg"
+                  alt="Set Interest Rate"
+                  className="size-full object-cover"
+                />
               }
               className="min-w-[400px] md:min-w-[500px] rounded-lg"
             />
@@ -134,7 +141,13 @@ export function Steps() {
               eyebrow="Step 4"
               title="Repay Anytime"
               description="Use USDU however you want—swap it to USDC, use it in DeFi, or hold it. When you're ready, repay your loan and get your Bitcoin back."
-              graphic={<LogoCluster />}
+              graphic={
+                <img
+                  src="/illustrations/step4.jpeg"
+                  alt="Repay Anytime"
+                  className="size-full object-cover"
+                />
+              }
               className="min-w-[400px] md:min-w-[500px] rounded-lg"
             />
           </motion.div>
