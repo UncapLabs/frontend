@@ -1,5 +1,11 @@
 import { Container } from "./container";
 import { Heading, Subheading } from "./text";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "~/components/ui/accordion";
 
 export default function FrequentlyAskedQuestions() {
   return (
@@ -12,74 +18,92 @@ export default function FrequentlyAskedQuestions() {
           <Heading as="div" className="mt-2 text-center">
             Your questions answered.
           </Heading>
-          <div className="mx-auto mt-16 mb-32 max-w-xl space-y-12">
-            <dl>
-              <dt className="text-sm font-semibold">
-                What measures are in place to ensure the security of our data?
-              </dt>
-              <dd className="mt-4 text-sm/6 text-gray-600">
-                Data security is a top priority for us, which is ironic given
-                that our business depends on others not taking it very
-                seriously. We understand that any breach could put both us and
-                most of our customers out of business—and behind bars. We employ
-                robust security measures, including data encryption, secure data
-                centers, and regular security audits to ensure this never
-                happens.
-              </dd>
-            </dl>
-            <dl>
-              <dt className="text-sm font-semibold">
-                Is there a mobile app available for your platform?
-              </dt>
-              <dd className="mt-4 text-sm/6 text-gray-600">
-                Yes, we offer a mobile app that provides all the key
-                functionalities of our desktop platform, allowing sales reps to
-                manage deals on the go. Additionally, we have another app
-                pre-installed on most modern smartphones that allows us to track
-                your location, listen to your conversations, and access your
-                camera and microphone at any time. This app is not available for
-                download.
-              </dd>
-            </dl>
-            <dl>
-              <dt className="text-sm font-semibold">
-                Can I customize the workflow to match our company’s deal
-                process?
-              </dt>
-              <dd className="mt-4 text-sm/6 text-gray-600">
-                Yes, our platform is highly customizable, although there should
-                be no need. Before you sign up, we discreetly gather information
-                about your company and its processes from a variety of sources.
-                We then use this information to pre-configure the platform to
-                match your existing workflows. This is why we ask for your
-                social security number and access to your email account during
-                the sign-up process.
-              </dd>
-            </dl>
-            <dl>
-              <dt className="text-sm font-semibold">
-                What kind of support do you offer?
-              </dt>
-              <dd className="mt-4 text-sm/6 text-gray-600">
-                We offer comprehensive support through multiple channels,
-                including 24/7 live chat, email, and phone support. However,
-                since we have full access to your internal network, we will know
-                if you’re having issues before you do.
-              </dd>
-            </dl>
-            <dl>
-              <dt className="text-sm font-semibold">
-                Can I integrate the CRM with other sales intelligence tools?
-              </dt>
-              <dd className="mt-4 text-sm/6 text-gray-600">
-                Yes, our solution integrates seamlessly with a variety of other
-                systems. However, be warned that most of these integrations are
-                short-lived. We have a dedicated team of engineers who
-                reverse-engineer the APIs of other tools, enabling us to build
-                their functionality into our product and eventually put them out
-                of business.
-              </dd>
-            </dl>
+          <div className="mx-auto mt-16 mb-32 max-w-4xl">
+            <Accordion type="single" collapsible className="w-full space-y-6">
+              <AccordionItem
+                value="item-1"
+                className="border-none rounded-3xl bg-gray-50 px-8"
+              >
+                <AccordionTrigger className="text-xl font-medium text-gray-900 font-sora hover:no-underline py-6">
+                  Is my Bitcoin safe? What are the risks?
+                </AccordionTrigger>
+                <AccordionContent className="text-lg text-gray-600 font-sora pb-8">
+                  Your Bitcoin is never rehypothecated or lent out—it stays in
+                  the protocol as your collateral. The main risks are:
+                  liquidation if Bitcoin price drops significantly, and smart
+                  contract risk (though Uncap is built on battle-tested Liquity
+                  v2 architecture). You maintain full control and can verify all
+                  collateral on-chain at any time.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem
+                value="item-2"
+                className="border-none rounded-3xl bg-gray-50 px-8"
+              >
+                <AccordionTrigger className="text-xl font-medium text-gray-900 font-sora hover:no-underline py-6">
+                  How does USDU maintain its $1 peg?
+                </AccordionTrigger>
+                <AccordionContent className="text-lg text-gray-600 font-sora pb-8">
+                  USDU maintains its peg through redemptions. Anyone can always
+                  redeem 1 USDU for $1 worth of Bitcoin. If USDU trades below
+                  $1, arbitrageurs buy it and redeem for $1 of BTC, pushing the
+                  price back up. If it trades above $1, borrowers can mint new
+                  USDU and sell it for profit. This mechanism keeps USDU stable
+                  without algorithms or centralized intervention.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem
+                value="item-3"
+                className="border-none rounded-3xl bg-gray-50 px-8"
+              >
+                <AccordionTrigger className="text-xl font-medium text-gray-900 font-sora hover:no-underline py-6">
+                  How is Uncap different from other Bitcoin lending platforms?
+                </AccordionTrigger>
+                <AccordionContent className="text-lg text-gray-600 font-sora pb-8">
+                  Unlike custodial lenders (Celsius, BlockFi), you keep full
+                  control of your Bitcoin. Unlike other DeFi protocols where
+                  committees or algorithms set rates, YOU choose your own
+                  interest rate. This creates the lowest rates in DeFi. Uncap is
+                  also 100% transparent—every transaction is on-chain and
+                  verifiable.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem
+                value="item-4"
+                className="border-none rounded-3xl bg-gray-50 px-8"
+              >
+                <AccordionTrigger className="text-xl font-medium text-gray-900 font-sora hover:no-underline py-6">
+                  Why should I trust USDU over USDC or USDT?
+                </AccordionTrigger>
+                <AccordionContent className="text-lg text-gray-600 font-sora pb-8">
+                  USDC and USDT are backed by fiat in bank accounts and
+                  controlled by centralized companies that can freeze your
+                  funds. USDU is overcollateralized by Bitcoin, fully
+                  decentralized, and cannot be frozen or censored. There are no
+                  admin keys, no blacklists, and you can always verify the
+                  collateral backing USDU on-chain.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem
+                value="item-5"
+                className="border-none rounded-3xl bg-gray-50 px-8"
+              >
+                <AccordionTrigger className="text-xl font-medium text-gray-900 font-sora hover:no-underline py-6">
+                  Why is Uncap built on Starknet?
+                </AccordionTrigger>
+                <AccordionContent className="text-lg text-gray-600 font-sora pb-8">
+                  Starknet provides the scalability and security needed for a
+                  Bitcoin DeFi protocol. It offers low transaction costs, high
+                  throughput, and advanced cryptographic proofs. Uncap is built
+                  using Cairo, optimized specifically for Starknet's
+                  architecture, ensuring efficient and secure operations.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
         </section>
       </Container>

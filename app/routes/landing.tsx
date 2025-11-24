@@ -25,7 +25,6 @@ export default function Home() {
       <Steps />
 
       {/* Section 4: USDU - The Stablecoin That Powers It All */}
-      <BentoSection />
       <DarkBentoSection />
 
       {/* Section 5: FAQ */}
