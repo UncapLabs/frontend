@@ -326,244 +326,249 @@ function Header() {
   );
 
   return (
-    <header className="bg-[#F5F3EE]/80 sticky top-0 z-50 backdrop-blur-lg backdrop-saturate-150">
-      {outageBannerFlag?.enabled && (
-        <Banner1
-          title="Service Update"
-          description="We're currently experiencing technical difficulties."
-          linkText="Check our Twitter for updates"
-          linkUrl="https://x.com/uncapfinance"
-          defaultVisible={true}
-        />
-      )}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-14">
-          {/* Left side: Navigation Links (Desktop) */}
-          <nav className="hidden md:flex items-center gap-7 flex-1">
-            {mainNavItems.map((item) => (
-              <NavLink
-                key={item.name}
-                href={item.href}
-                isActive={location.pathname === item.href}
-                icon={item.icon}
-              >
-                {item.name}
-              </NavLink>
-            ))}
-
-            {/* More Flyout Menu - Contains everything else */}
-            <NavigationMenu>
-              <NavigationMenuList>
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger
-                    className={`font-sora font-medium text-sm leading-4 bg-transparent hover:bg-transparent data-[state=open]:bg-transparent h-auto px-0 focus:bg-transparent ${
-                      isMoreActive
-                        ? "text-amber-500"
-                        : "text-gray-800 hover:text-amber-500 focus:text-amber-500 data-[state=open]:text-amber-500"
-                    }`}
-                  >
-                    More
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="w-[200px] p-3">
-                      <ul className="grid gap-2">
-                        <li>
-                          {moreNavItems.map((item) => (
-                            <NavigationMenuLink key={item.name} asChild>
-                              <Link
-                                to={item.href}
-                                className={`flex-row items-center gap-2 transition-colors hover:text-amber-500 ${
-                                  location.pathname === item.href
-                                    ? "text-amber-500 [&_path]:fill-[#FF9300] [&_circle]:fill-[#FF9300]"
-                                    : "text-gray-800 [&_path]:fill-[#242424] [&_circle]:fill-[#242424] hover:[&_path]:fill-[#FF9300] hover:[&_circle]:fill-[#FF9300]"
-                                }`}
-                              >
-                                {item.icon}
-                                {item.name}
-                              </Link>
-                            </NavigationMenuLink>
-                          ))}
-                        </li>
-                      </ul>
-                    </div>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-              </NavigationMenuList>
-            </NavigationMenu>
-
-            {/* How To's Flyout Menu */}
-            <NavigationMenu>
-              <NavigationMenuList>
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger className="font-sora font-medium text-sm leading-4 text-gray-800 hover:text-amber-500 bg-transparent hover:bg-transparent data-[state=open]:bg-transparent data-[state=open]:text-amber-500 h-auto px-0 focus:bg-transparent focus:text-amber-500">
-                    How To's
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="grid gap-2 p-3 sm:w-[400px] md:w-[500px] lg:w-[600px] lg:grid-cols-[.75fr_1fr]">
-                      <div className="row-span-3">
-                        <NavigationMenuLink asChild>
-                          <a
-                            className="relative flex h-full w-full select-none flex-col justify-end rounded-lg bg-[#0051bf] hover:!bg-[#0051bf] focus:!bg-[#0051bf] p-4 no-underline outline-none overflow-hidden transition-shadow hover:shadow-lg focus:shadow-md hover:!text-white focus:!text-white"
-                            href={howToItems[0].href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {/* Decorative coin */}
-                            <div className="absolute inset-0 pointer-events-none">
-                              <img
-                                src="/coin_02.png"
-                                alt=""
-                                className="absolute w-40 h-40 top-0 right-0 -translate-y-1/4 translate-x-1/4 object-contain opacity-20"
-                              />
-                            </div>
-
-                            <div className="relative z-10">
-                              <div className="[&_svg]:h-6 [&_svg]:w-6">
-                                {howToItems[0].icon}
-                              </div>
-                              <div className="mb-2 mt-3 text-lg font-medium text-white">
-                                {howToItems[0].name}
-                              </div>
-                              <p className="text-sm leading-tight text-white/90">
-                                {howToItems[0].description}
-                              </p>
-                            </div>
-                          </a>
-                        </NavigationMenuLink>
-                      </div>
-                      {howToItems.slice(1).map((item) => (
-                        <NavigationMenuLink key={item.name} asChild>
-                          <a
-                            className="block select-none space-y-1 rounded-md p-2 leading-none no-underline outline-none transition-colors hover:bg-gray-50 hover:text-amber-500 focus:bg-gray-50 focus:text-amber-500 [&:hover_svg]:text-amber-500 [&:focus_svg]:text-amber-500"
-                            href={item.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <div className="flex items-center gap-1.5 mb-1">
-                              {item.icon}
-                              <div className="text-sm font-medium leading-none">
-                                {item.name}
-                              </div>
-                            </div>
-                            <p className="line-clamp-2 text-sm leading-snug text-gray-600">
-                              {item.description}
-                            </p>
-                          </a>
-                        </NavigationMenuLink>
-                      ))}
-                    </div>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-              </NavigationMenuList>
-            </NavigationMenu>
-          </nav>
-
-          {/* Mobile: Logo and Hamburger Menu */}
-          <div className="md:hidden flex items-center gap-3">
-            <img src="/uncap.png" alt="UNCAP" className="h-5 w-5" />
-            <Drawer open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-              <DrawerTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+    <div className="sticky top-2 z-[100] px-2 sm:px-4">
+      <header className="bg-white/40 backdrop-blur-xl rounded-2xl max-w-screen-2xl mx-auto border border-[#001B40]/5 relative z-[100]">
+        {outageBannerFlag?.enabled && (
+          <Banner1
+            title="Service Update"
+            description="We're currently experiencing technical difficulties."
+            linkText="Check our Twitter for updates"
+            linkUrl="https://x.com/uncapfinance"
+            defaultVisible={true}
+          />
+        )}
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-14">
+            {/* Left side: Navigation Links (Desktop) */}
+            <nav className="hidden md:flex items-center gap-7 flex-1">
+              {mainNavItems.map((item) => (
+                <NavLink
+                  key={item.name}
+                  href={item.href}
+                  isActive={location.pathname === item.href}
+                  icon={item.icon}
                 >
-                  <MenuIcon className="size-5" />
-                  <span className="sr-only">Open menu</span>
-                </Button>
-              </DrawerTrigger>
-              <DrawerContent className="bg-white dark:bg-gray-900">
-                <nav className="mt-4 flex flex-col p-4">
-                  {/* Main Navigation - First 3 items without header */}
-                  <div className="mb-6">
-                    <div className="space-y-1">
-                      {mainNavItems.map((item) => (
-                        <DrawerClose asChild key={item.name}>
-                          <Link
-                            to={item.href}
-                            className={`flex items-center gap-3 px-4 py-2.5 rounded-lg font-sora font-medium text-sm transition-colors ${
-                              location.pathname === item.href
-                                ? "bg-amber-50 text-amber-500 [&_path]:fill-[#FF9300]"
-                                : "text-gray-800 hover:bg-gray-50 hover:text-amber-500 [&_path]:fill-[#242424]"
-                            }`}
-                          >
-                            {item.icon}
-                            {item.name}
-                          </Link>
-                        </DrawerClose>
-                      ))}
-                    </div>
-                  </div>
+                  {item.name}
+                </NavLink>
+              ))}
 
-                  {/* More Section - Contains everything else */}
-                  <div className="mb-6">
-                    <h3 className="px-4 mb-3 text-xs font-semibold font-sora text-gray-500 uppercase tracking-wider">
+              {/* More Flyout Menu - Contains everything else */}
+              <NavigationMenu>
+                <NavigationMenuList>
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger
+                      className={`font-sora font-medium text-sm leading-4 bg-transparent hover:bg-transparent data-[state=open]:bg-transparent h-auto px-0 focus:bg-transparent ${
+                        isMoreActive
+                          ? "text-amber-500"
+                          : "text-gray-800 hover:text-amber-500 focus:text-amber-500 data-[state=open]:text-amber-500"
+                      }`}
+                    >
                       More
-                    </h3>
-                    <div className="space-y-1">
-                      {moreNavItems.map((item) => (
-                        <DrawerClose asChild key={item.name}>
-                          <Link
-                            to={item.href}
-                            className={`flex items-center gap-3 px-4 py-2.5 rounded-lg font-sora font-medium text-sm transition-colors ${
-                              location.pathname === item.href
-                                ? "bg-amber-50 text-amber-500 [&_path]:fill-[#FF9300] [&_circle]:fill-[#FF9300]"
-                                : "text-gray-800 hover:bg-gray-50 hover:text-amber-500 [&_path]:fill-[#242424] [&_circle]:fill-[#242424]"
-                            }`}
-                          >
-                            {item.icon}
-                            {item.name}
-                          </Link>
-                        </DrawerClose>
-                      ))}
-                    </div>
-                  </div>
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <div className="w-[200px] p-3">
+                        <ul className="grid gap-2">
+                          <li>
+                            {moreNavItems.map((item) => (
+                              <NavigationMenuLink key={item.name} asChild>
+                                <Link
+                                  to={item.href}
+                                  className={`flex-row items-center gap-2 transition-colors hover:text-amber-500 ${
+                                    location.pathname === item.href
+                                      ? "text-amber-500 [&_path]:fill-[#FF9300] [&_circle]:fill-[#FF9300]"
+                                      : "text-gray-800 [&_path]:fill-[#242424] [&_circle]:fill-[#242424] hover:[&_path]:fill-[#FF9300] hover:[&_circle]:fill-[#FF9300]"
+                                  }`}
+                                >
+                                  {item.icon}
+                                  {item.name}
+                                </Link>
+                              </NavigationMenuLink>
+                            ))}
+                          </li>
+                        </ul>
+                      </div>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                </NavigationMenuList>
+              </NavigationMenu>
 
-                  {/* How To's Section */}
-                  <div>
-                    <h3 className="px-4 mb-3 text-xs font-semibold font-sora text-gray-500 uppercase tracking-wider">
+              {/* How To's Flyout Menu */}
+              <NavigationMenu>
+                <NavigationMenuList>
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className="font-sora font-medium text-sm leading-4 text-gray-800 hover:text-amber-500 bg-transparent hover:bg-transparent data-[state=open]:bg-transparent data-[state=open]:text-amber-500 h-auto px-0 focus:bg-transparent focus:text-amber-500">
                       How To's
-                    </h3>
-                    <div className="space-y-1">
-                      {howToItems.map((item) => (
-                        <DrawerClose asChild key={item.name}>
-                          <a
-                            href={item.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50 hover:text-amber-500 font-sora font-medium text-sm transition-colors"
-                          >
-                            {item.icon}
-                            {item.name}
-                          </a>
-                        </DrawerClose>
-                      ))}
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <div className="grid gap-2 p-3 sm:w-[400px] md:w-[500px] lg:w-[600px] lg:grid-cols-[.75fr_1fr]">
+                        <div className="row-span-3">
+                          <NavigationMenuLink asChild>
+                            <a
+                              className="relative flex h-full w-full select-none flex-col justify-end rounded-lg bg-[#0051bf] hover:!bg-[#0051bf] focus:!bg-[#0051bf] p-4 no-underline outline-none overflow-hidden transition-shadow hover:shadow-lg focus:shadow-md hover:!text-white focus:!text-white"
+                              href={howToItems[0].href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {/* Decorative coin */}
+                              <div className="absolute inset-0 pointer-events-none">
+                                <img
+                                  src="/coin_02.png"
+                                  alt=""
+                                  className="absolute w-40 h-40 top-0 right-0 -translate-y-1/4 translate-x-1/4 object-contain opacity-20"
+                                />
+                              </div>
+
+                              <div className="relative z-10">
+                                <div className="[&_svg]:h-6 [&_svg]:w-6">
+                                  {howToItems[0].icon}
+                                </div>
+                                <div className="mb-2 mt-3 text-lg font-medium text-white">
+                                  {howToItems[0].name}
+                                </div>
+                                <p className="text-sm leading-tight text-white/90">
+                                  {howToItems[0].description}
+                                </p>
+                              </div>
+                            </a>
+                          </NavigationMenuLink>
+                        </div>
+                        {howToItems.slice(1).map((item) => (
+                          <NavigationMenuLink key={item.name} asChild>
+                            <a
+                              className="block select-none space-y-1 rounded-md p-2 leading-none no-underline outline-none transition-colors hover:bg-gray-50 hover:text-amber-500 focus:bg-gray-50 focus:text-amber-500 [&:hover_svg]:text-amber-500 [&:focus_svg]:text-amber-500"
+                              href={item.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <div className="flex items-center gap-1.5 mb-1">
+                                {item.icon}
+                                <div className="text-sm font-medium leading-none">
+                                  {item.name}
+                                </div>
+                              </div>
+                              <p className="line-clamp-2 text-sm leading-snug text-gray-600">
+                                {item.description}
+                              </p>
+                            </a>
+                          </NavigationMenuLink>
+                        ))}
+                      </div>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                </NavigationMenuList>
+              </NavigationMenu>
+            </nav>
+
+            {/* Mobile: Logo and Hamburger Menu */}
+            <div className="md:hidden flex items-center gap-3">
+              <img src="/uncap.png" alt="UNCAP" className="h-5 w-5" />
+              <Drawer
+                open={isMobileMenuOpen}
+                onOpenChange={setIsMobileMenuOpen}
+              >
+                <DrawerTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                  >
+                    <MenuIcon className="size-5" />
+                    <span className="sr-only">Open menu</span>
+                  </Button>
+                </DrawerTrigger>
+                <DrawerContent className="bg-white dark:bg-gray-900">
+                  <nav className="mt-4 flex flex-col p-4">
+                    {/* Main Navigation - First 3 items without header */}
+                    <div className="mb-6">
+                      <div className="space-y-1">
+                        {mainNavItems.map((item) => (
+                          <DrawerClose asChild key={item.name}>
+                            <Link
+                              to={item.href}
+                              className={`flex items-center gap-3 px-4 py-2.5 rounded-lg font-sora font-medium text-sm transition-colors ${
+                                location.pathname === item.href
+                                  ? "bg-amber-50 text-amber-500 [&_path]:fill-[#FF9300]"
+                                  : "text-gray-800 hover:bg-gray-50 hover:text-amber-500 [&_path]:fill-[#242424]"
+                              }`}
+                            >
+                              {item.icon}
+                              {item.name}
+                            </Link>
+                          </DrawerClose>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </nav>
-              </DrawerContent>
-            </Drawer>
-          </div>
 
-          {/* Center: Logo - hidden on screens smaller than lg */}
-          <div className="hidden lg:flex justify-center flex-1 lg:flex-initial">
-            <Link
-              to="/"
-              className="text-neutral-800 hover:opacity-80 transition-opacity"
-            >
-              <Logo />
-            </Link>
-          </div>
+                    {/* More Section - Contains everything else */}
+                    <div className="mb-6">
+                      <h3 className="px-4 mb-3 text-xs font-semibold font-sora text-gray-500 uppercase tracking-wider">
+                        More
+                      </h3>
+                      <div className="space-y-1">
+                        {moreNavItems.map((item) => (
+                          <DrawerClose asChild key={item.name}>
+                            <Link
+                              to={item.href}
+                              className={`flex items-center gap-3 px-4 py-2.5 rounded-lg font-sora font-medium text-sm transition-colors ${
+                                location.pathname === item.href
+                                  ? "bg-amber-50 text-amber-500 [&_path]:fill-[#FF9300] [&_circle]:fill-[#FF9300]"
+                                  : "text-gray-800 hover:bg-gray-50 hover:text-amber-500 [&_path]:fill-[#242424] [&_circle]:fill-[#242424]"
+                              }`}
+                            >
+                              {item.icon}
+                              {item.name}
+                            </Link>
+                          </DrawerClose>
+                        ))}
+                      </div>
+                    </div>
 
-          {/* Right side: Transaction History and Wallet Connector */}
-          <div className="flex items-center justify-end gap-1 flex-1">
-            <TransactionHistoryButton />
-            <Separator orientation="vertical" className="h-8" />
-            <WalletConnector />
+                    {/* How To's Section */}
+                    <div>
+                      <h3 className="px-4 mb-3 text-xs font-semibold font-sora text-gray-500 uppercase tracking-wider">
+                        How To's
+                      </h3>
+                      <div className="space-y-1">
+                        {howToItems.map((item) => (
+                          <DrawerClose asChild key={item.name}>
+                            <a
+                              href={item.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50 hover:text-amber-500 font-sora font-medium text-sm transition-colors"
+                            >
+                              {item.icon}
+                              {item.name}
+                            </a>
+                          </DrawerClose>
+                        ))}
+                      </div>
+                    </div>
+                  </nav>
+                </DrawerContent>
+              </Drawer>
+            </div>
+
+            {/* Center: Logo - hidden on screens smaller than lg */}
+            <div className="hidden lg:flex justify-center flex-1 lg:flex-initial">
+              <Link
+                to="/"
+                className="text-neutral-800 hover:opacity-80 transition-opacity"
+              >
+                <Logo />
+              </Link>
+            </div>
+
+            {/* Right side: Transaction History and Wallet Connector */}
+            <div className="flex items-center justify-end gap-1 flex-1">
+              <TransactionHistoryButton />
+              <Separator orientation="vertical" className="h-8" />
+              <WalletConnector />
+            </div>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </div>
   );
 }
 

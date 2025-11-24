@@ -178,9 +178,9 @@ function ProductCard({ product }: { product: (typeof products)[number] }) {
 
 export default function Products() {
   return (
-    <>
+    <div className="bg-[#FFFBF5] pb-24">
       <Header />
       <ProductCards />
-    </>
+    </div>
   );
 }
