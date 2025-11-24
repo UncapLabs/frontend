@@ -86,30 +86,83 @@ export default function Hero() {
   };
 
   return (
-    <div className="relative bg-[#f5f3ee] mb-10">
-      <Gradient className="absolute inset-2 bottom-0 rounded-4xl ring-1 ring-black/5 ring-inset" />
+    <div className="relative bg-[#F5F3EE] mb-10 overflow-hidden isolate">
+      {/* Subtle Background Pattern - Diagonal Pinstripes */}
+      <svg
+        className="absolute inset-0 -z-10 h-full w-full stroke-[#001B40]/[0.03] [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)]"
+        aria-hidden="true"
+      >
+        <defs>
+          <pattern
+            id="hero-pattern"
+            width={20}
+            height={20}
+            x="50%"
+            y={-1}
+            patternUnits="userSpaceOnUse"
+            patternTransform="rotate(45)"
+          >
+            <line x1="0" y1="0" x2="0" y2="20" strokeWidth="1" />
+          </pattern>
+        </defs>
+        <rect
+          width="100%"
+          height="100%"
+          strokeWidth={0}
+          fill="url(#hero-pattern)"
+        />
+      </svg>
+
+      {/* Brand Aurora - Left (Bitcoin Orange) */}
+      <div
+        className="absolute left-[calc(50%-4rem)] top-10 -z-10 transform-gpu blur-3xl sm:left-[calc(50%-18rem)] lg:left-48 lg:top-[calc(50%-30rem)] xl:left-[calc(50%-24rem)]"
+        aria-hidden="true"
+      >
+        <div
+          className="aspect-[1108/632] w-[69.25rem] bg-gradient-to-r from-[#FF9300]/20 to-[#FFA933]/20 opacity-30"
+          style={{
+            clipPath:
+              "polygon(73.6% 51.7%, 91.7% 11.8%, 100% 46.4%, 97.4% 82.2%, 92.5% 84.9%, 75.7% 64%, 55.3% 47.5%, 46.5% 49.4%, 45% 62.9%, 50.3% 87.2%, 21.3% 64.1%, 0.1% 100%, 5.4% 51.1%, 21.4% 63.9%, 58.9% 0.2%, 73.6% 51.7%)",
+          }}
+        />
+      </div>
+
+      {/* Brand Aurora - Right (Electric Blue) */}
+      <div
+        className="absolute right-[calc(50%-4rem)] top-40 -z-10 transform-gpu blur-3xl sm:right-[calc(50%-18rem)] lg:right-20 lg:top-[calc(50%-20rem)] xl:right-[calc(50%-10rem)]"
+        aria-hidden="true"
+      >
+        <div
+          className="aspect-[1108/632] w-[69.25rem] bg-gradient-to-l from-[#1E50BC]/15 to-[#0051BF]/15 opacity-30"
+          style={{
+            clipPath:
+              "polygon(73.6% 51.7%, 91.7% 11.8%, 100% 46.4%, 97.4% 82.2%, 92.5% 84.9%, 75.7% 64%, 55.3% 47.5%, 46.5% 49.4%, 45% 62.9%, 50.3% 87.2%, 21.3% 64.1%, 0.1% 100%, 5.4% 51.1%, 21.4% 63.9%, 58.9% 0.2%, 73.6% 51.7%)",
+          }}
+        />
+      </div>
+
       <Container className="relative">
         <div className="py-24 relative">
           <div className="grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
             {/* Left Column: Text Content */}
             <div className="lg:col-span-5 relative z-10">
-              <h1 className="font-sora text-5xl/[1.1] font-medium tracking-tight text-balance text-[#242424] sm:text-7xl/[1.1] md:text-8xl/[1.1]">
+              <h1 className="font-sora text-5xl/[1.1] font-medium tracking-tight text-balance text-[#001B40] sm:text-7xl/[1.1] md:text-8xl/[1.1]">
                 Finally, do more with your Bitcoin.
               </h1>
-              <p className="mt-6 max-w-2xl text-base font-normal font-sora text-neutral-600 sm:text-lg leading-normal">
+              <p className="mt-6 max-w-2xl text-base font-normal font-sora text-[#001B40]/70 sm:text-lg leading-normal">
                 Borrow against your Bitcoin at rates as low as 0.5%—the cheapest
                 in DeFi. You set the rate and keep full control of your Bitcoin.
               </p>
               <div className="mt-10 flex flex-col gap-4 sm:flex-row">
                 <Button
                   asChild
-                  className="bg-[#3b82f6] hover:bg-blue-600 text-white font-sora rounded-xl h-12 px-8"
+                  className="bg-[#1E50BC] hover:bg-[#0051BF] text-white font-sora rounded-xl h-12 px-8 shadow-lg shadow-blue-900/10 transition-all hover:scale-105"
                 >
                   <Link to="/borrow">Start Borrowing</Link>
                 </Button>
                 <Button
                   variant="outline"
-                  className="border-neutral-200 bg-white hover:bg-neutral-50 text-[#242424] font-sora rounded-xl h-12 px-8"
+                  className="border-neutral-200 bg-white hover:bg-neutral-50 text-[#001B40] font-sora rounded-xl h-12 px-8 transition-all hover:scale-105"
                   onClick={() => {
                     const nextSection =
                       document.querySelector("#problem-section");
@@ -125,10 +178,10 @@ export default function Hero() {
             <div className="lg:col-span-7 relative">
               <div className="relative mx-auto max-w-md lg:max-w-full">
                 {/* Main Borrow Preview Card - Exact replica from borrow.tsx */}
-                <div className="bg-[#FDFBF7] rounded-3xl p-6 md:p-8 shadow-2xl border border-neutral-200/60 relative z-20">
+                <div className="bg-[#FDFBF7] rounded-3xl p-6 md:p-8 shadow-2xl shadow-black/5 border border-neutral-200/60 relative z-20">
                   {/* Header */}
                   <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-4xl font-semibold tracking-tight text-[#242424] font-sora">
+                    <h2 className="text-4xl font-semibold tracking-tight text-[#001B40] font-sora">
                       Borrow
                     </h2>
                   </div>
@@ -231,7 +284,7 @@ export default function Hero() {
 
                       {/* Large rate display */}
                       <div className="flex items-baseline gap-3 mb-6">
-                        <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal font-sora leading-10 text-neutral-800">
+                        <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal font-sora leading-10 text-[#242424]">
                           {interestRate.toFixed(2)}%
                         </div>
                         {/* Yearly cost */}
@@ -360,7 +413,7 @@ export default function Hero() {
                     <div className="flex flex-col items-start space-y-2 mt-4">
                       <Button
                         asChild
-                        className="w-full h-12 bg-token-bg-blue hover:bg-blue-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all whitespace-nowrap"
+                        className="w-full h-12 bg-[#1E50BC] hover:bg-[#0051BF] text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all whitespace-nowrap"
                       >
                         <Link to={buildBorrowUrl()}>Get Started</Link>
                       </Button>
