@@ -168,31 +168,31 @@ export default function Problem() {
           </div>
           <div className="pt-20 lg:row-span-2 lg:-mr-16 xl:mr-auto">
             <div className="-mx-8 grid grid-cols-2 gap-4 sm:-mx-16 sm:grid-cols-4 lg:mx-0 lg:grid-cols-2 lg:gap-4 xl:gap-8">
-              <div className="aspect-square overflow-hidden rounded-xl shadow-xl outline-1 -outline-offset-1 outline-[#001B40]/10 bg-[#F5F3EE]">
+              <div className="aspect-square overflow-hidden rounded-xl shadow-xl outline-1 -outline-offset-1 outline-[#001B40]/10">
                 <img
+                  alt="Full custody and control"
                   src="illustrations/vault.png"
-                  alt="Vault"
                   className="block size-full object-cover"
                 />
               </div>
               <div className="-mt-8 aspect-square overflow-hidden rounded-xl shadow-xl outline-1 -outline-offset-1 outline-[#001B40]/10 lg:-mt-32">
                 <img
+                  alt="No rehypothecation"
                   src="illustrations/balance.png"
-                  alt="Vault"
                   className="block size-full object-cover"
                 />
               </div>
-              <div className="aspect-square overflow-hidden rounded-xl shadow-xl outline-1 -outline-offset-1 outline-[#001B40]/10 bg-[#F5F3EE]">
+              <div className="aspect-square overflow-hidden rounded-xl shadow-xl outline-1 -outline-offset-1 outline-[#001B40]/10">
                 <img
+                  alt="100% transparent on-chain"
                   src="illustrations/safety.png"
-                  alt="Vault"
                   className="block size-full object-cover"
                 />
               </div>
-              <div className="-mt-8 aspect-square overflow-hidden rounded-xl shadow-xl outline-1 -outline-offset-1 outline-[#001B40]/10 lg:-mt-32 bg-[#F5F3EE]">
+              <div className="-mt-8 aspect-square overflow-hidden rounded-xl shadow-xl outline-1 -outline-offset-1 outline-[#001B40]/10 lg:-mt-32">
                 <img
+                  alt="Set your own interest rate"
                   src="illustrations/piggybank.png"
-                  alt="Vault"
                   className="block size-full object-cover"
                 />
               </div>

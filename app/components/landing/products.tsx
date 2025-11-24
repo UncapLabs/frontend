@@ -18,7 +18,7 @@ const products = [
     ],
     cta: "Start Borrowing",
     href: "/borrow",
-    image: "/bitcoin.png",
+    image: "/illustrations/test1.jpeg",
     theme: "orange",
   },
   {
@@ -33,7 +33,7 @@ const products = [
     ],
     cta: "Get USDU",
     href: "/#usdu-section",
-    image: "/usdu.png",
+    image: "/illustrations/test3.jpeg",
     theme: "blue",
   },
 ] as const;
@@ -104,14 +104,14 @@ function ProductCard({ product }: { product: (typeof products)[number] }) {
         {/* Image Section - Top Half */}
         <div
           className={cn(
-            "flex h-64 sm:h-80 w-full items-center justify-center p-8",
+            "flex h-64 sm:h-80 w-full items-center justify-center",
             isOrange ? "bg-orange-100/50" : "bg-blue-100/50"
           )}
         >
           <img
             src={product.image}
             alt={product.name}
-            className="h-full w-auto object-contain drop-shadow-xl transform transition-transform duration-500 hover:scale-105"
+            className="h-full w-auto object-fill drop-shadow-xl transform transition-transform duration-500 hover:scale-105"
           />
         </div>
 
@@ -178,9 +178,9 @@ function ProductCard({ product }: { product: (typeof products)[number] }) {
 
 export default function Products() {
   return (
-    <div className="bg-[#FFFBF5] pb-24">
+    <>
       <Header />
       <ProductCards />
-    </div>
+    </>
   );
 }
