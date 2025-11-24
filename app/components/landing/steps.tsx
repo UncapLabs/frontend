@@ -84,9 +84,9 @@ export function Steps() {
   return (
     <div className="bg-linear-to-b from-white from-50% to-gray-100 py-32">
       <Container>
-        <Subheading>USDU - The Stablecoin That Powers It All</Subheading>
+        <Subheading>How it works</Subheading>
         <Heading as="h3" className="mt-2 max-w-3xl">
-          Bitcoin-Backed, Uncensorable, Productive.
+          Borrow at the Lowest Rates in Four Steps
         </Heading>
 
         <div className="mt-10 sm:mt-16 overflow-hidden">
@@ -100,9 +100,9 @@ export function Steps() {
             className="flex gap-4 will-change-transform cursor-grab active:cursor-grabbing"
           >
             <Card
-              eyebrow="Insight"
-              title="Get perfect clarity"
-              description="Radiant uses social engineering to build a detailed financial picture of your leads. Know their budget, compensation package, social security number, and more."
+              eyebrow="Step 1"
+              title="Deposit Your Bitcoin"
+              description="Connect your wallet and deposit WBTC as collateral. Your Bitcoin stays under your control—no custody, no rehypothecation."
               graphic={
                 <div className="h-80 bg-[url(/screenshots/profile.png)] bg-size-[1000px_560px] bg-position-[left_-109px_top_-112px] bg-no-repeat" />
               }
@@ -110,9 +110,9 @@ export function Steps() {
               className="min-w-[400px] md:min-w-[500px] rounded-lg"
             />
             <Card
-              eyebrow="Analysis"
-              title="Undercut your competitors"
-              description="With our advanced data mining, you'll know which companies your leads are talking to and exactly how much they're being charged."
+              eyebrow="Step 2"
+              title="Choose How Much to Borrow"
+              description="Decide how much USDU to mint against your Bitcoin. Borrow what you need while maintaining a safe collateral ratio."
               graphic={
                 <div className="absolute inset-0 bg-[url(/screenshots/competitors.png)] bg-size-[1100px_650px] bg-position-[left_-38px_top_-73px] bg-no-repeat" />
               }
@@ -120,9 +120,9 @@ export function Steps() {
               className="min-w-[400px] md:min-w-[500px] rounded-lg"
             />
             <Card
-              eyebrow="Speed"
-              title="Built for power users"
-              description="It's never been faster to cold email your entire contact list using our streamlined keyboard shortcuts."
+              eyebrow="Step 3"
+              title="Set Your Own Interest Rate"
+              description="Choose the rate you want to pay—starting from 0.5%. Lower rates mean cheaper borrowing. This is what makes Uncap the lowest-cost way to borrow against Bitcoin."
               graphic={
                 <div className="flex size-full pt-10 pl-10">
                   <Keyboard highlighted={["LeftCommand", "LeftShift", "D"]} />
@@ -131,17 +131,10 @@ export function Steps() {
               className="min-w-[400px] md:min-w-[500px] rounded-lg"
             />
             <Card
-              eyebrow="Source"
-              title="Get the furthest reach"
-              description="Bypass those inconvenient privacy laws to source leads from the most unexpected places."
+              eyebrow="Step 4"
+              title="Repay Anytime"
+              description="Use USDU however you want—swap it to USDC, use it in DeFi, or hold it. When you're ready, repay your loan and get your Bitcoin back."
               graphic={<LogoCluster />}
-              className="min-w-[400px] md:min-w-[500px] rounded-lg"
-            />
-            <Card
-              eyebrow="Limitless"
-              title="Sell globally"
-              description="Radiant helps you sell in locations currently under international embargo."
-              graphic={<Map />}
               className="min-w-[400px] md:min-w-[500px] rounded-lg"
             />
           </motion.div>
