@@ -156,7 +156,7 @@ export default function Hero() {
               <div className="mt-10 flex flex-col gap-4 sm:flex-row">
                 <Button
                   asChild
-                  className="bg-[#1E50BC] hover:bg-[#0051BF] text-white font-sora rounded-xl h-12 px-8 shadow-lg shadow-blue-900/10 transition-all hover:scale-105"
+                  className="bg-token-bg-blue hover:bg-[#0051BF] text-white font-sora rounded-xl h-12 px-8 shadow-lg shadow-blue-900/10 transition-all hover:scale-105"
                 >
                   <Link to="/borrow">Start Borrowing</Link>
                 </Button>
@@ -413,7 +413,7 @@ export default function Hero() {
                     <div className="flex flex-col items-start space-y-2 mt-4">
                       <Button
                         asChild
-                        className="w-full h-12 bg-[#1E50BC] hover:bg-[#0051BF] text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all whitespace-nowrap"
+                        className="w-full h-12 bg-token-bg-blue hover:bg-[#0051BF] text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all whitespace-nowrap"
                       >
                         <Link to={buildBorrowUrl()}>Get Started</Link>
                       </Button>
