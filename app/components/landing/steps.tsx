@@ -2,8 +2,9 @@ import { Heading, Subheading } from "~/components/landing/text";
 import { Container } from "./container";
 
 import { clsx } from "clsx";
-import { motion } from "motion/react";
+import { motion, useMotionValue, animate } from "motion/react";
 import { useEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 function Card({
   dark = false,
@@ -71,6 +72,7 @@ function Card({
 export function Steps() {
   const [width, setWidth] = useState(0);
   const carousel = useRef<HTMLDivElement>(null);
+  const x = useMotionValue(0);
 
   useEffect(() => {
     if (carousel.current) {
@@ -78,17 +80,61 @@ export function Steps() {
     }
   }, []);
 
+  const scroll = (direction: "left" | "right") => {
+    if (!carousel.current) return;
+
+    const firstCard = carousel.current.firstElementChild as HTMLElement;
+    const cardWidth = firstCard ? firstCard.offsetWidth : 500;
+    const gap = 16;
+    const scrollAmount = cardWidth + gap;
+
+    const currentX = x.get();
+    let newX =
+      direction === "left" ? currentX + scrollAmount : currentX - scrollAmount;
+
+    // Clamp
+    if (newX > 0) newX = 0;
+    if (newX < -width) newX = -width;
+
+    animate(x, newX, {
+      type: "spring",
+      stiffness: 300,
+      damping: 30,
+    });
+  };
+
   return (
     <div className="bg-linear-to-b from-white from-50% to-gray-100 py-32">
       <Container>
-        <Subheading>How it works</Subheading>
-        <Heading as="h3" className="mt-2 max-w-3xl">
-          Borrow at the Lowest Rates in Four Steps
-        </Heading>
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <div>
+            <Subheading>How it works</Subheading>
+            <Heading as="h3" className="mt-2 max-w-3xl">
+              Borrow at the Lowest Rates in Four Steps
+            </Heading>
+          </div>
+          <div className="flex gap-2 pb-2">
+            <button
+              onClick={() => scroll("left")}
+              className="group flex size-12 items-center justify-center rounded-full border border-gray-200 bg-white transition-colors hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
+              aria-label="Previous step"
+            >
+              <ChevronLeft className="size-6 text-gray-600 group-hover:text-gray-900" />
+            </button>
+            <button
+              onClick={() => scroll("right")}
+              className="group flex size-12 items-center justify-center rounded-full border border-gray-200 bg-white transition-colors hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
+              aria-label="Next step"
+            >
+              <ChevronRight className="size-6 text-gray-600 group-hover:text-gray-900" />
+            </button>
+          </div>
+        </div>
 
-        <div className="mt-10 sm:mt-16 overflow-hidden">
+        <div className="mt-10 overflow-hidden sm:mt-16">
           <motion.div
             ref={carousel}
+            style={{ x }}
             drag="x"
             dragElastic={0.2}
             dragConstraints={{ right: 0, left: -width }}

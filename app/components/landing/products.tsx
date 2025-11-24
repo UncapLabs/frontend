@@ -2,7 +2,6 @@ import { Link } from "react-router";
 import { cn } from "~/lib/utils";
 import { Container } from "~/components/landing/container";
 import { Gradient } from "~/components/landing/gradient";
-import { LogoCloud } from "~/components/landing/logo-cloud";
 import { Heading, Subheading } from "~/components/landing/text";
 
 const products = [
@@ -58,7 +57,6 @@ function ProductCards() {
             <ProductCard key={product.name} product={product} />
           ))}
         </div>
-        <LogoCloud className="mt-24" />
       </Container>
     </div>
   );
