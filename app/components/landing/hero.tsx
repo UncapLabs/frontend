@@ -141,8 +141,8 @@ export default function Hero() {
         />
       </div>
 
-      <Container className="relative">
-        <div className="py-16 relative">
+      <Container>
+        <div className="py-16">
           <div className="grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
             {/* Left Column: Text Content */}
             <div className="lg:col-span-6 relative z-10">
@@ -176,7 +176,7 @@ export default function Hero() {
             </div>
 
             {/* Right Column: Borrow Preview */}
-            <div className="lg:col-span-6 relative">
+            <div className="lg:col-span-6">
               <div className="relative mx-auto max-w-full">
                 {/* Main Borrow Preview Card - Exact replica from borrow.tsx */}
                 <div className="bg-[#FDFBF7] rounded-3xl p-6 md:p-8 shadow-2xl shadow-black/5 border border-neutral-200/60 relative z-20">
@@ -312,7 +312,6 @@ export default function Hero() {
                           ref={sliderRef}
                           className="relative overflow-hidden select-none rounded cursor-pointer"
                           style={{
-                            minWidth: "280px",
                             width: "100%",
                             height: "32px",
                           }}
