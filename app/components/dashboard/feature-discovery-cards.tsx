@@ -26,7 +26,7 @@ export default function FeatureDiscoveryCards() {
           <img
             src="/coin_02.png"
             alt=""
-            className="absolute w-52 h-52 md:w-60 md:h-60 lg:w-72 lg:h-72 top-0 lg:top-[-8%] right-[4%] object-contain"
+            className="absolute w-40 h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 top-0 lg:top-[-8%] right-[4%] object-contain"
           />
         </div>
 
@@ -77,7 +77,7 @@ export default function FeatureDiscoveryCards() {
           <img
             src="/coin_02.png"
             alt=""
-            className="absolute bottom-[0%] left-[-20%] w-[50%] lg:w-[65%] h-auto object-contain"
+            className="absolute bottom-[10%] left-[-15%] w-[50%] lg:w-[55%] h-auto object-contain"
           />
         </div>
 
