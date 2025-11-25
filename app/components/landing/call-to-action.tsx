@@ -23,10 +23,10 @@ function CTAs() {
           Start Borrowing <span aria-hidden="true">→</span>
         </Link>
         <Link
-          to="/#usdu-section"
+          to="/earn"
           className="inline-flex w-full sm:w-64 items-center justify-center gap-2 rounded-full bg-[#FF9300] px-8 py-4 text-base font-semibold text-white transition-all hover:bg-[#FF4800] hover:scale-105 focus-visible:outline-[#FF4800] shadow-lg shadow-black/10"
         >
-          Get USDU <span aria-hidden="true">→</span>
+          Start Earning <span aria-hidden="true">→</span>
         </Link>
       </div>
     </div>
