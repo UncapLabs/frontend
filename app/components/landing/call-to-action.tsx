@@ -24,7 +24,7 @@ function CTAs() {
         </Link>
         <Link
           to="/earn"
-          className="inline-flex w-full sm:w-64 items-center justify-center gap-2 rounded-full bg-[#FF9300] px-8 py-4 text-base font-semibold text-white transition-all hover:bg-[#FF4800] hover:scale-105 focus-visible:outline-[#FF4800] shadow-lg shadow-black/10"
+          className="inline-flex w-full sm:w-64 items-center justify-center gap-2 rounded-full bg-orange-600 hover:bg-orange-500 focus-visible:outline-orange-600 px-8 py-4 text-base font-semibold text-white transition-all hover:scale-105 shadow-lg shadow-black/10"
         >
           Start Earning <span aria-hidden="true">→</span>
         </Link>

@@ -9,7 +9,7 @@ import {
 
 export default function FrequentlyAskedQuestions() {
   return (
-    <div className="py-24">
+    <div className="pt-24">
       <Container>
         <section id="faqs" className="scroll-mt-8">
           <Subheading className="text-center">

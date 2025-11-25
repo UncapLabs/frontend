@@ -177,7 +177,7 @@ export default function Hero() {
 
             {/* Right Column: Borrow Preview */}
             <div className="lg:col-span-6 relative">
-              <div className="relative mx-auto max-w-md lg:max-w-full">
+              <div className="relative mx-auto max-w-full">
                 {/* Main Borrow Preview Card - Exact replica from borrow.tsx */}
                 <div className="bg-[#FDFBF7] rounded-3xl p-6 md:p-8 shadow-2xl shadow-black/5 border border-neutral-200/60 relative z-20">
                   {/* Header */}
@@ -425,7 +425,7 @@ export default function Hero() {
                 </div>
 
                 {/* Decorative shadow layer */}
-                <div className="absolute -top-6 -right-6 w-full h-full bg-neutral-200/50 rounded-3xl -z-10 transform rotate-3 scale-[0.98]"></div>
+                <div className="hidden md:block absolute -top-6 -right-6 w-full h-full bg-neutral-200/50 rounded-3xl -z-10 transform rotate-3 scale-[0.98]"></div>
               </div>
             </div>
           </div>
