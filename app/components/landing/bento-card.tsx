@@ -32,7 +32,7 @@ export function BentoCard({
         "data-dark:bg-[#003680] data-dark:ring-white/15"
       )}
     >
-      <div className={clsx("relative h-80 shrink-0", dark && "bg-[#0051BF]")}>
+      <div className={clsx("relative h-80 shrink-0", dark && "bg-[#001B40]")}>
         {graphic}
         {fade.includes("top") && (
           <div className="absolute inset-0 bg-linear-to-b from-white to-50% group-data-dark:from-[#003680] group-data-dark:from-[-25%]" />

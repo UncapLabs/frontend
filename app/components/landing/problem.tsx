@@ -15,7 +15,7 @@ export default function Problem() {
         <section className="mt-16 grid grid-cols-1 lg:grid-cols-2 lg:gap-12">
           <div className="max-w-2xl">
             <h2 className="text-3xl font-medium tracking-tight text-[#001B40]">
-              The few alternatives?
+              What about borrowing against it?
             </h2>
 
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
