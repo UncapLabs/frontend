@@ -9,7 +9,7 @@ import {
 
 export default function FrequentlyAskedQuestions() {
   return (
-    <div className="py-32">
+    <div className="py-24">
       <Container>
         <section id="faqs" className="scroll-mt-8">
           <Subheading className="text-center">
@@ -28,7 +28,7 @@ export default function FrequentlyAskedQuestions() {
                   Is my Bitcoin safe? What are the risks?
                 </AccordionTrigger>
                 <AccordionContent className="text-lg text-[#001B40]/80 font-sora pb-8">
-                  Your Bitcoin is never rehypothecated or lent out—it stays in
+                  Your Bitcoin is never rehypothecated or lent out, it stays in
                   the protocol as your collateral. The main risks are:
                   liquidation if Bitcoin price drops significantly, and smart
                   contract risk (though Uncap is built on battle-tested Liquity
@@ -66,7 +66,7 @@ export default function FrequentlyAskedQuestions() {
                   control of your Bitcoin. Unlike other DeFi protocols where
                   committees or algorithms set rates, YOU choose your own
                   interest rate. This creates the lowest rates in DeFi. Uncap is
-                  also 100% transparent—every transaction is on-chain and
+                  also 100% transparent, every transaction is onchain and
                   verifiable.
                 </AccordionContent>
               </AccordionItem>
@@ -84,7 +84,7 @@ export default function FrequentlyAskedQuestions() {
                   funds. USDU is overcollateralized by Bitcoin, fully
                   decentralized, and cannot be frozen or censored. There are no
                   admin keys, no blacklists, and you can always verify the
-                  collateral backing USDU on-chain.
+                  collateral backing USDU onchain.
                 </AccordionContent>
               </AccordionItem>
 

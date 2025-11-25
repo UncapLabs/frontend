@@ -352,7 +352,7 @@ function Header() {
                 </NavLink>
               ))}
 
-              {/* More Flyout Menu - Contains everything else */}
+              {/* Rewards Flyout Menu - Contains everything else */}
               <NavigationMenu>
                 <NavigationMenuList>
                   <NavigationMenuItem>
@@ -363,7 +363,7 @@ function Header() {
                           : "text-gray-800 hover:text-amber-500 focus:text-amber-500 data-[state=open]:text-amber-500"
                       }`}
                     >
-                      More
+                      Rewards
                     </NavigationMenuTrigger>
                     <NavigationMenuContent>
                       <div className="w-[200px] p-3">
@@ -499,7 +499,7 @@ function Header() {
                       </div>
                     </div>
 
-                    {/* More Section - Contains everything else */}
+                    {/* Rewards Section */}
                     <div className="mb-6">
                       <h3 className="px-4 mb-3 text-xs font-semibold font-sora text-gray-500 uppercase tracking-wider">
                         More

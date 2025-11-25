@@ -9,7 +9,7 @@ const products = [
     name: "BORROW AGAINST YOUR BITCOIN",
     subheadline: "Set Your Own Interest Rate",
     description:
-      "Deposit Bitcoin and borrow USDU at rates you control—from 0.5%. Your Bitcoin is never lent out or rehypothecated, so you maintain full ownership and get it back when you repay. Use your USDU however you want: swap to USDC for off-ramps, deploy in DeFi, or hold as stable value.",
+      "Deposit Bitcoin and borrow USDU at rates you control, from 0.5%. Your Bitcoin is never lent out or rehypothecated, so you maintain full ownership and get it back when you repay. Use your USDU however you want: swap to USDC for off-ramps, deploy in DeFi, or hold as stable value.",
     stats: [
       "Low Interest rates (from 0.5%)",
       "Tax-free liquidity without selling",
@@ -24,7 +24,7 @@ const products = [
     name: "USDU: STABLE DOLLARS YOU TRULY OWN",
     subheadline: "Bitcoin-Backed & Uncensorable",
     description:
-      "Every USDU is backed by over $1 of Bitcoin, keeping it securely pegged 1:1 to USD. You can always redeem it for its full value—no questions asked. Unlike traditional stablecoins, your USDU can never be frozen, censored, or confiscated. True dollar stability with complete ownership.",
+      "Every USDU is backed by over $1 of Bitcoin, keeping it securely pegged 1:1 to USD. You can always redeem it for its full value, no questions asked. Unlike traditional stablecoins, your USDU can never be frozen, censored, or confiscated. True dollar stability with complete ownership.",
     stats: [
       "Backed by over-collateralized Bitcoin",
       "Censorship-resistant & decentralized",
@@ -41,7 +41,7 @@ function Header() {
   return (
     <Container className="mt-16">
       <Heading as="h1" className="text-center text-[#001B40]">
-        Your Bitcoin, Your Way.
+        Your Bitcoin, your way.
       </Heading>
     </Container>
   );

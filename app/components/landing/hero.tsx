@@ -150,8 +150,9 @@ export default function Hero() {
                 Finally, do more with your Bitcoin.
               </h1>
               <p className="mt-6 max-w-2xl text-base font-normal font-sora text-[#001B40]/70 sm:text-lg leading-normal">
-                Borrow against your Bitcoin at rates as low as 0.5%—the cheapest
-                in DeFi. You set the rate and keep full control of your Bitcoin.
+                Borrow against your Bitcoin at rates as low as 0.5%, the
+                cheapest in DeFi. You set the rate and keep full control of your
+                Bitcoin.
               </p>
               <div className="mt-10 flex flex-col gap-4 sm:flex-row">
                 <Button

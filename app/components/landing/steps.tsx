@@ -104,13 +104,13 @@ export function Steps() {
   };
 
   return (
-    <div className="bg-linear-to-b from-white from-50% to-gray-100 py-32">
+    <div className="bg-linear-to-b from-white from-50% to-gray-100 py-24">
       <Container>
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
             <Subheading>How it works</Subheading>
             <Heading as="h3" className="mt-2 max-w-3xl text-[#001B40]">
-              Borrow at the Lowest Rates in Four Steps
+              Borrow at the lowest rates in four steps
             </Heading>
           </div>
           <div className="flex gap-2 pb-2">
@@ -145,7 +145,7 @@ export function Steps() {
             <Card
               eyebrow="Step 1"
               title="Deposit Your Bitcoin"
-              description="Connect your wallet and deposit WBTC as collateral. Your Bitcoin stays under your control—no custody, no rehypothecation."
+              description="Connect your wallet and deposit WBTC as collateral. Your Bitcoin stays under your control. No custody, no rehypothecation."
               graphic={
                 <img
                   src="/illustrations/step1.jpeg"
@@ -173,7 +173,7 @@ export function Steps() {
             <Card
               eyebrow="Step 3"
               title="Set Your Own Interest Rate"
-              description="Choose the rate you want to pay—starting from 0.5%. Lower rates mean cheaper borrowing. This is what makes Uncap the lowest-cost way to borrow against Bitcoin."
+              description="Choose the rate you want to pay, starting from 0.5%. Lower rates mean cheaper borrowing. This is what makes Uncap the lowest-cost way to borrow against Bitcoin."
               graphic={
                 <img
                   src="/illustrations/step3.jpeg"
@@ -186,7 +186,7 @@ export function Steps() {
             <Card
               eyebrow="Step 4"
               title="Repay Anytime"
-              description="Use USDU however you want—swap it to USDC, use it in DeFi, or hold it. When you're ready, repay your loan and get your Bitcoin back."
+              description="Use USDU however you want: swap it to USDC, use it in DeFi, or hold it. When you're ready, repay your loan and get your Bitcoin back."
               graphic={
                 <img
                   src="/illustrations/step4.jpeg"

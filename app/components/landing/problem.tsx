@@ -6,11 +6,11 @@ export default function Problem() {
     <div id="problem-section">
       <Container className="mt-16">
         <Heading as="h1" className="text-[#001B40]">
-          Your Bitcoin Shouldn't Just Sit There.
+          Your Bitcoin shouldn't just sit there.
         </Heading>
         <Lead className="mt-6 max-w-3xl text-[#001B40]/70">
-          For years, Bitcoin holders faced an impossible choice: Sell and lose
-          your position, or watch your capital sit idle.
+          For years, Bitcoin holders faced an impossible choice: sell your
+          Bitcoin or watch your capital sit idle.
         </Lead>
         <section className="mt-16 grid grid-cols-1 lg:grid-cols-2 lg:gap-12">
           <div className="max-w-2xl">
@@ -125,7 +125,7 @@ export default function Problem() {
                       strokeWidth="2.25"
                     />
                   </svg>
-                  <span>100% transparent on-chain</span>
+                  <span>100% transparent onchain</span>
                 </div>
                 <div className="flex items-center gap-3 text-base text-[#001B40]/80">
                   <svg
@@ -184,7 +184,7 @@ export default function Problem() {
               </div>
               <div className="aspect-square overflow-hidden rounded-xl shadow-xl outline-1 -outline-offset-1 outline-[#001B40]/10">
                 <img
-                  alt="100% transparent on-chain"
+                  alt="100% transparent onchain"
                   src="illustrations/safety.png"
                   className="block size-full object-cover"
                 />
