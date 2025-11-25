@@ -113,7 +113,7 @@ function ClosePosition() {
       reset();
     } else {
       // Navigate on success
-      navigate("/");
+      navigate("/dashboard");
     }
   }, [navigate, currentState, reset]);
 

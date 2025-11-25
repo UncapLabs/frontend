@@ -256,7 +256,7 @@ function Header() {
   const mainNavItems = [
     {
       name: "Dashboard",
-      href: "/",
+      href: "/dashboard",
       icon: <DashboardIcon />,
     },
     { name: "Borrow", href: "/borrow", icon: <BorrowIcon /> },

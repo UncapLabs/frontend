@@ -45,6 +45,7 @@ interface TokenInputProps {
   tokenSelectorBgColor?: string;
   tokenSelectorTextColor?: string;
   bottomRightContent?: ReactNode; // Custom content to replace balance display
+  compact?: boolean;
 }
 
 export const TokenInput = memo(function TokenInput({
@@ -73,6 +74,7 @@ export const TokenInput = memo(function TokenInput({
   tokenSelectorBgColor = "bg-token-bg",
   tokenSelectorTextColor = "text-token-orange",
   bottomRightContent,
+  compact = false,
 }: TokenInputProps) {
   // Convert value to string for display (preserves full precision)
   const displayValue = value?.toString() || "";
@@ -126,7 +128,11 @@ export const TokenInput = memo(function TokenInput({
     : undefined;
 
   return (
-    <div className="bg-white rounded-2xl p-6 space-y-6 group">
+    <div
+      className={`bg-white rounded-2xl group ${
+        compact ? "p-4 space-y-3" : "p-6 space-y-6"
+      }`}
+    >
       <div className="flex justify-between items-start">
         <Label
           htmlFor={`${token.symbol}-input`}
@@ -249,7 +255,11 @@ export const TokenInput = memo(function TokenInput({
               const { floatValue } = values;
               return floatValue === undefined || floatValue < maxValue;
             }}
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal font-sora leading-8 sm:leading-9 md:leading-10 h-auto p-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none outline-none shadow-none text-neutral-800 w-full"
+            className={`${
+              compact
+                ? "text-xl sm:text-2xl md:text-3xl lg:text-4xl leading-7 sm:leading-8 md:leading-9"
+                : "text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-8 sm:leading-9 md:leading-10"
+            } font-normal font-sora h-auto p-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none outline-none shadow-none text-neutral-800 w-full`}
           />
         </div>
       </div>
@@ -268,15 +278,14 @@ export const TokenInput = memo(function TokenInput({
         />
 
         {/* Custom bottom right content or Balance info */}
-        {bottomRightContent ? (
-          bottomRightContent
-        ) : (
-          showBalance && (
-            <button
-              type="button"
-              onClick={onBalanceClick}
-              disabled={!onBalanceClick || disabled || !balance?.value}
-              className={`
+        {bottomRightContent
+          ? bottomRightContent
+          : showBalance && (
+              <button
+                type="button"
+                onClick={onBalanceClick}
+                disabled={!onBalanceClick || disabled || !balance?.value}
+                className={`
                 flex items-end gap-1
                 ${
                   onBalanceClick && balance?.value && !disabled
@@ -284,32 +293,33 @@ export const TokenInput = memo(function TokenInput({
                     : "cursor-default"
                 }
               `}
-            >
-              <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
-                {balanceLabel}:
-              </span>
-              {balance ? (
-                <>
-                  <NumericFormat
-                    className="text-neutral-800 text-base font-medium font-sora leading-none"
-                    displayType="text"
-                    value={balance.formatted ?? balanceAsBig?.toString() ?? "0"}
-                    thousandSeparator=","
-                    decimalScale={6}
-                    fixedDecimalScale
-                  />
-                  <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
-                    {token.symbol}
-                  </span>
-                </>
-              ) : (
-                <span className="text-neutral-800 text-base font-medium font-sora leading-none">
-                  -
+              >
+                <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
+                  {balanceLabel}:
                 </span>
-              )}
-            </button>
-          )
-        )}
+                {balance ? (
+                  <>
+                    <NumericFormat
+                      className="text-neutral-800 text-base font-medium font-sora leading-none"
+                      displayType="text"
+                      value={
+                        balance.formatted ?? balanceAsBig?.toString() ?? "0"
+                      }
+                      thousandSeparator=","
+                      decimalScale={6}
+                      fixedDecimalScale
+                    />
+                    <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
+                      {token.symbol}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-neutral-800 text-base font-medium font-sora leading-none">
+                    -
+                  </span>
+                )}
+              </button>
+            )}
       </div>
 
       {/* Error or Helper text */}

@@ -116,8 +116,7 @@ function UpdatePosition() {
     null
   );
   const activeRateMode: RateMode =
-    rateModeSelection ??
-    (position?.batchManager ? "managed" : "manual");
+    rateModeSelection ?? (position?.batchManager ? "managed" : "manual");
 
   const telosBatch = useTelosBatchMetadata({
     branchId: selectedCollateral.branchId,
@@ -281,7 +280,12 @@ function UpdatePosition() {
         (activeRateMode === "managed" && !position?.batchManager) ||
         (activeRateMode === "manual" && position?.batchManager);
 
-      if (!hasCollateralInput && !hasBorrowInput && !hasInterestInput && !hasBatchManagerChange) {
+      if (
+        !hasCollateralInput &&
+        !hasBorrowInput &&
+        !hasInterestInput &&
+        !hasBatchManagerChange
+      ) {
         toast.error("Please make at least one change to update your position");
         return;
       }
@@ -344,7 +348,7 @@ function UpdatePosition() {
   }, [address]);
 
   const handleComplete = useCallback(() => {
-    navigate("/");
+    navigate("/dashboard");
   }, [navigate]);
 
   return (
@@ -824,7 +828,11 @@ function UpdatePosition() {
                   <InterestRateSelector
                     interestRate={Number(manualInterestRate.toFixed(3))}
                     onInterestRateChange={(rate) => {
-                      if (activeRateMode !== "manual" || isSending || isPending) {
+                      if (
+                        activeRateMode !== "manual" ||
+                        isSending ||
+                        isPending
+                      ) {
                         return;
                       }
                       const rateBig = new Big(rate).round(2);
@@ -862,7 +870,8 @@ function UpdatePosition() {
                   telosCooldownRemainingSeconds > 0 && (
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
                       Leaving Telos right now may incur a cooldown fee. Fee-free
-                      adjustments resume in {formatDuration(telosCooldownRemainingSeconds)}.
+                      adjustments resume in{" "}
+                      {formatDuration(telosCooldownRemainingSeconds)}.
                     </div>
                   )}
 
@@ -1001,7 +1010,9 @@ function UpdatePosition() {
             type="update"
             changes={(() => {
               // Use snapshot when transaction is pending/success/error
-              const useSnapshot = ["pending", "success", "error"].includes(currentState);
+              const useSnapshot = ["pending", "success", "error"].includes(
+                currentState
+              );
 
               if (useSnapshot && formData) {
                 return {
@@ -1012,8 +1023,12 @@ function UpdatePosition() {
                   },
                   collateralValueUSD: bitcoin?.price
                     ? {
-                        from: (formData.previousCollateral || new Big(0)).times(bitcoin.price),
-                        to: (formData.collateralAmount || new Big(0)).times(bitcoin.price),
+                        from: (formData.previousCollateral || new Big(0)).times(
+                          bitcoin.price
+                        ),
+                        to: (formData.collateralAmount || new Big(0)).times(
+                          bitcoin.price
+                        ),
                       }
                     : undefined,
                   debt: {
@@ -1021,7 +1036,8 @@ function UpdatePosition() {
                     to: formData.borrowAmount || new Big(0),
                   },
                   interestRate: {
-                    from: formData.previousInterestRate || DEFAULT_INTEREST_RATE,
+                    from:
+                      formData.previousInterestRate || DEFAULT_INTEREST_RATE,
                     to: formData.interestRate,
                   },
                 };
@@ -1055,13 +1071,17 @@ function UpdatePosition() {
               };
             })()}
             liquidationPrice={(() => {
-              const useSnapshot = ["pending", "success", "error"].includes(currentState);
+              const useSnapshot = ["pending", "success", "error"].includes(
+                currentState
+              );
               return useSnapshot && formData?.liquidationPrice
                 ? formData.liquidationPrice
                 : metrics.liquidationPrice;
             })()}
             previousLiquidationPrice={(() => {
-              const useSnapshot = ["pending", "success", "error"].includes(currentState);
+              const useSnapshot = ["pending", "success", "error"].includes(
+                currentState
+              );
               return useSnapshot && formData?.previousLiquidationPrice
                 ? formData.previousLiquidationPrice
                 : previousMetrics.liquidationPrice;

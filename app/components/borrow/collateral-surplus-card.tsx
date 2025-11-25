@@ -13,7 +13,11 @@ import { useCollateralPrice } from "~/hooks/use-fetch-prices";
 import Big from "big.js";
 
 // Component for individual surplus item - fetches its own price
-function SurplusItem({ surplus }: { surplus: { collateralType: CollateralId; formatted: Big } }) {
+function SurplusItem({
+  surplus,
+}: {
+  surplus: { collateralType: CollateralId; formatted: Big };
+}) {
   const collateral = getCollateral(surplus.collateralType);
   const collateralPrice = useCollateralPrice(surplus.collateralType);
 
@@ -110,7 +114,7 @@ export function CollateralSurplusCard() {
       // Refetch data after successful claim
       refetch();
       // Navigate on success
-      navigate("/");
+      navigate("/dashboard");
     }
   }, [currentState, reset, refetch, navigate]);
 
@@ -124,7 +128,6 @@ export function CollateralSurplusCard() {
       </div>
     );
   }
-
 
   if (error) {
     return (

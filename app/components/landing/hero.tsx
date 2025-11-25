@@ -142,10 +142,10 @@ export default function Hero() {
       </div>
 
       <Container className="relative">
-        <div className="py-24 relative">
+        <div className="py-16 relative">
           <div className="grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
             {/* Left Column: Text Content */}
-            <div className="lg:col-span-5 relative z-10">
+            <div className="lg:col-span-6 relative z-10">
               <h1 className="font-sora text-5xl/[1.1] font-medium tracking-tight text-balance text-[#001B40] sm:text-7xl/[1.1] md:text-8xl/[1.1]">
                 Finally, do more with your Bitcoin.
               </h1>
@@ -175,13 +175,13 @@ export default function Hero() {
             </div>
 
             {/* Right Column: Borrow Preview */}
-            <div className="lg:col-span-7 relative">
+            <div className="lg:col-span-6 relative">
               <div className="relative mx-auto max-w-md lg:max-w-full">
                 {/* Main Borrow Preview Card - Exact replica from borrow.tsx */}
                 <div className="bg-[#FDFBF7] rounded-3xl p-6 md:p-8 shadow-2xl shadow-black/5 border border-neutral-200/60 relative z-20">
                   {/* Header */}
-                  <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-4xl font-semibold tracking-tight text-[#001B40] font-sora">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-3xl font-semibold tracking-tight text-[#001B40] font-sora">
                       Borrow
                     </h2>
                   </div>
@@ -207,13 +207,14 @@ export default function Hero() {
                       includeMax={true}
                       tokenSelectorBgColor="bg-token-bg"
                       tokenSelectorTextColor="text-token-orange"
+                      compact={true}
                     />
 
                     <div className="relative flex justify-center items-center">
                       <div className="absolute z-10">
                         <ArrowIcon
-                          size={40}
-                          className="sm:w-12 sm:h-12 md:w-20 md:h-20"
+                          size={32}
+                          className="sm:w-10 sm:h-10 md:w-14 md:h-14"
                           innerCircleColor="#242424"
                           direction="down"
                         />
@@ -251,6 +252,7 @@ export default function Hero() {
                       showBalance={false}
                       tokenSelectorBgColor="bg-token-bg-red/10"
                       tokenSelectorTextColor="text-token-bg-red"
+                      compact={true}
                       bottomRightContent={
                         <div className="flex items-center gap-1.5 sm:gap-2">
                           <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
@@ -269,9 +271,9 @@ export default function Hero() {
                     />
 
                     {/* Interest Rate Selector - Minimal version for hero */}
-                    <div className="bg-white rounded-2xl p-6 mt-4">
+                    <div className="bg-white rounded-2xl p-5 mt-4">
                       {/* Header */}
-                      <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center justify-between mb-4">
                         <div className="flex flex-col gap-1">
                           <h3 className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight">
                             Interest Rate
@@ -283,8 +285,8 @@ export default function Hero() {
                       </div>
 
                       {/* Large rate display */}
-                      <div className="flex items-baseline gap-3 mb-6">
-                        <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal font-sora leading-10 text-[#242424]">
+                      <div className="flex items-baseline gap-3 mb-4">
+                        <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-normal font-sora leading-tight text-[#242424]">
                           {interestRate.toFixed(2)}%
                         </div>
                         {/* Yearly cost */}
@@ -304,7 +306,7 @@ export default function Hero() {
                       </div>
 
                       {/* Custom slider - inspired by interest-slider.tsx */}
-                      <div className="w-full mb-6">
+                      <div className="w-full mb-4">
                         <div
                           ref={sliderRef}
                           className="relative overflow-hidden select-none rounded cursor-pointer"
