@@ -26,7 +26,8 @@ export default function Problem() {
             </Heading>
             <Lead className="mt-6 max-w-lg text-[#001B40]/70">
               For years, Bitcoin holders faced an impossible choice: sell your
-              Bitcoin or watch your capital sit idle.
+              Bitcoin, watch your capital sit idle or give up custody to borrow
+              against it.
             </Lead>
 
             <div className="mt-12">
