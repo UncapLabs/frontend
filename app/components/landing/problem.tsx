@@ -1,7 +1,31 @@
 import { Container } from "~/components/landing/container";
 import { Heading, Lead } from "~/components/landing/text";
+import { AnimatedNumber } from "./animated-number";
+import { useAllBranchTCRs } from "~/hooks/use-all-branch-stats";
+import { COLLATERAL_LIST } from "~/lib/collateral";
+import Big from "big.js";
 
 export default function Problem() {
+  const tcrData = useAllBranchTCRs();
+
+  // Calculate totals across all collaterals
+  let totalCollateralUSD = new Big(0);
+  let totalUsduCirculation = new Big(0);
+
+  COLLATERAL_LIST.forEach((collateral) => {
+    const tcr = tcrData[collateral.id];
+    if (tcr.data?.totalCollateralUSD) {
+      totalCollateralUSD = totalCollateralUSD.plus(tcr.data.totalCollateralUSD);
+    }
+    if (tcr.data?.totalDebt) {
+      totalUsduCirculation = totalUsduCirculation.plus(tcr.data.totalDebt);
+    }
+  });
+
+  // Convert to thousands for display (K+)
+  const btcCollateralInK = totalCollateralUSD.div(1000).toNumber();
+  const usduCirculationInK = totalUsduCirculation.div(1000).toNumber();
+
   return (
     <div id="problem-section" className="py-24">
       <Container>
@@ -39,7 +63,12 @@ export default function Problem() {
                 Min Interest Rate
               </dt>
               <dd className="mt-2 text-2xl sm:text-4xl lg:text-5xl font-medium tracking-tighter text-[#001B40] font-sora">
-                0.5%
+                <AnimatedNumber
+                  value={0.5}
+                  decimals={1}
+                  suffix="%"
+                  delay={0.1}
+                />
               </dd>
             </div>
 
@@ -49,7 +78,12 @@ export default function Problem() {
                 Max Loan-to-Value
               </dt>
               <dd className="mt-2 text-2xl sm:text-4xl lg:text-5xl font-medium tracking-tighter text-[#001B40] font-sora">
-                86.96%
+                <AnimatedNumber
+                  value={86.96}
+                  decimals={2}
+                  suffix="%"
+                  delay={0.2}
+                />
               </dd>
             </div>
 
@@ -59,7 +93,13 @@ export default function Problem() {
                 Bitcoin Collateral
               </dt>
               <dd className="relative z-10 mt-2 text-2xl sm:text-4xl lg:text-5xl font-medium tracking-tighter text-[#001B40] font-sora">
-                $800K+
+                <AnimatedNumber
+                  value={btcCollateralInK}
+                  decimals={0}
+                  prefix="$"
+                  suffix="K+"
+                  delay={0.3}
+                />
               </dd>
               <img
                 src="/bitcoin.png"
@@ -74,7 +114,13 @@ export default function Problem() {
                 USDU in Circulation
               </dt>
               <dd className="relative z-10 mt-2 text-2xl sm:text-4xl lg:text-5xl font-medium tracking-tighter text-[#001B40] font-sora">
-                $400K+
+                <AnimatedNumber
+                  value={usduCirculationInK}
+                  decimals={0}
+                  prefix="$"
+                  suffix="K+"
+                  delay={0.4}
+                />
               </dd>
               <img
                 src="/usdu.png"
