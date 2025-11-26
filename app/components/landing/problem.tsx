@@ -5,9 +5,9 @@ export default function Problem() {
   return (
     <div id="problem-section" className="py-24">
       <Container>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-12 gap-12 lg:gap-16 xl:gap-24">
           {/* Left Side */}
-          <div>
+          <div className="flex flex-col justify-center xl:col-span-7">
             <Heading as="h1" className="text-[#001B40]">
               Your Bitcoin shouldn't just sit there.
             </Heading>
@@ -32,10 +32,10 @@ export default function Problem() {
           </div>
 
           {/* Right Side - Stats Cards */}
-          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 grid-rows-2 gap-3 sm:gap-4 lg:h-full xl:col-span-5">
             {/* Min Interest - Blue Theme */}
-            <div className="relative overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] bg-[#1E50BC]/5 p-4 sm:p-8 min-h-[140px] sm:min-h-[180px] flex flex-col justify-between transition-transform hover:scale-[1.02] duration-300">
-              <dt className="text-[10px] sm:text-xs font-semibold text-[#1E50BC] uppercase tracking-widest font-sora">
+            <div className="relative overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] bg-[#1E50BC]/5 p-4 sm:p-8 min-h-[140px] sm:min-h-[180px] flex flex-col justify-between transition-transform hover:scale-[1.02] duration-300 h-full">
+              <dt className="text-xs sm:text-sm font-semibold text-[#1E50BC] uppercase tracking-widest font-sora">
                 Min Interest Rate
               </dt>
               <dd className="mt-2 text-2xl sm:text-4xl lg:text-5xl font-medium tracking-tighter text-[#001B40] font-sora">
@@ -44,8 +44,8 @@ export default function Problem() {
             </div>
 
             {/* Max LTV - Blue Theme */}
-            <div className="relative overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] bg-[#1E50BC]/5 p-4 sm:p-8 min-h-[140px] sm:min-h-[180px] flex flex-col justify-between transition-transform hover:scale-[1.02] duration-300">
-              <dt className="text-[10px] sm:text-xs font-semibold text-[#1E50BC] uppercase tracking-widest font-sora">
+            <div className="relative overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] bg-[#1E50BC]/5 p-4 sm:p-8 min-h-[140px] sm:min-h-[180px] flex flex-col justify-between transition-transform hover:scale-[1.02] duration-300 h-full">
+              <dt className="text-xs sm:text-sm font-semibold text-[#1E50BC] uppercase tracking-widest font-sora">
                 Max Loan-to-Value
               </dt>
               <dd className="mt-2 text-2xl sm:text-4xl lg:text-5xl font-medium tracking-tighter text-[#001B40] font-sora">
@@ -54,8 +54,8 @@ export default function Problem() {
             </div>
 
             {/* Bitcoin Collateral - Orange Theme with Image */}
-            <div className="relative overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] bg-[#FF9300]/10 p-4 sm:p-8 min-h-[140px] sm:min-h-[180px] flex flex-col justify-between transition-transform hover:scale-[1.02] duration-300">
-              <dt className="relative z-10 text-[10px] sm:text-xs font-semibold text-[#b36b00] uppercase tracking-widest font-sora">
+            <div className="relative overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] bg-[#FF9300]/10 p-4 sm:p-8 min-h-[140px] sm:min-h-[180px] flex flex-col justify-between transition-transform hover:scale-[1.02] duration-300 h-full">
+              <dt className="relative z-10 text-xs sm:text-sm font-semibold text-[#b36b00] uppercase tracking-widest font-sora">
                 Bitcoin Collateral
               </dt>
               <dd className="relative z-10 mt-2 text-2xl sm:text-4xl lg:text-5xl font-medium tracking-tighter text-[#001B40] font-sora">
@@ -69,8 +69,8 @@ export default function Problem() {
             </div>
 
             {/* USDU Circulation - USDU Red Theme with Image */}
-            <div className="relative overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] bg-[#FF4800]/10 p-4 sm:p-8 min-h-[140px] sm:min-h-[180px] flex flex-col justify-between transition-transform hover:scale-[1.02] duration-300">
-              <dt className="relative z-10 text-[10px] sm:text-xs font-semibold text-[#FF4800] uppercase tracking-widest font-sora">
+            <div className="relative overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] bg-[#FF4800]/10 p-4 sm:p-8 min-h-[140px] sm:min-h-[180px] flex flex-col justify-between transition-transform hover:scale-[1.02] duration-300 h-full">
+              <dt className="relative z-10 text-xs sm:text-sm font-semibold text-[#FF4800] uppercase tracking-widest font-sora">
                 USDU in Circulation
               </dt>
               <dd className="relative z-10 mt-2 text-2xl sm:text-4xl lg:text-5xl font-medium tracking-tighter text-[#001B40] font-sora">
