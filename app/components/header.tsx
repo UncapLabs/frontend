@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import { WalletConnector } from "./wallet";
 import {
-  Drawer,
-  DrawerContent,
-  DrawerTrigger,
-  DrawerClose,
-} from "~/components/ui/drawer";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -16,13 +15,9 @@ import {
 } from "~/components/ui/navigation-menu";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
-import {
-  Menu as MenuIcon,
-  BitcoinIcon,
-  Percent,
-  PiggyBank,
-} from "lucide-react";
-import { Link, useLocation } from "react-router";
+import { BitcoinIcon, Percent, PiggyBank } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router";
+import { cn } from "~/lib/utils";
 import { TransactionHistoryButton } from "./transaction-history-button";
 import { Banner1 } from "~/components/banner1";
 import { useFeatureFlag } from "~/hooks/use-feature-flag";
@@ -198,6 +193,198 @@ function StrkRewardsIcon() {
   );
 }
 
+function MobileLink({
+  href,
+  onOpenChange,
+  className,
+  children,
+  isExternal = false,
+  isActive = false,
+}: {
+  href: string;
+  onOpenChange?: (open: boolean) => void;
+  children: React.ReactNode;
+  className?: string;
+  isExternal?: boolean;
+  isActive?: boolean;
+}) {
+  const navigate = useNavigate();
+
+  if (isExternal) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => onOpenChange?.(false)}
+        className={cn(
+          "text-xl font-medium font-sora transition-colors",
+          isActive ? "text-amber-500" : "text-gray-900 hover:text-amber-500",
+          className
+        )}
+      >
+        {children}
+      </a>
+    );
+  }
+
+  return (
+    <Link
+      to={href}
+      onClick={() => {
+        navigate(href);
+        onOpenChange?.(false);
+      }}
+      className={cn(
+        "text-xl font-medium font-sora transition-colors",
+        isActive ? "text-amber-500" : "text-gray-900 hover:text-amber-500",
+        className
+      )}
+    >
+      {children}
+    </Link>
+  );
+}
+
+function MobileNav({
+  className,
+  mainNavItems,
+  moreNavItems,
+  howToItems,
+  currentPath,
+}: {
+  className?: string;
+  mainNavItems: { name: string; href: string; icon: React.ReactNode }[];
+  moreNavItems: { name: string; href: string; icon: React.ReactNode }[];
+  howToItems: { name: string; href: string; icon: React.ReactNode }[];
+  currentPath: string;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="ghost"
+          className={cn(
+            "h-8 w-8 p-0 hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0",
+            className
+          )}
+        >
+          <div className="relative flex h-8 w-4 items-center justify-center">
+            <div className="relative size-4">
+              <span
+                className={cn(
+                  "bg-gray-800 absolute left-0 block h-0.5 w-4 transition-all duration-100",
+                  open ? "top-[0.4rem] -rotate-45" : "top-1"
+                )}
+              />
+              <span
+                className={cn(
+                  "bg-gray-800 absolute left-0 block h-0.5 w-4 transition-all duration-100",
+                  open ? "top-[0.4rem] rotate-45" : "top-2.5"
+                )}
+              />
+            </div>
+            <span className="sr-only">Toggle Menu</span>
+          </div>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="no-scrollbar h-[--radix-popper-available-height] w-[--radix-popper-available-width] overflow-y-auto rounded-none border-none bg-white/95 p-0 shadow-none backdrop-blur-xl duration-100"
+        align="start"
+        side="bottom"
+        alignOffset={-16}
+        sideOffset={14}
+      >
+        <div className="flex flex-col gap-10 overflow-auto px-6 py-6">
+          {/* Main Navigation */}
+          <div className="flex flex-col gap-4">
+            <div className="text-sm font-medium text-gray-500 font-sora">
+              Menu
+            </div>
+            <div className="flex flex-col gap-3">
+              {mainNavItems.map((item) => (
+                <MobileLink
+                  key={item.name}
+                  href={item.href}
+                  onOpenChange={setOpen}
+                  isActive={currentPath === item.href}
+                >
+                  <span className="flex items-center gap-2">
+                    <span
+                      className={cn(
+                        currentPath === item.href
+                          ? "[&_path]:fill-amber-500"
+                          : "[&_path]:fill-gray-900"
+                      )}
+                    >
+                      {item.icon}
+                    </span>
+                    {item.name}
+                  </span>
+                </MobileLink>
+              ))}
+            </div>
+          </div>
+
+          {/* Rewards Section */}
+          <div className="flex flex-col gap-4">
+            <div className="text-sm font-medium text-gray-500 font-sora">
+              Rewards
+            </div>
+            <div className="flex flex-col gap-3">
+              {moreNavItems.map((item) => (
+                <MobileLink
+                  key={item.name}
+                  href={item.href}
+                  onOpenChange={setOpen}
+                  isActive={currentPath === item.href}
+                >
+                  <span className="flex items-center gap-2">
+                    <span
+                      className={cn(
+                        currentPath === item.href
+                          ? "[&_path]:fill-amber-500 [&_circle]:fill-amber-500"
+                          : "[&_path]:fill-gray-900 [&_circle]:fill-gray-900"
+                      )}
+                    >
+                      {item.icon}
+                    </span>
+                    {item.name}
+                  </span>
+                </MobileLink>
+              ))}
+            </div>
+          </div>
+
+          {/* How To's Section */}
+          <div className="flex flex-col gap-4">
+            <div className="text-sm font-medium text-gray-500 font-sora">
+              How To's
+            </div>
+            <div className="flex flex-col gap-3">
+              {howToItems.map((item) => (
+                <MobileLink
+                  key={item.name}
+                  href={item.href}
+                  onOpenChange={setOpen}
+                  isExternal
+                >
+                  <span className="flex items-center gap-2">
+                    {item.icon}
+                    {item.name}
+                  </span>
+                </MobileLink>
+              ))}
+            </div>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function NavLink({
   children,
   href = "#",
@@ -317,7 +504,6 @@ function Header() {
     // },
   ];
 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { data: outageBannerFlag } = useFeatureFlag("show_outage_banner");
 
@@ -461,92 +647,16 @@ function Header() {
 
             {/* Mobile: Logo and Hamburger Menu */}
             <div className="md:hidden flex items-center gap-3">
-              <img src="/uncap.png" alt="UNCAP" className="h-5 w-5" />
-              <Drawer
-                open={isMobileMenuOpen}
-                onOpenChange={setIsMobileMenuOpen}
-              >
-                <DrawerTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-                  >
-                    <MenuIcon className="size-5" />
-                    <span className="sr-only">Open menu</span>
-                  </Button>
-                </DrawerTrigger>
-                <DrawerContent className="bg-white dark:bg-gray-900">
-                  <nav className="mt-4 flex flex-col p-4">
-                    {/* Main Navigation - First 3 items without header */}
-                    <div className="mb-6">
-                      <div className="space-y-1">
-                        {mainNavItems.map((item) => (
-                          <DrawerClose asChild key={item.name}>
-                            <Link
-                              to={item.href}
-                              className={`flex items-center gap-3 px-4 py-2.5 rounded-lg font-sora font-medium text-sm transition-colors ${
-                                location.pathname === item.href
-                                  ? "bg-amber-50 text-amber-500 [&_path]:fill-[#FF9300]"
-                                  : "text-gray-800 hover:bg-gray-50 hover:text-amber-500 [&_path]:fill-[#242424]"
-                              }`}
-                            >
-                              {item.icon}
-                              {item.name}
-                            </Link>
-                          </DrawerClose>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Rewards Section */}
-                    <div className="mb-6">
-                      <h3 className="px-4 mb-3 text-xs font-semibold font-sora text-gray-500 uppercase tracking-wider">
-                        More
-                      </h3>
-                      <div className="space-y-1">
-                        {moreNavItems.map((item) => (
-                          <DrawerClose asChild key={item.name}>
-                            <Link
-                              to={item.href}
-                              className={`flex items-center gap-3 px-4 py-2.5 rounded-lg font-sora font-medium text-sm transition-colors ${
-                                location.pathname === item.href
-                                  ? "bg-amber-50 text-amber-500 [&_path]:fill-[#FF9300] [&_circle]:fill-[#FF9300]"
-                                  : "text-gray-800 hover:bg-gray-50 hover:text-amber-500 [&_path]:fill-[#242424] [&_circle]:fill-[#242424]"
-                              }`}
-                            >
-                              {item.icon}
-                              {item.name}
-                            </Link>
-                          </DrawerClose>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* How To's Section */}
-                    <div>
-                      <h3 className="px-4 mb-3 text-xs font-semibold font-sora text-gray-500 uppercase tracking-wider">
-                        How To's
-                      </h3>
-                      <div className="space-y-1">
-                        {howToItems.map((item) => (
-                          <DrawerClose asChild key={item.name}>
-                            <a
-                              href={item.href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-800 hover:bg-gray-50 hover:text-amber-500 font-sora font-medium text-sm transition-colors"
-                            >
-                              {item.icon}
-                              {item.name}
-                            </a>
-                          </DrawerClose>
-                        ))}
-                      </div>
-                    </div>
-                  </nav>
-                </DrawerContent>
-              </Drawer>
+              <Link to="/" className="flex items-center">
+                <img src="/uncap.png" alt="UNCAP" className="h-5 w-5" />
+              </Link>
+              <MobileNav
+                className="flex"
+                mainNavItems={mainNavItems}
+                moreNavItems={moreNavItems}
+                howToItems={howToItems}
+                currentPath={location.pathname}
+              />
             </div>
 
             {/* Center: Logo - hidden on screens smaller than lg */}
