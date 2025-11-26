@@ -27,19 +27,22 @@ import { ReferralProvider } from "./providers/referral-provider";
 
 export const meta: Route.MetaFunction = () => {
   return [
-    { title: "Uncap Finance - Do more with Bitcoin" },
+    { title: "Uncap Finance - Finally, Do More With Your Bitcoin" },
     {
       name: "description",
       content:
-        "Unlock the potential of your bitcoin. Borrow against bitcoin and earn yield on stables with Uncap Finance.",
+        "Borrow against your Bitcoin at rates as low as 0.5%—the cheapest in DeFi. You set the rate and keep full control of your Bitcoin.",
     },
 
     // Open Graph
-    { property: "og:title", content: "Uncap Finance - Do more with Bitcoin" },
+    {
+      property: "og:title",
+      content: "Uncap Finance - Finally, Do More With Your Bitcoin",
+    },
     {
       property: "og:description",
       content:
-        "Unlock the potential of your bitcoin. Borrow against bitcoin and earn yield on stables with Uncap Finance",
+        "Borrow against your Bitcoin at rates as low as 0.5%—the cheapest in DeFi. You set the rate and keep full control of your Bitcoin.",
     },
     { property: "og:type", content: "website" },
     { property: "og:url", content: "https://uncap.finance" },
@@ -50,11 +53,14 @@ export const meta: Route.MetaFunction = () => {
     // Twitter Card
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:site", content: "@UncapFinance" },
-    { name: "twitter:title", content: "Uncap Finance - Do more with Bitcoin" },
+    {
+      name: "twitter:title",
+      content: "Uncap Finance - Finally, Do More With Your Bitcoin",
+    },
     {
       name: "twitter:description",
       content:
-        "Unlock the potential of your bitcoin. Borrow against bitcoin and earn yield on stables with Uncap Finance",
+        "Borrow against your Bitcoin at rates as low as 0.5%—the cheapest in DeFi. You set the rate and keep full control of your Bitcoin.",
     },
     { name: "twitter:image", content: "https://uncap.finance/og-image.jpg" },
   ];

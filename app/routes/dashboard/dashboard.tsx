@@ -25,6 +25,8 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { useQueryState } from "nuqs";
+import { createMeta } from "~/lib/utils/meta";
+import type { Route } from "./+types/dashboard";
 
 type FilterType = "all" | "borrow" | "earn";
 
@@ -275,4 +277,12 @@ export default function Dashboard() {
       />
     </>
   );
+}
+
+export function meta(args: Route.MetaArgs) {
+  return createMeta(args, {
+    title: "Uncap - Dashboard",
+    description:
+      "View and manage your borrow positions and stability pool deposits on Uncap Finance.",
+  });
 }

@@ -10,7 +10,7 @@ import { getAverageInterestRateForBranch } from "./interest";
 import { DEFAULT_RETRY_OPTIONS, retryWithBackoff } from "./retry";
 import Big from "big.js";
 
-const CACHE_TTL = 5 * 60; // 5 minutes
+const CACHE_TTL = 30 * 60; // 30 minutes
 
 export async function fetchPoolPosition(
   provider: RpcProvider,
