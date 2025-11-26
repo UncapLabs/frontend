@@ -4,6 +4,7 @@ import { Container } from "./container";
 import { clsx } from "clsx";
 import { motion, useMotionValue, animate } from "motion/react";
 import { useEffect, useRef, useState } from "react";
+import { useEventListener, useIntersectionObserver } from "usehooks-ts";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 function Card({
@@ -71,6 +72,8 @@ function Card({
 
 export function Steps() {
   const [width, setWidth] = useState(0);
+  const [isAtStart, setIsAtStart] = useState(true);
+  const [isAtEnd, setIsAtEnd] = useState(false);
   const carousel = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
 
@@ -79,6 +82,15 @@ export function Steps() {
       setWidth(carousel.current.scrollWidth - carousel.current.offsetWidth);
     }
   }, []);
+
+  // Track position to update button states
+  useEffect(() => {
+    const unsubscribe = x.on("change", (latest) => {
+      setIsAtStart(latest >= -10);
+      setIsAtEnd(latest <= -width + 10);
+    });
+    return () => unsubscribe();
+  }, [x, width]);
 
   const scroll = (direction: "left" | "right") => {
     if (!carousel.current) return;
@@ -103,8 +115,51 @@ export function Steps() {
     });
   };
 
+  // Track if section is in view
+  const { isIntersecting, ref: containerRef } = useIntersectionObserver({
+    threshold: 0.5, // At least 50% visible
+  });
+
+  // Keyboard navigation (arrow keys) when section is in view
+  useEventListener("keydown", (e) => {
+    if (!isIntersecting) return;
+
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      scroll("left");
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      scroll("right");
+    }
+  });
+
+  // Trackpad/wheel horizontal scrolling
+  const carouselWheelRef = useRef<HTMLDivElement>(null!);
+  useEventListener(
+    "wheel",
+    (e) => {
+      const delta = e.deltaX !== 0 ? e.deltaX : e.deltaY;
+      if (delta === 0) return;
+
+      e.preventDefault();
+
+      const currentX = x.get();
+      let newX = currentX - delta;
+
+      // Clamp
+      if (newX > 0) newX = 0;
+      if (newX < -width) newX = -width;
+
+      x.set(newX);
+    },
+    carouselWheelRef,
+    { passive: false }
+  );
+
   return (
-    <div className="bg-linear-to-b from-white from-50% to-gray-100 py-24">
+    <div
+      ref={containerRef}
+      className="bg-linear-to-b from-white from-50% to-gray-100 py-24">
       <Container>
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
@@ -116,31 +171,57 @@ export function Steps() {
           <div className="flex gap-2 pb-2">
             <button
               onClick={() => scroll("left")}
-              className="group flex size-12 items-center justify-center rounded-full border border-gray-200 bg-white transition-colors hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
+              disabled={isAtStart}
+              className={clsx(
+                "group flex size-12 items-center justify-center rounded-full border bg-white transition-all focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500",
+                isAtStart
+                  ? "border-gray-100 opacity-40 cursor-not-allowed"
+                  : "border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+              )}
               aria-label="Previous step"
             >
-              <ChevronLeft className="size-6 text-gray-600 group-hover:text-gray-900" />
+              <ChevronLeft
+                className={clsx(
+                  "size-6 transition-colors",
+                  isAtStart ? "text-gray-400" : "text-gray-600 group-hover:text-gray-900"
+                )}
+              />
             </button>
             <button
               onClick={() => scroll("right")}
-              className="group flex size-12 items-center justify-center rounded-full border border-gray-200 bg-white transition-colors hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
+              disabled={isAtEnd}
+              className={clsx(
+                "group flex size-12 items-center justify-center rounded-full border bg-white transition-all focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500",
+                isAtEnd
+                  ? "border-gray-100 opacity-40 cursor-not-allowed"
+                  : "border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+              )}
               aria-label="Next step"
             >
-              <ChevronRight className="size-6 text-gray-600 group-hover:text-gray-900" />
+              <ChevronRight
+                className={clsx(
+                  "size-6 transition-colors",
+                  isAtEnd ? "text-gray-400" : "text-gray-600 group-hover:text-gray-900"
+                )}
+              />
             </button>
           </div>
         </div>
 
-        <div className="mt-10 overflow-hidden sm:mt-16">
+        <div ref={carouselWheelRef} className="mt-10 overflow-hidden sm:mt-16">
           <motion.div
             ref={carousel}
             style={{ x }}
             drag="x"
-            dragElastic={0.2}
+            dragElastic={0.35}
             dragConstraints={{ right: 0, left: -width }}
-            dragTransition={{ bounceDamping: 30 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="flex gap-4 will-change-transform cursor-grab active:cursor-grabbing"
+            dragTransition={{
+              bounceDamping: 18,
+              bounceStiffness: 200,
+              power: 0.3,
+              timeConstant: 200,
+            }}
+            className="flex gap-4 will-change-transform cursor-grab active:cursor-grabbing touch-pan-y"
           >
             <Card
               eyebrow="Step 1"
