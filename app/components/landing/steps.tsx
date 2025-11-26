@@ -181,6 +181,7 @@ export function Steps() {
                   className="size-full object-cover"
                 />
               }
+              fade={["bottom"]}
               className="min-w-[400px] md:min-w-[500px] rounded-lg"
             />
             <Card
@@ -194,6 +195,7 @@ export function Steps() {
                   className="size-full object-cover"
                 />
               }
+              fade={["bottom"]}
               className="min-w-[400px] md:min-w-[500px] rounded-lg"
             />
           </motion.div>
