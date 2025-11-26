@@ -1,30 +1,19 @@
 import { Container } from "~/components/landing/container";
 import { Heading, Lead } from "~/components/landing/text";
 import { AnimatedNumber } from "./animated-number";
-import { useAllBranchTCRs } from "~/hooks/use-all-branch-stats";
-import { COLLATERAL_LIST } from "~/lib/collateral";
+import { useProtocolStats } from "~/hooks/use-protocol-stats";
 import Big from "big.js";
 
 export default function Problem() {
-  const tcrData = useAllBranchTCRs();
-
-  // Calculate totals across all collaterals
-  let totalCollateralUSD = new Big(0);
-  let totalUsduCirculation = new Big(0);
-
-  COLLATERAL_LIST.forEach((collateral) => {
-    const tcr = tcrData[collateral.id];
-    if (tcr.data?.totalCollateralUSD) {
-      totalCollateralUSD = totalCollateralUSD.plus(tcr.data.totalCollateralUSD);
-    }
-    if (tcr.data?.totalDebt) {
-      totalUsduCirculation = totalUsduCirculation.plus(tcr.data.totalDebt);
-    }
-  });
+  const { data } = useProtocolStats();
 
   // Convert to thousands for display (K+)
-  const btcCollateralInK = totalCollateralUSD.div(1000).toNumber();
-  const usduCirculationInK = totalUsduCirculation.div(1000).toNumber();
+  const btcCollateralInK = (data?.totalCollateralUSD ?? new Big(0))
+    .div(1000)
+    .toNumber();
+  const usduCirculationInK = (data?.totalUsduCirculation ?? new Big(0))
+    .div(1000)
+    .toNumber();
 
   return (
     <div id="problem-section" className="py-24">

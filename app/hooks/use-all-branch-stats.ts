@@ -20,7 +20,7 @@ export function useAllBranchTCRs() {
   });
 
   // Build result object
-  const result = {} as Record<CollateralId, typeof queries[0]>;
+  const result = {} as Record<CollateralId, (typeof queries)[0]>;
   COLLATERAL_LIST.forEach((collateral, index) => {
     result[collateral.id] = queries[index];
   });
@@ -29,43 +29,43 @@ export function useAllBranchTCRs() {
 }
 
 // Average interest rates for all branches (dynamic)
-export function useAllAverageInterestRates() {
-  const trpc = useTRPC();
+// export function useAllAverageInterestRates() {
+//   const trpc = useTRPC();
 
-  const queries = useQueries({
-    queries: COLLATERAL_LIST.map((collateral) => ({
-      ...trpc.interestRouter.getAverageInterestRate.queryOptions({
-        branchId: collateral.branchId,
-      }),
-    })),
-  });
+//   const queries = useQueries({
+//     queries: COLLATERAL_LIST.map((collateral) => ({
+//       ...trpc.interestRouter.getAverageInterestRate.queryOptions({
+//         branchId: collateral.branchId,
+//       }),
+//     })),
+//   });
 
-  const result = {} as Record<CollateralId, UseQueryResult<Big | undefined>>;
-  COLLATERAL_LIST.forEach((collateral, index) => {
-    result[collateral.id] = queries[index] as UseQueryResult<Big | undefined>;
-  });
+//   const result = {} as Record<CollateralId, UseQueryResult<Big | undefined>>;
+//   COLLATERAL_LIST.forEach((collateral, index) => {
+//     result[collateral.id] = queries[index] as UseQueryResult<Big | undefined>;
+//   });
 
-  return result;
-}
+//   return result;
+// }
 
 // Visualization data for all branches (dynamic)
-export function useAllInterestRateVisualization() {
-  const trpc = useTRPC();
+// export function useAllInterestRateVisualization() {
+//   const trpc = useTRPC();
 
-  const queries = useQueries({
-    queries: COLLATERAL_LIST.map((collateral) => ({
-      ...trpc.interestRouter.getInterestRateVisualizationData.queryOptions({
-        branchId: collateral.branchId,
-      }),
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      refetchInterval: 2 * 60 * 1000, // 2 minutes
-    })),
-  });
+//   const queries = useQueries({
+//     queries: COLLATERAL_LIST.map((collateral) => ({
+//       ...trpc.interestRouter.getInterestRateVisualizationData.queryOptions({
+//         branchId: collateral.branchId,
+//       }),
+//       staleTime: 5 * 60 * 1000, // 5 minutes
+//       refetchInterval: 2 * 60 * 1000, // 2 minutes
+//     })),
+//   });
 
-  const result = {} as Record<CollateralId, typeof queries[0]>;
-  COLLATERAL_LIST.forEach((collateral, index) => {
-    result[collateral.id] = queries[index];
-  });
+//   const result = {} as Record<CollateralId, typeof queries[0]>;
+//   COLLATERAL_LIST.forEach((collateral, index) => {
+//     result[collateral.id] = queries[index];
+//   });
 
-  return result;
-}
+//   return result;
+// }
