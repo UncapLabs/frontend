@@ -89,7 +89,14 @@ export function TransactionStoreProvider({
           // Poll for the specific troveId
           await pollForTrove({
             troveId: transaction.details.troveId,
-            onComplete: () => {
+            onComplete: async () => {
+              // Clear server-side branch TCR cache if collateral type is known
+              if (transaction.details?.collateralType) {
+                await trpcClient.cacheRouter.clearKeys.mutate({
+                  keys: [`branch-tcr-${transaction.details.collateralType}`],
+                });
+              }
+
               queryClient.invalidateQueries({
                 queryKey: trpc.positionsRouter.getUserOnChainPositions.queryKey(
                   {
@@ -104,6 +111,13 @@ export function TransactionStoreProvider({
                   queryKey: trpc.positionsRouter.getNextOwnerIndex.queryKey({
                     borrower: address,
                     collateralType: transaction.details.collateralType,
+                  }),
+                });
+
+                // Invalidate branch TCR data
+                queryClient.invalidateQueries({
+                  queryKey: trpc.branchRouter.getTCR.queryKey({
+                    branchId: transaction.details.collateralType,
                   }),
                 });
 
@@ -133,7 +147,14 @@ export function TransactionStoreProvider({
           transaction.details?.troveId
         ) {
           // For adjust transactions, invalidate the specific position
-          setTimeout(() => {
+          setTimeout(async () => {
+            // Clear server-side branch TCR cache if collateral type is known
+            if (transaction.details?.collateralType) {
+              await trpcClient.cacheRouter.clearKeys.mutate({
+                keys: [`branch-tcr-${transaction.details.collateralType}`],
+              });
+            }
+
             // Invalidate user positions list
             queryClient.invalidateQueries({
               queryKey: trpc.positionsRouter.getUserOnChainPositions.queryKey({
@@ -156,6 +177,13 @@ export function TransactionStoreProvider({
 
             // Invalidate interest rate data if collateral type is known
             if (transaction.details?.collateralType) {
+              // Invalidate branch TCR data
+              queryClient.invalidateQueries({
+                queryKey: trpc.branchRouter.getTCR.queryKey({
+                  branchId: transaction.details.collateralType,
+                }),
+              });
+
               const branchId = getBranchId(
                 transaction.details.collateralType as CollateralId
               );
@@ -181,7 +209,21 @@ export function TransactionStoreProvider({
           transaction.details?.troveId
         ) {
           // For close transactions, invalidate positions after a delay
-          setTimeout(() => {
+          setTimeout(async () => {
+            // Clear server-side branch TCR cache if collateral type is known
+            if (transaction.details?.collateralType) {
+              await trpcClient.cacheRouter.clearKeys.mutate({
+                keys: [`branch-tcr-${transaction.details.collateralType}`],
+              });
+
+              // Invalidate branch TCR data
+              queryClient.invalidateQueries({
+                queryKey: trpc.branchRouter.getTCR.queryKey({
+                  branchId: transaction.details.collateralType,
+                }),
+              });
+            }
+
             // Invalidate user positions list
             queryClient.invalidateQueries({
               queryKey: trpc.positionsRouter.getUserOnChainPositions.queryKey({

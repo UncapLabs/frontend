@@ -39,8 +39,7 @@ export default function BorrowCard(props: Props) {
   }
 
   // Otherwise, render the actual card
-  const { trove, onUpdatePosition, onClosePosition } =
-    props as BorrowCardProps;
+  const { trove, onUpdatePosition, onClosePosition } = props as BorrowCardProps;
 
   // Get collateral config - match by symbol or id
   const collateral = COLLATERAL_LIST.find(
