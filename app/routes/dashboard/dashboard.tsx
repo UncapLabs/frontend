@@ -125,9 +125,9 @@ export default function Dashboard() {
         </div>
 
         {/* Main Layout */}
-        <div className="flex flex-col lg:flex-row gap-4 lg:items-stretch">
+        <div className={`flex flex-col lg:flex-row gap-4 ${showWalletCTA ? 'lg:items-stretch' : 'lg:items-start'}`}>
           {/* Left Section: Stats */}
-          <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px] lg:max-h-[600px] order-2 lg:order-none flex">
+          <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px] order-2 lg:order-none flex">
             <Stats />
           </div>
 

@@ -147,7 +147,7 @@ export default function Hero() {
             {/* Left Column: Text Content */}
             <div className="lg:col-span-6 relative z-10">
               <h1 className="font-sora text-5xl/[1.1] font-medium tracking-tight text-balance text-[#001B40] sm:text-7xl/[1.1] md:text-8xl/[1.1]">
-                Finally, do more with your Bitcoin.
+                Do more with your Bitcoin.
               </h1>
               <p className="mt-6 max-w-2xl text-base font-normal font-sora text-[#001B40]/70 sm:text-lg leading-normal">
                 Borrow against your Bitcoin at rates as low as 0.5%, the

@@ -63,8 +63,8 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
       <div className="md:grid md:grid-cols-2 md:gap-6 lg:block flex-1">
         {/* Borrow Rates Section */}
         <div>
-          <div className="mb-4">
-            <div className="flex items-center gap-2 mb-4">
+          <div className="mb-3">
+            <div className="flex items-center gap-2 mb-3">
               <svg
                 width="13"
                 height="13"
@@ -259,12 +259,12 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
         </div>
 
         {/* Separator - only visible on mobile, hidden on tablet and desktop */}
-        <div className="my-8 h-px bg-[#484848] md:hidden lg:block lg:my-6" />
+        <div className="my-6 h-px bg-[#484848] md:hidden lg:block lg:my-5" />
 
         {/* Earn Rates Section */}
         <div>
-          <div className="mb-4">
-            <div className="flex items-center gap-2 mb-4">
+          <div className="mb-3">
+            <div className="flex items-center gap-2 mb-3">
               <svg
                 width="12"
                 height="13"
@@ -313,39 +313,34 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                     className="border-zinc-800 hover:bg-zinc-900/50"
                   >
                     <TableCell className="px-0 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1">
-                          <div className="w-6 h-6 rounded-full overflow-hidden bg-zinc-800 flex items-center justify-center p-0.5">
-                            <img
-                              src="/usdu.png"
-                              alt="USDU"
-                              className="w-full h-full object-contain"
-                            />
-                          </div>
-                          <svg
-                            width="8"
-                            height="6"
-                            viewBox="0 0 8 6"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="flex-shrink-0"
-                          >
-                            <path
-                              d="M0.5 3.5L0.5 2.5L5.793 2.5L4.146 0.853L4.854 0.146L7.707 3L4.854 5.854L4.146 5.147L5.793 3.5L0.5 3.5Z"
-                              fill="#666666"
-                            />
-                          </svg>
-                          <div className="w-6 h-6 rounded-full overflow-hidden bg-zinc-800">
-                            <img
-                              src={rate.icon}
-                              alt={rate.pool}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-6 h-6 rounded-full overflow-hidden bg-zinc-800 flex items-center justify-center p-0.5">
+                          <img
+                            src="/usdu.png"
+                            alt="USDU"
+                            className="w-full h-full object-contain"
+                          />
                         </div>
-                        <span className="text-white text-sm font-normal font-sora">
-                          {rate.pool}
-                        </span>
+                        <svg
+                          width="8"
+                          height="6"
+                          viewBox="0 0 8 6"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="flex-shrink-0"
+                        >
+                          <path
+                            d="M0.5 3.5L0.5 2.5L5.793 2.5L4.146 0.853L4.854 0.146L7.707 3L4.854 5.854L4.146 5.147L5.793 3.5L0.5 3.5Z"
+                            fill="#666666"
+                          />
+                        </svg>
+                        <div className="w-6 h-6 rounded-full overflow-hidden bg-zinc-800">
+                          <img
+                            src={rate.icon}
+                            alt={rate.pool}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell className="text-white text-sm font-normal font-sora text-right tabular-nums min-w-[100px]">
@@ -509,12 +504,12 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
         </div>
 
         {/* Separator */}
-        <div className="my-8 h-px bg-[#484848] md:hidden lg:block lg:my-6" />
+        <div className="my-6 h-px bg-[#484848] md:hidden lg:block lg:my-5" />
 
         {/* Provide Liquidity Section */}
         <div className="mb-4 md:mb-0">
-          <div className="mb-4">
-            <div className="flex items-center gap-2 mb-4">
+          <div className="mb-3">
+            <div className="flex items-center gap-2 mb-3">
               <svg
                 width="13"
                 height="13"

@@ -573,11 +573,22 @@ function Header() {
               </Link>
             </div>
 
-            {/* Right side: Transaction History and Wallet Connector */}
+            {/* Right side: Transaction History and Wallet Connector (or "Go to app" on landing) */}
             <div className="flex items-center justify-end gap-1 flex-1">
-              <TransactionHistoryButton />
-              <Separator orientation="vertical" className="h-8" />
-              <WalletConnector />
+              {location.pathname === "/" ? (
+                <Button
+                  asChild
+                  className="bg-token-bg-blue hover:bg-[#0051BF] text-white font-sora rounded-xl h-10 px-6"
+                >
+                  <Link to="/borrow">Go to app</Link>
+                </Button>
+              ) : (
+                <>
+                  <TransactionHistoryButton />
+                  <Separator orientation="vertical" className="h-8" />
+                  <WalletConnector />
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -10,8 +10,8 @@ export function useProtocolStats() {
   const trpc = useTRPC();
   return useQuery({
     ...trpc.protocolStatsRouter.getStats.queryOptions(),
-    staleTime: 30 * 60 * 1000, // 30 minutes
-    refetchInterval: 30 * 60 * 1000, // 30 minutes
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    refetchInterval: 2 * 60 * 1000, // 2 minutes
     select: (data) => ({
       totalCollateralUSD: new Big(data.totalCollateralUSD),
       totalUsduCirculation: new Big(data.totalUsduCirculation),
