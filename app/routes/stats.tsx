@@ -350,7 +350,7 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
           if (isLiquidated && liquidationTx) {
             return (
               <a
-                href={`https://starkscan.co/tx/${liquidationTx}`}
+                href={`https://voyager.online/tx/${liquidationTx}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-sora text-xs text-blue-600 hover:text-blue-800 underline"

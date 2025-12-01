@@ -46,6 +46,12 @@ export default function Footer() {
               {/* Column 1: Resources */}
               <div className="flex flex-col gap-4">
                 <h3 className="font-bold text-white uppercase">Resources</h3>
+                <Link
+                  to="/stats"
+                  className="text-white/70 hover:text-white transition-colors text-sm"
+                >
+                  All Positions
+                </Link>
                 <a
                   href="https://uncap.finance/resources/docs"
                   target="_blank"
