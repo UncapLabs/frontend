@@ -114,6 +114,10 @@ export const ALL_TROVES = graphql(/* GraphQL */ `
         id
         collIndex
       }
+      interestBatch {
+        batchManager
+        annualInterestRate
+      }
       createdAt
       updatedAt
       closedAt

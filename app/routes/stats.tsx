@@ -1,9 +1,10 @@
-import { useMemo } from "react";
-import type { ColumnDef } from "@tanstack/react-table";
+import { useMemo, useState } from "react";
+import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import {
   flexRender,
   useReactTable,
   getCoreRowModel,
+  getSortedRowModel,
 } from "@tanstack/react-table";
 import { NumericFormat } from "react-number-format";
 import { useQueryState, parseAsInteger, parseAsStringEnum } from "nuqs";
@@ -49,6 +50,8 @@ type PositionEntry = {
   redeemedColl: string | null;
   redeemedDebt: string | null;
   liquidationTx: string | null;
+  batchManager: string | null;
+  batchInterestRate: string | null;
 };
 
 const STATUS_OPTIONS = [
@@ -238,6 +241,8 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
   const pageCount = data?.pageCount ?? 0;
   const hasMore = data?.hasMore ?? false;
 
+  const [sorting, setSorting] = useState<SortingState>([]);
+
   const columns = useMemo<ColumnDef<PositionEntry>[]>(() => {
     return [
       {
@@ -255,18 +260,27 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
         header: "Borrower",
         size: 160,
         cell: ({ row }) => (
-          <span
-            className="font-mono text-xs tracking-wide text-neutral-800"
+          <a
+            href={`https://voyager.online/contract/${row.original.borrower}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-mono text-xs tracking-wide text-blue-600 hover:text-blue-800 hover:underline"
             title={row.original.borrower}
+            onClick={(e) => e.stopPropagation()}
           >
             {shortenAddress(row.original.borrower)}
-          </span>
+          </a>
         ),
       },
       {
         accessorKey: "deposit",
         header: "Deposit",
         size: 140,
+        sortingFn: (rowA, rowB) => {
+          const a = new Big(rowA.original.deposit || "0");
+          const b = new Big(rowB.original.deposit || "0");
+          return a.cmp(b);
+        },
         cell: ({ row }) => {
           const isLiquidated = row.original.status === "liquidated";
           const closedAt = row.original.closedAt;
@@ -295,6 +309,11 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
         accessorKey: "debt",
         header: "Debt (USDU)",
         size: 140,
+        sortingFn: (rowA, rowB) => {
+          const a = new Big(rowA.original.debt || "0");
+          const b = new Big(rowB.original.debt || "0");
+          return a.cmp(b);
+        },
         cell: ({ row }) => {
           const isLiquidated = row.original.status === "liquidated";
           const liquidationTx = row.original.liquidationTx;
@@ -325,19 +344,62 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
         },
       },
       {
-        accessorKey: "interestRate",
+        id: "effectiveInterestRate",
         header: "Interest Rate",
-        size: 100,
-        cell: ({ row }) => (
-          <span className="font-sora text-sm font-medium text-neutral-800">
-            {formatInterestRate(row.original.interestRate)}
-          </span>
-        ),
+        size: 120,
+        accessorFn: (row) => {
+          // Use batch interest rate if available, otherwise use trove's rate
+          const effectiveRate = row.batchInterestRate || row.interestRate;
+          return effectiveRate || "0";
+        },
+        sortingFn: (rowA, rowB) => {
+          const aRate =
+            rowA.original.batchInterestRate || rowA.original.interestRate || "0";
+          const bRate =
+            rowB.original.batchInterestRate || rowB.original.interestRate || "0";
+          const a = new Big(aRate);
+          const b = new Big(bRate);
+          return a.cmp(b);
+        },
+        cell: ({ row }) => {
+          const { interestRate, batchInterestRate, batchManager } = row.original;
+          // Use batch interest rate if available
+          const effectiveRate = batchInterestRate || interestRate;
+          const isBatchManaged = !!batchManager;
+
+          return (
+            <div className="flex flex-col">
+              <span className="font-sora text-sm font-medium text-neutral-800">
+                {formatInterestRate(effectiveRate)}
+              </span>
+              {isBatchManaged && (
+                <span className="font-sora text-xs text-purple-600">Telos</span>
+              )}
+            </div>
+          );
+        },
       },
       {
         id: "liquidationPrice",
         header: "Liq. Price",
         size: 100,
+        accessorFn: (row) => {
+          if (row.status !== "active") return null;
+          const liqPrice = calculateLiquidationPrice(
+            row.debt,
+            row.deposit,
+            row.collateralBranchId
+          );
+          return liqPrice ? parseFloat(liqPrice) : null;
+        },
+        sortingFn: (rowA, rowB) => {
+          const a = rowA.getValue("liquidationPrice") as number | null;
+          const b = rowB.getValue("liquidationPrice") as number | null;
+          if (a === null && b === null) return 0;
+          if (a === null) return 1;
+          if (b === null) return -1;
+          return a - b;
+        },
         cell: ({ row }) => {
           const { debt, deposit, collateralBranchId, status } = row.original;
 
@@ -373,6 +435,19 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
         id: "ltv",
         header: "LTV",
         size: 80,
+        accessorFn: (row) => {
+          if (row.status !== "active") return null;
+          const ltv = calculateLTV(row.debt, row.deposit, btcPriceBig);
+          return ltv ? parseFloat(ltv) : null;
+        },
+        sortingFn: (rowA, rowB) => {
+          const a = rowA.getValue("ltv") as number | null;
+          const b = rowB.getValue("ltv") as number | null;
+          if (a === null && b === null) return 0;
+          if (a === null) return 1;
+          if (b === null) return -1;
+          return a - b;
+        },
         cell: ({ row }) => {
           const { debt, deposit, status } = row.original;
 
@@ -407,6 +482,11 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
         accessorKey: "redeemedColl",
         header: "Redeemed Coll",
         size: 120,
+        sortingFn: (rowA, rowB) => {
+          const a = new Big(rowA.original.redeemedColl || "0");
+          const b = new Big(rowB.original.redeemedColl || "0");
+          return a.cmp(b);
+        },
         cell: ({ row }) => {
           const redeemed = row.original.redeemedColl;
           if (!redeemed || redeemed === "0") {
@@ -423,6 +503,11 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
         accessorKey: "redeemedDebt",
         header: "Redeemed Debt",
         size: 120,
+        sortingFn: (rowA, rowB) => {
+          const a = new Big(rowA.original.redeemedDebt || "0");
+          const b = new Big(rowB.original.redeemedDebt || "0");
+          return a.cmp(b);
+        },
         cell: ({ row }) => {
           const redeemed = row.original.redeemedDebt;
           if (!redeemed || redeemed === "0") {
@@ -474,12 +559,15 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
     data: positions,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     manualPagination: true,
+    onSortingChange: setSorting,
     state: {
       pagination: {
         pageIndex,
         pageSize: ALL_POSITIONS_PAGE_SIZE,
       },
+      sorting,
     },
   });
 
@@ -595,20 +683,40 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
                 key={headerGroup.id}
                 className="border-b border-[#E5E5E5] hover:bg-transparent"
               >
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className="h-12 py-3 px-4 text-xs font-medium font-sora uppercase tracking-tight text-neutral-800"
-                    style={{ width: header.getSize() }}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
+                {headerGroup.headers.map((header) => {
+                  const canSort = header.column.getCanSort();
+                  const sortDirection = header.column.getIsSorted();
+                  return (
+                    <TableHead
+                      key={header.id}
+                      className={`h-12 py-3 px-4 text-xs font-medium font-sora uppercase tracking-tight text-neutral-800 ${canSort ? "cursor-pointer select-none hover:bg-[#F0F0F0]" : ""}`}
+                      style={{ width: header.getSize() }}
+                      onClick={
+                        canSort
+                          ? header.column.getToggleSortingHandler()
+                          : undefined
+                      }
+                    >
+                      <div className="flex items-center gap-1">
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                        {canSort && (
+                          <span className="text-neutral-400">
+                            {sortDirection === "asc"
+                              ? " ↑"
+                              : sortDirection === "desc"
+                                ? " ↓"
+                                : " ↕"}
+                          </span>
                         )}
-                  </TableHead>
-                ))}
+                      </div>
+                    </TableHead>
+                  );
+                })}
               </TableRow>
             ))}
           </TableHeader>

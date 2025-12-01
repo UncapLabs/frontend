@@ -41,6 +41,8 @@ export interface IndexedTroveEntry {
   redeemedColl: string | null;
   redeemedDebt: string | null;
   liquidationTx: string | null;
+  batchManager: string | null;
+  batchInterestRate: string | null;
 }
 
 export interface AllPositionsResult {
@@ -182,6 +184,8 @@ export async function getAllPositions(
       redeemedColl: trove.redeemedColl || null,
       redeemedDebt: trove.redeemedDebt || null,
       liquidationTx: trove.liquidationTx || null,
+      batchManager: trove.interestBatch?.batchManager || null,
+      batchInterestRate: trove.interestBatch?.annualInterestRate || null,
     };
   });
 
