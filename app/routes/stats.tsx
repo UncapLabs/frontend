@@ -1,10 +1,9 @@
-import { useMemo, useState } from "react";
-import type { ColumnDef, SortingState } from "@tanstack/react-table";
+import { useMemo } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
   flexRender,
   useReactTable,
   getCoreRowModel,
-  getSortedRowModel,
 } from "@tanstack/react-table";
 import { NumericFormat } from "react-number-format";
 import { useQueryState, parseAsInteger, parseAsStringEnum } from "nuqs";
@@ -215,18 +214,35 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
     parseAsInteger.withDefault(1)
   );
 
+  // Sort state via URL
+  type SortFieldType = "debt" | "deposit" | "interestRate" | "createdAt" | "updatedAt" | "ltv" | "liquidationPrice";
+  const SORT_FIELDS = ["debt", "deposit", "interestRate", "createdAt", "updatedAt", "ltv", "liquidationPrice"] as const;
+  type SortDirType = "asc" | "desc";
+  const SORT_DIRS = ["asc", "desc"] as const;
+
+  const [sortBy = "debt", setSortBy] = useQueryState<SortFieldType>(
+    "sortBy",
+    parseAsStringEnum<SortFieldType>([...SORT_FIELDS]).withDefault("debt")
+  );
+  const [sortDir = "desc", setSortDir] = useQueryState<SortDirType>(
+    "sortDir",
+    parseAsStringEnum<SortDirType>([...SORT_DIRS]).withDefault("desc")
+  );
+
   const currentPage = Math.max(1, pageParam);
   const pageIndex = currentPage - 1;
   const offset = pageIndex * ALL_POSITIONS_PAGE_SIZE;
 
   // Use React Query with SSR data as initial data
-  const isInitialLoad = statusSelection === "active" && pageIndex === 0;
+  const isInitialLoad = statusSelection === "active" && pageIndex === 0 && sortBy === "debt" && sortDir === "desc";
   const { data, isFetching, error } = useQuery({
     ...trpc.protocolStatsRouter.getAllPositions.queryOptions(
       {
         status: statusSelection,
         limit: ALL_POSITIONS_PAGE_SIZE,
         offset,
+        sortBy,
+        sortDirection: sortDir,
       },
       {
         staleTime: 60_000,
@@ -241,7 +257,30 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
   const pageCount = data?.pageCount ?? 0;
   const hasMore = data?.hasMore ?? false;
 
-  const [sorting, setSorting] = useState<SortingState>([]);
+  // Map column IDs to sort fields
+  const columnToSortField: Record<string, SortFieldType> = {
+    deposit: "deposit",
+    debt: "debt",
+    effectiveInterestRate: "interestRate",
+    liquidationPrice: "liquidationPrice",
+    ltv: "ltv",
+  };
+
+  const handleSort = (columnId: string) => {
+    const field = columnToSortField[columnId];
+    if (!field) return;
+
+    if (sortBy === field) {
+      // Toggle direction
+      void setSortDir(sortDir === "asc" ? "desc" : "asc");
+    } else {
+      // New field, default to desc
+      void setSortBy(field);
+      void setSortDir("desc");
+    }
+    // Reset to first page on sort change
+    void setPageParam(1);
+  };
 
   const columns = useMemo<ColumnDef<PositionEntry>[]>(() => {
     return [
@@ -276,11 +315,6 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
         accessorKey: "deposit",
         header: "Deposit",
         size: 140,
-        sortingFn: (rowA, rowB) => {
-          const a = new Big(rowA.original.deposit || "0");
-          const b = new Big(rowB.original.deposit || "0");
-          return a.cmp(b);
-        },
         cell: ({ row }) => {
           const isLiquidated = row.original.status === "liquidated";
           const closedAt = row.original.closedAt;
@@ -309,11 +343,6 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
         accessorKey: "debt",
         header: "Debt (USDU)",
         size: 140,
-        sortingFn: (rowA, rowB) => {
-          const a = new Big(rowA.original.debt || "0");
-          const b = new Big(rowB.original.debt || "0");
-          return a.cmp(b);
-        },
         cell: ({ row }) => {
           const isLiquidated = row.original.status === "liquidated";
           const liquidationTx = row.original.liquidationTx;
@@ -347,20 +376,6 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
         id: "effectiveInterestRate",
         header: "Interest Rate",
         size: 120,
-        accessorFn: (row) => {
-          // Use batch interest rate if available, otherwise use trove's rate
-          const effectiveRate = row.batchInterestRate || row.interestRate;
-          return effectiveRate || "0";
-        },
-        sortingFn: (rowA, rowB) => {
-          const aRate =
-            rowA.original.batchInterestRate || rowA.original.interestRate || "0";
-          const bRate =
-            rowB.original.batchInterestRate || rowB.original.interestRate || "0";
-          const a = new Big(aRate);
-          const b = new Big(bRate);
-          return a.cmp(b);
-        },
         cell: ({ row }) => {
           const { interestRate, batchInterestRate, batchManager } = row.original;
           // Use batch interest rate if available
@@ -383,23 +398,6 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
         id: "liquidationPrice",
         header: "Liq. Price",
         size: 100,
-        accessorFn: (row) => {
-          if (row.status !== "active") return null;
-          const liqPrice = calculateLiquidationPrice(
-            row.debt,
-            row.deposit,
-            row.collateralBranchId
-          );
-          return liqPrice ? parseFloat(liqPrice) : null;
-        },
-        sortingFn: (rowA, rowB) => {
-          const a = rowA.getValue("liquidationPrice") as number | null;
-          const b = rowB.getValue("liquidationPrice") as number | null;
-          if (a === null && b === null) return 0;
-          if (a === null) return 1;
-          if (b === null) return -1;
-          return a - b;
-        },
         cell: ({ row }) => {
           const { debt, deposit, collateralBranchId, status } = row.original;
 
@@ -435,19 +433,6 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
         id: "ltv",
         header: "LTV",
         size: 80,
-        accessorFn: (row) => {
-          if (row.status !== "active") return null;
-          const ltv = calculateLTV(row.debt, row.deposit, btcPriceBig);
-          return ltv ? parseFloat(ltv) : null;
-        },
-        sortingFn: (rowA, rowB) => {
-          const a = rowA.getValue("ltv") as number | null;
-          const b = rowB.getValue("ltv") as number | null;
-          if (a === null && b === null) return 0;
-          if (a === null) return 1;
-          if (b === null) return -1;
-          return a - b;
-        },
         cell: ({ row }) => {
           const { debt, deposit, status } = row.original;
 
@@ -482,11 +467,6 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
         accessorKey: "redeemedColl",
         header: "Redeemed Coll",
         size: 120,
-        sortingFn: (rowA, rowB) => {
-          const a = new Big(rowA.original.redeemedColl || "0");
-          const b = new Big(rowB.original.redeemedColl || "0");
-          return a.cmp(b);
-        },
         cell: ({ row }) => {
           const redeemed = row.original.redeemedColl;
           if (!redeemed || redeemed === "0") {
@@ -503,11 +483,6 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
         accessorKey: "redeemedDebt",
         header: "Redeemed Debt",
         size: 120,
-        sortingFn: (rowA, rowB) => {
-          const a = new Big(rowA.original.redeemedDebt || "0");
-          const b = new Big(rowB.original.redeemedDebt || "0");
-          return a.cmp(b);
-        },
         cell: ({ row }) => {
           const redeemed = row.original.redeemedDebt;
           if (!redeemed || redeemed === "0") {
@@ -559,15 +534,12 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
     data: positions,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
     manualPagination: true,
-    onSortingChange: setSorting,
     state: {
       pagination: {
         pageIndex,
         pageSize: ALL_POSITIONS_PAGE_SIZE,
       },
-      sorting,
     },
   });
 
@@ -684,18 +656,18 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
                 className="border-b border-[#E5E5E5] hover:bg-transparent"
               >
                 {headerGroup.headers.map((header) => {
-                  const canSort = header.column.getCanSort();
-                  const sortDirection = header.column.getIsSorted();
+                  const columnId = header.column.id;
+                  const sortField = columnToSortField[columnId];
+                  const canSort = !!sortField;
+                  const isCurrentSort = sortBy === sortField;
+                  const currentDir = isCurrentSort ? sortDir : null;
+
                   return (
                     <TableHead
                       key={header.id}
                       className={`h-12 py-3 px-4 text-xs font-medium font-sora uppercase tracking-tight text-neutral-800 ${canSort ? "cursor-pointer select-none hover:bg-[#F0F0F0]" : ""}`}
                       style={{ width: header.getSize() }}
-                      onClick={
-                        canSort
-                          ? header.column.getToggleSortingHandler()
-                          : undefined
-                      }
+                      onClick={canSort ? () => handleSort(columnId) : undefined}
                     >
                       <div className="flex items-center gap-1">
                         {header.isPlaceholder
@@ -705,10 +677,10 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
                               header.getContext()
                             )}
                         {canSort && (
-                          <span className="text-neutral-400">
-                            {sortDirection === "asc"
+                          <span className={isCurrentSort ? "text-blue-600" : "text-neutral-400"}>
+                            {currentDir === "asc"
                               ? " ↑"
-                              : sortDirection === "desc"
+                              : currentDir === "desc"
                                 ? " ↓"
                                 : " ↕"}
                           </span>

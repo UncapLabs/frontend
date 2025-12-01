@@ -4,7 +4,12 @@ import {
   getProtocolStats,
   getAllPositions,
   ALL_POSITIONS_PAGE_SIZE,
+  type SortField,
+  type SortDirection,
 } from "../services/protocol-stats";
+
+const sortFieldSchema = z.enum(["debt", "deposit", "interestRate", "createdAt", "updatedAt", "ltv", "liquidationPrice"]);
+const sortDirectionSchema = z.enum(["asc", "desc"]);
 
 export const protocolStatsRouter = router({
   getStats: publicProcedure.query(async ({ ctx }) => {
@@ -17,6 +22,8 @@ export const protocolStatsRouter = router({
         limit: z.number().min(1).max(100).optional(),
         offset: z.number().min(0).optional(),
         status: z.enum(["active", "closed", "liquidated", "redeemed"]).optional(),
+        sortBy: sortFieldSchema.optional(),
+        sortDirection: sortDirectionSchema.optional(),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -24,6 +31,8 @@ export const protocolStatsRouter = router({
         limit: input.limit ?? ALL_POSITIONS_PAGE_SIZE,
         offset: input.offset ?? 0,
         status: input.status ?? "active",
+        sortBy: (input.sortBy as SortField) ?? "debt",
+        sortDirection: (input.sortDirection as SortDirection) ?? "desc",
       });
     }),
 });

@@ -94,13 +94,15 @@ export const ALL_TROVES = graphql(/* GraphQL */ `
     $first: Int!
     $skip: Int!
     $status: String
+    $orderBy: Trove_orderBy
+    $orderDirection: OrderDirection
   ) {
     troves(
       where: { _indexer: $indexer, status: $status }
       first: $first
       skip: $skip
-      orderBy: debt
-      orderDirection: desc
+      orderBy: $orderBy
+      orderDirection: $orderDirection
     ) {
       id
       troveId

@@ -14,11 +14,15 @@ import type {
   AllTrovesQuery,
   TrovesCountQuery,
 } from "~/lib/graphql/gql/graphql";
+import {
+  Trove_OrderBy,
+  OrderDirection,
+} from "~/lib/graphql/gql/graphql";
 
 const CACHE_KEY = "protocol-stats";
 const CACHE_TTL = 30 * 60; // 30 minutes
 
-export const ALL_POSITIONS_PAGE_SIZE = 25;
+export const ALL_POSITIONS_PAGE_SIZE = 50;
 
 export interface ProtocolStats {
   totalCollateralUSD: string;
@@ -112,8 +116,57 @@ export async function getProtocolStats(env: Env): Promise<ProtocolStats> {
   return result;
 }
 
+// Valid sort fields - some map to GraphQL, others are calculated
+export type SortField = "debt" | "deposit" | "interestRate" | "createdAt" | "updatedAt" | "ltv" | "liquidationPrice";
+export type SortDirection = "asc" | "desc";
+
+// Fields that can be sorted by the GraphQL indexer
+const GRAPHQL_SORT_FIELDS: Record<string, Trove_OrderBy> = {
+  debt: Trove_OrderBy.Debt,
+  deposit: Trove_OrderBy.Deposit,
+  interestRate: Trove_OrderBy.InterestRate,
+  createdAt: Trove_OrderBy.CreatedAt,
+  updatedAt: Trove_OrderBy.UpdatedAt,
+};
+
+// Fields that require server-side calculation and sorting
+const CALCULATED_SORT_FIELDS = ["ltv", "liquidationPrice"] as const;
+
+const DECIMALS_18 = new Big(10).pow(18);
+
+function isCalculatedField(field: string): boolean {
+  return CALCULATED_SORT_FIELDS.includes(field as typeof CALCULATED_SORT_FIELDS[number]);
+}
+
+// Calculate LTV: (Debt / (Deposit * BTC Price)) * 100
+function calculateLTV(debt: string, deposit: string, btcPrice: Big): number | null {
+  try {
+    const bigDebt = new Big(debt).div(DECIMALS_18);
+    const bigDeposit = new Big(deposit).div(DECIMALS_18);
+    if (bigDeposit.lte(0) || bigDebt.lte(0)) return null;
+    const collateralValue = bigDeposit.times(btcPrice);
+    if (collateralValue.lte(0)) return null;
+    return bigDebt.div(collateralValue).times(100).toNumber();
+  } catch {
+    return null;
+  }
+}
+
+// Calculate Liquidation Price: (Debt * MCR) / Deposit
+function calculateLiquidationPrice(debt: string, deposit: string, mcr: Big): number | null {
+  try {
+    const bigDebt = new Big(debt).div(DECIMALS_18);
+    const bigDeposit = new Big(deposit).div(DECIMALS_18);
+    if (bigDeposit.lte(0) || bigDebt.lte(0)) return null;
+    return bigDebt.times(mcr).div(bigDeposit).toNumber();
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Fetches all positions (troves) from the indexer with pagination
+ * For calculated fields (LTV, liquidation price), fetches all data, calculates, sorts, then paginates
  */
 export async function getAllPositions(
   env: Env,
@@ -121,39 +174,61 @@ export async function getAllPositions(
     limit?: number;
     offset?: number;
     status?: string;
+    sortBy?: SortField;
+    sortDirection?: SortDirection;
   } = {}
 ): Promise<AllPositionsResult> {
   const {
     limit = ALL_POSITIONS_PAGE_SIZE,
     offset = 0,
     status = "active",
+    sortBy = "debt",
+    sortDirection = "desc",
   } = options;
 
   const graphqlEndpoint = env.GRAPHQL_ENDPOINT;
   const graphqlClient = createGraphQLClient(graphqlEndpoint);
   const indexer = process.env.NETWORK || "sepolia";
 
+  const needsCalculatedSort = isCalculatedField(sortBy);
+
+  // For calculated fields, we need to fetch all data to sort properly
+  // For GraphQL-supported fields, we can use server-side sorting with pagination
+  const fetchLimit = needsCalculatedSort ? 1000 : limit; // Fetch more for calculated sort
+  const fetchOffset = needsCalculatedSort ? 0 : offset;
+
+  // Map sort parameters to GraphQL enum values (use debt as default for calculated fields)
+  const orderBy = needsCalculatedSort
+    ? Trove_OrderBy.Debt
+    : (GRAPHQL_SORT_FIELDS[sortBy] || Trove_OrderBy.Debt);
+  const orderDirection = sortDirection === "asc" ? OrderDirection.Asc : OrderDirection.Desc;
+
   // Fetch troves and count in parallel
-  const [trovesResult, countResult] = await Promise.all([
+  const [trovesResult, countResult, btcPriceResult] = await Promise.all([
     graphqlClient.request<AllTrovesQuery>(ALL_TROVES, {
       indexer,
-      first: limit,
-      skip: offset,
+      first: fetchLimit,
+      skip: fetchOffset,
       status,
+      orderBy,
+      orderDirection,
     }),
     graphqlClient.request<TrovesCountQuery>(TROVES_COUNT, {
       indexer,
       status,
     }),
+    // Fetch BTC price if we need to calculate LTV
+    needsCalculatedSort && sortBy === "ltv"
+      ? getBitcoinprice(new RpcProvider({ nodeUrl: env.NODE_URL }), "WWBTC" as CollateralId)
+      : Promise.resolve(null),
   ]);
 
   const troves = trovesResult.troves || [];
   const total = countResult.troves?.length || 0;
   const pageCount = Math.ceil(total / limit);
-  const hasMore = offset + troves.length < total;
 
   // Map troves to our IndexedTroveEntry format
-  const positions: IndexedTroveEntry[] = troves.map((trove) => {
+  let positions: IndexedTroveEntry[] = troves.map((trove) => {
     const branchId = Number(trove.collateral?.collIndex ?? 0);
     const collateral = getCollateralByBranchId(branchId);
 
@@ -188,6 +263,42 @@ export async function getAllPositions(
       batchInterestRate: trove.interestBatch?.annualInterestRate || null,
     };
   });
+
+  // If sorting by a calculated field, calculate values, sort, then paginate
+  if (needsCalculatedSort) {
+    const btcPrice = btcPriceResult ? bigintToBig(btcPriceResult, 18) : null;
+
+    // Calculate sort values and sort
+    const positionsWithCalc = positions.map((pos) => {
+      const collateral = getCollateralByBranchId(pos.collateralBranchId);
+      const mcr = collateral?.minCollateralizationRatio || new Big(1.15);
+
+      let sortValue: number | null = null;
+      if (sortBy === "ltv" && btcPrice) {
+        sortValue = calculateLTV(pos.debt, pos.deposit, btcPrice);
+      } else if (sortBy === "liquidationPrice") {
+        sortValue = calculateLiquidationPrice(pos.debt, pos.deposit, mcr);
+      }
+
+      return { ...pos, _sortValue: sortValue };
+    });
+
+    // Sort by calculated value (nulls at end)
+    positionsWithCalc.sort((a, b) => {
+      if (a._sortValue === null && b._sortValue === null) return 0;
+      if (a._sortValue === null) return 1;
+      if (b._sortValue === null) return -1;
+      const diff = a._sortValue - b._sortValue;
+      return sortDirection === "asc" ? diff : -diff;
+    });
+
+    // Paginate after sorting
+    const paginatedPositions = positionsWithCalc.slice(offset, offset + limit);
+    // Remove the temporary sort value
+    positions = paginatedPositions.map(({ _sortValue, ...pos }) => pos);
+  }
+
+  const hasMore = offset + positions.length < total;
 
   return {
     positions,
