@@ -97,6 +97,8 @@ function shortenAddress(address: string): string {
 }
 
 export default function LeaderboardPage({ loaderData }: Route.ComponentProps) {
+  "use no memo";
+
   const { address } = useAccount();
   const trpc = useTRPC();
 

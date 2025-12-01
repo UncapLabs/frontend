@@ -87,6 +87,52 @@ export const NEXT_OWNER_INDEX_BY_BORROWER = graphql(/* GraphQL */ `
   }
 `);
 
+// Query for all troves with pagination (for stats page)
+export const ALL_TROVES = graphql(/* GraphQL */ `
+  query AllTroves(
+    $indexer: String!
+    $first: Int!
+    $skip: Int!
+    $status: String
+  ) {
+    troves(
+      where: { _indexer: $indexer, status: $status }
+      first: $first
+      skip: $skip
+      orderBy: debt
+      orderDirection: desc
+    ) {
+      id
+      troveId
+      borrower
+      previousOwner
+      debt
+      deposit
+      interestRate
+      status
+      collateral {
+        id
+        collIndex
+      }
+      createdAt
+      updatedAt
+      closedAt
+      redeemedColl
+      redeemedDebt
+      liquidationTx
+    }
+  }
+`);
+
+// Query to count troves for pagination
+export const TROVES_COUNT = graphql(/* GraphQL */ `
+  query TrovesCount($indexer: String!, $status: String) {
+    troves(where: { _indexer: $indexer, status: $status }, first: 1000) {
+      id
+    }
+  }
+`);
+
 // Query for all interest rate brackets
 export const ALL_INTEREST_RATE_BRACKETS = graphql(/* GraphQL */ `
   query AllInterestRateBrackets($indexer: String!) {

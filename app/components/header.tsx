@@ -580,7 +580,7 @@ function Header() {
                   asChild
                   className="bg-token-bg-blue hover:bg-[#0051BF] text-white font-sora rounded-xl h-10 px-6"
                 >
-                  <Link to="/borrow">Go to app</Link>
+                  <Link to="/dashboard">Go to app</Link>
                 </Button>
               ) : (
                 <>
