@@ -364,7 +364,7 @@ export function InfoDialog({
               Mint USDU, a BTC-backed stablecoin pegged 1:1 to the US dollar.
               USDU can be{" "}
               <a
-                href="https://app.ekubo.org/charts/USDU/USDC?utm_source=uncap.finance"
+                href="https://app.ekubo.org/starknet?inputCurrency=0x2f94539f80158f9a48a7acf3747718dfbec9b6f639e2742c1fb44ae7ab5aa04&amount=1&outputCurrency=0x33068f6539f8e6e6b131e6b2b814e6c34a5224bc66947c47dab9dfee93b35fb?utm_source=uncap.finance"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[#006CFF] hover:text-[#0056CC] font-medium underline"

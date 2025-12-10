@@ -99,7 +99,7 @@ export default function FeatureDiscoveryCards() {
             className="bg-[#006CFF] hover:bg-[#0056CC] text-white px-6 py-4 h-auto rounded-xl font-sora text-xs font-medium inline-flex items-center gap-8"
           >
             <a
-              href="https://app.ekubo.org/positions/new?baseCurrency=USDU&quoteCurrency=USDC&tickLower=-27641100&tickUpper=-27621100"
+              href="https://app.ekubo.org/starknet/positions/new?baseCurrency=0x2f94539f80158f9a48a7acf3747718dfbec9b6f639e2742c1fb44ae7ab5aa04&quoteCurrency=0x33068f6539f8e6e6b131e6b2b814e6c34a5224bc66947c47dab9dfee93b35fb&tickLower=-27636040&tickUpper=-27629260"
               target="_blank"
               rel="noopener noreferrer"
             >

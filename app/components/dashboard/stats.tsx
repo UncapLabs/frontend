@@ -143,7 +143,10 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                       )}
                     </TableCell>
                     <TableCell className="text-white text-sm font-normal font-sora text-right tabular-nums min-w-[70px]">
-                      <FormattedNumber value={rate.totalCollateral} prefix="$" />
+                      <FormattedNumber
+                        value={rate.totalCollateral}
+                        prefix="$"
+                      />
                     </TableCell>
                     <TableCell className="text-right pr-0 py-3">
                       <button
@@ -224,7 +227,10 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                         Total Collateral
                       </div>
                       <div className="text-white text-sm font-medium">
-                        <FormattedNumber value={rate.totalCollateral} prefix="$" />
+                        <FormattedNumber
+                          value={rate.totalCollateral}
+                          prefix="$"
+                        />
                       </div>
                     </div>
                   </div>
@@ -597,7 +603,7 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                   </TableCell>
                   <TableCell className="text-right pr-0 py-3">
                     <a
-                      href="https://app.ekubo.org/charts/USDU/USDC"
+                      href="https://app.ekubo.org/starknet/charts/0x534e5f4d41494e/0x2f94539f80158f9a48a7acf3747718dfbec9b6f639e2742c1fb44ae7ab5aa04/0x33068f6539f8e6e6b131e6b2b814e6c34a5224bc66947c47dab9dfee93b35fb"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center justify-center px-3 py-1 rounded border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 transition-colors"
@@ -658,7 +664,7 @@ export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
                 {/* Action button */}
                 <div className="pt-3 border-t border-zinc-700">
                   <a
-                    href="https://app.ekubo.org/positions/new?baseCurrency=USDU&quoteCurrency=USDC&tickLower=-27641100&tickUpper=-27621100"
+                    href="https://app.ekubo.org/starknet/positions/new?baseCurrency=0x2f94539f80158f9a48a7acf3747718dfbec9b6f639e2742c1fb44ae7ab5aa04&quoteCurrency=0x33068f6539f8e6e6b131e6b2b814e6c34a5224bc66947c47dab9dfee93b35fb&tickLower=-27636040&tickUpper=-27629260"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 transition-colors"
