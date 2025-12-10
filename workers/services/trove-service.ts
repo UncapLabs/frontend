@@ -32,15 +32,21 @@ import { bigintToBig } from "~/lib/decimal";
 // Prefixed trove ID format: "branchId:troveId"
 type PrefixedTroveId = string;
 
+interface TroveStatusVariant {
+  variant?: Record<string, unknown>;
+}
+
+type TroveStatus = TroveStatusVariant | CairoCustomEnum | bigint;
+
 // Map contract status to our frontend status
-function mapTroveStatus(status: any): Position["status"] {
+function mapTroveStatus(status: TroveStatus): Position["status"] {
   // Status comes as a CairoCustomEnum, we need to find which variant is active
   // The active variant is the one that doesn't have undefined value
 
   let activeVariant: string | null = null;
 
   // Check if status has the expected structure
-  if (status && status.variant) {
+  if (status && typeof status === "object" && "variant" in status && status.variant) {
     // Find the variant that has a non-undefined value
     for (const [key, value] of Object.entries(status.variant)) {
       if (value !== undefined) {

@@ -41,26 +41,38 @@ interface ContractInfo {
 function getMainContracts(): ContractInfo[] {
   const contracts: ContractInfo[] = [
     { name: "USDU Token", address: mainnetAddresses.USDU },
-    { name: "Collateral Registry", address: mainnetAddresses.collateralRegistry },
+    {
+      name: "Collateral Registry",
+      address: mainnetAddresses.collateralRegistry,
+    },
   ];
 
   // Add WBTC key contracts
   if (mainnetAddresses.WWBTC) {
     contracts.push(
-      { name: "WBTC Trove Manager", address: mainnetAddresses.WWBTC.troveManager },
-      { name: "WBTC Borrower Operations", address: mainnetAddresses.WWBTC.borrowerOperations },
-      { name: "WBTC Stability Pool", address: mainnetAddresses.WWBTC.stabilityPool }
+      {
+        name: "WBTC Trove Manager",
+        address: mainnetAddresses.WWBTC.troveManager,
+      },
+      {
+        name: "WBTC Borrower Operations",
+        address: mainnetAddresses.WWBTC.borrowerOperations,
+      },
+      {
+        name: "WBTC Stability Pool",
+        address: mainnetAddresses.WWBTC.stabilityPool,
+      }
     );
   }
 
   // Add xLBTC key contracts
-  if (mainnetAddresses.WXLBTC) {
-    contracts.push(
-      { name: "xLBTC Trove Manager", address: mainnetAddresses.WXLBTC.troveManager },
-      { name: "xLBTC Borrower Operations", address: mainnetAddresses.WXLBTC.borrowerOperations },
-      { name: "xLBTC Stability Pool", address: mainnetAddresses.WXLBTC.stabilityPool }
-    );
-  }
+  // if (mainnetAddresses.WXLBTC) {
+  //   contracts.push(
+  //     { name: "xLBTC Trove Manager", address: mainnetAddresses.WXLBTC.troveManager },
+  //     { name: "xLBTC Borrower Operations", address: mainnetAddresses.WXLBTC.borrowerOperations },
+  //     { name: "xLBTC Stability Pool", address: mainnetAddresses.WXLBTC.stabilityPool }
+  //   );
+  // }
 
   return contracts;
 }

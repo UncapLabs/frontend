@@ -33,7 +33,7 @@ export async function fetchAllInterestRateBrackets(): Promise<{
   }
 
   const brackets: InterestRateBracket[] = result.interestratebrackets
-    .map((bracket: any) => ({
+    .map((bracket: { collateral: { collIndex: number }; rate: string; totalDebt: string; sumDebtTimesRateD36?: string; pendingDebtTimesOneYearD36?: string; updatedAt?: number }) => ({
       branchId: bracket.collateral.collIndex,
       rate: new Big(bracket.rate).div(1e18),
       totalDebt: new Big(bracket.totalDebt).div(1e18),

@@ -225,7 +225,6 @@ function UpdatePosition() {
     telosBatchManagerAddress,
     managedInterestInfo,
     telosDisableReason: telosUpdateDisableReason,
-    telosManagedDisabled,
   } = useTelosManagedInfo({
     telosBatch,
     collateral: selectedCollateral,

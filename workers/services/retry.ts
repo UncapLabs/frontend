@@ -1,11 +1,16 @@
 import { backOff } from "exponential-backoff";
 
+interface RetryableError {
+  code?: string | number;
+  message?: string;
+}
+
 interface RetryOptions {
   maxRetries: number;
   initialDelay: number;
   maxDelay: number;
   backoffFactor: number;
-  shouldRetry?: (error: any) => boolean;
+  shouldRetry?: (error: RetryableError) => boolean;
 }
 
 export const DEFAULT_RETRY_OPTIONS: RetryOptions = {

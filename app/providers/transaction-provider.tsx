@@ -6,7 +6,14 @@ import {
   createTransactionStore,
 } from "~/lib/transaction-store";
 import { useTRPC, useTRPCClient } from "~/lib/trpc";
-import type { TransactionStatus } from "~/types/transaction";
+import type {
+  TransactionStatus,
+  BorrowDetails,
+  AdjustDetails,
+  CloseDetails,
+  DepositDetails,
+  WithdrawDetails,
+} from "~/types/transaction";
 import { getBranchId, type CollateralId } from "~/lib/collateral";
 
 // Only allow a single instance of the store to exist at once
@@ -63,7 +70,7 @@ export function TransactionStoreProvider({
           } else {
             setTimeout(poll, interval);
           }
-        } catch (error) {
+        } catch {
           // On error, try again until max attempts
           if (attempts < maxAttempts) {
             setTimeout(poll, interval);
@@ -85,15 +92,17 @@ export function TransactionStoreProvider({
         // Get transaction details from store
         const transaction = store.getTransaction(address, hash);
 
-        if (transaction?.type === "borrow" && transaction.details?.troveId) {
+        if (transaction?.type === "borrow") {
+          const details = transaction.details as BorrowDetails | undefined;
+          if (!details?.troveId) return;
           // Poll for the specific troveId
           await pollForTrove({
-            troveId: transaction.details.troveId,
+            troveId: details.troveId,
             onComplete: async () => {
               // Clear server-side branch TCR cache if collateral type is known
-              if (transaction.details?.collateralType) {
+              if (details?.collateralType) {
                 await trpcClient.cacheRouter.clearKeys.mutate({
-                  keys: [`branch-tcr-${transaction.details.collateralType}`],
+                  keys: [`branch-tcr-${details.collateralType}`],
                 });
               }
 
@@ -106,24 +115,24 @@ export function TransactionStoreProvider({
               });
 
               // Invalidate getNextOwnerIndex for borrow transactions
-              if (transaction.details?.collateralType) {
+              if (details?.collateralType) {
                 queryClient.invalidateQueries({
                   queryKey: trpc.positionsRouter.getNextOwnerIndex.queryKey({
                     borrower: address,
-                    collateralType: transaction.details.collateralType,
+                    collateralType: details.collateralType as CollateralId,
                   }),
                 });
 
                 // Invalidate branch TCR data
                 queryClient.invalidateQueries({
                   queryKey: trpc.branchRouter.getTCR.queryKey({
-                    branchId: transaction.details.collateralType,
+                    branchId: details.collateralType as CollateralId,
                   }),
                 });
 
                 // Invalidate interest rate data (visualization and chart)
                 const branchId = getBranchId(
-                  transaction.details.collateralType as CollateralId
+                  details.collateralType as CollateralId
                 );
                 queryClient.invalidateQueries({
                   queryKey:
@@ -142,16 +151,15 @@ export function TransactionStoreProvider({
               }
             },
           });
-        } else if (
-          transaction?.type === "adjust" &&
-          transaction.details?.troveId
-        ) {
+        } else if (transaction?.type === "adjust") {
+          const details = transaction.details as AdjustDetails | undefined;
+          if (!details?.troveId) return;
           // For adjust transactions, invalidate the specific position
           setTimeout(async () => {
             // Clear server-side branch TCR cache if collateral type is known
-            if (transaction.details?.collateralType) {
+            if (details?.collateralType) {
               await trpcClient.cacheRouter.clearKeys.mutate({
-                keys: [`branch-tcr-${transaction.details.collateralType}`],
+                keys: [`branch-tcr-${details.collateralType}`],
               });
             }
 
@@ -163,29 +171,29 @@ export function TransactionStoreProvider({
             });
 
             // Invalidate the specific position by ID
-            if (transaction.details?.troveId) {
+            if (details?.troveId) {
               console.log(
                 "[Transaction Provider] Invalidating position:",
-                transaction.details.troveId
+                details.troveId
               );
               queryClient.invalidateQueries({
                 queryKey: trpc.positionsRouter.getPositionById.queryKey({
-                  troveId: transaction.details.troveId,
+                  troveId: details.troveId,
                 }),
               });
             }
 
             // Invalidate interest rate data if collateral type is known
-            if (transaction.details?.collateralType) {
+            if (details?.collateralType) {
               // Invalidate branch TCR data
               queryClient.invalidateQueries({
                 queryKey: trpc.branchRouter.getTCR.queryKey({
-                  branchId: transaction.details.collateralType,
+                  branchId: details.collateralType as CollateralId,
                 }),
               });
 
               const branchId = getBranchId(
-                transaction.details.collateralType as CollateralId
+                details.collateralType as CollateralId
               );
               queryClient.invalidateQueries({
                 queryKey:
@@ -204,22 +212,21 @@ export function TransactionStoreProvider({
               });
             }
           }, 2000);
-        } else if (
-          transaction?.type === "close" &&
-          transaction.details?.troveId
-        ) {
+        } else if (transaction?.type === "close") {
+          const details = transaction.details as CloseDetails | undefined;
+          if (!details?.troveId) return;
           // For close transactions, invalidate positions after a delay
           setTimeout(async () => {
             // Clear server-side branch TCR cache if collateral type is known
-            if (transaction.details?.collateralType) {
+            if (details?.collateralType) {
               await trpcClient.cacheRouter.clearKeys.mutate({
-                keys: [`branch-tcr-${transaction.details.collateralType}`],
+                keys: [`branch-tcr-${details.collateralType}`],
               });
 
               // Invalidate branch TCR data
               queryClient.invalidateQueries({
                 queryKey: trpc.branchRouter.getTCR.queryKey({
-                  branchId: transaction.details.collateralType,
+                  branchId: details.collateralType as CollateralId,
                 }),
               });
             }
@@ -235,16 +242,20 @@ export function TransactionStoreProvider({
           transaction?.type === "deposit" ||
           transaction?.type === "withdraw"
         ) {
+          const details = transaction.details as
+            | DepositDetails
+            | WithdrawDetails
+            | undefined;
           // For stability pool transactions, wait a bit for the chain to update
           // then clear server cache and invalidate queries
           setTimeout(async () => {
             // Bust server-side cache if pool (collateral type) is known
-            if (transaction.details?.pool) {
+            if (details?.pool) {
               // Clear server-side KV cache for this collateral type
               await trpcClient.cacheRouter.clearKeys.mutate({
                 keys: [
-                  `stability-pool-deposits-${transaction.details.pool}`,
-                  `stability-pool-apr-${transaction.details.pool}`,
+                  `stability-pool-deposits-${details.pool}`,
+                  `stability-pool-apr-${details.pool}`,
                 ],
               });
 
@@ -257,13 +268,13 @@ export function TransactionStoreProvider({
 
               queryClient.invalidateQueries({
                 queryKey: trpc.stabilityPoolRouter.getPoolApr.queryKey({
-                  collateralType: transaction.details.pool,
+                  collateralType: details.pool as CollateralId,
                 }),
               });
 
               queryClient.invalidateQueries({
                 queryKey: trpc.stabilityPoolRouter.getTotalDeposits.queryKey({
-                  collateralType: transaction.details.pool,
+                  collateralType: details.pool as CollateralId,
                 }),
               });
             }

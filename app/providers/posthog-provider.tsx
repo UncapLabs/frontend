@@ -1,4 +1,3 @@
-// app/provider.tsx
 import { useEffect, useState, type ReactNode } from "react";
 
 // Define proper types for PostHog

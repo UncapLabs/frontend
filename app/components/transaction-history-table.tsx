@@ -10,7 +10,18 @@ import { Card } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { useAccount } from "@starknet-react/core";
-import type { StarknetTransaction, TransactionType } from "~/types/transaction";
+import type {
+  StarknetTransaction,
+  TransactionType,
+  BorrowDetails,
+  AdjustDetails,
+  CloseDetails,
+  ClaimDetails,
+  ClaimSurplusDetails,
+  AdjustRateDetails,
+  DepositDetails,
+  WithdrawDetails,
+} from "~/types/transaction";
 import { formatDistance } from "date-fns";
 import { useTransactionStoreData } from "~/hooks/use-transaction-store-data";
 import { COLLATERALS, type CollateralId } from "~/lib/collateral";
@@ -78,71 +89,71 @@ function formatTransactionDetails(
   if (!details) return null;
 
   switch (type) {
-    case "borrow":
+    case "borrow": {
+      const d = details as BorrowDetails;
       return (
         <div className="space-y-0.5">
           <div className="text-xs font-sora text-neutral-600">
             <span className="text-neutral-500">Deposited:</span>{" "}
             <span className="font-medium text-neutral-800">
-              <FormattedNumber value={details.collateralAmount} />{" "}
-              {details.collateralToken}
+              <FormattedNumber value={d.collateralAmount} /> {d.collateralToken}
             </span>
           </div>
           <div className="text-xs font-sora text-neutral-600">
             <span className="text-neutral-500">Borrowed:</span>{" "}
             <span className="font-medium text-neutral-800">
-              <FormattedNumber value={details.borrowAmount} /> USDU
+              <FormattedNumber value={d.borrowAmount} /> USDU
             </span>
           </div>
           <div className="text-xs font-sora text-neutral-600">
             <span className="text-neutral-500">Rate:</span>{" "}
             <span className="font-medium text-neutral-800">
-              {details.interestRate}% APR
+              {d.interestRate}% APR
             </span>
           </div>
         </div>
       );
+    }
 
-    case "adjust":
+    case "adjust": {
+      const d = details as AdjustDetails;
       // Calculate changes from previous and new values if the explicit flags aren't present
       const collateralChange =
-        details.newCollateral !== undefined &&
-        details.previousCollateral !== undefined
-          ? details.newCollateral - details.previousCollateral
-          : details.collateralChange;
+        d.newCollateral !== undefined && d.previousCollateral !== undefined
+          ? d.newCollateral - d.previousCollateral
+          : d.collateralChange;
 
       const debtChange =
-        details.newDebt !== undefined && details.previousDebt !== undefined
-          ? details.newDebt - details.previousDebt
-          : details.debtChange;
+        d.newDebt !== undefined && d.previousDebt !== undefined
+          ? d.newDebt - d.previousDebt
+          : d.debtChange;
 
       const hasCollateralChange =
-        details.hasCollateralChange ||
+        d.hasCollateralChange ||
         (collateralChange !== undefined &&
           Math.abs(collateralChange) > 0.0000001);
 
       const hasDebtChange =
-        details.hasDebtChange ||
+        d.hasDebtChange ||
         (debtChange !== undefined && Math.abs(debtChange) > 0.01);
 
       const isCollateralIncrease =
-        details.isCollateralIncrease !== undefined
-          ? details.isCollateralIncrease
-          : collateralChange > 0;
+        d.isCollateralIncrease !== undefined
+          ? d.isCollateralIncrease
+          : (collateralChange ?? 0) > 0;
 
       const isDebtIncrease =
-        details.isDebtIncrease !== undefined
-          ? details.isDebtIncrease
-          : debtChange > 0;
+        d.isDebtIncrease !== undefined
+          ? d.isDebtIncrease
+          : (debtChange ?? 0) > 0;
 
       // Check if we have interest rate changes
       const hasInterestRateChange =
-        details.hasInterestRateChange ||
-        (details.newInterestRate !== undefined &&
-          details.previousInterestRate !== undefined &&
-          Math.abs(
-            (details.newInterestRate || 0) - (details.previousInterestRate || 0)
-          ) > 0.001);
+        d.hasInterestRateChange ||
+        (d.newInterestRate !== undefined &&
+          d.previousInterestRate !== undefined &&
+          Math.abs((d.newInterestRate || 0) - (d.previousInterestRate || 0)) >
+            0.001);
 
       return (
         <div className="space-y-0.5">
@@ -157,7 +168,7 @@ function formatTransactionDetails(
               <span className="font-medium text-neutral-800">
                 {isCollateralIncrease ? "+" : ""}
                 <FormattedNumber value={Math.abs(collateralChange)} />{" "}
-                {details.collateralToken || "BTC"}
+                {d.collateralToken || "BTC"}
               </span>
             </div>
           )}
@@ -180,8 +191,8 @@ function formatTransactionDetails(
             <div className="text-xs font-sora text-neutral-600">
               <span className="text-neutral-500">Rate:</span>{" "}
               <span className="font-medium text-neutral-800">
-                {details.previousInterestRate || details.interestRate || "—"}% →{" "}
-                {details.newInterestRate || details.interestRate || "—"}%
+                {d.previousInterestRate || d.interestRate || "—"}% →{" "}
+                {d.newInterestRate || d.interestRate || "—"}%
               </span>
             </div>
           )}
@@ -189,28 +200,28 @@ function formatTransactionDetails(
           {/* If none of the above changes, show current state */}
           {!hasCollateralChange && !hasDebtChange && !hasInterestRateChange && (
             <>
-              {details.newCollateral !== undefined && (
+              {d.newCollateral !== undefined && (
                 <div className="text-xs font-sora text-neutral-600">
                   <span className="text-neutral-500">Collateral:</span>{" "}
                   <span className="font-medium text-neutral-800">
-                    <FormattedNumber value={details.newCollateral} />{" "}
-                    {details.collateralToken || "BTC"}
+                    <FormattedNumber value={d.newCollateral} />{" "}
+                    {d.collateralToken || "BTC"}
                   </span>
                 </div>
               )}
-              {details.newDebt !== undefined && (
+              {d.newDebt !== undefined && (
                 <div className="text-xs font-sora text-neutral-600">
                   <span className="text-neutral-500">Debt:</span>{" "}
                   <span className="font-medium text-neutral-800">
-                    <FormattedNumber value={details.newDebt} /> USDU
+                    <FormattedNumber value={d.newDebt} /> USDU
                   </span>
                 </div>
               )}
-              {details.newInterestRate !== undefined && (
+              {d.newInterestRate !== undefined && (
                 <div className="text-xs font-sora text-neutral-600">
                   <span className="text-neutral-500">Rate:</span>{" "}
                   <span className="font-medium text-neutral-800">
-                    {details.newInterestRate}% APR
+                    {d.newInterestRate}% APR
                   </span>
                 </div>
               )}
@@ -218,164 +229,171 @@ function formatTransactionDetails(
           )}
         </div>
       );
+    }
 
-    case "close":
+    case "close": {
+      const d = details as CloseDetails;
       return (
         <div className="space-y-0.5">
           <div className="text-xs font-sora text-neutral-600">
             <span className="text-neutral-500">Repaid:</span>{" "}
             <span className="font-medium text-neutral-800">
-              <FormattedNumber value={details.debt} /> USDU
+              <FormattedNumber value={d.debt} /> USDU
             </span>
           </div>
           <div className="text-xs font-sora text-neutral-600">
             <span className="text-neutral-500">Recovered:</span>{" "}
             <span className="font-medium text-neutral-800">
-              <FormattedNumber value={details.collateral} />{" "}
-              {details.collateralType || "BTC"}
+              <FormattedNumber value={d.collateral} />{" "}
+              {d.collateralType || "BTC"}
             </span>
           </div>
         </div>
       );
+    }
 
-    case "claim":
+    case "claim": {
+      const d = details as ClaimDetails;
       return (
         <div className="space-y-0.5">
           {/* Handle stability pool claims with separate rewards */}
-          {details.usduRewards || details.collateralRewards ? (
+          {d.usduRewards || d.collateralRewards ? (
             <>
-              {details.usduRewards && Number(details.usduRewards) > 0 && (
+              {d.usduRewards && Number(d.usduRewards) > 0 && (
                 <div className="text-xs font-sora text-neutral-600">
                   <span className="text-neutral-500">USDU:</span>{" "}
                   <span className="font-medium text-neutral-800">
-                    <FormattedNumber value={details.usduRewards} /> USDU
+                    <FormattedNumber value={d.usduRewards} /> USDU
                   </span>
                 </div>
               )}
-              {details.collateralRewards &&
-                Number(details.collateralRewards) > 0 && (
-                  <div className="text-xs font-sora text-neutral-600">
-                    <span className="text-neutral-500">
-                      {details.collateralToken || "WBTC"}:
-                    </span>{" "}
-                    <span className="font-medium text-neutral-800">
-                      <FormattedNumber value={details.collateralRewards} />{" "}
-                      {details.collateralToken || "WBTC"}
-                    </span>
-                  </div>
-                )}
-              {details.pool && (
+              {d.collateralRewards && Number(d.collateralRewards) > 0 && (
+                <div className="text-xs font-sora text-neutral-600">
+                  <span className="text-neutral-500">
+                    {d.collateralToken || "WBTC"}:
+                  </span>{" "}
+                  <span className="font-medium text-neutral-800">
+                    <FormattedNumber value={d.collateralRewards} />{" "}
+                    {d.collateralToken || "WBTC"}
+                  </span>
+                </div>
+              )}
+              {d.pool && (
                 <div className="text-xs font-sora text-neutral-600">
                   <span className="text-neutral-500">Pool:</span>{" "}
                   <span className="font-medium text-neutral-800">
-                    {COLLATERALS[details.pool as CollateralId]?.symbol ||
-                      details.pool}
+                    {COLLATERALS[d.pool as CollateralId]?.symbol || d.pool}
                   </span>
                 </div>
               )}
             </>
           ) : (
             /* Handle simple claims */
-            details.amount &&
-            details.token && (
+            d.amount &&
+            d.token && (
               <div className="text-xs font-sora text-neutral-600">
                 <span className="text-neutral-500">Claimed:</span>{" "}
                 <span className="font-medium text-neutral-800">
-                  <FormattedNumber value={details.amount} /> {details.token}
+                  <FormattedNumber value={d.amount} /> {d.token}
                 </span>
               </div>
             )
           )}
         </div>
       );
+    }
 
-    case "claim_surplus":
+    case "claim_surplus": {
+      const d = details as ClaimSurplusDetails;
       return (
         <div className="space-y-0.5">
           <div className="text-xs font-sora text-neutral-600">
             <span className="text-neutral-500">Recovered:</span>{" "}
             <span className="font-medium text-neutral-800">
-              <FormattedNumber value={details.amount} />{" "}
-              {details.token || "BTC"}
+              <FormattedNumber value={d.amount} /> {d.token || "BTC"}
             </span>
           </div>
         </div>
       );
+    }
 
-    case "adjust_rate":
+    case "adjust_rate": {
+      const d = details as AdjustRateDetails;
       return (
         <div className="space-y-0.5">
           <div className="text-xs font-sora text-neutral-600">
             <span className="text-neutral-500">Rate:</span>{" "}
             <span className="font-medium text-neutral-800">
-              {details.oldRate}% → {details.newRate}%
+              {d.oldRate}% → {d.newRate}%
             </span>
           </div>
         </div>
       );
+    }
 
-    case "deposit":
+    case "deposit": {
+      const d = details as DepositDetails;
       return (
         <div className="space-y-0.5">
           <div className="text-xs font-sora text-neutral-600">
             <span className="text-neutral-500">Deposited:</span>{" "}
             <span className="font-medium text-neutral-800">
-              <FormattedNumber value={details.amount} /> USDU
+              <FormattedNumber value={d.amount} /> USDU
             </span>
           </div>
-          {details.pool && (
+          {d.pool && (
             <div className="text-xs font-sora text-neutral-600">
               <span className="text-neutral-500">Pool:</span>{" "}
               <span className="font-medium text-neutral-800">
-                {COLLATERALS[details.pool as CollateralId]?.symbol ||
-                  details.pool}
+                {COLLATERALS[d.pool as CollateralId]?.symbol || d.pool}
               </span>
             </div>
           )}
         </div>
       );
+    }
 
-    case "withdraw":
+    case "withdraw": {
+      const d = details as WithdrawDetails;
       return (
         <div className="space-y-0.5">
           <div className="text-xs font-sora text-neutral-600">
             <span className="text-neutral-500">Withdrawn:</span>{" "}
             <span className="font-medium text-neutral-800">
-              <FormattedNumber value={details.amount} /> USDU
+              <FormattedNumber value={d.amount} /> USDU
             </span>
           </div>
           {/* Show claimed rewards if any */}
-          {details.usduRewards && Number(details.usduRewards) > 0 && (
+          {d.usduRewards && Number(d.usduRewards) > 0 && (
             <div className="text-xs font-sora text-neutral-600">
               <span className="text-neutral-500">+ USDU rewards:</span>{" "}
               <span className="font-medium text-neutral-800">
-                <FormattedNumber value={details.usduRewards} /> USDU
+                <FormattedNumber value={d.usduRewards} /> USDU
               </span>
             </div>
           )}
-          {details.collateralRewards &&
-            Number(details.collateralRewards) > 0 && (
-              <div className="text-xs font-sora text-neutral-600">
-                <span className="text-neutral-500">
-                  + {details.collateralToken || "WBTC"} rewards:
-                </span>{" "}
-                <span className="font-medium text-neutral-800">
-                  <FormattedNumber value={details.collateralRewards} />{" "}
-                  {details.collateralToken || "WBTC"}
-                </span>
-              </div>
-            )}
-          {details.pool && (
+          {d.collateralRewards && Number(d.collateralRewards) > 0 && (
+            <div className="text-xs font-sora text-neutral-600">
+              <span className="text-neutral-500">
+                + {d.collateralToken || "WBTC"} rewards:
+              </span>{" "}
+              <span className="font-medium text-neutral-800">
+                <FormattedNumber value={d.collateralRewards} />{" "}
+                {d.collateralToken || "WBTC"}
+              </span>
+            </div>
+          )}
+          {d.pool && (
             <div className="text-xs font-sora text-neutral-600">
               <span className="text-neutral-500">Pool:</span>{" "}
               <span className="font-medium text-neutral-800">
-                {COLLATERALS[details.pool as CollateralId]?.symbol ||
-                  details.pool}
+                {COLLATERALS[d.pool as CollateralId]?.symbol || d.pool}
               </span>
             </div>
           )}
         </div>
       );
+    }
 
     default:
       return null;

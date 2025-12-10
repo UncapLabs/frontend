@@ -29,8 +29,7 @@ function Earn() {
   ) as [ActionType, (value: ActionType | null) => void];
 
   // Use address-based collateral selection
-  const [selectedCollateralAddress, setSelectedCollateralAddress] =
-    useQueryState(
+  const [selectedCollateralAddress] = useQueryState(
       "collateral",
       parseAsString.withDefault(DEFAULT_COLLATERAL.addresses.token)
     );

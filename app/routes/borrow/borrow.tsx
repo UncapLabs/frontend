@@ -121,7 +121,6 @@ function Borrow() {
     telosBatchManagerAddress,
     managedInterestInfo,
     telosDisableReason,
-    telosManagedDisabled,
   } = useTelosManagedInfo({
     telosBatch,
     collateral,
