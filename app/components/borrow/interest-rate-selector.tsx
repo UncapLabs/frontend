@@ -134,7 +134,7 @@ export function InterestRateSelector({
               Interest Rate
             </h3>
             <InfoDialog defaultTab="borrowing">
-              <Info className="hidden sm:block h-3.5 w-3.5 text-neutral-400 cursor-help" />
+              <Info className="h-3.5 w-3.5 text-neutral-400 cursor-help" />
             </InfoDialog>
           </div>
           <span className="text-xs text-neutral-500 font-sora leading-3">

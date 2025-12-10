@@ -35,7 +35,7 @@ export function InfoBox({
     <div className={cn(`${styles} rounded-[22px] p-6 space-y-4`, className)}>
       <div className="flex items-center gap-2">
         <h3 className="text-base font-medium font-sora">{title}</h3>
-        {icon || <Info className="h-4 w-4" />}
+        {icon}
       </div>
 
       <div className="space-y-4 font-sora">{children}</div>

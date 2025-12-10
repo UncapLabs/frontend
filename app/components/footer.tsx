@@ -43,7 +43,7 @@ export default function Footer() {
               </div>
 
               <AboutVersionDialog>
-                <button className="text-white/40 hover:text-white/70 transition-colors text-xs font-mono mt-auto self-start relative z-50">
+                <button className="text-white/40 hover:text-white/70 transition-colors text-xs font-mono mt-auto self-start">
                   Version {FRONTEND_COMMIT_HASH}
                 </button>
               </AboutVersionDialog>
