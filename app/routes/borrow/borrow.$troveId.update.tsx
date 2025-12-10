@@ -869,8 +869,8 @@ function UpdatePosition() {
                   activeRateMode === "manual" &&
                   telosCooldownRemainingSeconds > 0 && (
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
-                      Leaving Telos right now may incur a cooldown fee. Fee-free
-                      adjustments resume in{" "}
+                      Leaving TelosC right now may incur a cooldown fee.
+                      Fee-free adjustments resume in{" "}
                       {formatDuration(telosCooldownRemainingSeconds)}.
                     </div>
                   )}

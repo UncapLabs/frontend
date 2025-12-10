@@ -8,7 +8,7 @@ export function createTransactionDescription(
     case "borrow":
       if (details?.collateralAmount && details?.borrowAmount) {
         const managerText = details.batchManager
-          ? " under Telos management"
+          ? " under TelosC management"
           : "";
         return `Open trove with ${details.collateralAmount} ${
           details.collateralToken || "collateral"
@@ -43,7 +43,7 @@ export function createTransactionDescription(
         }
         if (details.hasBatchManagerChange) {
           if (details.targetBatchManager) {
-            parts.push("Delegate interest to Telos");
+            parts.push("Delegate interest to TelosC");
           } else {
             parts.push("Return to manual interest control");
           }

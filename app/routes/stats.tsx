@@ -215,8 +215,23 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
   );
 
   // Sort state via URL
-  type SortFieldType = "debt" | "deposit" | "interestRate" | "createdAt" | "updatedAt" | "ltv" | "liquidationPrice";
-  const SORT_FIELDS = ["debt", "deposit", "interestRate", "createdAt", "updatedAt", "ltv", "liquidationPrice"] as const;
+  type SortFieldType =
+    | "debt"
+    | "deposit"
+    | "interestRate"
+    | "createdAt"
+    | "updatedAt"
+    | "ltv"
+    | "liquidationPrice";
+  const SORT_FIELDS = [
+    "debt",
+    "deposit",
+    "interestRate",
+    "createdAt",
+    "updatedAt",
+    "ltv",
+    "liquidationPrice",
+  ] as const;
   type SortDirType = "asc" | "desc";
   const SORT_DIRS = ["asc", "desc"] as const;
 
@@ -234,7 +249,11 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
   const offset = pageIndex * ALL_POSITIONS_PAGE_SIZE;
 
   // Use React Query with SSR data as initial data
-  const isInitialLoad = statusSelection === "active" && pageIndex === 0 && sortBy === "debt" && sortDir === "desc";
+  const isInitialLoad =
+    statusSelection === "active" &&
+    pageIndex === 0 &&
+    sortBy === "debt" &&
+    sortDir === "desc";
   const { data, isFetching, error } = useQuery({
     ...trpc.protocolStatsRouter.getAllPositions.queryOptions(
       {
@@ -377,7 +396,8 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
         header: "Interest Rate",
         size: 120,
         cell: ({ row }) => {
-          const { interestRate, batchInterestRate, batchManager } = row.original;
+          const { interestRate, batchInterestRate, batchManager } =
+            row.original;
           // Use batch interest rate if available
           const effectiveRate = batchInterestRate || interestRate;
           const isBatchManaged = !!batchManager;
@@ -388,7 +408,9 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
                 {formatInterestRate(effectiveRate)}
               </span>
               {isBatchManaged && (
-                <span className="font-sora text-xs text-purple-600">Telos</span>
+                <span className="font-sora text-xs text-purple-600">
+                  TelosC
+                </span>
               )}
             </div>
           );
@@ -403,7 +425,9 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
 
           // Only show for active positions
           if (status !== "active") {
-            return <span className="font-sora text-sm text-neutral-400">—</span>;
+            return (
+              <span className="font-sora text-sm text-neutral-400">—</span>
+            );
           }
 
           const liqPrice = calculateLiquidationPrice(
@@ -413,7 +437,9 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
           );
 
           if (!liqPrice) {
-            return <span className="font-sora text-sm text-neutral-400">—</span>;
+            return (
+              <span className="font-sora text-sm text-neutral-400">—</span>
+            );
           }
 
           return (
@@ -438,13 +464,17 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
 
           // Only show for active positions
           if (status !== "active") {
-            return <span className="font-sora text-sm text-neutral-400">—</span>;
+            return (
+              <span className="font-sora text-sm text-neutral-400">—</span>
+            );
           }
 
           const ltv = calculateLTV(debt, deposit, btcPriceBig);
 
           if (!ltv) {
-            return <span className="font-sora text-sm text-neutral-400">—</span>;
+            return (
+              <span className="font-sora text-sm text-neutral-400">—</span>
+            );
           }
 
           // Color based on LTV risk level
@@ -470,7 +500,9 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
         cell: ({ row }) => {
           const redeemed = row.original.redeemedColl;
           if (!redeemed || redeemed === "0") {
-            return <span className="font-sora text-sm text-neutral-400">—</span>;
+            return (
+              <span className="font-sora text-sm text-neutral-400">—</span>
+            );
           }
           return (
             <span className="font-sora text-sm font-medium text-orange-600">
@@ -486,7 +518,9 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
         cell: ({ row }) => {
           const redeemed = row.original.redeemedDebt;
           if (!redeemed || redeemed === "0") {
-            return <span className="font-sora text-sm text-neutral-400">—</span>;
+            return (
+              <span className="font-sora text-sm text-neutral-400">—</span>
+            );
           }
           return (
             <NumericFormat
@@ -520,7 +554,9 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
           };
           return (
             <span
-              className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium font-sora ${statusColors[status] || "text-neutral-800"}`}
+              className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium font-sora ${
+                statusColors[status] || "text-neutral-800"
+              }`}
             >
               {statusLabels[status] || status}
             </span>
@@ -665,7 +701,11 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
                   return (
                     <TableHead
                       key={header.id}
-                      className={`h-12 py-3 px-4 text-xs font-medium font-sora uppercase tracking-tight text-neutral-800 ${canSort ? "cursor-pointer select-none hover:bg-[#F0F0F0]" : ""}`}
+                      className={`h-12 py-3 px-4 text-xs font-medium font-sora uppercase tracking-tight text-neutral-800 ${
+                        canSort
+                          ? "cursor-pointer select-none hover:bg-[#F0F0F0]"
+                          : ""
+                      }`}
                       style={{ width: header.getSize() }}
                       onClick={canSort ? () => handleSort(columnId) : undefined}
                     >
@@ -677,12 +717,18 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
                               header.getContext()
                             )}
                         {canSort && (
-                          <span className={isCurrentSort ? "text-blue-600" : "text-neutral-400"}>
+                          <span
+                            className={
+                              isCurrentSort
+                                ? "text-blue-600"
+                                : "text-neutral-400"
+                            }
+                          >
                             {currentDir === "asc"
                               ? " ↑"
                               : currentDir === "desc"
-                                ? " ↓"
-                                : " ↕"}
+                              ? " ↓"
+                              : " ↕"}
                           </span>
                         )}
                       </div>

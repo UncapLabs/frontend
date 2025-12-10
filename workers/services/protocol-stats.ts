@@ -130,7 +130,8 @@ const GRAPHQL_SORT_FIELDS: Record<string, Trove_OrderBy> = {
 };
 
 // Fields that require server-side calculation and sorting
-const CALCULATED_SORT_FIELDS = ["ltv", "liquidationPrice"] as const;
+// interestRate is included because we need to sort by effective rate (batchInterestRate || interestRate)
+const CALCULATED_SORT_FIELDS = ["ltv", "liquidationPrice", "interestRate"] as const;
 
 const DECIMALS_18 = new Big(10).pow(18);
 
@@ -278,6 +279,14 @@ export async function getAllPositions(
         sortValue = calculateLTV(pos.debt, pos.deposit, btcPrice);
       } else if (sortBy === "liquidationPrice") {
         sortValue = calculateLiquidationPrice(pos.debt, pos.deposit, mcr);
+      } else if (sortBy === "interestRate") {
+        // Use effective interest rate: batchInterestRate if available, otherwise interestRate
+        const effectiveRate = pos.batchInterestRate || pos.interestRate;
+        try {
+          sortValue = new Big(effectiveRate).toNumber();
+        } catch {
+          sortValue = null;
+        }
       }
 
       return { ...pos, _sortValue: sortValue };

@@ -84,7 +84,7 @@ export function useTelosManagedInfo({
       cooldownSeconds: telosCooldownSeconds,
       cooldownEndsAt: telosBatch.data?.cooldownEndsAt,
       bcr: telosBcrPercent,
-      batchManagerLabel: "Telos",
+      batchManagerLabel: "TelosC",
       isLoading: telosBatch.isLoading || isLoadingTelosData,
       isError: telosBatch.isError,
       managedDebt: telosBatch.data?.managedDebt,
@@ -102,14 +102,14 @@ export function useTelosManagedInfo({
 
     let telosDisableReason: string | undefined;
     if (isLoadingTelosData) {
-      telosDisableReason = "Loading Telos settings...";
+      telosDisableReason = "Loading TelosC settings...";
     } else if (telosBatch.isError) {
       telosDisableReason =
-        "Unable to load Telos settings. Please try again later.";
+        "Unable to load TelosC settings. Please try again later.";
     } else if (hasBorrowValues && telosBatch.data && !telosMeetsBcr) {
       telosDisableReason = `Increase collateral or reduce debt to reach at least ${telosRequirementPercent.toFixed(
         2
-      )}% collateral ratio required by Telos.`;
+      )}% collateral ratio required by TelosC.`;
     }
 
     const telosManagedDisabled = Boolean(telosDisableReason);

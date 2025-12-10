@@ -86,12 +86,14 @@ export function ManagedStrategy({
                 "—"
               )}
               , Annual Fee:{" "}
-              {managementFee ? `${formatPercentage(feePercent)} on your debt` : "—"}
+              {managementFee
+                ? `${formatPercentage(feePercent)} on your debt`
+                : "—"}
             </p>
           </div>
           <img
             src="/telos.svg"
-            alt="Telos"
+            alt="TelosC"
             className="h-4 w-auto object-contain flex-shrink-0"
           />
         </div>
