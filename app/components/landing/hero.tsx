@@ -1,6 +1,5 @@
 import { Button } from "../ui/button";
 import { Container } from "./container";
-import { Gradient } from "./gradient";
 import { TokenInput } from "../token-input";
 import { ArrowIcon } from "../icons/arrow-icon";
 import { TOKENS, DEFAULT_COLLATERAL } from "~/lib/collateral";

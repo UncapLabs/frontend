@@ -4,8 +4,21 @@ import babel from "vite-plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
+import { execSync } from "child_process";
+
+// Get git commit hash at build time
+function getGitCommitHash(): string {
+  try {
+    return execSync("git rev-parse --short HEAD").toString().trim();
+  } catch {
+    return "unknown";
+  }
+}
 
 export default defineConfig({
+  define: {
+    __COMMIT_HASH__: JSON.stringify(getGitCommitHash()),
+  },
   plugins: [
     cloudflare({
       viteEnvironment: { name: "ssr" },

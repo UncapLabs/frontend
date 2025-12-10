@@ -11,7 +11,6 @@ import {
   useAverageInterestRate,
 } from "~/hooks/use-interest-rate";
 import { useCalculatedRebate } from "~/hooks/use-rebate-config";
-import { useInterestRateCooldown } from "~/hooks/use-interest-rate-cooldown";
 import { getBranchId, type CollateralId } from "~/lib/collateral";
 import { RateModeSelector, type RateMode } from "./rate-mode-selector";
 export type { RateMode } from "./rate-mode-selector";
@@ -38,13 +37,11 @@ interface InterestRateSelectorProps {
   collateralPriceUSD?: Big;
   collateralType?: CollateralId;
   onRateModeChange?: (mode: RateMode) => void;
-  lastInterestRateAdjTime?: number;
   currentInterestRate?: number;
+  isInInterestRateCooldown?: boolean;
   isZombie?: boolean;
   rateMode?: RateMode;
   managedInfo?: ManagedInterestInfo;
-  isManagedOptionDisabled?: boolean;
-  managedDisableReason?: string;
 }
 
 export function InterestRateSelector({
@@ -56,13 +53,11 @@ export function InterestRateSelector({
   collateralPriceUSD,
   collateralType = "WWBTC",
   onRateModeChange,
-  lastInterestRateAdjTime,
   currentInterestRate,
+  isInInterestRateCooldown = false,
   isZombie: _isZombie = false,
   rateMode = "manual",
   managedInfo,
-  isManagedOptionDisabled = false,
-  managedDisableReason,
 }: InterestRateSelectorProps) {
   const branchId = getBranchId(collateralType);
   const activeMode: RateMode = rateMode ?? "manual";
@@ -85,7 +80,6 @@ export function InterestRateSelector({
     interestRateBig
   );
   const averageRate = useAverageInterestRate(branchId);
-  const interestRateCooldown = useInterestRateCooldown(lastInterestRateAdjTime);
 
   const currentRateBig =
     currentInterestRate !== undefined
@@ -221,28 +215,20 @@ export function InterestRateSelector({
               </div>
             </div>
 
-            {hasInterestRateChange && interestRateCooldown.isInCooldown && (
+            {hasInterestRateChange && isInInterestRateCooldown && (
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-3">
                 <div className="flex items-start gap-2">
                   <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-xs text-amber-700 space-y-1">
-                    <p>
-                      <strong>Premature Adjustment Fee:</strong> Changing the
-                      interest rate now will incur a fee equal to 7 days of
-                      average interest.
-                    </p>
-                    <p className="text-amber-600">
-                      Fee-free adjustment available in{" "}
-                      <strong>
-                        {interestRateCooldown.remainingTimeFormatted}
-                      </strong>
-                    </p>
-                  </div>
+                  <p className="text-xs text-amber-700">
+                    <strong>Premature Adjustment Fee:</strong> Changing the
+                    interest rate now will incur a fee equal to 7 days of
+                    average interest.
+                  </p>
                 </div>
               </div>
             )}
 
-            {hasInterestRateChange && !interestRateCooldown.isInCooldown && (
+            {hasInterestRateChange && !isInInterestRateCooldown && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
                 <div className="flex items-center gap-2">
                   <Info className="h-4 w-4 text-blue-600 flex-shrink-0" />

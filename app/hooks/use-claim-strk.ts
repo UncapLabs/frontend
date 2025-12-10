@@ -5,7 +5,7 @@ import { useTransaction } from "./use-transaction";
 import { useTransactionState } from "./use-transaction-state";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
-import { bigintToBig, bigToBigint } from "~/lib/decimal";
+import { bigToBigint } from "~/lib/decimal";
 import { TOKENS } from "~/lib/collateral";
 import { CLAIM_DISTRIBUTOR_ADDRESS } from "~/lib/contracts/constants";
 import { toHexAddress } from "~/lib/utils/address";
@@ -60,7 +60,7 @@ export function useClaimStrk({
       console.error("Failed to prepare STRK claim call:", error);
       return undefined;
     }
-  }, [address, cumulativeAmount, proof, enabled, CLAIM_DISTRIBUTOR_ADDRESS]);
+  }, [address, cumulativeAmount, proof, enabled]);
 
   const transaction = useTransaction(preparedCall?.calls);
 
@@ -73,7 +73,10 @@ export function useClaimStrk({
 
     if (hash && address && claimableAmount) {
       // Store the claimable amount (not cumulative) for display
-      const claimableBigint = bigToBigint(claimableAmount, TOKENS.STRK.decimals);
+      const claimableBigint = bigToBigint(
+        claimableAmount,
+        TOKENS.STRK.decimals
+      );
       transactionState.updateFormData({ amount: claimableBigint.toString() });
       transactionState.setPending(hash);
 

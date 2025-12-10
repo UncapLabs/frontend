@@ -290,6 +290,8 @@ export const interestRouter = router({
       const cooldownEndsAt =
         metadata.lastInterestRateAdjustment +
         metadata.minInterestRateChangePeriodSeconds;
+      const nowSeconds = Math.floor(Date.now() / 1000);
+      const isInCooldown = cooldownEndsAt > nowSeconds;
 
       return {
         collateralId: metadata.collateralId,
@@ -303,6 +305,7 @@ export const interestRouter = router({
         lastInterestRateAdjustment: metadata.lastInterestRateAdjustment,
         lastDebtUpdateTime: metadata.lastDebtUpdateTime,
         cooldownEndsAt,
+        isInCooldown,
         bcrRequirement: metadata.bcrRequirement,
         managedDebt: metadata.managedDebt,
       };

@@ -575,8 +575,6 @@ function Borrow() {
                       void setRateMode(mode);
                     }}
                     managedInfo={managedInterestInfo}
-                    isManagedOptionDisabled={telosManagedDisabled}
-                    managedDisableReason={telosDisableReason}
                   />
 
                   {/* Borrow Button */}

@@ -92,6 +92,9 @@ export interface IndexedTrove {
   // liquidationTx?: string;
 }
 
+// Interest rate adjustment cooldown period (7 days in seconds)
+const INTEREST_RATE_ADJ_COOLDOWN_SECONDS = 7 * 24 * 60 * 60;
+
 export interface Position {
   id: string;
   collateralAsset: string;
@@ -107,6 +110,7 @@ export interface Position {
   status: "active" | "closed" | "non-existent" | "liquidated" | "redeemed";
   batchManager: string | null;
   lastInterestRateAdjTime: number; // Unix timestamp in seconds
+  isInInterestRateCooldown: boolean;
 }
 
 export async function getIndexedTroveById(
@@ -328,6 +332,10 @@ export async function fetchPositionById(
       status: mapTroveStatus(troveStatus),
       batchManager: isZeroAddress ? null : batchManagerAddress,
       lastInterestRateAdjTime: Number(troveData.last_interest_rate_adj_time),
+      isInInterestRateCooldown:
+        Number(troveData.last_interest_rate_adj_time) +
+          INTEREST_RATE_ADJ_COOLDOWN_SECONDS >
+        Math.floor(Date.now() / 1000),
     };
   } catch (error) {
     console.error(`Error fetching data for trove ${fullId}:`, error);

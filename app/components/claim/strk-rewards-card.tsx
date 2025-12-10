@@ -20,6 +20,7 @@ import {
 import { TransactionStatus } from "~/components/borrow/transaction-status";
 import { TOKENS } from "~/lib/collateral";
 import { bigintToBig } from "~/lib/decimal";
+import type Big from "big.js";
 import { useCallback, useMemo } from "react";
 import { useUncapIncentiveRates } from "~/hooks/use-incentive-rates";
 
@@ -358,9 +359,10 @@ export function STRKRewardsCard() {
             </CardHeader>
             <CardContent className="space-y-2">
               <p className="text-sm font-sora text-neutral-700">
-                Earn STRK rewards by borrowing USDU. Get up to {borrowRatePercent}
-                % of your interest back plus up to {supplyRatePercent}% of your
-                collateral value annually, paid weekly.
+                Earn STRK rewards by borrowing USDU. Get up to{" "}
+                {borrowRatePercent}% of your interest back plus up to{" "}
+                {supplyRatePercent}% of your collateral value annually, paid
+                weekly.
               </p>
 
               <div className="grid grid-cols-2 gap-2">

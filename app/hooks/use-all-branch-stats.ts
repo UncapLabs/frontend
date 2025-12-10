@@ -1,7 +1,6 @@
 import { COLLATERAL_LIST, type CollateralId } from "~/lib/collateral";
 import { useTRPC } from "~/lib/trpc";
-import { useQueries, type UseQueryResult } from "@tanstack/react-query";
-import type Big from "big.js";
+import { useQueries } from "@tanstack/react-query";
 
 // TCR data for all branches (dynamic)
 export function useAllBranchTCRs() {

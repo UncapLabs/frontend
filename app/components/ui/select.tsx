@@ -26,11 +26,9 @@ function SelectTrigger({
   className,
   size = "default",
   children,
-  iconClassName,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Trigger> & {
   size?: "sm" | "default";
-  iconClassName?: string;
 }) {
   return (
     <SelectPrimitive.Trigger

@@ -2,10 +2,7 @@ import { CallToAction } from "~/components/landing/call-to-action";
 import Products from "../components/landing/products";
 import Problem from "../components/landing/problem";
 import Hero from "~/components/landing/hero";
-import {
-  BentoSection,
-  DarkBentoSection,
-} from "~/components/landing/bento-section";
+import { DarkBentoSection } from "~/components/landing/bento-section";
 import FrequentlyAskedQuestions from "~/components/landing/faq";
 import { Steps } from "~/components/landing/steps";
 

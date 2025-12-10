@@ -235,25 +235,7 @@ function UpdatePosition() {
     hasBorrowValues: targetHasDebt,
   });
 
-  const nowSeconds = Math.floor(Date.now() / 1000);
-  const telosCooldownRemainingSeconds = telosBatch.data
-    ? Math.max(0, telosBatch.data.cooldownEndsAt - nowSeconds)
-    : 0;
-
-  const formatDuration = (seconds: number) => {
-    if (seconds <= 0) return "0s";
-    if (seconds < 60) return `${seconds}s`;
-    if (seconds < 3600) {
-      const minutes = Math.round(seconds / 60);
-      return `${minutes} min${minutes === 1 ? "" : "s"}`;
-    }
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.round((seconds % 3600) / 60);
-    if (minutes === 0) {
-      return `${hours} hr${hours === 1 ? "" : "s"}`;
-    }
-    return `${hours} hr${hours === 1 ? "" : "s"} ${minutes} min`;
-  };
+  const telosIsInCooldown = telosBatch.data?.isInCooldown ?? false;
 
   // Initialize form with empty values using Big for precision
   const form = useForm({
@@ -851,7 +833,7 @@ function UpdatePosition() {
                     collateralAmount={targetCollateral}
                     collateralPriceUSD={bitcoin?.price}
                     collateralType={selectedCollateral.id}
-                    lastInterestRateAdjTime={position?.lastInterestRateAdjTime}
+                    isInInterestRateCooldown={position?.isInInterestRateCooldown}
                     currentInterestRate={
                       position
                         ? Number(getInterestRatePercentage(position).toString())
@@ -861,17 +843,13 @@ function UpdatePosition() {
                     rateMode={activeRateMode}
                     onRateModeChange={(mode) => setRateModeSelection(mode)}
                     managedInfo={managedInterestInfo}
-                    isManagedOptionDisabled={telosManagedDisabled}
-                    managedDisableReason={telosUpdateDisableReason}
                   />
                 </div>
                 {position?.batchManager &&
                   activeRateMode === "manual" &&
-                  telosCooldownRemainingSeconds > 0 && (
+                  telosIsInCooldown && (
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
                       Leaving TelosC right now may incur a cooldown fee.
-                      Fee-free adjustments resume in{" "}
-                      {formatDuration(telosCooldownRemainingSeconds)}.
                     </div>
                   )}
 

@@ -1,4 +1,6 @@
 import { Link } from "react-router";
+import { AboutVersionDialog } from "~/components/about-version-dialog";
+import { FRONTEND_COMMIT_HASH } from "~/lib/version";
 
 export default function Footer() {
   return (
@@ -39,6 +41,12 @@ export default function Footer() {
                   </svg>
                 </Link>
               </div>
+
+              <AboutVersionDialog>
+                <button className="text-white/40 hover:text-white/70 transition-colors text-xs font-mono mt-auto self-start">
+                  Version {FRONTEND_COMMIT_HASH}
+                </button>
+              </AboutVersionDialog>
             </div>
 
             {/* Navigation Links */}

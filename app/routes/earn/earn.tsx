@@ -3,7 +3,6 @@ import { useAccount, useBalance } from "@starknet-react/core";
 import {
   TOKENS,
   DEFAULT_COLLATERAL,
-  COLLATERAL_LIST,
   getCollateralByAddress,
 } from "~/lib/collateral";
 import { useAllStabilityPoolPositions } from "~/hooks/use-stability-pool";
