@@ -1,6 +1,6 @@
 # Uncap Finance
 
-Uncap is a decentralized protocol on Starknet with two core functions:
+Uncap is a decentralized protocol on Starknet (heavily inspired by Liquity v2) with two core functions:
 
 1. **Borrow against your Bitcoin** — Get liquidity without selling
 2. **Mint USDU** — A Bitcoin-backed, uncensorable stablecoin
