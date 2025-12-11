@@ -7,6 +7,17 @@ import { REFERRAL_STORAGE_KEY, normalizeReferralCode } from "~/lib/referrals";
 import { useLocation, useNavigate } from "react-router";
 import { ReferralWelcomeDialog } from "~/components/referral-welcome-dialog";
 
+/**
+ * Extract and validate referral code from URL search params
+ */
+function getReferralCodeFromSearch(search: string): string | null {
+  if (!search) return null;
+  const params = new URLSearchParams(search);
+  const code = params.get("ref");
+  if (!code) return null;
+  return normalizeReferralCode(code);
+}
+
 export function ReferralProvider({ children }: { children: React.ReactNode }) {
   const { address } = useAccount();
   const trpc = useTRPC();
@@ -18,41 +29,34 @@ export function ReferralProvider({ children }: { children: React.ReactNode }) {
     REFERRAL_STORAGE_KEY,
     null
   );
-  const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [alreadyHasReferral, setAlreadyHasReferral] = useState(false);
 
+  // Initialize dialog state based on URL - the initializer function only runs once
+  // so this correctly shows the dialog on first render if ref param is present
+  const [showWelcomeDialog, setShowWelcomeDialog] = useState(
+    () => getReferralCodeFromSearch(location.search) !== null
+  );
+
   useEffect(() => {
-    const search = location.search;
-    if (!search) {
+    const normalizedCode = getReferralCodeFromSearch(location.search);
+    if (!normalizedCode) {
       return;
     }
 
-    const params = new URLSearchParams(search);
-    const codeFromQuery = params.get("ref");
-    if (!codeFromQuery) {
-      return;
-    }
+    // Store the referral code
+    setStoredCode((current) =>
+      current === normalizedCode ? current : normalizedCode
+    );
 
-    const normalized = normalizeReferralCode(codeFromQuery);
-    if (!normalized) {
-      return;
-    }
-
-    setStoredCode((current) => (current === normalized ? current : normalized));
-
-    // Show welcome dialog for anyone visiting a referral link
-    setShowWelcomeDialog(true);
-
+    // Clean up URL by removing ref param
+    const params = new URLSearchParams(location.search);
     params.delete("ref");
     const nextSearch = params.toString();
-    const currentUrl = `${location.pathname}${location.search}${location.hash}`;
     const nextUrl = `${location.pathname}${nextSearch ? `?${nextSearch}` : ""}${
       location.hash
     }`;
 
-    if (nextUrl !== currentUrl) {
-      navigate(nextUrl, { replace: true });
-    }
+    navigate(nextUrl, { replace: true });
   }, [
     location.pathname,
     location.search,
