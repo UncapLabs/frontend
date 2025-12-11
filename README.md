@@ -1,4 +1,4 @@
-# Uncap
+# Uncap Finance
 
 Uncap is a decentralized protocol on Starknet with two core functions:
 
