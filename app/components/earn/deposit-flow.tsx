@@ -91,10 +91,12 @@ export function DepositFlow({
     rewards: selectedPosition?.rewards,
   });
 
+  // Re-validate amount when wallet connects/disconnects (intentionally omitting form)
   useEffect(() => {
     if (address && form.state.values.amount && form.state.values.amount.gt(0)) {
       form.validateField("amount", "change");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address]);
 
   const handleComplete = useCallback(() => {

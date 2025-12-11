@@ -198,7 +198,6 @@ export function useUpdatePosition({
     address,
     position,
     changes,
-    targetBatchManager,
     normalizedTargetBatchManager,
     liquidationPrice,
     previousLiquidationPrice,

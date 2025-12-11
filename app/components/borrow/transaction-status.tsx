@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 
-interface TransactionDetail {
+export interface TransactionDetail {
   label: string;
   value: ReactNode;
 }

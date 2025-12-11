@@ -8,7 +8,10 @@ import {
   AlertContent,
 } from "~/components/ui/alert";
 import { InterestRateSelector } from "~/components/borrow/interest-rate-selector";
-import { TransactionStatus } from "~/components/borrow/transaction-status";
+import {
+  TransactionStatus,
+  type TransactionDetail,
+} from "~/components/borrow/transaction-status";
 import { BorrowingRestrictionsAlert } from "~/components/borrow/borrowing-restrictions-alert";
 import { RedemptionInfo } from "~/components/borrow/redemption-info";
 import { TokenInput } from "~/components/token-input";
@@ -284,13 +287,6 @@ function UpdatePosition() {
     },
   });
 
-  // Initialize interest rate from position when it loads
-  useEffect(() => {
-    if (position && interestRate === undefined) {
-      setInterestRate(getInterestRatePercentage(position));
-    }
-  }, [position, interestRate]);
-
   const {
     send,
     isPending,
@@ -317,6 +313,8 @@ function UpdatePosition() {
   });
 
   // Revalidate fields when wallet connection changes
+  // Intentionally only depending on `address` - we want this to run when
+  // the user connects, not when amounts change
   useEffect(() => {
     if (address) {
       if (collateralAmount && collateralAmount.gt(0)) {
@@ -326,6 +324,7 @@ function UpdatePosition() {
         form.validateField("borrowAmount", "change");
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address]);
 
   const handleComplete = useCallback(() => {
@@ -430,7 +429,7 @@ function UpdatePosition() {
                           </>
                         ),
                       },
-                    ].filter(Boolean) as any)
+                    ].filter(Boolean) as TransactionDetail[])
                   : undefined
               }
               onComplete={handleComplete}
@@ -832,7 +831,9 @@ function UpdatePosition() {
                     collateralAmount={targetCollateral}
                     collateralPriceUSD={bitcoin?.price}
                     collateralType={selectedCollateral.id}
-                    isInInterestRateCooldown={position?.isInInterestRateCooldown}
+                    isInInterestRateCooldown={
+                      position?.isInInterestRateCooldown
+                    }
                     currentInterestRate={
                       position
                         ? Number(getInterestRatePercentage(position).toString())

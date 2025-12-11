@@ -155,6 +155,8 @@ export function useDepositToStabilityPool({
     amount,
     collateralType,
     address,
+    doClaim,
+    rewards,
   ]);
 
   // Check if we need to update state based on transaction status
@@ -308,6 +310,8 @@ export function useWithdrawFromStabilityPool({
     amount,
     collateralType,
     address,
+    doClaim,
+    rewards,
   ]);
 
   // Check if we need to update state based on transaction status

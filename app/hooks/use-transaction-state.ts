@@ -31,7 +31,7 @@ export interface UseTransactionStateReturn<TFormData> {
   updateFormData: (data: Partial<TFormData>) => void;
 }
 
-export function useTransactionState<TFormData extends Record<string, unknown>>(
+export function useTransactionState<TFormData>(
   config: TransactionConfig<TFormData>
 ): UseTransactionStateReturn<TFormData> {
   const { initialFormData } = config;

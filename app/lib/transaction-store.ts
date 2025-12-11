@@ -143,8 +143,11 @@ export function createTransactionStore(): TransactionStore {
     provider = newProvider;
   }
 
+  // Stable empty array reference for accounts with no transactions
+  const EMPTY_TRANSACTIONS: StarknetTransaction[] = [];
+
   function getTransactions(account: string): StarknetTransaction[] {
-    return data[account] ?? [];
+    return data[account] ?? EMPTY_TRANSACTIONS;
   }
 
   function addTransaction(account: string, transaction: NewTransaction): void {

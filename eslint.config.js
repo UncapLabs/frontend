@@ -29,6 +29,7 @@ export default [
         React: 'readonly',
         Env: 'readonly',
         ExecutionContext: 'readonly',
+        __COMMIT_HASH__: 'readonly',
       },
     },
     settings: {
