@@ -2,6 +2,7 @@
   "name": "uncap",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@10.0.0",
   "scripts": {
     "build": "pnpm codegen && react-router build",
     "cf-typegen": "wrangler types",
