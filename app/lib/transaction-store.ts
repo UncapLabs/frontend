@@ -3,6 +3,7 @@ import type {
   NewTransaction,
   TransactionData,
   TransactionStatus,
+  TransactionDetails,
 } from "~/types/transaction";
 import type { ProviderInterface } from "starknet";
 import Big from "big.js";
@@ -85,13 +86,13 @@ function normalizeDetailValue(value: unknown): unknown {
 }
 
 function normalizeTransactionDetails(
-  details: Record<string, any> | undefined
-): Record<string, any> | undefined {
+  details: TransactionDetails | undefined
+): TransactionDetails | undefined {
   if (!details) {
     return details;
   }
 
-  return normalizeDetailValue(details) as Record<string, any>;
+  return normalizeDetailValue(details) as TransactionDetails;
 }
 
 function normalizeTransaction(

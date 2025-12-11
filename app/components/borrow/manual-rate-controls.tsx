@@ -5,12 +5,29 @@ import * as dn from "dnum";
 import { findPositionInChart } from "~/lib/interest-rate-visualization";
 import Big from "big.js";
 
+interface ChartBar {
+  rate: Big;
+  debt: Big;
+  debtInFront: Big;
+  normalized: number;
+}
+
+interface VisualizationData {
+  chartBars: ChartBar[];
+  riskZones: {
+    highRiskThreshold: number;
+    mediumRiskThreshold: number;
+  };
+  totalDebt: Big;
+  chartLength: number;
+}
+
 interface ManualRateControlsProps {
   interestRate: number;
   onInterestRateChange: (rate: number) => void;
   borrowAmount?: Big;
   disabled?: boolean;
-  visualizationData?: any;
+  visualizationData?: VisualizationData;
 }
 
 export function ManualRateControls({
@@ -60,30 +77,31 @@ export function ManualRateControls({
     }
 
     // Data is already normalized from the server!
-    const sizes = visualizationData.chartBars.map((bar: any) => bar.normalized);
+    const sizes = visualizationData.chartBars.map((bar) => bar.normalized);
 
     // Find current position in the chart
     const currentRateDecimal = dn.toNumber(interestRateDnum); // Convert to decimal
+    const chartBarsWithNumberRate = visualizationData.chartBars.map((bar) => ({
+      rate: Number(bar.rate),
+    }));
     const sliderPos = findPositionInChart(
       currentRateDecimal,
-      visualizationData.chartBars
+      chartBarsWithNumberRate
     );
 
     // Calculate debt in front based on current interest rate
     // Find the bar that contains our current rate
-    const currentBar = visualizationData.chartBars.find(
-      (bar: any, index: number) => {
-        const nextBar = visualizationData.chartBars[index + 1];
-        if (!nextBar) {
-          // Last bar - check if rate is >= this bar's rate
-          return currentRateDecimal >= bar.rate;
-        }
-        // Check if rate falls between this bar and next
-        return (
-          currentRateDecimal >= bar.rate && currentRateDecimal < nextBar.rate
-        );
+    const currentBar = visualizationData.chartBars.find((bar, index) => {
+      const nextBar = visualizationData.chartBars[index + 1];
+      const barRate = Number(bar.rate);
+      if (!nextBar) {
+        // Last bar - check if rate is >= this bar's rate
+        return currentRateDecimal >= barRate;
       }
-    );
+      // Check if rate falls between this bar and next
+      const nextBarRate = Number(nextBar.rate);
+      return currentRateDecimal >= barRate && currentRateDecimal < nextBarRate;
+    });
 
     const debtInFrontValue = currentBar ? currentBar.debtInFront : 0;
     const totalDebtValue = visualizationData.totalDebt;

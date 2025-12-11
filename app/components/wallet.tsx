@@ -26,6 +26,16 @@ import { Button } from "./ui/button";
 import { useMediaQuery } from "~/hooks/use-media-query";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 
+interface StarkProfile {
+  name?: string;
+  profile?: string;
+  profilePicture?: string;
+  twitter?: string;
+  github?: string;
+  discord?: string;
+  proofOfPersonhood?: boolean;
+}
+
 // Internal component for displaying wallet info
 function WalletInfoDisplay({
   activeConnectorName,
@@ -37,7 +47,7 @@ function WalletInfoDisplay({
   handleDisconnect,
 }: {
   activeConnectorName?: string;
-  starkProfile: any;
+  starkProfile?: StarkProfile;
   address?: string;
   getExplorerUrl: () => string;
   handleCopyToClipboard: () => void;

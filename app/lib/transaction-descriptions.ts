@@ -2,7 +2,7 @@ import type { TransactionType } from "~/types/transaction";
 
 export function createTransactionDescription(
   type: TransactionType,
-  details?: Record<string, any>
+  details?: Record<string, unknown>
 ): string {
   switch (type) {
     case "borrow":

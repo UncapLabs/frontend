@@ -1,21 +1,13 @@
 import { useCallback, useMemo } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { useAccount } from "@starknet-react/core";
+import type {
+  TransactionType,
+  TransactionStatus,
+  TransactionDetails,
+} from "~/types/transaction";
 
-// Transaction types supported in the app
-export type TransactionType =
-  | "borrow"
-  | "adjust"
-  | "close"
-  | "claim"
-  | "claim_surplus"
-  | "adjust_rate"
-  | "deposit"
-  | "withdraw"
-  | "unknown";
-
-// Transaction status
-export type TransactionStatus = "pending" | "success" | "error";
+export type { TransactionType, TransactionStatus };
 
 // Base transaction structure
 export interface StoredTransaction {
@@ -26,7 +18,7 @@ export interface StoredTransaction {
   chainId: string;
   accountAddress: string;
   error?: string;
-  details: Record<string, any>; // Type-specific details
+  details: TransactionDetails;
 }
 
 // Transaction history array
@@ -183,59 +175,67 @@ export function useTransactionHistory(config?: UseTransactionHistoryConfig) {
 // Helper function to create transaction details for different types
 export function createTransactionDetails(
   type: TransactionType,
-  details: Record<string, any>
-): Record<string, any> {
+  details: TransactionDetails
+): TransactionDetails {
   switch (type) {
     case "borrow":
-      return {
-        collateralAmount: details.collateralAmount,
-        borrowAmount: details.borrowAmount,
-        interestRate: details.interestRate,
-        collateralToken: details.collateralToken,
-      };
+      if ("collateralAmount" in details && "borrowAmount" in details) {
+        return {
+          collateralAmount: details.collateralAmount,
+          borrowAmount: details.borrowAmount,
+          interestRate: "interestRate" in details ? details.interestRate : 0,
+          collateralToken:
+            "collateralToken" in details ? details.collateralToken : "",
+        };
+      }
+      return details;
     case "adjust":
-      return {
-        troveId: details.troveId,
-        collateralChange: details.collateralChange,
-        debtChange: details.debtChange,
-        isCollateralIncrease: details.isCollateralIncrease,
-        isDebtIncrease: details.isDebtIncrease,
-      };
+      return details;
     case "close":
-      return {
-        troveId: details.troveId,
-        collateralAmount: details.collateralAmount,
-        debtAmount: details.debtAmount,
-      };
+      if ("debt" in details && "collateral" in details) {
+        return {
+          debt: details.debt,
+          collateral: details.collateral,
+          troveId: "troveId" in details ? details.troveId : undefined,
+          collateralType:
+            "collateralType" in details ? details.collateralType : undefined,
+        };
+      }
+      return details;
     case "claim":
-      return {
-        amount: details.amount,
-        token: details.token,
-      };
+      return details;
     case "claim_surplus":
-      return {
-        amount: details.amount,
-        token: details.token,
-        collateralType: details.collateralType,
-      };
+      if ("amount" in details) {
+        return {
+          amount: details.amount,
+          token: "token" in details ? details.token : undefined,
+        };
+      }
+      return details;
     case "adjust_rate":
-      return {
-        troveId: details.troveId,
-        oldRate: details.oldRate,
-        newRate: details.newRate,
-      };
+      if ("oldRate" in details && "newRate" in details) {
+        return {
+          oldRate: details.oldRate,
+          newRate: details.newRate,
+        };
+      }
+      return details;
     case "deposit":
-      return {
-        amount: details.amount,
-        token: details.token,
-        poolId: details.poolId,
-      };
+      if ("amount" in details) {
+        return {
+          amount: details.amount,
+          pool: "pool" in details ? details.pool : undefined,
+        };
+      }
+      return details;
     case "withdraw":
-      return {
-        amount: details.amount,
-        token: details.token,
-        poolId: details.poolId,
-      };
+      if ("amount" in details) {
+        return {
+          amount: details.amount,
+          pool: "pool" in details ? details.pool : undefined,
+        };
+      }
+      return details;
     default:
       return details;
   }

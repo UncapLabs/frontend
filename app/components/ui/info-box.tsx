@@ -1,5 +1,5 @@
 import { cn } from "~/lib/utils";
-import { Info, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import type { ReactNode } from "react";
 
 interface InfoBoxProps {

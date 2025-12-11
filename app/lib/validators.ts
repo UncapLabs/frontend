@@ -114,7 +114,7 @@ export const validators = {
   /**
    * Validates wallet connection
    */
-  requiresWallet: (value: any, isConnected: boolean) =>
+  requiresWallet: (value: unknown, isConnected: boolean) =>
     value && !isConnected ? "Please connect your wallet" : undefined,
 
   /**

@@ -165,22 +165,22 @@ function PointsIcon() {
 }
 
 // Leaderboard Icon (Podium)
-function LeaderboardIcon() {
-  return (
-    <svg
-      width="14"
-      height="12"
-      viewBox="0 0 14 12"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path d="M5 5H9V11H5V5Z" fill="currentColor" />
-      <path d="M0 7H4V11H0V7Z" fill="currentColor" opacity="0.7" />
-      <path d="M10 8H14V11H10V8Z" fill="currentColor" opacity="0.5" />
-      <circle cx="7" cy="2" r="1.5" fill="currentColor" />
-    </svg>
-  );
-}
+// function LeaderboardIcon() {
+//   return (
+//     <svg
+//       width="14"
+//       height="12"
+//       viewBox="0 0 14 12"
+//       fill="none"
+//       xmlns="http://www.w3.org/2000/svg"
+//     >
+//       <path d="M5 5H9V11H5V5Z" fill="currentColor" />
+//       <path d="M0 7H4V11H0V7Z" fill="currentColor" opacity="0.7" />
+//       <path d="M10 8H14V11H10V8Z" fill="currentColor" opacity="0.5" />
+//       <circle cx="7" cy="2" r="1.5" fill="currentColor" />
+//     </svg>
+//   );
+// }
 
 // STRK Rewards Icon (Starknet-style logo)
 function StrkRewardsIcon() {

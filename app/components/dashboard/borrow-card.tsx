@@ -38,9 +38,15 @@ export default function BorrowCard(props: Props) {
     return <BorrowCardSkeleton />;
   }
 
-  // Otherwise, render the actual card
-  const { trove, onUpdatePosition, onClosePosition } = props as BorrowCardProps;
+  // Otherwise, render the actual card (props is narrowed to BorrowCardProps here)
+  return <BorrowCardContent {...(props as BorrowCardProps)} />;
+}
 
+function BorrowCardContent({
+  trove,
+  onUpdatePosition,
+  onClosePosition,
+}: BorrowCardProps) {
   // Get collateral config - match by symbol or id
   const collateral = COLLATERAL_LIST.find(
     (c) => c.symbol === trove.collateralAsset || c.id === trove.collateralAsset

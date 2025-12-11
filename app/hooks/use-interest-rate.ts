@@ -8,6 +8,13 @@ import {
 } from "~/lib/interest-rate-utils";
 import Big from "big.js";
 
+interface ChartDataPoint {
+  debt: Big;
+  debtInFront: Big;
+  rate: Big;
+  size: number;
+}
+
 type PositionLoanCommitted = {
   id: string;
   branchId?: number;
@@ -73,8 +80,10 @@ export function useDebtInFrontOfInterestRate(
   return useMemo(() => {
     if (!chartData.data || !interestRate) return { data: null };
 
+    const data = chartData.data as ChartDataPoint[];
+
     // Find the bracket containing this rate
-    const bracket = chartData.data.find((b: any) => {
+    const bracket = data.find((b) => {
       const bRate = b.rate;
       const increment = bRate.lt(INTEREST_RATE_PRECISE_UNTIL_BIG)
         ? INTEREST_RATE_INCREMENT_PRECISE_BIG
@@ -83,8 +92,8 @@ export function useDebtInFrontOfInterestRate(
       return interestRate.gte(bRate) && interestRate.lt(bRate.plus(increment));
     });
 
-    const totalDebt = chartData.data.reduce(
-      (sum: Big, b: any) => sum.plus(b.debt),
+    const totalDebt = data.reduce(
+      (sum, b) => sum.plus(b.debt),
       new Big(0)
     );
 
