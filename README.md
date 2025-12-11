@@ -1,33 +1,33 @@
-# bitUSD Webapp
+# Uncap
 
-A modern web interface for the bitUSD protocol - a decentralized, Bitcoin-backed stablecoin protocol built on Starknet, inspired by Liquity v2.
+Uncap is a decentralized protocol on Starknet with two core functions:
 
-## Overview
+1. **Borrow against your Bitcoin** — Get liquidity without selling
+2. **Mint USDU** — A Bitcoin-backed, uncensorable stablecoin
 
-bitUSD is a decentralized stablecoin protocol that enables users to mint stablecoins backed by Bitcoin collateral. As Bitcoin represents digital gold, bitUSD aims to become the digital cash equivalent, creating a truly decentralized and unstoppable stablecoin system.
+## Borrow Against Your Bitcoin
 
-## Features
+- **Set your own interest rate** — From as low as 0.5%, the cheapest in DeFi
+- **Non-custodial** — Your Bitcoin is never lent out or rehypothecated
+- **Tax-efficient** — Access liquidity without triggering a taxable sale
+- **Full ownership** — Get your Bitcoin back when you repay
 
-- **Bitcoin-Backed Collateral**: Secure your stablecoin with the most trusted cryptocurrency
-- **User-Defined Interest Rates**: Borrowers set their own interest rates, creating a free market for borrowing costs
-- **Native Yield**: bitUSD holders can earn yield by depositing in the staking pool
-- **Protocol Incentivized Liquidity**: Protocol fees are distributed to liquidity providers
-- **Interest Rate Delegation**: Ecosystem for managers and liquidation bots to operate on Starknet
-- **Price Oracle Integration**: Powered by Pragma.xyz for reliable price feeds
-- **Sustainable Fee Model**: Protocol fees are paid by borrowers, ensuring long-term sustainability
+## USDU: Stable Dollars You Truly Own
 
-## Related Links
+USDU is a decentralized stablecoin backed by over-collateralized Bitcoin:
 
-- [Smart Contracts Repository](https://github.com/BBY-Labs/bitUSD)
-- [Video Demo](https://www.loom.com/share/5082d26f870f4e63be925bf695c7714d?sid=86e8bbd8-5996-4e59-bdf9-c69260a63625)
+- **Always redeemable** — 1 USDU = $1 worth of Bitcoin, no questions asked
+- **Uncensorable** — No blacklists, no admin keys, can never be frozen
+- **Earn yield** — Deposit in the Stability Pool to earn real yield from borrower interest
+- **Hard-pegged** — Backed by >$1 of Bitcoin per USDU
 
 ## Running Locally
 
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/bitusd-webapp.git
-cd bitusd-webapp
+git clone https://github.com/UncapLabs/frontend.git
+cd frontend
 ```
 
 2. Install dependencies:
@@ -36,10 +36,21 @@ cd bitusd-webapp
 pnpm install
 ```
 
-3. Create a `.env` file in the root directory with the following variables:
+3. Create environment files:
+
+`.env.development` (client-side variables):
 
 ```env
-NODE_URL=your_starknet_rpc_url
+VITE_CHAIN_ID=SN_SEPOLIA
+VITE_ALCHEMY_API=your_alchemy_api_key
+```
+
+`.dev.vars` (server-side variables for Cloudflare Workers):
+
+```env
+NODE_URL=https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_8/your_alchemy_api_key
+GRAPHQL_ENDPOINT=your_graphql_endpoint
+NETWORK=sepolia
 ```
 
 4. Start the development server:
@@ -82,4 +93,4 @@ pnpm deploy
 
 ## Security
 
-The protocol is currently in development and should only be used for testing purposes. Please do not use with real funds until the security audit is completed.
+The protocol smart contracts have been audited by [ChainSecurity](https://www.chainsecurity.com/security-audit/uncap-finance).
