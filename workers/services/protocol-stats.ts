@@ -9,15 +9,23 @@ import { getBitcoinprice } from "./utils";
 import { bigintToBig } from "~/lib/decimal";
 import Big from "big.js";
 import { createGraphQLClient } from "~/lib/graphql/client";
-import { ALL_TROVES, TROVES_COUNT } from "~/lib/graphql/documents";
+import {
+  ALL_TROVES,
+  TROVES_COUNT,
+  TROVES_BY_BORROWER,
+  TROVES_BY_PREVIOUS_OWNER,
+} from "~/lib/graphql/documents";
 import type {
   AllTrovesQuery,
   TrovesCountQuery,
+  TrovesByBorrowerQuery,
+  TrovesByPreviousOwnerQuery,
 } from "~/lib/graphql/gql/graphql";
 import {
   Trove_OrderBy,
   OrderDirection,
 } from "~/lib/graphql/gql/graphql";
+import { getDebtInFrontForPositions } from "./interest";
 
 const CACHE_KEY = "protocol-stats";
 const CACHE_TTL = 30 * 60; // 30 minutes
@@ -47,6 +55,7 @@ export interface IndexedTroveEntry {
   liquidationTx: string | null;
   batchManager: string | null;
   batchInterestRate: string | null;
+  debtInFront: string | null;
 }
 
 export interface AllPositionsResult {
@@ -168,6 +177,7 @@ function calculateLiquidationPrice(debt: string, deposit: string, mcr: Big): num
 /**
  * Fetches all positions (troves) from the indexer with pagination
  * For calculated fields (LTV, liquidation price), fetches all data, calculates, sorts, then paginates
+ * When address is provided, returns all positions for that address (bypasses normal pagination)
  */
 export async function getAllPositions(
   env: Env,
@@ -177,6 +187,7 @@ export async function getAllPositions(
     status?: string;
     sortBy?: SortField;
     sortDirection?: SortDirection;
+    address?: string;
   } = {}
 ): Promise<AllPositionsResult> {
   const {
@@ -185,56 +196,19 @@ export async function getAllPositions(
     status = "active",
     sortBy = "debt",
     sortDirection = "desc",
+    address,
   } = options;
 
   const graphqlEndpoint = env.GRAPHQL_ENDPOINT;
   const graphqlClient = createGraphQLClient(graphqlEndpoint);
   const indexer = process.env.NETWORK || "sepolia";
 
-  const needsCalculatedSort = isCalculatedField(sortBy);
-
-  // For calculated fields, we need to fetch all data to sort properly
-  // For GraphQL-supported fields, we can use server-side sorting with pagination
-  const fetchLimit = needsCalculatedSort ? 1000 : limit; // Fetch more for calculated sort
-  const fetchOffset = needsCalculatedSort ? 0 : offset;
-
-  // Map sort parameters to GraphQL enum values (use debt as default for calculated fields)
-  const orderBy = needsCalculatedSort
-    ? Trove_OrderBy.Debt
-    : (GRAPHQL_SORT_FIELDS[sortBy] || Trove_OrderBy.Debt);
-  const orderDirection = sortDirection === "asc" ? OrderDirection.Asc : OrderDirection.Desc;
-
-  // Fetch troves and count in parallel
-  const [trovesResult, countResult, btcPriceResult] = await Promise.all([
-    graphqlClient.request<AllTrovesQuery>(ALL_TROVES, {
-      indexer,
-      first: fetchLimit,
-      skip: fetchOffset,
-      status,
-      orderBy,
-      orderDirection,
-    }),
-    graphqlClient.request<TrovesCountQuery>(TROVES_COUNT, {
-      indexer,
-      status,
-    }),
-    // Fetch BTC price if we need to calculate LTV
-    needsCalculatedSort && sortBy === "ltv"
-      ? getBitcoinprice(new RpcProvider({ nodeUrl: env.NODE_URL }), "WWBTC" as CollateralId)
-      : Promise.resolve(null),
-  ]);
-
-  const troves = trovesResult.troves || [];
-  const total = countResult.troves?.length || 0;
-  const pageCount = Math.ceil(total / limit);
-
-  // Map troves to our IndexedTroveEntry format
-  let positions: IndexedTroveEntry[] = troves.map((trove) => {
+  // Helper to map trove data to IndexedTroveEntry (without debtInFront, added later)
+  const mapTroveToEntry = (trove: AllTrovesQuery["troves"][number]) => {
     const branchId = Number(trove.collateral?.collIndex ?? 0);
     const collateral = getCollateralByBranchId(branchId);
 
     // For liquidated/closed troves, use previousOwner if borrower is zero address
-    // The borrower field becomes the zero address after liquidation or closure
     const isZeroBorrower =
       !trove.borrower ||
       trove.borrower === "0x0" ||
@@ -263,10 +237,102 @@ export async function getAllPositions(
       batchManager: trove.interestBatch?.batchManager || null,
       batchInterestRate: trove.interestBatch?.annualInterestRate || null,
     };
-  });
+  };
 
-  // If sorting by a calculated field, calculate values, sort, then paginate
-  if (needsCalculatedSort) {
+  let troves: AllTrovesQuery["troves"] = [];
+  let total = 0;
+
+  // If address is provided, use address-specific queries
+  if (address) {
+    // Normalize address to lowercase for case-insensitive matching
+    const normalizedAddress = address.toLowerCase();
+
+    // Fetch positions where user is borrower OR previousOwner (for closed/liquidated positions)
+    // For closed and liquidated positions, the borrower field is reset to zero address
+    // and the original owner is stored in previousOwner
+    const needsPreviousOwnerQuery = status === "liquidated" || status === "closed";
+
+    const [borrowerResult, previousOwnerResult] = await Promise.all([
+      graphqlClient.request<TrovesByBorrowerQuery>(TROVES_BY_BORROWER, {
+        indexer,
+        borrower: normalizedAddress,
+        status,
+      }),
+      needsPreviousOwnerQuery
+        ? graphqlClient.request<TrovesByPreviousOwnerQuery>(TROVES_BY_PREVIOUS_OWNER, {
+            indexer,
+            previousOwner: normalizedAddress,
+            status,
+          })
+        : Promise.resolve({ troves: [] }),
+    ]);
+
+    // Combine results, avoiding duplicates
+    const seenIds = new Set<string>();
+    troves = [];
+
+    for (const trove of borrowerResult.troves || []) {
+      if (!seenIds.has(trove.id)) {
+        seenIds.add(trove.id);
+        troves.push(trove);
+      }
+    }
+
+    for (const trove of previousOwnerResult.troves || []) {
+      if (!seenIds.has(trove.id)) {
+        seenIds.add(trove.id);
+        troves.push(trove);
+      }
+    }
+
+    total = troves.length;
+  } else {
+    // Normal pagination flow
+    const needsCalculatedSort = isCalculatedField(sortBy);
+
+    // For calculated fields, we need to fetch all data to sort properly
+    const fetchLimit = needsCalculatedSort ? 1000 : limit;
+    const fetchOffset = needsCalculatedSort ? 0 : offset;
+
+    // Map sort parameters to GraphQL enum values
+    const orderBy = needsCalculatedSort
+      ? Trove_OrderBy.Debt
+      : (GRAPHQL_SORT_FIELDS[sortBy] || Trove_OrderBy.Debt);
+    const orderDirection = sortDirection === "asc" ? OrderDirection.Asc : OrderDirection.Desc;
+
+    const [trovesResult, countResult] = await Promise.all([
+      graphqlClient.request<AllTrovesQuery>(ALL_TROVES, {
+        indexer,
+        first: fetchLimit,
+        skip: fetchOffset,
+        status,
+        orderBy,
+        orderDirection,
+      }),
+      graphqlClient.request<TrovesCountQuery>(TROVES_COUNT, {
+        indexer,
+        status,
+      }),
+    ]);
+
+    troves = trovesResult.troves || [];
+    total = countResult.troves?.length || 0;
+  }
+
+  const pageCount = Math.ceil(total / limit);
+
+  // Map troves to entries (without debtInFront initially)
+  let positions = troves.map(mapTroveToEntry);
+
+  // For address queries or calculated fields, we need to sort server-side
+  // For address queries: GraphQL doesn't support our sort params, so always sort here
+  // For calculated fields: Need to compute values before sorting
+  const needsServerSort = address || isCalculatedField(sortBy);
+
+  if (needsServerSort) {
+    const btcPriceResult = sortBy === "ltv"
+      ? await getBitcoinprice(new RpcProvider({ nodeUrl: env.NODE_URL }), "WWBTC" as CollateralId)
+      : null;
     const btcPrice = btcPriceResult ? bigintToBig(btcPriceResult, 18) : null;
 
     // Calculate sort values and sort
@@ -280,13 +346,28 @@ export async function getAllPositions(
       } else if (sortBy === "liquidationPrice") {
         sortValue = calculateLiquidationPrice(pos.debt, pos.deposit, mcr);
       } else if (sortBy === "interestRate") {
-        // Use effective interest rate: batchInterestRate if available, otherwise interestRate
         const effectiveRate = pos.batchInterestRate || pos.interestRate;
         try {
           sortValue = new Big(effectiveRate).toNumber();
         } catch {
           sortValue = null;
         }
+      } else if (sortBy === "debt") {
+        try {
+          sortValue = new Big(pos.debt).toNumber();
+        } catch {
+          sortValue = null;
+        }
+      } else if (sortBy === "deposit") {
+        try {
+          sortValue = new Big(pos.deposit).toNumber();
+        } catch {
+          sortValue = null;
+        }
+      } else if (sortBy === "createdAt") {
+        sortValue = pos.createdAt;
+      } else if (sortBy === "updatedAt") {
+        sortValue = pos.updatedAt;
       }
 
       return { ...pos, _sortValue: sortValue };
@@ -301,16 +382,42 @@ export async function getAllPositions(
       return sortDirection === "asc" ? diff : -diff;
     });
 
-    // Paginate after sorting
-    const paginatedPositions = positionsWithCalc.slice(offset, offset + limit);
-    // Remove the temporary sort value
+    // Paginate after sorting (only for non-address queries, address queries return all)
+    const paginatedPositions = address
+      ? positionsWithCalc
+      : positionsWithCalc.slice(offset, offset + limit);
     positions = paginatedPositions.map(({ _sortValue, ...pos }) => pos);
   }
 
-  const hasMore = offset + positions.length < total;
+  // Calculate debt-in-front for each position
+  // Use effective rate (batch rate if available, otherwise individual rate)
+  const positionsForDebtCalc = positions.map((pos) => {
+    const effectiveRate = pos.batchInterestRate || pos.interestRate;
+    return {
+      branchId: pos.collateralBranchId,
+      interestRate: new Big(effectiveRate).div(1e18), // Convert from raw to decimal
+    };
+  });
+
+  const debtInFrontMap = await getDebtInFrontForPositions(positionsForDebtCalc);
+
+  // Add debtInFront to each position
+  const positionsWithDebt: IndexedTroveEntry[] = positions.map((pos) => {
+    const effectiveRate = pos.batchInterestRate || pos.interestRate;
+    const rateDecimal = new Big(effectiveRate).div(1e18);
+    const key = `${pos.collateralBranchId}:${rateDecimal.toString()}`;
+    const debtInFront = debtInFrontMap.get(key);
+
+    return {
+      ...pos,
+      debtInFront: debtInFront?.toString() ?? null,
+    };
+  });
+
+  const hasMore = offset + positionsWithDebt.length < total;
 
   return {
-    positions,
+    positions: positionsWithDebt,
     total,
     hasMore,
     pageCount,

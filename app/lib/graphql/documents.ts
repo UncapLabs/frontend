@@ -139,6 +139,84 @@ export const TROVES_COUNT = graphql(/* GraphQL */ `
   }
 `);
 
+// Query for troves filtered by borrower address (for search)
+export const TROVES_BY_BORROWER = graphql(/* GraphQL */ `
+  query TrovesByBorrower(
+    $indexer: String!
+    $borrower: String!
+    $status: String
+  ) {
+    troves(
+      where: { _indexer: $indexer, borrower: $borrower, status: $status }
+      first: 100
+      orderBy: debt
+      orderDirection: desc
+    ) {
+      id
+      troveId
+      borrower
+      previousOwner
+      debt
+      deposit
+      interestRate
+      status
+      collateral {
+        id
+        collIndex
+      }
+      interestBatch {
+        batchManager
+        annualInterestRate
+      }
+      createdAt
+      updatedAt
+      closedAt
+      redeemedColl
+      redeemedDebt
+      liquidationTx
+    }
+  }
+`);
+
+// Query for troves filtered by previous owner (for liquidated positions search)
+export const TROVES_BY_PREVIOUS_OWNER = graphql(/* GraphQL */ `
+  query TrovesByPreviousOwner(
+    $indexer: String!
+    $previousOwner: String!
+    $status: String
+  ) {
+    troves(
+      where: { _indexer: $indexer, previousOwner: $previousOwner, status: $status }
+      first: 100
+      orderBy: debt
+      orderDirection: desc
+    ) {
+      id
+      troveId
+      borrower
+      previousOwner
+      debt
+      deposit
+      interestRate
+      status
+      collateral {
+        id
+        collIndex
+      }
+      interestBatch {
+        batchManager
+        annualInterestRate
+      }
+      createdAt
+      updatedAt
+      closedAt
+      redeemedColl
+      redeemedDebt
+      liquidationTx
+    }
+  }
+`);
+
 // Query for all interest rate brackets
 export const ALL_INTEREST_RATE_BRACKETS = graphql(/* GraphQL */ `
   query AllInterestRateBrackets($indexer: String!) {

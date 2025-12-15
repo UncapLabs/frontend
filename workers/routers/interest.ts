@@ -11,6 +11,7 @@ import {
 import {
   fetchAllInterestRateBrackets,
   getAverageInterestRateForBranch,
+  getAllBranchesStats,
 } from "../services/interest";
 import Big from "big.js";
 import { fetchTelosBatchMetadata } from "../services/telos-batch";
@@ -265,6 +266,9 @@ export const interestRouter = router({
     .query(async ({ input }) => {
       return getAverageInterestRateForBranch(input.branchId);
     }),
+  getAllBranchesStats: publicProcedure.query(async () => {
+    return getAllBranchesStats();
+  }),
   getTelosBatchMetadata: publicProcedure
     .input(
       z.object({
