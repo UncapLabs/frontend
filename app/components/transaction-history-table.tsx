@@ -22,7 +22,7 @@ import type {
   DepositDetails,
   WithdrawDetails,
 } from "~/types/transaction";
-import { formatDistance } from "date-fns";
+import { formatDate } from "~/lib/utils";
 import { useTransactionStoreData } from "~/hooks/use-transaction-store-data";
 import { COLLATERALS, type CollateralId } from "~/lib/collateral";
 import { NumericFormat } from "react-number-format";
@@ -425,9 +425,7 @@ function TransactionCard({
         {/* Bottom row: Time and Explorer link */}
         <div className="flex items-center justify-between pt-1.5 border-t border-neutral-100">
           <div className="text-xs font-sora text-neutral-500">
-            {formatDistance(transaction.timestamp, new Date(), {
-              addSuffix: true,
-            })}
+            {formatDate(transaction.timestamp)}
           </div>
 
           {/* View on Explorer */}
