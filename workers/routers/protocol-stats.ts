@@ -24,6 +24,7 @@ export const protocolStatsRouter = router({
         status: z.enum(["active", "closed", "liquidated", "redeemed"]).optional(),
         sortBy: sortFieldSchema.optional(),
         sortDirection: sortDirectionSchema.optional(),
+        address: z.string().optional(),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -33,6 +34,7 @@ export const protocolStatsRouter = router({
         status: input.status ?? "active",
         sortBy: (input.sortBy as SortField) ?? "debt",
         sortDirection: (input.sortDirection as SortDirection) ?? "desc",
+        address: input.address,
       });
     }),
 });

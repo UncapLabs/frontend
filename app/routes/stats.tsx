@@ -6,9 +6,16 @@ import {
   getCoreRowModel,
 } from "@tanstack/react-table";
 import { NumericFormat } from "react-number-format";
-import { useQueryState, parseAsInteger, parseAsStringEnum } from "nuqs";
+import {
+  useQueryState,
+  parseAsInteger,
+  parseAsStringEnum,
+  parseAsString,
+} from "nuqs";
 import type { Route } from "./+types/stats";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router";
+import { useAccount } from "@starknet-react/core";
 import Big from "big.js";
 
 import {
@@ -20,6 +27,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -51,6 +59,7 @@ type PositionEntry = {
   liquidationTx: string | null;
   batchManager: string | null;
   batchInterestRate: string | null;
+  debtInFront: string | null;
 };
 
 const STATUS_OPTIONS = [
@@ -125,9 +134,9 @@ function formatDeposit(deposit: string): string {
   try {
     // Deposit is stored with 18 decimals (wrapped token)
     const bigDeposit = new Big(deposit).div(DECIMALS_18);
-    return bigDeposit.toFixed(8);
+    return bigDeposit.toFixed(4);
   } catch {
-    return "0.00000000";
+    return "0.0000";
   }
 }
 
@@ -198,10 +207,30 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
   "use no memo";
 
   const trpc = useTRPC();
+  const navigate = useNavigate();
+  const { address: connectedAddress } = useAccount();
 
   // Fetch BTC price for LTV calculation
   const btcPriceData = useCollateralPrice("WWBTC" as CollateralId);
   const btcPriceBig = btcPriceData?.price ?? null;
+
+  // Check if a position belongs to the connected user
+  const isOwnPosition = (borrower: string) => {
+    if (!connectedAddress || !borrower) return false;
+    return borrower.toLowerCase() === connectedAddress.toLowerCase();
+  };
+
+  // Check if a position can be updated (active or zombie/redeemed)
+  const canUpdatePosition = (position: PositionEntry) => {
+    return position.status === "active" || position.status === "redeemed";
+  };
+
+  // Navigate to update page for a position
+  const handleRowClick = (position: PositionEntry) => {
+    if (!isOwnPosition(position.borrower)) return;
+    if (!canUpdatePosition(position)) return;
+    navigate(`/borrow/${position.id}/update`);
+  };
 
   const [statusSelection = "active", setStatusSelection] =
     useQueryState<StatusOptionValue>(
@@ -244,6 +273,19 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
     parseAsStringEnum<SortDirType>([...SORT_DIRS]).withDefault("desc")
   );
 
+  // Address search state
+  const [addressParam = "", setAddressParam] = useQueryState(
+    "address",
+    parseAsString.withDefault("")
+  );
+
+  // Fetch branch stats for header
+  const { data: branchStats } = useQuery({
+    ...trpc.interestRouter.getAllBranchesStats.queryOptions(undefined, {
+      staleTime: 60_000,
+    }),
+  });
+
   const currentPage = Math.max(1, pageParam);
   const pageIndex = currentPage - 1;
   const offset = pageIndex * ALL_POSITIONS_PAGE_SIZE;
@@ -253,7 +295,8 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
     statusSelection === "active" &&
     pageIndex === 0 &&
     sortBy === "debt" &&
-    sortDir === "desc";
+    sortDir === "desc" &&
+    !addressParam;
   const { data, isFetching, error } = useQuery({
     ...trpc.protocolStatsRouter.getAllPositions.queryOptions(
       {
@@ -262,6 +305,7 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
         offset,
         sortBy,
         sortDirection: sortDir,
+        address: addressParam || undefined,
       },
       {
         staleTime: 60_000,
@@ -306,7 +350,7 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
       {
         accessorKey: "collateralSymbol",
         header: "Collateral",
-        size: 100,
+        size: 80,
         cell: ({ row }) => (
           <span className="font-sora text-sm font-medium text-neutral-800">
             {row.original.collateralSymbol}
@@ -316,7 +360,7 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
       {
         accessorKey: "borrower",
         header: "Borrower",
-        size: 160,
+        size: 120,
         cell: ({ row }) => (
           <a
             href={`https://voyager.online/contract/${row.original.borrower}`}
@@ -333,7 +377,7 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
       {
         accessorKey: "deposit",
         header: "Deposit",
-        size: 140,
+        size: 100,
         cell: ({ row }) => {
           const isLiquidated = row.original.status === "liquidated";
           const closedAt = row.original.closedAt;
@@ -360,8 +404,8 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
       },
       {
         accessorKey: "debt",
-        header: "Debt (USDU)",
-        size: 140,
+        header: "Debt",
+        size: 100,
         cell: ({ row }) => {
           const isLiquidated = row.original.status === "liquidated";
           const liquidationTx = row.original.liquidationTx;
@@ -393,8 +437,8 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
       },
       {
         id: "effectiveInterestRate",
-        header: "Interest Rate",
-        size: 120,
+        header: "Rate",
+        size: 80,
         cell: ({ row }) => {
           const { interestRate, batchInterestRate, batchManager } =
             row.original;
@@ -419,7 +463,7 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
       {
         id: "liquidationPrice",
         header: "Liq. Price",
-        size: 100,
+        size: 90,
         cell: ({ row }) => {
           const { debt, deposit, collateralBranchId, status } = row.original;
 
@@ -458,7 +502,7 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
       {
         id: "ltv",
         header: "LTV",
-        size: 80,
+        size: 60,
         cell: ({ row }) => {
           const { debt, deposit, status } = row.original;
 
@@ -494,9 +538,64 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
         },
       },
       {
+        id: "debtInFront",
+        header: "Debt in Front",
+        size: 100,
+        cell: ({ row }) => {
+          const { debtInFront, status } = row.original;
+
+          // Only show for active positions
+          if (status !== "active") {
+            return (
+              <span className="font-sora text-sm text-neutral-400">—</span>
+            );
+          }
+
+          if (!debtInFront || debtInFront === "0") {
+            return (
+              <span className="font-sora text-sm text-red-600 font-medium">
+                $0
+              </span>
+            );
+          }
+
+          try {
+            const debtInFrontNum = new Big(debtInFront);
+            // Format as compact number (e.g., $1.2M, $500K)
+            let formatted: string;
+            if (debtInFrontNum.gte(1_000_000)) {
+              formatted = `$${debtInFrontNum.div(1_000_000).toFixed(1)}M`;
+            } else if (debtInFrontNum.gte(1_000)) {
+              formatted = `$${debtInFrontNum.div(1_000).toFixed(0)}K`;
+            } else {
+              formatted = `$${debtInFrontNum.toFixed(0)}`;
+            }
+
+            // Color based on protection level
+            // More debt in front = more protection = greener
+            let colorClass = "text-red-600"; // Low protection: < $100K
+            if (debtInFrontNum.gte(1_000_000)) {
+              colorClass = "text-green-600"; // High protection: >= $1M
+            } else if (debtInFrontNum.gte(100_000)) {
+              colorClass = "text-orange-600"; // Medium protection: $100K-$1M
+            }
+
+            return (
+              <span className={`font-sora text-sm font-medium ${colorClass}`}>
+                {formatted}
+              </span>
+            );
+          } catch {
+            return (
+              <span className="font-sora text-sm text-neutral-400">—</span>
+            );
+          }
+        },
+      },
+      {
         accessorKey: "redeemedColl",
-        header: "Redeemed Coll",
-        size: 120,
+        header: "Rdm Coll",
+        size: 80,
         cell: ({ row }) => {
           const redeemed = row.original.redeemedColl;
           if (!redeemed || redeemed === "0") {
@@ -513,8 +612,8 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
       },
       {
         accessorKey: "redeemedDebt",
-        header: "Redeemed Debt",
-        size: 120,
+        header: "Rdm Debt",
+        size: 80,
         cell: ({ row }) => {
           const redeemed = row.original.redeemedDebt;
           if (!redeemed || redeemed === "0") {
@@ -537,7 +636,7 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
       {
         accessorKey: "status",
         header: "Status",
-        size: 100,
+        size: 80,
         cell: ({ row }) => {
           const status = row.original.status;
           const statusColors: Record<string, string> = {
@@ -593,6 +692,19 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
     void setStatusSelection(value);
     void setPageParam(1);
   };
+
+  const handleAddressSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const address = formData.get("address") as string;
+    void setAddressParam(address || null);
+    void setPageParam(1);
+  };
+
+  const clearAddressSearch = () => {
+    void setAddressParam(null);
+    void setPageParam(1);
+  };
   const handlePreviousPage = () => {
     if (prevDisabled) return;
     void setPageParam(Math.max(1, safeCurrentPage - 1));
@@ -606,33 +718,76 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
     <div className="w-full mx-auto max-w-7xl py-8 lg:py-8 px-4 sm:px-6 lg:px-8 pb-32">
       <div className="flex justify-between pb-6 lg:pb-4 items-baseline-last">
         <h1 className="text-3xl md:text-4xl lg:text-5xl font-medium leading-10 font-sora text-[#242424]">
-          All Positions
+          Stats
         </h1>
+      </div>
 
-        <div className="hidden lg:flex items-end gap-1.5">
-          <div className="flex flex-col gap-2">
-            <p className="text-xs font-medium font-sora leading-none text-[#AAA28E] tracking-tight uppercase pl-2.5">
-              Filter by
-            </p>
-            <Select
-              value={statusSelection}
-              onValueChange={(value) =>
-                handleStatusChange(value as StatusOptionValue)
-              }
-            >
-              <SelectTrigger className="w-56 px-6 py-4 bg-white border-0 rounded-xl font-sora text-xs font-medium text-[#242424] hover:bg-neutral-50 transition-colors !h-auto">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {STATUS_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+      {/* Branch Stats Bar */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        {/* BTC Price */}
+        <div className="bg-white rounded-xl p-5 flex-shrink-0">
+          <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight mb-2">
+            BTC Price
+          </p>
+          <p className="text-2xl font-semibold font-sora text-[#242424]">
+            {btcPriceBig ? (
+              <NumericFormat
+                displayType="text"
+                value={btcPriceBig.toFixed(0)}
+                thousandSeparator=","
+                prefix="$"
+              />
+            ) : (
+              "—"
+            )}
+          </p>
         </div>
+
+        {/* Per-branch stats */}
+        {branchStats?.map((branch) => {
+          const collateral = getCollateralByBranchId(branch.branchId);
+          return (
+            <div
+              key={branch.branchId}
+              className="bg-white rounded-xl p-5 flex-1"
+            >
+              <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight mb-3">
+                {collateral?.symbol ?? `Branch ${branch.branchId}`}
+              </p>
+              <div className="flex gap-6">
+                <div>
+                  <p className="text-xs font-sora text-[#94938D] mb-1">
+                    Avg Rate
+                  </p>
+                  <p className="text-lg font-semibold font-sora text-[#242424]">
+                    {(parseFloat(branch.averageRate) * 100).toFixed(2)}%
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-sora text-[#94938D] mb-1">
+                    Lowest Rate
+                  </p>
+                  <p className="text-lg font-semibold font-sora text-[#242424]">
+                    {(parseFloat(branch.lowestRate) * 100).toFixed(2)}%
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-sora text-[#94938D] mb-1">
+                    Total Debt
+                  </p>
+                  <p className="text-lg font-semibold font-sora text-[#242424]">
+                    <NumericFormat
+                      displayType="text"
+                      value={parseFloat(branch.totalDebt).toFixed(0)}
+                      thousandSeparator=","
+                      prefix="$"
+                    />
+                  </p>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <div className="bg-white rounded-2xl border-0 shadow-none">
@@ -647,40 +802,89 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
               Browse all protocol positions
             </p>
           </div>
-          <div className="text-xs font-medium font-sora text-neutral-800">
-            Showing{" "}
-            <span className="font-semibold text-neutral-800">
-              {hasRange ? (
-                <>
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            {/* Status Filter */}
+            <Select
+              value={statusSelection}
+              onValueChange={(value) =>
+                handleStatusChange(value as StatusOptionValue)
+              }
+            >
+              <SelectTrigger className="w-32 h-9 px-3 bg-[#FAFAFA] border-[#E5E5E5] rounded-lg font-sora text-xs font-medium text-[#242424]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUS_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {/* Address Search */}
+            <form onSubmit={handleAddressSearch} className="flex gap-2">
+              <Input
+                key={addressParam || "empty"}
+                name="address"
+                placeholder="Search by address..."
+                defaultValue={addressParam}
+                className="w-48 md:w-56 h-9 px-3 bg-[#FAFAFA] border-[#E5E5E5] rounded-lg font-sora text-xs"
+              />
+              <Button
+                type="submit"
+                variant="outline"
+                size="sm"
+                className="font-sora text-xs font-medium border-neutral-200 hover:bg-[#F5F3EE]"
+              >
+                Search
+              </Button>
+              {addressParam && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearAddressSearch}
+                  className="font-sora text-xs font-medium text-neutral-500 hover:text-neutral-800"
+                >
+                  Clear
+                </Button>
+              )}
+            </form>
+            <div className="text-xs font-medium font-sora text-neutral-800">
+              Showing{" "}
+              <span className="font-semibold text-neutral-800">
+                {hasRange ? (
+                  <>
+                    <NumericFormat
+                      displayType="text"
+                      value={startRank}
+                      thousandSeparator=","
+                    />
+                    {"-"}
+                    <NumericFormat
+                      displayType="text"
+                      value={endRank}
+                      thousandSeparator=","
+                    />
+                  </>
+                ) : (
+                  "—"
+                )}
+              </span>{" "}
+              of{" "}
+              <span className="font-semibold text-neutral-800">
+                {hasTotal ? (
                   <NumericFormat
                     displayType="text"
-                    value={startRank}
+                    value={total}
                     thousandSeparator=","
                   />
-                  {"-"}
-                  <NumericFormat
-                    displayType="text"
-                    value={endRank}
-                    thousandSeparator=","
-                  />
-                </>
-              ) : (
-                "—"
-              )}
-            </span>{" "}
-            of{" "}
-            <span className="font-semibold text-neutral-800">
-              {hasTotal ? (
-                <NumericFormat
-                  displayType="text"
-                  value={total}
-                  thousandSeparator=","
-                />
-              ) : (
-                "—"
-              )}
-            </span>{" "}
-            positions
+                ) : (
+                  "—"
+                )}
+              </span>{" "}
+              positions
+            </div>
           </div>
         </div>
 
@@ -749,25 +953,37 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50 transition-colors"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      className="py-3 px-4"
-                      style={{ width: cell.column.getSize() }}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              table.getRowModel().rows.map((row) => {
+                const position = row.original;
+                const isClickable =
+                  isOwnPosition(position.borrower) &&
+                  canUpdatePosition(position);
+
+                return (
+                  <TableRow
+                    key={row.id}
+                    className={`border-[#E5E5E5] transition-colors ${
+                      isClickable
+                        ? "bg-blue-50/50 hover:bg-blue-100 cursor-pointer"
+                        : "hover:bg-[#F5F3EE]/50"
+                    }`}
+                    onClick={() => isClickable && handleRowClick(position)}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell
+                        key={cell.id}
+                        className="py-3 px-4"
+                        style={{ width: cell.column.getSize() }}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow className="hover:bg-transparent">
                 <TableCell
