@@ -58,7 +58,7 @@ export default function Footer() {
                   to="/stats"
                   className="text-white/70 hover:text-white transition-colors text-sm"
                 >
-                  All Positions
+                  Stats
                 </Link>
                 <a
                   href="https://uncap.finance/resources/docs"

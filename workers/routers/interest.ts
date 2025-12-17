@@ -107,7 +107,8 @@ async function calculateChartData(
   const debtByRate = new Map<string, Big>();
 
   for (const bracket of filteredBrackets) {
-    const rate = bracket.rate;
+    // bracket.rate is raw 18-decimal, convert to decimal for comparison with constants
+    const rate = bracket.rate.div(1e18);
 
     if (rate.gte(INTEREST_RATE_START_BIG) && rate.lte(INTEREST_RATE_END_BIG)) {
       // Calculate totalDebt with pending interest

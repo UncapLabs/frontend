@@ -35,7 +35,7 @@ export async function fetchAllInterestRateBrackets(): Promise<{
   const brackets: InterestRateBracket[] = result.interestratebrackets
     .map((bracket: { collateral: { collIndex: number }; rate: string; totalDebt: string; sumDebtTimesRateD36?: string; pendingDebtTimesOneYearD36?: string; updatedAt?: number }) => ({
       branchId: bracket.collateral.collIndex,
-      rate: new Big(bracket.rate).div(1e18),
+      rate: new Big(bracket.rate), // Keep raw 18-decimal value for precise comparisons
       totalDebt: new Big(bracket.totalDebt).div(1e18),
       sumDebtTimesRateD36: new Big(bracket.sumDebtTimesRateD36 || "0").div(1e36),
       pendingDebtTimesOneYearD36: new Big(
@@ -77,6 +77,7 @@ export async function getAverageInterestRateForBranch(
 
     for (const bracket of branchBrackets) {
       totalDebt = totalDebt.plus(bracket.totalDebt);
+      // bracket.rate is raw 18-decimal, so weightedSum is also in raw format
       weightedSum = weightedSum.plus(bracket.totalDebt.times(bracket.rate));
     }
 
@@ -84,7 +85,8 @@ export async function getAverageInterestRateForBranch(
       return new Big(0);
     }
 
-    return weightedSum.div(totalDebt);
+    // Divide by 1e18 to convert from raw to decimal
+    return weightedSum.div(totalDebt).div(1e18);
   } catch (error) {
     console.error(
       `Error fetching average interest rate for branch ${branchId}:`,
@@ -144,14 +146,21 @@ export async function getAllBranchesStats(): Promise<BranchStats[]> {
     const results: BranchStats[] = [];
 
     for (const [branchId, stats] of branchMap) {
+      // averageRate is weightedSum/totalDebt, where weightedSum uses raw rates
+      // Divide by 1e18 to convert from raw to decimal
       const averageRate = stats.totalDebt.gt(0)
-        ? stats.weightedSum.div(stats.totalDebt)
+        ? stats.weightedSum.div(stats.totalDebt).div(1e18)
+        : new Big(0);
+
+      // lowestRate is in raw format, divide by 1e18 for decimal output
+      const lowestRate = stats.lowestRate
+        ? stats.lowestRate.div(1e18)
         : new Big(0);
 
       results.push({
         branchId,
         averageRate: averageRate.toString(),
-        lowestRate: stats.lowestRate?.toString() ?? "0",
+        lowestRate: lowestRate.toString(),
         totalDebt: stats.totalDebt.toString(),
       });
     }
@@ -169,8 +178,9 @@ export async function getAllBranchesStats(): Promise<BranchStats[]> {
 /**
  * Get debt-in-front for multiple positions efficiently (single fetch).
  * Debt-in-front is calculated per branch - only debt from the same branch counts.
+ * Excludes the position's own bracket (same rate) from the calculation.
  *
- * @param positions Array of { branchId, interestRate } to calculate debt-in-front for
+ * @param positions Array of { branchId, interestRate } where interestRate is the raw 18-decimal value
  * @returns Map of "branchId:rate" -> debtInFront
  */
 export async function getDebtInFrontForPositions(
