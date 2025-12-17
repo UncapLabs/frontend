@@ -391,11 +391,12 @@ export async function getAllPositions(
 
   // Calculate debt-in-front for each position
   // Use effective rate (batch rate if available, otherwise individual rate)
+  // Pass raw 18-decimal rates for precise comparison
   const positionsForDebtCalc = positions.map((pos) => {
     const effectiveRate = pos.batchInterestRate || pos.interestRate;
     return {
       branchId: pos.collateralBranchId,
-      interestRate: new Big(effectiveRate).div(1e18), // Convert from raw to decimal
+      interestRate: new Big(effectiveRate), // Keep raw 18-decimal value
     };
   });
 
@@ -404,8 +405,8 @@ export async function getAllPositions(
   // Add debtInFront to each position
   const positionsWithDebt: IndexedTroveEntry[] = positions.map((pos) => {
     const effectiveRate = pos.batchInterestRate || pos.interestRate;
-    const rateDecimal = new Big(effectiveRate).div(1e18);
-    const key = `${pos.collateralBranchId}:${rateDecimal.toString()}`;
+    const rateRaw = new Big(effectiveRate); // Use raw rate for key lookup
+    const key = `${pos.collateralBranchId}:${rateRaw.toString()}`;
     const debtInFront = debtInFrontMap.get(key);
 
     return {
