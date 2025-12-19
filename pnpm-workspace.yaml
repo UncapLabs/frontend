@@ -1,0 +1,18 @@
+# Not a monorepo, but we need this for pnpm v10
+packages: []
+
+# Supply chain security settings
+# Refuse package versions younger than 2 weeks, giving the ecosystem
+# time to detect malicious or broken releases
+minimumReleaseAge: 20160
+
+# Packages that can bypass the age restriction if needed
+# minimumReleaseAgeExclude:
+#   - some-urgent-package
+
+# Prevent transitive dependencies from using git repos or direct tarballs
+blockExoticSubdeps: true
+
+# Deterministic installs - fail if lockfile is out of sync
+# pnpm auto-enables this when CI=true, but being explicit is safer
+frozenLockfile: true
