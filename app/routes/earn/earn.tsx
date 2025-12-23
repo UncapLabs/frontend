@@ -11,6 +11,7 @@ import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { useCollateralPrice, useUsduPrice } from "~/hooks/use-fetch-prices";
 import { StabilityPoolsTable } from "~/components/earn/stability-pools-table";
 import { useQueryState, parseAsString, parseAsBoolean } from "nuqs";
+import { parseAsBig } from "~/lib/url-parsers";
 import { DepositFlow } from "~/components/earn/deposit-flow";
 import { WithdrawFlow } from "~/components/earn/withdraw-flow";
 import { ClaimFlow } from "~/components/earn/claim-flow";
@@ -39,6 +40,9 @@ function Earn() {
     "claim",
     parseAsBoolean.withDefault(true)
   );
+
+  // URL state for amount (shared between deposit/withdraw)
+  const [amount, setAmount] = useQueryState("amount", parseAsBig);
 
   // Get collateral object from address (fallback to default if invalid)
   const collateral =
@@ -169,6 +173,8 @@ function Earn() {
                 claimRewards={claimRewards}
                 setClaimRewards={setClaimRewards}
                 connectWallet={connectWallet}
+                amount={amount}
+                setAmount={setAmount}
               />
             )}
             {action === "withdraw" && (
@@ -181,6 +187,8 @@ function Earn() {
                 claimRewards={claimRewards}
                 setClaimRewards={setClaimRewards}
                 connectWallet={connectWallet}
+                amount={amount}
+                setAmount={setAmount}
               />
             )}
             {action === "claim" && (

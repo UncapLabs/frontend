@@ -33,6 +33,8 @@ interface WithdrawFlowProps {
   claimRewards: boolean;
   setClaimRewards: (value: boolean) => void;
   connectWallet: () => Promise<void>;
+  amount: Big | null;
+  setAmount: (value: Big | null) => void;
 }
 
 export function WithdrawFlow({
@@ -44,13 +46,16 @@ export function WithdrawFlow({
   claimRewards,
   setClaimRewards,
   connectWallet,
+  amount,
+  setAmount,
 }: WithdrawFlowProps) {
+  // Form is used for validation only, amount comes from URL state
   const form = useForm({
     defaultValues: {
-      amount: undefined as Big | undefined,
+      amount: amount ?? undefined,
     },
-    onSubmit: async ({ value }) => {
-      if (!value.amount || value.amount.lte(0)) return;
+    onSubmit: async () => {
+      if (!amount || amount.lte(0)) return;
 
       try {
         if (!isReady) {
@@ -75,7 +80,7 @@ export function WithdrawFlow({
     reset: transactionReset,
   } = useStabilityPoolTransaction({
     action: "withdraw",
-    amount: form.state.values.amount,
+    amount: amount ?? undefined,
     doClaim: claimRewards,
     collateralType: selectedCollateral,
     rewards: selectedPosition?.rewards,
@@ -83,16 +88,17 @@ export function WithdrawFlow({
 
   // Re-validate amount when wallet connects/disconnects (intentionally omitting form)
   useEffect(() => {
-    if (address && form.state.values.amount && form.state.values.amount.gt(0)) {
+    if (address && amount && amount.gt(0)) {
       form.validateField("amount", "change");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address]);
 
   const handleComplete = useCallback(() => {
+    setAmount(null);
     form.reset();
     transactionReset();
-  }, [form, transactionReset]);
+  }, [form, transactionReset, setAmount]);
 
   return (
     <>
@@ -200,8 +206,11 @@ export function WithdrawFlow({
             >
               {(field) => (
                 <WithdrawSection
-                  value={field.state.value}
-                  onChange={field.handleChange}
+                  value={amount ?? undefined}
+                  onChange={(value) => {
+                    setAmount(value ?? null);
+                    field.handleChange(value);
+                  }}
                   onBlur={field.handleBlur}
                   error={field.state.meta.errors?.[0]}
                   price={usduPrice}
@@ -225,6 +234,7 @@ export function WithdrawFlow({
                       percentage === 1
                         ? userDeposit
                         : userDeposit.times(percentage);
+                    setAmount(newValue);
                     field.handleChange(newValue);
                   }}
                 />
@@ -373,7 +383,6 @@ export function WithdrawFlow({
               selector={(state) => ({
                 canSubmit: state.canSubmit,
                 errors: state.fieldMeta.amount?.errors || [],
-                amount: state.values.amount,
               })}
             >
               {({ canSubmit, errors }) => {
@@ -388,7 +397,7 @@ export function WithdrawFlow({
                   buttonText = "Connect Wallet";
                 } else if (errors.length > 0) {
                   buttonText = errors[0];
-                } else if (!form.state.values.amount) {
+                } else if (!amount) {
                   buttonText = "Enter withdraw amount";
                 } else if (
                   !selectedPosition?.userDeposit ||
@@ -409,8 +418,8 @@ export function WithdrawFlow({
                     onClick={!address ? connectWallet : undefined}
                     disabled={
                       !!address &&
-                      (!form.state.values.amount ||
-                        form.state.values.amount.lte(0) ||
+                      (!amount ||
+                        amount.lte(0) ||
                         !selectedPosition?.userDeposit ||
                         selectedPosition.userDeposit.eq(0) ||
                         isSending ||
