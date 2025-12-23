@@ -3,6 +3,7 @@ import { useAccount, useBalance } from "@starknet-react/core";
 import {
   TOKENS,
   DEFAULT_COLLATERAL,
+  COLLATERAL_LIST,
   getCollateralByAddress,
 } from "~/lib/collateral";
 import { useAllStabilityPoolPositions } from "~/hooks/use-stability-pool";
@@ -29,7 +30,7 @@ function Earn() {
   ) as [ActionType, (value: ActionType | null) => void];
 
   // Use address-based collateral selection
-  const [selectedCollateralAddress] = useQueryState(
+  const [selectedCollateralAddress, setSelectedCollateralAddress] = useQueryState(
       "collateral",
       parseAsString.withDefault(DEFAULT_COLLATERAL.addresses.token)
     );
@@ -76,7 +77,10 @@ function Earn() {
               </Label>
 
               {/* Pool Selection Row - Dynamic */}
-              {/* <div className="border-t border-neutral-100 p-4 pt-3">
+              <div className="border-t border-neutral-100 pt-4">
+                <Label className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight block mb-3">
+                  Select Pool
+                </Label>
                 <div className="flex gap-3">
                   {COLLATERAL_LIST.map((pool) => (
                     <button
@@ -113,7 +117,7 @@ function Earn() {
                     </button>
                   ))}
                 </div>
-              </div> */}
+              </div>
 
               {/* Action Tabs Row */}
               <div className="flex gap-2">
