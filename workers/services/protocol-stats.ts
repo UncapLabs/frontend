@@ -27,8 +27,17 @@ import {
 } from "~/lib/graphql/gql/graphql";
 import { getDebtInFrontForPositions } from "./interest";
 
-const CACHE_KEY = "protocol-stats";
 const CACHE_TTL = 30 * 60; // 30 minutes
+
+/**
+ * Get network-prefixed cache key to prevent staging/production data mixing
+ */
+function getCacheKey(base: string): string {
+  const network = process.env.NETWORK || "sepolia";
+  return `${network}:${base}`;
+}
+
+const CACHE_KEY = getCacheKey("protocol-stats");
 
 export const ALL_POSITIONS_PAGE_SIZE = 50;
 

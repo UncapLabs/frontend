@@ -46,13 +46,21 @@ const API_BASE_URL = "https://www.data-openblocklabs.com";
 const CACHE_TTL = 30 * 60 * 12; // 12 hours
 
 /**
+ * Get network-prefixed cache key to prevent staging/production data mixing
+ */
+function getCacheKey(base: string): string {
+  const network = process.env.NETWORK || "sepolia";
+  return `${network}:${base}`;
+}
+
+/**
  * Fetches Uncap protocol incentive rates from the Starknet API
  * Returns the interest rebate rate (borrow side) and collateral rebate rate (supply side)
  */
 export async function getUncapIncentiveRates(
   env: Env
 ): Promise<{ borrowRate: number; supplyRate: number; maxDailyTokens: number }> {
-  const cacheKey = "uncap-incentive-rates";
+  const cacheKey = getCacheKey("uncap-incentive-rates");
 
   // Try to get from KV store first
   const cached = await env.CACHE.get(cacheKey, "json");

@@ -9,6 +9,14 @@ import Big from "big.js";
 
 const CACHE_TTL = 5 * 60; // 5 minutes
 
+/**
+ * Get network-prefixed cache key to prevent staging/production data mixing
+ */
+function getCacheKey(base: string): string {
+  const network = process.env.NETWORK || "sepolia";
+  return `${network}:${base}`;
+}
+
 interface CachedTCRData {
   tcr: string | null;
   ccr: string;
@@ -23,7 +31,7 @@ async function getCachedTCR(
   provider: RpcProvider,
   branchId: CollateralId
 ) {
-  const cacheKey = `branch-tcr-${branchId}`;
+  const cacheKey = getCacheKey(`branch-tcr-${branchId}`);
 
   // Try to get from KV cache first
   const cached = await env.CACHE.get(cacheKey, "json");

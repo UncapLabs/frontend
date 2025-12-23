@@ -12,6 +12,14 @@ import Big from "big.js";
 
 const CACHE_TTL = 30 * 60; // 30 minutes
 
+/**
+ * Get network-prefixed cache key to prevent staging/production data mixing
+ */
+function getCacheKey(base: string): string {
+  const network = process.env.NETWORK || "sepolia";
+  return `${network}:${base}`;
+}
+
 export async function fetchPoolPosition(
   provider: RpcProvider,
   userAddress: string,
@@ -129,7 +137,7 @@ export async function getCachedTotalDeposits(
   provider: RpcProvider,
   collateralType: CollateralId
 ): Promise<Big> {
-  const cacheKey = `stability-pool-deposits-${collateralType}`;
+  const cacheKey = getCacheKey(`stability-pool-deposits-${collateralType}`);
 
   // Try to get from KV store first
   const cached = await env.CACHE.get(cacheKey, "text");
@@ -168,7 +176,7 @@ export async function getCachedPoolApr(
   provider: RpcProvider,
   collateralType: CollateralId
 ): Promise<number> {
-  const cacheKey = `stability-pool-apr-${collateralType}`;
+  const cacheKey = getCacheKey(`stability-pool-apr-${collateralType}`);
 
   // Try to get from KV store first
   const cached = await env.CACHE.get(cacheKey, "text");
