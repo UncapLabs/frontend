@@ -42,6 +42,8 @@ interface DepositFlowProps {
   claimRewards: boolean;
   setClaimRewards: (value: boolean) => void;
   connectWallet: () => Promise<void>;
+  amount: Big | null;
+  setAmount: (value: Big | null) => void;
 }
 
 export function DepositFlow({
@@ -54,13 +56,16 @@ export function DepositFlow({
   claimRewards,
   setClaimRewards,
   connectWallet,
+  amount,
+  setAmount,
 }: DepositFlowProps) {
+  // Form is used for validation only, amount comes from URL state
   const form = useForm({
     defaultValues: {
-      amount: undefined as Big | undefined,
+      amount: amount ?? undefined,
     },
-    onSubmit: async ({ value }) => {
-      if (!value.amount || value.amount.lte(0)) return;
+    onSubmit: async () => {
+      if (!amount || amount.lte(0)) return;
 
       try {
         if (!isReady) {
@@ -85,7 +90,7 @@ export function DepositFlow({
     reset: transactionReset,
   } = useStabilityPoolTransaction({
     action: "deposit",
-    amount: form.state.values.amount,
+    amount: amount ?? undefined,
     doClaim: claimRewards,
     collateralType: selectedCollateral,
     rewards: selectedPosition?.rewards,
@@ -93,16 +98,17 @@ export function DepositFlow({
 
   // Re-validate amount when wallet connects/disconnects (intentionally omitting form)
   useEffect(() => {
-    if (address && form.state.values.amount && form.state.values.amount.gt(0)) {
+    if (address && amount && amount.gt(0)) {
       form.validateField("amount", "change");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address]);
 
   const handleComplete = useCallback(() => {
+    setAmount(null);
     form.reset();
     transactionReset();
-  }, [form, transactionReset]);
+  }, [form, transactionReset, setAmount]);
 
   return (
     <>
@@ -212,8 +218,11 @@ export function DepositFlow({
             >
               {(field) => (
                 <DepositSection
-                  value={field.state.value}
-                  onChange={field.handleChange}
+                  value={amount ?? undefined}
+                  onChange={(value) => {
+                    setAmount(value ?? null);
+                    field.handleChange(value);
+                  }}
                   onBlur={field.handleBlur}
                   error={field.state.meta.errors?.[0]}
                   balance={usduBalance}
@@ -373,7 +382,6 @@ export function DepositFlow({
               selector={(state) => ({
                 canSubmit: state.canSubmit,
                 errors: state.fieldMeta.amount?.errors || [],
-                amount: state.values.amount,
               })}
             >
               {({ canSubmit, errors }) => {
@@ -388,7 +396,7 @@ export function DepositFlow({
                   buttonText = "Connect Wallet";
                 } else if (errors.length > 0) {
                   buttonText = errors[0];
-                } else if (!form.state.values.amount) {
+                } else if (!amount) {
                   buttonText = "Enter deposit amount";
                 } else if (hasRewards && claimRewards) {
                   buttonText = "Deposit & Claim Rewards";
@@ -404,8 +412,8 @@ export function DepositFlow({
                     onClick={!address ? connectWallet : undefined}
                     disabled={
                       !!address &&
-                      (!form.state.values.amount ||
-                        form.state.values.amount.lte(0) ||
+                      (!amount ||
+                        amount.lte(0) ||
                         isSending ||
                         isPending ||
                         !canSubmit)
