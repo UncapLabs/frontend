@@ -5,7 +5,7 @@ import deploymentData from "../contracts/deployment_addresses";
 import { USDU_ADDRESS, GAS_TOKEN_ADDRESS } from "../contracts/constants";
 
 // CollateralId type
-export type CollateralId = "WWBTC"; // | "WXLBTC";
+export type CollateralId = "WWBTC" | "TBTC" | "SOLVBTC";
 
 // Base Token type - can be used for any token (collateral, stablecoin, etc.)
 export interface Token {
@@ -105,6 +105,72 @@ export const COLLATERALS = {
       decimals: 8,
     },
   }),
+  TBTC: createCollateral({
+    id: "TBTC",
+    symbol: "tBTC",
+    name: "tBTC",
+    decimals: 18,
+    icon: "/tbtc.webp",
+    branchId: 1,
+    minCollateralizationRatio: new Big(1.15), // 115%
+    addresses: {
+      token: deploymentData.TBTC.collateral as Address,
+      addressesRegistry: deploymentData.TBTC.addressesRegistry as Address,
+      borrowerOperations: deploymentData.TBTC.borrowerOperations as Address,
+      troveManager: deploymentData.TBTC.troveManager as Address,
+      troveNft: deploymentData.TBTC.troveNft as Address,
+      stabilityPool: deploymentData.TBTC.stabilityPool as Address,
+      sortedTroves: deploymentData.TBTC.sortedTroves as Address,
+      activePool: deploymentData.TBTC.activePool as Address,
+      defaultPool: deploymentData.TBTC.defaultPool as Address,
+      collSurplusPool: deploymentData.TBTC.collSurplusPool as Address,
+      gasPool: deploymentData.TBTC.gasPool as Address,
+      interestRouter: deploymentData.TBTC.interestRouter as Address,
+      liquidationManager: deploymentData.TBTC.liquidationManager as Address,
+      redemptionManager: deploymentData.TBTC.redemptionManager as Address,
+      batchManager: deploymentData.TBTC.batchManager as Address,
+      priceFeed: deploymentData.TBTC.priceFeed as Address,
+      hintHelpers: deploymentData.TBTC.hintHelpers as Address,
+      multiTroveGetter: deploymentData.TBTC.multiTroveGetter as Address,
+      troveManagerEventsEmitter: deploymentData.TBTC
+        .troveManagerEventsEmitter as Address,
+    },
+    defaultInterestManager: deploymentData.TBTC
+      .defaultInterestManager as Address,
+  }),
+  SOLVBTC: createCollateral({
+    id: "SOLVBTC",
+    symbol: "SolvBTC",
+    name: "Solv BTC",
+    decimals: 18,
+    icon: "/SolvBTC.png",
+    branchId: 2,
+    minCollateralizationRatio: new Big(1.15), // 115%
+    addresses: {
+      token: deploymentData.SOLVBTC.collateral as Address,
+      addressesRegistry: deploymentData.SOLVBTC.addressesRegistry as Address,
+      borrowerOperations: deploymentData.SOLVBTC.borrowerOperations as Address,
+      troveManager: deploymentData.SOLVBTC.troveManager as Address,
+      troveNft: deploymentData.SOLVBTC.troveNft as Address,
+      stabilityPool: deploymentData.SOLVBTC.stabilityPool as Address,
+      sortedTroves: deploymentData.SOLVBTC.sortedTroves as Address,
+      activePool: deploymentData.SOLVBTC.activePool as Address,
+      defaultPool: deploymentData.SOLVBTC.defaultPool as Address,
+      collSurplusPool: deploymentData.SOLVBTC.collSurplusPool as Address,
+      gasPool: deploymentData.SOLVBTC.gasPool as Address,
+      interestRouter: deploymentData.SOLVBTC.interestRouter as Address,
+      liquidationManager: deploymentData.SOLVBTC.liquidationManager as Address,
+      redemptionManager: deploymentData.SOLVBTC.redemptionManager as Address,
+      batchManager: deploymentData.SOLVBTC.batchManager as Address,
+      priceFeed: deploymentData.SOLVBTC.priceFeed as Address,
+      hintHelpers: deploymentData.SOLVBTC.hintHelpers as Address,
+      multiTroveGetter: deploymentData.SOLVBTC.multiTroveGetter as Address,
+      troveManagerEventsEmitter: deploymentData.SOLVBTC
+        .troveManagerEventsEmitter as Address,
+    },
+    defaultInterestManager: deploymentData.SOLVBTC
+      .defaultInterestManager as Address,
+  }),
   // WXLBTC: createCollateral({
   //   id: "WXLBTC",
   //   symbol: "XLBTC",
@@ -171,15 +237,17 @@ export const TOKENS = {
 // Branch ID mappings (for contract interactions)
 export const COLLATERAL_TO_BRANCH = {
   WWBTC: 0,
-  WXLBTC: 1,
+  TBTC: 1,
+  SOLVBTC: 2,
 } as const;
 
 export const BRANCH_TO_COLLATERAL = {
   0: "WWBTC",
-  1: "WXLBTC",
+  1: "TBTC",
+  2: "SOLVBTC",
 } as const;
 
-export type BranchId = 0 | 1;
+export type BranchId = 0 | 1 | 2;
 
 // Helper functions
 export function getCollateral(id: CollateralId): Collateral {

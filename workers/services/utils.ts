@@ -4,7 +4,7 @@ import { getCollateral, type CollateralId } from "~/lib/collateral";
 
 // Prefixed trove ID format: "branchId:troveId"
 type PrefixedTroveId = string;
-type BranchId = string; // "0" for WWBTC, "1" for WXLBTC
+type BranchId = string; // "0" for WWBTC, "1" for TBTC, "2" for SOLVBTC
 
 export const getBitcoinprice = async (
   provider: RpcProvider,

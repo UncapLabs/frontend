@@ -1,0 +1,31 @@
+[
+  {
+    "type": "interface",
+    "name": "IMockPriceFeed",
+    "items": [
+      {
+        "type": "function",
+        "name": "set_price",
+        "inputs": [
+          {
+            "name": "price",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "get_price",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  }
+]
