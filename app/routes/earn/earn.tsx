@@ -10,6 +10,7 @@ import { useAllStabilityPoolPositions } from "~/hooks/use-stability-pool";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { useCollateralPrice, useUsduPrice } from "~/hooks/use-fetch-prices";
 import { StabilityPoolsTable } from "~/components/earn/stability-pools-table";
+import { ArrowIcon } from "~/components/icons/arrow-icon";
 import { useQueryState, parseAsString, parseAsBoolean } from "nuqs";
 import { parseAsBig } from "~/lib/url-parsers";
 import { DepositFlow } from "~/components/earn/deposit-flow";
@@ -80,6 +81,43 @@ function Earn() {
                 Choose Action
               </Label>
 
+              {/* Action Tabs Row */}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAction("deposit")}
+                  className={`flex-1 py-3 px-2 sm:px-4 rounded-lg text-xs sm:text-sm font-medium font-sora transition-all ${
+                    action === "deposit"
+                      ? "bg-token-bg-blue text-white"
+                      : "text-neutral-600 hover:text-neutral-800 hover:bg-neutral-50"
+                  }`}
+                >
+                  Deposit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAction("withdraw")}
+                  className={`flex-1 py-3 px-2 sm:px-4 rounded-lg text-xs sm:text-sm font-medium font-sora transition-all ${
+                    action === "withdraw"
+                      ? "bg-token-bg-blue text-white"
+                      : "text-neutral-600 hover:text-neutral-800 hover:bg-neutral-50"
+                  }`}
+                >
+                  Withdraw
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAction("claim")}
+                  className={`flex-1 py-3 px-2 sm:px-4 rounded-lg text-xs sm:text-sm font-medium font-sora transition-all whitespace-nowrap ${
+                    action === "claim"
+                      ? "bg-token-bg-blue text-white"
+                      : "text-neutral-600 hover:text-neutral-800 hover:bg-neutral-50"
+                  }`}
+                >
+                  Claim Rewards
+                </button>
+              </div>
+
               {/* Pool Selection Row - Dynamic */}
               <div className="border-t border-neutral-100 pt-4">
                 <Label className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight block mb-3">
@@ -122,48 +160,24 @@ function Earn() {
                   ))}
                 </div>
               </div>
+            </div>
 
-              {/* Action Tabs Row */}
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setAction("deposit")}
-                  className={`flex-1 py-3 px-2 sm:px-4 rounded-lg text-xs sm:text-sm font-medium font-sora transition-all ${
-                    action === "deposit"
-                      ? "bg-token-bg-blue text-white"
-                      : "text-neutral-600 hover:text-neutral-800 hover:bg-neutral-50"
-                  }`}
-                >
-                  Deposit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAction("withdraw")}
-                  className={`flex-1 py-3 px-2 sm:px-4 rounded-lg text-xs sm:text-sm font-medium font-sora transition-all ${
-                    action === "withdraw"
-                      ? "bg-token-bg-blue text-white"
-                      : "text-neutral-600 hover:text-neutral-800 hover:bg-neutral-50"
-                  }`}
-                >
-                  Withdraw
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAction("claim")}
-                  className={`flex-1 py-3 px-2 sm:px-4 rounded-lg text-xs sm:text-sm font-medium font-sora transition-all whitespace-nowrap ${
-                    action === "claim"
-                      ? "bg-token-bg-blue text-white"
-                      : "text-neutral-600 hover:text-neutral-800 hover:bg-neutral-50"
-                  }`}
-                >
-                  Claim Rewards
-                </button>
+            {/* Arrow between selection and form */}
+            <div className="relative flex justify-center items-center">
+              <div className="absolute z-10">
+                <ArrowIcon
+                  size={40}
+                  className="sm:w-12 sm:h-12"
+                  innerCircleColor="#242424"
+                  direction="down"
+                />
               </div>
             </div>
 
             {/* Render appropriate flow component based on action */}
             {action === "deposit" && (
               <DepositFlow
+                key={collateral.id}
                 address={address}
                 usduBalance={usduBalance}
                 usduPrice={usduPrice}
@@ -179,6 +193,7 @@ function Earn() {
             )}
             {action === "withdraw" && (
               <WithdrawFlow
+                key={collateral.id}
                 address={address}
                 usduPrice={usduPrice}
                 selectedPosition={selectedPosition}
