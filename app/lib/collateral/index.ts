@@ -112,7 +112,7 @@ export const COLLATERALS = {
     decimals: 18,
     icon: "/tbtc.webp",
     branchId: 1,
-    minCollateralizationRatio: new Big(1.15), // 115%
+    minCollateralizationRatio: new Big(1.25), // 125%
     addresses: {
       token: deploymentData.TBTC.collateral as Address,
       addressesRegistry: deploymentData.TBTC.addressesRegistry as Address,
@@ -145,7 +145,7 @@ export const COLLATERALS = {
     decimals: 18,
     icon: "/SolvBTC.png",
     branchId: 2,
-    minCollateralizationRatio: new Big(1.15), // 115%
+    minCollateralizationRatio: new Big(1.25), // 125%
     addresses: {
       token: deploymentData.SOLVBTC.collateral as Address,
       addressesRegistry: deploymentData.SOLVBTC.addressesRegistry as Address,
