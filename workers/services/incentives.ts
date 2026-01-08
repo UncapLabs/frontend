@@ -18,13 +18,32 @@ interface SNFLendingItem {
   effective_apr: string;
 }
 
+interface SNFBorrowingItem {
+  date: string;
+  protocol: string;
+  market_address: string;
+  market_name: string;
+  collateral_symbol: string | null;
+  debt_asset_symbol: string;
+  debt_asset: string;
+  total_borrow_tokens: string;
+  total_borrow_usd: string;
+  total_supply_usd: string;
+  interest_usd_daily: string;
+  incentive_usd: string;
+  allocated_tokens: string;
+  effective_apr: string;
+  rebate_rate: string;
+}
+
+interface SNFApiResponse<T> {
+  items: T[];
+}
+
 const SNF_API_BASE_URL =
   "https://5xyjxn0qoe.execute-api.eu-west-1.amazonaws.com/prod";
 const PROTOCOL = "Uncap";
 const CACHE_TTL = 30 * 60 * 12; // 12 hours
-
-// Hardcoded rebate rate (40%) - update if SNF changes this
-const BORROW_REBATE_RATE = 0.4;
 
 /**
  * Get network-prefixed cache key to prevent staging/production data mixing
@@ -53,28 +72,42 @@ export async function getUncapIncentiveRates(
     };
   }
 
-  // Fetch from SNF mm-lending API
-  const url = `${SNF_API_BASE_URL}/mm-lending`;
-  const response = await fetch(url);
+  // Fetch from both SNF mm-lending and mm-borrowing APIs in parallel
+  const [lendingResponse, borrowingResponse] = await Promise.all([
+    fetch(`${SNF_API_BASE_URL}/mm-lending`),
+    fetch(`${SNF_API_BASE_URL}/mm-borrowing`),
+  ]);
 
-  if (!response.ok) {
+  if (!lendingResponse.ok) {
     throw new Error(
-      `Failed to fetch incentive rates: ${response.status} ${response.statusText}`
+      `Failed to fetch lending rates: ${lendingResponse.status} ${lendingResponse.statusText}`
     );
   }
 
-  const data = (await response.json()) as SNFLendingItem[];
+  if (!borrowingResponse.ok) {
+    throw new Error(
+      `Failed to fetch borrowing rates: ${borrowingResponse.status} ${borrowingResponse.statusText}`
+    );
+  }
 
-  // Find the most recent Uncap entry (API returns data sorted by date desc)
-  const uncapEntry = data.find((item) => item.protocol === PROTOCOL);
+  const lendingData = (await lendingResponse.json()) as SNFApiResponse<SNFLendingItem>;
+  const borrowingData = (await borrowingResponse.json()) as SNFApiResponse<SNFBorrowingItem>;
 
-  if (!uncapEntry) {
-    throw new Error("Could not find Uncap protocol data in API response");
+  // Find the most recent Uncap entries (API returns data sorted by date desc)
+  const lendingEntry = lendingData.items.find((item) => item.protocol === PROTOCOL);
+  const borrowingEntry = borrowingData.items.find((item) => item.protocol === PROTOCOL);
+
+  if (!lendingEntry) {
+    throw new Error("Could not find Uncap protocol data in lending API response");
+  }
+
+  if (!borrowingEntry) {
+    throw new Error("Could not find Uncap protocol data in borrowing API response");
   }
 
   const result = {
-    borrowRate: BORROW_REBATE_RATE, // Hardcoded 40% rebate rate
-    supplyRate: parseFloat(uncapEntry.effective_apr), // e.g., 0.02 = 2%
+    borrowRate: parseFloat(borrowingEntry.rebate_rate), // e.g., 0.4 = 40% rebate
+    supplyRate: parseFloat(lendingEntry.effective_apr), // e.g., 0.02 = 2%
     maxDailyTokens: 0, // No longer used
   };
 

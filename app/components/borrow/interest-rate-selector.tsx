@@ -11,6 +11,7 @@ import {
   useAverageInterestRate,
 } from "~/hooks/use-interest-rate";
 import { useCalculatedRebate } from "~/hooks/use-rebate-config";
+import { useUncapIncentiveRates } from "~/hooks/use-incentive-rates";
 import { getBranchId, type CollateralId } from "~/lib/collateral";
 import { RateModeSelector, type RateMode } from "./rate-mode-selector";
 export type { RateMode } from "./rate-mode-selector";
@@ -73,7 +74,12 @@ export function InterestRateSelector({
     activeMode === "managed" ? managedRateNumber : manualRateNumber;
   const interestRateBig = resolvedRate.div(100);
 
-  const rebateData = useCalculatedRebate(borrowAmount, effectiveRateNumber);
+  const incentiveRates = useUncapIncentiveRates();
+  const rebateData = useCalculatedRebate(
+    borrowAmount,
+    effectiveRateNumber,
+    incentiveRates.data?.borrowRate
+  );
   const visualizationQuery = useInterestRateVisualizationData(branchId);
   const redemptionRisk = useRedemptionRiskOfInterestRate(
     branchId,
@@ -310,8 +316,8 @@ export function InterestRateSelector({
               : new Big(0)
           }
           yearlyCollateralRebateUSD={
-            collateralAmount && collateralPriceUSD
-              ? collateralAmount.times(collateralPriceUSD).times(0.02)
+            collateralAmount && collateralPriceUSD && incentiveRates.data?.supplyRate
+              ? collateralAmount.times(collateralPriceUSD).times(incentiveRates.data.supplyRate)
               : new Big(0)
           }
         />
