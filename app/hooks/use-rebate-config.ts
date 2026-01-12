@@ -1,23 +1,24 @@
 import { useMemo } from "react";
 import Big from "big.js";
 
-// Fixed 40% rebate on interest rate - hardcoded since it's a constant program value
-const REBATE_PERCENTAGE = 40;
-
 export function useCalculatedRebate(
   borrowAmount: Big | undefined,
-  interestRate: number
+  interestRate: number,
+  rebateRate: number = 0.4 // e.g., 0.4 = 40% rebate (from API)
 ) {
   return useMemo(() => {
     if (!borrowAmount || borrowAmount.lte(0)) {
       return null;
     }
 
+    // Convert rebate rate (0.4) to percentage (40)
+    const rebatePercentage = rebateRate * 100;
+
     // Use Big for precise calculations
     const interestRateBig = new Big(interestRate);
-    const rebatePercentageBig = new Big(REBATE_PERCENTAGE);
-    
-    // Calculate effective interest rate after 40% rebate
+    const rebatePercentageBig = new Big(rebatePercentage);
+
+    // Calculate effective interest rate after rebate
     const effectiveInterestRate = interestRateBig.times(
       new Big(1).minus(rebatePercentageBig.div(100))
     );
@@ -29,12 +30,12 @@ export function useCalculatedRebate(
     const yearlyRebateUSD = yearlyInterestUSD.minus(effectiveYearlyInterestUSD);
 
     return {
-      rebatePercentage: REBATE_PERCENTAGE,
+      rebatePercentage,
       interestRate: Number(interestRateBig.toString()),
       effectiveInterestRate: Number(effectiveInterestRate.toString()),
       yearlyInterestUSD,
       effectiveYearlyInterestUSD,
       yearlyRebateUSD,
     };
-  }, [borrowAmount, interestRate]);
+  }, [borrowAmount, interestRate, rebateRate]);
 }
