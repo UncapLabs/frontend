@@ -6357,9 +6357,6 @@ packages:
   posthog-js@1.316.0:
     resolution: {integrity: sha512-Y8JKqv61HQKHB4savYnbp1+zUhfkSLSE4famJONaPuBq9lX+F8j9uNENvIWioe2roJa7FU3g5Ji/CjwwRh+/kA==}
 
-  preact@10.26.9:
-    resolution: {integrity: sha512-SSjF9vcnF27mJK1XyFMNJzFd5u3pQiATFqoaDy03XuN00u4ziveVVEGt5RKJrDR8MHE/wJo9Nnad56RLzS2RMA==}
-
   preact@10.28.1:
     resolution: {integrity: sha512-u1/ixq/lVQI0CakKNvLDEcW5zfCjUQfZdK9qqWuIJtsezuyG6pk9TWj75GMuI/EzRSZB/VAE43sNWWZfiy8psw==}
 
@@ -9751,10 +9748,10 @@ snapshots:
 
   '@preact/signals-core@1.11.0': {}
 
-  '@preact/signals@1.3.2(preact@10.26.9)':
+  '@preact/signals@1.3.2(preact@10.28.1)':
     dependencies:
       '@preact/signals-core': 1.11.0
-      preact: 10.26.9
+      preact: 10.28.1
 
   '@radix-ui/number@1.1.1': {}
 
@@ -15270,8 +15267,6 @@ snapshots:
       preact: 10.28.1
       web-vitals: 4.2.4
 
-  preact@10.26.9: {}
-
   preact@10.28.1: {}
 
   prelude-ls@1.2.1: {}
@@ -15547,7 +15542,7 @@ snapshots:
       '@clack/core': 0.3.5
       '@clack/prompts': 0.8.2
       '@pivanov/utils': 0.0.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      '@preact/signals': 1.3.2(preact@10.26.9)
+      '@preact/signals': 1.3.2(preact@10.28.1)
       '@rollup/pluginutils': 5.2.0(rollup@4.53.3)
       '@types/node': 20.19.26
       bippy: 0.3.17(@types/react@19.1.8)(react@19.2.3)
@@ -15556,7 +15551,7 @@ snapshots:
       kleur: 4.1.5
       mri: 1.2.0
       playwright: 1.57.0
-      preact: 10.26.9
+      preact: 10.28.1
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
       tsx: 4.20.3
