@@ -4,6 +4,10 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  react-router: ^7.12.0
+  react-router-dom: ^7.12.0
+
 importers:
 
   .:
@@ -138,8 +142,8 @@ importers:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       nuqs:
-        specifier: ^2.4.3
-        version: 2.4.3(react-router-dom@7.6.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-router@7.12.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)
+        specifier: ^2.8.6
+        version: 2.8.6(react-router-dom@7.6.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-router@7.12.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)
       posthog-js:
         specifier: ^1.316.0
         version: 1.316.0
@@ -168,8 +172,8 @@ importers:
         specifier: ^8.6.0
         version: 8.6.0
       starknetkit:
-        specifier: ^3.3.0
-        version: 3.3.0(092ce7584cee62d2e1f13db5892ab552)
+        specifier: ^3.4.2
+        version: 3.4.2(092ce7584cee62d2e1f13db5892ab552)
       superjson:
         specifier: ^2.2.2
         version: 2.2.2
@@ -313,7 +317,7 @@ packages:
       react-copy-to-clipboard: ^5.0.4
       react-dom: ^18.0.0
       react-i18next: 15.4.1
-      react-router-dom: ^6.0.1 || ^7.0.0
+      react-router-dom: ^7.12.0
       react-spring-bottom-sheet: 3.5.0-alpha.0
       react-virtuoso: ^4.7.2
       starknet: 7.5.1
@@ -2737,7 +2741,7 @@ packages:
     resolution: {integrity: sha512-o/t10Cse4LK8kFefqJ8JjC6Ng6YuKD2I87S2AiJs17YAYtXU5W731ZqB73AWyCDd2G14R0dSuqXiASRNK/xLjg==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
-      react-router: 7.12.0
+      react-router: ^7.12.0
       typescript: ^5.1.0
     peerDependenciesMeta:
       typescript:
@@ -3024,6 +3028,9 @@ packages:
 
   '@speed-highlight/core@1.2.7':
     resolution: {integrity: sha512-0dxmVj4gxg3Jg879kvFS/msl4s9F3T9UXC1InxgOf7t5NvcPD97u/WTA5vL/IxWHMn7qSxBozqrnnE2wvl1m8g==}
+
+  '@standard-schema/spec@1.0.0':
+    resolution: {integrity: sha512-m2bOd0f2RT9k8QJx1JN85cZYyH1RqFBdlwtkSlf4tBDYLCiiZnv1fIIwacK6cqwXavOydf0NPToMQgpKq+dVlA==}
 
   '@starknet-io/get-starknet-core@4.0.8':
     resolution: {integrity: sha512-UCyaO5T+5IZN1qPiQhLPzCSmoy06FU42tZtDmpj0UifSP7vdSMe+KRnkegiikpPJ8wZmel1o26GQkBFoUrHQlQ==}
@@ -5957,9 +5964,6 @@ packages:
       typescript:
         optional: true
 
-  mitt@3.0.1:
-    resolution: {integrity: sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==}
-
   mkdirp@1.0.4:
     resolution: {integrity: sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==}
     engines: {node: '>=10'}
@@ -6076,16 +6080,19 @@ packages:
   nullthrows@1.1.1:
     resolution: {integrity: sha512-2vPPEi+Z7WqML2jZYddDIfy5Dqb0r2fze2zTxNNknZaFpVHU3mFB3R+DWeJWGVx0ecvttSGlJTI+WG+8Z4cDWw==}
 
-  nuqs@2.4.3:
-    resolution: {integrity: sha512-BgtlYpvRwLYiJuWzxt34q2bXu/AIS66sLU1QePIMr2LWkb+XH0vKXdbLSgn9t6p7QKzwI7f38rX3Wl9llTXQ8Q==}
+  nuqs@2.8.6:
+    resolution: {integrity: sha512-aRxeX68b4ULmhio8AADL2be1FWDy0EPqaByPvIYWrA7Pm07UjlrICp/VPlSnXJNAG0+3MQwv3OporO2sOXMVGA==}
     peerDependencies:
       '@remix-run/react': '>=2'
+      '@tanstack/react-router': ^1
       next: '>=14.2.0'
       react: '>=18.2.0 || ^19.0.0-0'
-      react-router: ^6 || ^7
-      react-router-dom: ^6 || ^7
+      react-router: ^7.12.0
+      react-router-dom: ^7.12.0
     peerDependenciesMeta:
       '@remix-run/react':
+        optional: true
+      '@tanstack/react-router':
         optional: true
       next:
         optional: true
@@ -6570,16 +6577,6 @@ packages:
       react-dom:
         optional: true
 
-  react-router@7.6.2:
-    resolution: {integrity: sha512-U7Nv3y+bMimgWjhlT5CRdzHPu2/KVmqPwKUCChW8en5P3znxUqwlYFlbmyj8Rgp1SF6zs5X4+77kBVknkg6a0w==}
-    engines: {node: '>=20.0.0'}
-    peerDependencies:
-      react: '>=18'
-      react-dom: '>=18'
-    peerDependenciesMeta:
-      react-dom:
-        optional: true
-
   react-scan@0.4.3:
     resolution: {integrity: sha512-jhAQuQ1nja6HUYrSpbmNFHqZPsRCXk8Yqu0lHoRIw9eb8N96uTfXCpVyQhTTnJ/nWqnwuvxbpKVG/oWZT8+iTQ==}
     hasBin: true
@@ -6588,8 +6585,8 @@ packages:
       next: '>=13.0.0'
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      react-router: ^5.0.0 || ^6.0.0 || ^7.0.0
-      react-router-dom: ^5.0.0 || ^6.0.0 || ^7.0.0
+      react-router: ^7.12.0
+      react-router-dom: ^7.12.0
     peerDependenciesMeta:
       '@remix-run/react':
         optional: true
@@ -6977,8 +6974,8 @@ packages:
     resolution: {integrity: sha512-5rDiJPnc3GpH7KA8B/TqCzKgdpZbxaA52clf/OEhDKhMbbJpWeRcDqKKC8u+kFD9Nd/Rt6y2hwmZ32u82Ycurg==}
     engines: {node: '>=22'}
 
-  starknetkit@3.3.0:
-    resolution: {integrity: sha512-qP+vZofxn2Cd8qn0xzLFqEKBosOp5KQ/CZBEm/rMkAyuX+9qeyg9v/EibUq5Pk5Ggpzr+VeR6ZAGiNV3F/MK4g==}
+  starknetkit@3.4.2:
+    resolution: {integrity: sha512-adt2UcF77JGbbWK8uvWqmIr4oDnInTjuDPNISWTTOK45LcZiMvutVhxXo7izmObKsLHDges+eKHR1p+RFy+Pvw==}
     peerDependencies:
       starknet: ^8.0.0
 
@@ -10932,6 +10929,8 @@ snapshots:
 
   '@speed-highlight/core@1.2.7': {}
 
+  '@standard-schema/spec@1.0.0': {}
+
   '@starknet-io/get-starknet-core@4.0.8':
     dependencies:
       '@module-federation/runtime': 0.1.21
@@ -14827,8 +14826,6 @@ snapshots:
     optionalDependencies:
       typescript: 5.8.3
 
-  mitt@3.0.1: {}
-
   mkdirp@1.0.4: {}
 
   mkdirp@3.0.1: {}
@@ -14909,9 +14906,9 @@ snapshots:
 
   nullthrows@1.1.1: {}
 
-  nuqs@2.4.3(react-router-dom@7.6.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-router@7.12.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3):
+  nuqs@2.8.6(react-router-dom@7.6.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-router@7.12.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3):
     dependencies:
-      mitt: 3.0.1
+      '@standard-schema/spec': 1.0.0
       react: 19.2.3
     optionalDependencies:
       react-router: 7.12.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -15516,17 +15513,9 @@ snapshots:
     dependencies:
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
-      react-router: 7.6.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      react-router: 7.12.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
 
   react-router@7.12.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
-    dependencies:
-      cookie: 1.1.1
-      react: 19.2.3
-      set-cookie-parser: 2.7.2
-    optionalDependencies:
-      react-dom: 19.2.3(react@19.2.3)
-
-  react-router@7.6.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
     dependencies:
       cookie: 1.1.1
       react: 19.2.3
@@ -16048,7 +16037,7 @@ snapshots:
       pako: 2.1.0
       ts-mixer: 6.0.4
 
-  starknetkit@3.3.0(092ce7584cee62d2e1f13db5892ab552):
+  starknetkit@3.4.2(092ce7584cee62d2e1f13db5892ab552):
     dependencies:
       '@argent/x-ui': 1.109.1(904a8fb18cfbb63152492db82b80329b)
       '@cartridge/controller': 0.10.7(@types/react@19.1.8)(react@18.3.1)(typescript@5.8.3)(zod@4.1.12)
