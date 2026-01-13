@@ -1,11 +1,11 @@
 # Project Structure
 
-This document outlines the recommended project structure for the `bitusd-app`, which uses React Router for the frontend, Hono as the web framework on Cloudflare Workers, and tRPC for API communication.
+This document outlines the recommended project structure for the repo, which uses React Router for the frontend, Hono as the web framework on Cloudflare Workers, and tRPC for API communication.
 
 ## Directory Tree
 
 ```
-bitusd-app/
+frontend/
 ├── .cursor/
 │   └── project/
 │       └── project-structure.md  # This file
