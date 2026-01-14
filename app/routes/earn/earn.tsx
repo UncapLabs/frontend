@@ -3,12 +3,14 @@ import { useAccount, useBalance } from "@starknet-react/core";
 import {
   TOKENS,
   DEFAULT_COLLATERAL,
+  COLLATERAL_LIST,
   getCollateralByAddress,
 } from "~/lib/collateral";
 import { useAllStabilityPoolPositions } from "~/hooks/use-stability-pool";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
 import { useCollateralPrice, useUsduPrice } from "~/hooks/use-fetch-prices";
 import { StabilityPoolsTable } from "~/components/earn/stability-pools-table";
+import { ArrowIcon } from "~/components/icons/arrow-icon";
 import { useQueryState, parseAsString, parseAsBoolean } from "nuqs";
 import { parseAsBig } from "~/lib/url-parsers";
 import { DepositFlow } from "~/components/earn/deposit-flow";
@@ -30,7 +32,7 @@ function Earn() {
   ) as [ActionType, (value: ActionType | null) => void];
 
   // Use address-based collateral selection
-  const [selectedCollateralAddress] = useQueryState(
+  const [selectedCollateralAddress, setSelectedCollateralAddress] = useQueryState(
       "collateral",
       parseAsString.withDefault(DEFAULT_COLLATERAL.addresses.token)
     );
@@ -79,46 +81,6 @@ function Earn() {
                 Choose Action
               </Label>
 
-              {/* Pool Selection Row - Dynamic */}
-              {/* <div className="border-t border-neutral-100 p-4 pt-3">
-                <div className="flex gap-3">
-                  {COLLATERAL_LIST.map((pool) => (
-                    <button
-                      key={pool.id}
-                      type="button"
-                      onClick={() =>
-                        setSelectedCollateralAddress(pool.addresses.token)
-                      }
-                      className={`flex-1 p-3 rounded-lg transition-all flex items-center gap-3 ${
-                        collateral.id === pool.id
-                          ? "bg-token-bg border-2 border-token-orange"
-                          : "bg-neutral-50 border-2 border-transparent hover:bg-neutral-100"
-                      }`}
-                    >
-                      <img
-                        src={pool.icon}
-                        alt={pool.symbol}
-                        className="w-8 h-8 object-contain"
-                      />
-                      <div className="text-left">
-                        <span
-                          className={`text-sm font-medium font-sora block ${
-                            collateral.id === pool.id
-                              ? "text-token-orange"
-                              : "text-neutral-800"
-                          }`}
-                        >
-                          {pool.symbol} Pool
-                        </span>
-                        <span className="text-xs text-neutral-500 font-sora">
-                          {pool.name}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div> */}
-
               {/* Action Tabs Row */}
               <div className="flex gap-2">
                 <button
@@ -155,11 +117,67 @@ function Earn() {
                   Claim Rewards
                 </button>
               </div>
+
+              {/* Pool Selection Row - Dynamic */}
+              <div className="border-t border-neutral-100 pt-4">
+                <Label className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight block mb-3">
+                  Select Pool
+                </Label>
+                <div className="flex gap-3">
+                  {COLLATERAL_LIST.map((pool) => (
+                    <button
+                      key={pool.id}
+                      type="button"
+                      onClick={() =>
+                        setSelectedCollateralAddress(pool.addresses.token)
+                      }
+                      className={`flex-1 p-3 rounded-lg transition-all flex items-center gap-3 ${
+                        collateral.id === pool.id
+                          ? "bg-token-bg border-2 border-token-orange"
+                          : "bg-neutral-50 border-2 border-transparent hover:bg-neutral-100"
+                      }`}
+                    >
+                      <img
+                        src={pool.icon}
+                        alt={pool.symbol}
+                        className="w-8 h-8 object-contain"
+                      />
+                      <div className="text-left">
+                        <span
+                          className={`text-sm font-medium font-sora block ${
+                            collateral.id === pool.id
+                              ? "text-token-orange"
+                              : "text-neutral-800"
+                          }`}
+                        >
+                          {pool.symbol} Pool
+                        </span>
+                        <span className="text-xs text-neutral-500 font-sora">
+                          {pool.name}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Arrow between selection and form */}
+            <div className="relative flex justify-center items-center">
+              <div className="absolute z-10">
+                <ArrowIcon
+                  size={40}
+                  className="sm:w-12 sm:h-12"
+                  innerCircleColor="#242424"
+                  direction="down"
+                />
+              </div>
             </div>
 
             {/* Render appropriate flow component based on action */}
             {action === "deposit" && (
               <DepositFlow
+                key={collateral.id}
                 address={address}
                 usduBalance={usduBalance}
                 usduPrice={usduPrice}
@@ -175,6 +193,7 @@ function Earn() {
             )}
             {action === "withdraw" && (
               <WithdrawFlow
+                key={collateral.id}
                 address={address}
                 usduPrice={usduPrice}
                 selectedPosition={selectedPosition}

@@ -26,6 +26,7 @@ import {
 } from "~/components/ui/select";
 import { useQueryState } from "nuqs";
 import { createMeta } from "~/lib/utils/meta";
+import { COLLATERAL_LIST } from "~/lib/collateral";
 import type { Route } from "./+types/dashboard";
 
 type FilterType = "all" | "borrow" | "earn";
@@ -199,54 +200,35 @@ export default function Dashboard() {
                   ))}
 
                 {/* Stability Pool Positions */}
-                {filter !== "borrow" && (
-                  <>
-                    {/* {allStabilityPoolPositions.WXLBTC &&
-                      allStabilityPoolPositions.WXLBTC.userDeposit.gt(0) && (
-                        <StabilityPoolCard
-                          poolType="WXLBTC"
-                          userDeposit={
-                            allStabilityPoolPositions.WXLBTC.userDeposit
-                          }
-                          poolShare={allStabilityPoolPositions.WXLBTC.poolShare}
-                          usduRewards={
-                            allStabilityPoolPositions.WXLBTC.rewards.usdu
-                          }
-                          collateralRewards={
-                            allStabilityPoolPositions.WXLBTC.rewards.collateral
-                          }
-                          usduPrice={usduPrice?.price}
-                          onManagePosition={() => navigate("/earn")}
-                        />
-                      )} */}
-                    {allStabilityPoolPositions.WWBTC &&
-                      allStabilityPoolPositions.WWBTC.userDeposit.gt(0) && (
-                        <StabilityPoolCard
-                          poolType="WWBTC"
-                          userDeposit={
-                            allStabilityPoolPositions.WWBTC.userDeposit
-                          }
-                          poolShare={allStabilityPoolPositions.WWBTC.poolShare}
-                          usduRewards={
-                            allStabilityPoolPositions.WWBTC.rewards.usdu
-                          }
-                          collateralRewards={
-                            allStabilityPoolPositions.WWBTC.rewards.collateral
-                          }
-                          usduPrice={usduPrice?.price}
-                          onManagePosition={() =>
-                            navigate("/earn?collateral=WWBTC")
-                          }
-                          onDepositClick={() =>
-                            navigate("/earn?collateral=WWBTC&action=deposit")
-                          }
-                          onRewardsClick={() =>
-                            navigate("/earn?collateral=WWBTC&action=claim")
-                          }
-                        />
-                      )}
-                  </>
-                )}
+                {filter !== "borrow" &&
+                  COLLATERAL_LIST.map((collateral) => {
+                    const position = allStabilityPoolPositions[collateral.id];
+                    if (!position || !position.userDeposit.gt(0)) return null;
+                    return (
+                      <StabilityPoolCard
+                        key={collateral.id}
+                        poolType={collateral.id}
+                        userDeposit={position.userDeposit}
+                        poolShare={position.poolShare}
+                        usduRewards={position.rewards.usdu}
+                        collateralRewards={position.rewards.collateral}
+                        usduPrice={usduPrice?.price}
+                        onManagePosition={() =>
+                          navigate(`/earn?collateral=${collateral.id}`)
+                        }
+                        onDepositClick={() =>
+                          navigate(
+                            `/earn?collateral=${collateral.id}&action=deposit`
+                          )
+                        }
+                        onRewardsClick={() =>
+                          navigate(
+                            `/earn?collateral=${collateral.id}&action=claim`
+                          )
+                        }
+                      />
+                    );
+                  })}
               </div>
             )}
           </div>

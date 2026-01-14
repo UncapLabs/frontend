@@ -40,7 +40,7 @@ export default function FeatureDiscoveryCards() {
             borrowing position
           </h2>
           <p className="text-white text-xs font-medium font-sora leading-3 mb-4">
-            Deposit WBTC and mint USDU.
+            Deposit BTC and mint USDU.
           </p>
 
           <Button

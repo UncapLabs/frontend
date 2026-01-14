@@ -13,6 +13,7 @@ import UBTCAbi from "./abis/UBTC.json";
 import USDUAbi from "./abis/USDU.json";
 import CollateralWrapperAbi from "./abis/CollateralWrapper.json";
 import ClaimAbi from "./abis/Claim.json";
+import MockPriceFeedAbi from "./abis/MockPriceFeed.json";
 
 // // Export all ABIs with proper typing
 export const ADDRESSES_REGISTRY_ABI = AddressesRegistryAbi as Abi;
@@ -27,3 +28,4 @@ export const UBTC_ABI = UBTCAbi as Abi;
 export const USDU_ABI = USDUAbi as Abi;
 export const COLLATERAL_WRAPPER_ABI = CollateralWrapperAbi as Abi;
 export const CLAIM_DISTRIBUTOR_ABI = ClaimAbi as Abi;
+export const MOCK_PRICE_FEED_ABI = MockPriceFeedAbi as Abi;

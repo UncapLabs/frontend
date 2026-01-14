@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { UBTC_ABI } from "~/lib/contracts";
 import {
   COLLATERALS,
+  COLLATERAL_LIST,
   DEFAULT_COLLATERAL,
   type CollateralId,
 } from "~/lib/collateral";
@@ -118,8 +119,11 @@ export function GetTestBtc() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="WWBTC">WBTC (8 decimals)</SelectItem>
-              <SelectItem value="WXLBTC">wXLBTC</SelectItem>
+              {COLLATERAL_LIST.map((collateral) => (
+                <SelectItem key={collateral.id} value={collateral.id}>
+                  {collateral.symbol}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

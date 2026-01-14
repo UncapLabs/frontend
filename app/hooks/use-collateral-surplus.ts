@@ -19,23 +19,30 @@ export function useCollateralSurplus(borrower: string | undefined) {
 
   // Convert to readable format
   const formattedSurpluses = {
-    // WXLBTC: {
-    //   formatted: query.data?.WXLBTC ?? Big(0),
-    //   symbol: COLLATERALS.WXLBTC.symbol,
-    //   hasAmount: query.data?.WXLBTC ? query.data.WXLBTC.gt(0) : false,
-    //   collateralType: "WXLBTC" as CollateralId,
-    // },
     WWBTC: {
       formatted: query.data?.WWBTC ?? Big(0),
       symbol: COLLATERALS.WWBTC.symbol,
       hasAmount: query.data?.WWBTC ? query.data.WWBTC.gt(0) : false,
       collateralType: "WWBTC" as CollateralId,
     },
+    TBTC: {
+      formatted: query.data?.TBTC ?? Big(0),
+      symbol: COLLATERALS.TBTC.symbol,
+      hasAmount: query.data?.TBTC ? query.data.TBTC.gt(0) : false,
+      collateralType: "TBTC" as CollateralId,
+    },
+    SOLVBTC: {
+      formatted: query.data?.SOLVBTC ?? Big(0),
+      symbol: COLLATERALS.SOLVBTC.symbol,
+      hasAmount: query.data?.SOLVBTC ? query.data.SOLVBTC.gt(0) : false,
+      collateralType: "SOLVBTC" as CollateralId,
+    },
   };
 
   const availableSurpluses = [
-    // formattedSurpluses.WXLBTC,
     formattedSurpluses.WWBTC,
+    formattedSurpluses.TBTC,
+    formattedSurpluses.SOLVBTC,
   ].filter((s) => s.hasAmount);
 
   return {
