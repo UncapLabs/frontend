@@ -727,6 +727,7 @@ export default function Stats() {
       supplyAPR:
         poolData?.apr !== undefined ? new Big(poolData.apr) : undefined,
       totalDeposits: poolData?.totalDeposits,
+      collateralParam: collateral.address,
     };
   });
 
