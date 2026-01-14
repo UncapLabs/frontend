@@ -33,12 +33,22 @@ export const pointsRouter = router({
   // ==========================================
 
   getUserPoints: publicProcedure
-    .input(z.object({ userAddress: z.string() }))
+    .input(
+      z.object({
+        userAddress: z.string(),
+        seasonNumber: z
+          .number()
+          .int()
+          .refine((v) => SEASON_NUMBERS.includes(v as SeasonNumber))
+          .optional(),
+      })
+    )
     .query(async ({ input, ctx }) => {
       const db = createDbClient(ctx.env.DB);
       const normalizedAddress = input.userAddress.toLowerCase();
+      const { seasonNumber } = input;
 
-      // Get weekly breakdown
+      // Get weekly breakdown, optionally filtered by season
       const weeklyPoints = await db
         .select({
           weekStart: userPoints.weekStart,
@@ -50,7 +60,11 @@ export const pointsRouter = router({
           calculatedAt: userPoints.calculatedAt,
         })
         .from(userPoints)
-        .where(eq(userPoints.userAddress, normalizedAddress))
+        .where(
+          seasonNumber
+            ? sql`${userPoints.userAddress} = ${normalizedAddress} AND ${userPoints.seasonNumber} = ${seasonNumber}`
+            : eq(userPoints.userAddress, normalizedAddress)
+        )
         .orderBy(desc(userPoints.weekStart))
         .all();
 
@@ -59,6 +73,19 @@ export const pointsRouter = router({
         .select()
         .from(userTotalPoints)
         .where(eq(userTotalPoints.userAddress, normalizedAddress))
+        .get();
+
+      // Get the most recent week's points (regardless of season filter)
+      const lastWeek = await db
+        .select({
+          totalPoints: userPoints.totalPoints,
+          weekStart: userPoints.weekStart,
+          seasonNumber: userPoints.seasonNumber,
+        })
+        .from(userPoints)
+        .where(eq(userPoints.userAddress, normalizedAddress))
+        .orderBy(desc(userPoints.weekStart))
+        .limit(1)
         .get();
 
       return {
@@ -70,6 +97,7 @@ export const pointsRouter = router({
           allTimePoints: 0,
           currentSeasonRank: null,
         },
+        lastWeekPoints: lastWeek?.totalPoints ?? null,
       };
     }),
 

@@ -1,4 +1,5 @@
 import { useAccount } from "@starknet-react/core";
+import { useQueryState, parseAsInteger } from "nuqs";
 import { useUserPoints } from "~/hooks/use-user-points";
 import { useUserRank } from "~/hooks/use-user-rank";
 import {
@@ -11,23 +12,45 @@ import { NumericFormat } from "react-number-format";
 import FeatureDiscoveryCards from "~/components/dashboard/feature-discovery-cards";
 import { createMeta } from "~/lib/utils/meta";
 import type { Route } from "./+types/points";
+import { cn } from "~/lib/utils";
+
+// Season configurations
+const SEASON_CONFIG = {
+  1: { startDate: "2025-10-10T06:00:00Z", totalWeeks: 13 },
+  2: { startDate: "2026-01-09T06:00:00Z", totalWeeks: 13 }, // Jan 9 - Apr 10, 2026
+} as const;
+
+type SeasonNumber = 1 | 2;
+
+function generateSeasonWeeks(season: SeasonNumber) {
+  const config = SEASON_CONFIG[season];
+  return Array.from({ length: config.totalWeeks }, (_, index) => {
+    const start = new Date(config.startDate);
+    start.setUTCDate(start.getUTCDate() + index * 7);
+    return {
+      weekNumber: index + 1,
+      weekStart: start.toISOString().slice(0, 10),
+    };
+  });
+}
 
 export default function RewardsPage() {
   const { address } = useAccount();
-  const { weeklyPoints, totals, isLoading } = useUserPoints();
+  const [seasonParam, setSeasonParam] = useQueryState(
+    "season",
+    parseAsInteger.withDefault(2)
+  );
+  const selectedSeason = (seasonParam === 1 ? 1 : 2) as SeasonNumber;
+
+  const { weeklyPoints, totals, lastWeekPoints, isLoading } = useUserPoints(selectedSeason);
   const { rank } = useUserRank();
 
   const totalPoints = totals?.allTimePoints || 0;
+  const season1Points = totals?.season1Points || 0;
+  const season2Points = totals?.season2Points || 0;
   const displayRank = rank || "—";
 
-  const SEASON_WEEKS = Array.from({ length: 12 }, (_, index) => {
-    const startDate = new Date("2025-10-10T06:00:00Z");
-    startDate.setUTCDate(startDate.getUTCDate() + index * 7);
-    return {
-      weekNumber: index + 1,
-      weekStart: startDate.toISOString().slice(0, 10),
-    };
-  });
+  const SEASON_WEEKS = generateSeasonWeeks(selectedSeason);
 
   const weeklyPointsByStart = new Map<string, (typeof weeklyPoints)[number]>();
   for (const week of weeklyPoints) {
@@ -60,15 +83,6 @@ export default function RewardsPage() {
   };
 
   const rankTier = getRankTier(totalPoints);
-
-  // Get last week's points (most recent week with data)
-  const lastWeekPoints = (() => {
-    const computedWeeks = displayWeeklyPoints.filter(
-      (week) => week.hasComputed
-    );
-    if (computedWeeks.length === 0) return null;
-    return computedWeeks[computedWeeks.length - 1].totalPoints;
-  })();
 
   // Format date range for weekly breakdown
   const formatWeekRange = (weekStart: string) => {
@@ -163,42 +177,90 @@ export default function RewardsPage() {
                   </div>
                 </div>
               </CardContent>
-              {/* Card Footer with Rank Details */}
-              <CardFooter className="border-t border-[#F5F3EE]">
-                <div className="w-full grid grid-cols-2 relative -my-6">
-                  <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-px bg-[#F5F3EE]" />
+              {/* Card Footer with Season Breakdown and Stats */}
+              <CardFooter className="border-t border-[#F5F3EE] p-0">
+                <div className="w-full">
+                  {/* Season Breakdown Row */}
+                  <div className="grid grid-cols-2 relative border-b border-[#F5F3EE]">
+                    <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-px bg-[#F5F3EE]" />
 
-                  {/* Current Rank section */}
-                  <div className="pr-4 py-6">
-                    <div className="text-xs font-medium font-sora uppercase tracking-tight mb-2 text-neutral-800">
-                      Current Rank
+                    <div className="pr-4 py-4 pl-6">
+                      <div className="text-xs font-medium font-sora uppercase tracking-tight mb-1 text-[#94938D]">
+                        Season 1
+                      </div>
+                      <div className="text-lg font-medium font-sora text-neutral-800">
+                        {!address ? (
+                          "—"
+                        ) : isLoading ? (
+                          "..."
+                        ) : (
+                          <NumericFormat
+                            displayType="text"
+                            value={season1Points.toString()}
+                            thousandSeparator=","
+                            decimalScale={2}
+                            fixedDecimalScale
+                          />
+                        )}
+                      </div>
                     </div>
-                    <div className="text-xl font-medium font-sora text-neutral-800">
-                      #{displayRank}
+
+                    <div className="pl-6 py-4 pr-6">
+                      <div className="text-xs font-medium font-sora uppercase tracking-tight mb-1 text-[#94938D]">
+                        Season 2
+                      </div>
+                      <div className="text-lg font-medium font-sora text-neutral-800">
+                        {!address ? (
+                          "—"
+                        ) : isLoading ? (
+                          "..."
+                        ) : (
+                          <NumericFormat
+                            displayType="text"
+                            value={season2Points.toString()}
+                            thousandSeparator=","
+                            decimalScale={2}
+                            fixedDecimalScale
+                          />
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Last Week's Points section */}
-                  <div className="pl-6 py-6">
-                    <div className="text-xs font-medium font-sora uppercase tracking-tight mb-2 text-neutral-800">
-                      Last Week's Points
+                  {/* Rank and Last Week Row */}
+                  <div className="grid grid-cols-2 relative">
+                    <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-px bg-[#F5F3EE]" />
+
+                    <div className="pr-4 py-4 pl-6">
+                      <div className="text-xs font-medium font-sora uppercase tracking-tight mb-1 text-[#94938D]">
+                        Current Rank
+                      </div>
+                      <div className="text-lg font-medium font-sora text-neutral-800">
+                        #{displayRank}
+                      </div>
                     </div>
-                    <div className="text-xl font-medium font-sora text-neutral-800">
-                      {!address ? (
-                        "—"
-                      ) : isLoading ? (
-                        "..."
-                      ) : lastWeekPoints === null ? (
-                        "—"
-                      ) : (
-                        <NumericFormat
-                          displayType="text"
-                          value={lastWeekPoints.toString()}
-                          thousandSeparator=","
-                          decimalScale={2}
-                          fixedDecimalScale
-                        />
-                      )}
+
+                    <div className="pl-6 py-4 pr-6">
+                      <div className="text-xs font-medium font-sora uppercase tracking-tight mb-1 text-[#94938D]">
+                        Last Week
+                      </div>
+                      <div className="text-lg font-medium font-sora text-neutral-800">
+                        {!address ? (
+                          "—"
+                        ) : isLoading ? (
+                          "..."
+                        ) : lastWeekPoints === null ? (
+                          "—"
+                        ) : (
+                          <NumericFormat
+                            displayType="text"
+                            value={lastWeekPoints.toString()}
+                            thousandSeparator=","
+                            decimalScale={2}
+                            fixedDecimalScale
+                          />
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -210,30 +272,58 @@ export default function RewardsPage() {
         {/* Points History Table - Second on mobile, left section on desktop */}
         <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px] order-2 lg:order-none flex">
           <div className="bg-white rounded-2xl p-6 w-full">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-xl font-medium font-sora text-[#242424] mb-2">
-                  Points History
-                </h2>
-                <p className="text-sm text-[#94938D] font-sora">
-                  Weekly breakdown of your points earnings
-                </p>
-                <p className="text-xs text-[#AAA28E] font-sora mt-1">
-                  Calculated every Friday at 10:00 UTC
-                </p>
+            <div className="flex flex-col gap-4 mb-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h2 className="text-xl font-medium font-sora text-[#242424] mb-1">
+                    Points History
+                  </h2>
+                  <p className="text-sm text-[#94938D] font-sora">
+                    Weekly breakdown of your points earnings
+                  </p>
+                  <p className="text-xs text-[#AAA28E] font-sora mt-0.5">
+                    Calculated every Friday at 10:00 UTC
+                  </p>
+                </div>
+              </div>
+
+              {/* Season Tab Pills */}
+              <div className="flex p-1 bg-[#F5F3EE] rounded-xl">
+                <button
+                  onClick={() => setSeasonParam(1)}
+                  className={cn(
+                    "flex-1 px-4 py-2 text-xs font-medium font-sora rounded-lg transition-all duration-200",
+                    selectedSeason === 1
+                      ? "bg-white text-[#242424] shadow-sm"
+                      : "text-[#94938D] hover:text-[#242424]"
+                  )}
+                >
+                  Season 1
+                </button>
+                <button
+                  onClick={() => setSeasonParam(2)}
+                  className={cn(
+                    "flex-1 px-4 py-2 text-xs font-medium font-sora rounded-lg transition-all duration-200",
+                    selectedSeason === 2
+                      ? "bg-white text-[#242424] shadow-sm"
+                      : "text-[#94938D] hover:text-[#242424]"
+                  )}
+                >
+                  Season 2
+                </button>
               </div>
             </div>
 
-            <div className="space-y-3">
-              {/* Simplified Table - Showing all weeks */}
+            <div>
+              {/* Weekly points list */}
               {displayWeeklyPoints.length > 0 ? (
                 displayWeeklyPoints.map((week) => (
                   <div
                     key={`${week.weekStart}-${week.weekNumber}`}
-                    className="py-3 border-b border-[#E5E5E5] last:border-0 flex items-end justify-between"
+                    className="py-3 border-b border-[#E5E5E5] last:border-0 flex items-center justify-between"
                   >
                     <div>
-                      <p className="text-xs font-medium font-sora text-[#242424] mb-1">
+                      <p className="text-xs font-medium font-sora text-[#242424]">
                         Week {week.weekNumber}
                       </p>
                       <p className="text-xs font-sora text-[#94938D]">
@@ -262,9 +352,9 @@ export default function RewardsPage() {
 
         {/* Right Section on Desktop - Hidden on mobile */}
         <div className="hidden lg:flex flex-1 lg:flex-[2] lg:order-none flex-col">
-          <div className="mb-6">
+          <div className="flex-1 mb-6 flex flex-col">
             {/* Points Card */}
-            <Card className="rounded-2xl border-0 shadow-none bg-white">
+            <Card className="rounded-2xl border-0 shadow-none bg-white flex-1 flex flex-col">
               <CardHeader
                 className="border-b border-[#F5F3EE]"
                 style={{ paddingBottom: "0.75rem" }}
@@ -319,43 +409,90 @@ export default function RewardsPage() {
                   </div>
                 </div>
               </CardContent>
-              {/* Card Footer with Rank Details */}
-              <CardFooter className="border-t border-[#F5F3EE]">
-                <div className="w-full grid grid-cols-2 relative -my-6">
-                  {/* Full-height divider */}
-                  <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-px bg-[#F5F3EE]" />
+              {/* Card Footer with Season Breakdown and Stats */}
+              <CardFooter className="border-t border-[#F5F3EE] p-0">
+                <div className="w-full">
+                  {/* Season Breakdown Row */}
+                  <div className="grid grid-cols-2 relative border-b border-[#F5F3EE]">
+                    <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-px bg-[#F5F3EE]" />
 
-                  {/* Current Rank section */}
-                  <div className="pr-4 py-6">
-                    <div className="text-xs font-medium font-sora uppercase tracking-tight mb-2 text-neutral-800">
-                      Current Rank
+                    <div className="pr-4 py-4 pl-6">
+                      <div className="text-xs font-medium font-sora uppercase tracking-tight mb-1 text-[#94938D]">
+                        Season 1
+                      </div>
+                      <div className="text-lg font-medium font-sora text-neutral-800">
+                        {!address ? (
+                          "—"
+                        ) : isLoading ? (
+                          "..."
+                        ) : (
+                          <NumericFormat
+                            displayType="text"
+                            value={season1Points.toString()}
+                            thousandSeparator=","
+                            decimalScale={2}
+                            fixedDecimalScale
+                          />
+                        )}
+                      </div>
                     </div>
-                    <div className="text-xl font-medium font-sora text-neutral-800">
-                      #{displayRank}
+
+                    <div className="pl-6 py-4 pr-6">
+                      <div className="text-xs font-medium font-sora uppercase tracking-tight mb-1 text-[#94938D]">
+                        Season 2
+                      </div>
+                      <div className="text-lg font-medium font-sora text-neutral-800">
+                        {!address ? (
+                          "—"
+                        ) : isLoading ? (
+                          "..."
+                        ) : (
+                          <NumericFormat
+                            displayType="text"
+                            value={season2Points.toString()}
+                            thousandSeparator=","
+                            decimalScale={2}
+                            fixedDecimalScale
+                          />
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Last Week's Points section */}
-                  <div className="pl-6 py-6">
-                    <div className="text-xs font-medium font-sora uppercase tracking-tight mb-2 text-neutral-800">
-                      Last Week's Points
+                  {/* Rank and Last Week Row */}
+                  <div className="grid grid-cols-2 relative">
+                    <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-px bg-[#F5F3EE]" />
+
+                    <div className="pr-4 py-4 pl-6">
+                      <div className="text-xs font-medium font-sora uppercase tracking-tight mb-1 text-[#94938D]">
+                        Current Rank
+                      </div>
+                      <div className="text-lg font-medium font-sora text-neutral-800">
+                        #{displayRank}
+                      </div>
                     </div>
-                    <div className="text-xl font-medium font-sora text-neutral-800">
-                      {!address ? (
-                        "—"
-                      ) : isLoading ? (
-                        "..."
-                      ) : lastWeekPoints === null ? (
-                        "—"
-                      ) : (
-                        <NumericFormat
-                          displayType="text"
-                          value={lastWeekPoints.toString()}
-                          thousandSeparator=","
-                          decimalScale={2}
-                          fixedDecimalScale
-                        />
-                      )}
+
+                    <div className="pl-6 py-4 pr-6">
+                      <div className="text-xs font-medium font-sora uppercase tracking-tight mb-1 text-[#94938D]">
+                        Last Week
+                      </div>
+                      <div className="text-lg font-medium font-sora text-neutral-800">
+                        {!address ? (
+                          "—"
+                        ) : isLoading ? (
+                          "..."
+                        ) : lastWeekPoints === null ? (
+                          "—"
+                        ) : (
+                          <NumericFormat
+                            displayType="text"
+                            value={lastWeekPoints.toString()}
+                            thousandSeparator=","
+                            decimalScale={2}
+                            fixedDecimalScale
+                          />
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
