@@ -1,48 +1,48 @@
 /**
  * Service for fetching Starknet lending incentives data
- * API Documentation: https://www.data-openblocklabs.com
+ * API: Starknet Foundation (SNF) BTCFi Season APIs
  */
 
-interface LendingIncentiveItem {
+interface SNFLendingItem {
   date: string;
   protocol: string;
-  user_address: string;
-  token_symbol: string;
-  token_address: string;
-  incentivized_side: "borrow" | "supply";
-  borrowed_token_symbol: string;
-  borrowed_token_address: string;
-  rate: number;
-  max_daily_incentive_tokens: number | null;
   market_address: string;
   market_name: string;
-  asset: string;
   asset_symbol: string;
-  asset_decimals: number;
-  debt_asset: string;
+  total_supply_tokens: string;
+  total_supply_usd: string;
+  total_borrow_tokens: string;
+  total_borrow_usd: string;
+  incentive_usd: string;
+  allocated_tokens: string;
+  effective_apr: string;
+}
+
+interface SNFBorrowingItem {
+  date: string;
+  protocol: string;
+  market_address: string;
+  market_name: string;
+  collateral_symbol: string | null;
   debt_asset_symbol: string;
-  debt_decimals: number;
-  total_supply_tokens: number;
-  total_borrow_tokens: number;
-  total_supply_usd: number;
-  total_borrow_usd: number;
-  interest_tokens_daily: number | null;
-  interest_usd_daily: number | null;
-  incentive_usd: number | null;
-  allocated_tokens_raw: number | null;
-  allocated_tokens: number | null;
-  effective_apr: number | null;
+  debt_asset: string;
+  total_borrow_tokens: string;
+  total_borrow_usd: string;
+  total_supply_usd: string;
+  interest_usd_daily: string;
+  incentive_usd: string;
+  allocated_tokens: string;
+  effective_apr: string;
+  rebate_rate: string;
 }
 
-interface LendingIncentivesResponse {
-  items: LendingIncentiveItem[];
-  total: number;
-  page: number;
-  size: number;
-  pages: number;
+interface SNFApiResponse<T> {
+  items: T[];
 }
 
-const API_BASE_URL = "https://www.data-openblocklabs.com";
+const SNF_API_BASE_URL =
+  "https://5xyjxn0qoe.execute-api.eu-west-1.amazonaws.com/prod";
+const PROTOCOL = "Uncap";
 const CACHE_TTL = 30 * 60 * 12; // 12 hours
 
 /**
@@ -54,7 +54,7 @@ function getCacheKey(base: string): string {
 }
 
 /**
- * Fetches Uncap protocol incentive rates from the Starknet API
+ * Fetches Uncap protocol incentive rates from SNF API
  * Returns the interest rebate rate (borrow side) and collateral rebate rate (supply side)
  */
 export async function getUncapIncentiveRates(
@@ -72,35 +72,43 @@ export async function getUncapIncentiveRates(
     };
   }
 
-  // Fetch from API - only need a small sample to get the rates
-  const url = `${API_BASE_URL}/starknet/lending-incentives/Uncap/all?page=1&size=10`;
-  const response = await fetch(url);
+  // Fetch from both SNF mm-lending and mm-borrowing APIs in parallel
+  const [lendingResponse, borrowingResponse] = await Promise.all([
+    fetch(`${SNF_API_BASE_URL}/mm-lending`),
+    fetch(`${SNF_API_BASE_URL}/mm-borrowing`),
+  ]);
 
-  if (!response.ok) {
+  if (!lendingResponse.ok) {
     throw new Error(
-      `Failed to fetch incentive rates: ${response.status} ${response.statusText}`
+      `Failed to fetch lending rates: ${lendingResponse.status} ${lendingResponse.statusText}`
     );
   }
 
-  const data = (await response.json()) as LendingIncentivesResponse;
+  if (!borrowingResponse.ok) {
+    throw new Error(
+      `Failed to fetch borrowing rates: ${borrowingResponse.status} ${borrowingResponse.statusText}`
+    );
+  }
 
-  // Extract rates from the response
-  // Find first entry for each incentivized side
-  const borrowEntry = data.items.find(
-    (item) => item.incentivized_side === "borrow"
-  );
-  const supplyEntry = data.items.find(
-    (item) => item.incentivized_side === "supply"
-  );
+  const lendingData = (await lendingResponse.json()) as SNFApiResponse<SNFLendingItem>;
+  const borrowingData = (await borrowingResponse.json()) as SNFApiResponse<SNFBorrowingItem>;
 
-  if (!borrowEntry || !supplyEntry) {
-    throw new Error("Could not find borrow or supply rates in API response");
+  // Find the most recent Uncap entries (API returns data sorted by date desc)
+  const lendingEntry = lendingData.items.find((item) => item.protocol === PROTOCOL);
+  const borrowingEntry = borrowingData.items.find((item) => item.protocol === PROTOCOL);
+
+  if (!lendingEntry) {
+    throw new Error("Could not find Uncap protocol data in lending API response");
+  }
+
+  if (!borrowingEntry) {
+    throw new Error("Could not find Uncap protocol data in borrowing API response");
   }
 
   const result = {
-    borrowRate: borrowEntry.rate, // e.g., 0.4 = 40%
-    supplyRate: supplyEntry.rate, // e.g., 0.02 = 2%
-    maxDailyTokens: borrowEntry.max_daily_incentive_tokens || 0,
+    borrowRate: parseFloat(borrowingEntry.rebate_rate), // e.g., 0.4 = 40% rebate
+    supplyRate: parseFloat(lendingEntry.effective_apr), // e.g., 0.02 = 2%
+    maxDailyTokens: 0, // No longer used
   };
 
   // Cache the result in KV store with TTL
