@@ -171,43 +171,6 @@ export const COLLATERALS = {
     defaultInterestManager: deploymentData.SOLVBTC
       .defaultInterestManager as Address,
   }),
-  // WXLBTC: createCollateral({
-  //   id: "WXLBTC",
-  //   symbol: "XLBTC",
-  //   name: "Endur xLBTC",
-  //   decimals: 18, // Wrapped token decimals
-  //   icon: "/xlbtc.svg",
-  //   branchId: 1,
-  //   minCollateralizationRatio: new Big(1.15), // 115%
-  //   addresses: {
-  //     token: deploymentData.WXLBTC.collateral as Address,
-  //     addressesRegistry: deploymentData.WXLBTC.addressesRegistry as Address,
-  //     borrowerOperations: deploymentData.WXLBTC.borrowerOperations as Address,
-  //     troveManager: deploymentData.WXLBTC.troveManager as Address,
-  //     troveNft: deploymentData.WXLBTC.troveNft as Address,
-  //     stabilityPool: deploymentData.WXLBTC.stabilityPool as Address,
-  //     sortedTroves: deploymentData.WXLBTC.sortedTroves as Address,
-  //     activePool: deploymentData.WXLBTC.activePool as Address,
-  //     defaultPool: deploymentData.WXLBTC.defaultPool as Address,
-  //     collSurplusPool: deploymentData.WXLBTC.collSurplusPool as Address,
-  //     gasPool: deploymentData.WXLBTC.gasPool as Address,
-  //     interestRouter: deploymentData.WXLBTC.interestRouter as Address,
-  //     liquidationManager: deploymentData.WXLBTC.liquidationManager as Address,
-  //     redemptionManager: deploymentData.WXLBTC.redemptionManager as Address,
-  //     batchManager: deploymentData.WXLBTC.batchManager as Address,
-  //     priceFeed: deploymentData.WXLBTC.priceFeed as Address,
-  //     hintHelpers: deploymentData.WXLBTC.hintHelpers as Address,
-  //     multiTroveGetter: deploymentData.WXLBTC.multiTroveGetter as Address,
-  //     troveManagerEventsEmitter: deploymentData.WXLBTC
-  //       .troveManagerEventsEmitter as Address,
-  //   },
-  //   defaultInterestManager: deploymentData.WXLBTC
-  //     .defaultInterestManager as Address,
-  //   underlyingToken: {
-  //     address: deploymentData.WXLBTC.underlyingAddress as Address,
-  //     decimals: 8,
-  //   },
-  // }),
 } as const;
 
 // Create Zod schema dynamically from COLLATERALS for backend validation

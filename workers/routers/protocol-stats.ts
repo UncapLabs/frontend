@@ -7,9 +7,17 @@ import {
   type SortField,
   type SortDirection,
 } from "../services/protocol-stats";
+import { COLLATERAL_LIST } from "~/lib/collateral";
 
 const sortFieldSchema = z.enum(["debt", "deposit", "interestRate", "createdAt", "updatedAt", "ltv", "liquidationPrice"]);
 const sortDirectionSchema = z.enum(["asc", "desc"]);
+
+// Valid branch IDs derived from collateral configuration
+const validBranchIds = COLLATERAL_LIST.map((c) => c.branchId);
+const branchIdSchema = z.number().refine(
+  (val) => validBranchIds.includes(val),
+  { message: `Branch ID must be one of: ${validBranchIds.join(", ")}` }
+);
 
 export const protocolStatsRouter = router({
   getStats: publicProcedure.query(async ({ ctx }) => {
@@ -25,6 +33,7 @@ export const protocolStatsRouter = router({
         sortBy: sortFieldSchema.optional(),
         sortDirection: sortDirectionSchema.optional(),
         address: z.string().optional(),
+        collateralBranchId: branchIdSchema.optional(),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -35,6 +44,7 @@ export const protocolStatsRouter = router({
         sortBy: (input.sortBy as SortField) ?? "debt",
         sortDirection: (input.sortDirection as SortDirection) ?? "desc",
         address: input.address,
+        collateralBranchId: input.collateralBranchId,
       });
     }),
 });

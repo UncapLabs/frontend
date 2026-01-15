@@ -38,7 +38,7 @@ import {
 import { ALL_POSITIONS_PAGE_SIZE } from "../../workers/services/protocol-stats";
 import { createCaller } from "../../workers/router";
 import { useTRPC } from "~/lib/trpc";
-import { getCollateralByBranchId, type CollateralId } from "~/lib/collateral";
+import { getCollateralByBranchId, COLLATERAL_LIST, type CollateralId, type BranchId } from "~/lib/collateral";
 import { useCollateralPrice } from "~/hooks/use-fetch-prices";
 
 type PositionEntry = {
@@ -74,7 +74,16 @@ const STATUS_VALUES = STATUS_OPTIONS.map(
   (option) => option.value
 ) as StatusOptionValue[];
 
-// Server-side loader for SSR - defaults to active positions
+// Collateral filter options derived from COLLATERAL_LIST
+const COLLATERAL_OPTIONS = COLLATERAL_LIST.map((c) => ({
+  label: c.symbol,
+  value: String(c.branchId),
+}));
+
+const COLLATERAL_BRANCH_IDS = COLLATERAL_LIST.map((c) => String(c.branchId));
+type CollateralBranchIdString = (typeof COLLATERAL_BRANCH_IDS)[number];
+
+// Server-side loader for SSR - defaults to active WBTC positions
 export async function loader({ context }: Route.LoaderArgs) {
   const caller = createCaller({
     env: context.cloudflare.env,
@@ -86,6 +95,7 @@ export async function loader({ context }: Route.LoaderArgs) {
       status: "active",
       limit: ALL_POSITIONS_PAGE_SIZE,
       offset: 0,
+      collateralBranchId: 0, // WBTC by default
     });
 
     return {
@@ -238,6 +248,12 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
       parseAsStringEnum<StatusOptionValue>(STATUS_VALUES).withDefault("active")
     );
 
+  const [collateralSelection = "0", setCollateralSelection] =
+    useQueryState<CollateralBranchIdString>(
+      "collateral",
+      parseAsStringEnum<CollateralBranchIdString>([...COLLATERAL_BRANCH_IDS]).withDefault("0")
+    );
+
   const [pageParam = 1, setPageParam] = useQueryState(
     "page",
     parseAsInteger.withDefault(1)
@@ -290,13 +306,17 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
   const pageIndex = currentPage - 1;
   const offset = pageIndex * ALL_POSITIONS_PAGE_SIZE;
 
+  // Parse collateral selection to branchId
+  const collateralBranchId = parseInt(collateralSelection, 10);
+
   // Use React Query with SSR data as initial data
   const isInitialLoad =
     statusSelection === "active" &&
     pageIndex === 0 &&
     sortBy === "debt" &&
     sortDir === "desc" &&
-    !addressParam;
+    !addressParam &&
+    collateralSelection === "0"; // WBTC by default
   const { data, isFetching, error } = useQuery({
     ...trpc.protocolStatsRouter.getAllPositions.queryOptions(
       {
@@ -306,6 +326,7 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
         sortBy,
         sortDirection: sortDir,
         address: addressParam || undefined,
+        collateralBranchId,
       },
       {
         staleTime: 60_000,
@@ -693,6 +714,11 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
     void setPageParam(1);
   };
 
+  const handleCollateralChange = (value: CollateralBranchIdString) => {
+    void setCollateralSelection(value);
+    void setPageParam(1);
+  };
+
   const handleAddressSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -796,10 +822,11 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
             <h2 className="text-xl font-medium font-sora text-[#242424] mb-2">
               {statusSelection.charAt(0).toUpperCase() +
                 statusSelection.slice(1)}{" "}
+              {COLLATERAL_OPTIONS.find((c) => c.value === collateralSelection)?.label}{" "}
               Positions
             </h2>
             <p className="text-sm text-[#94938D] font-sora">
-              Browse all protocol positions
+              Browse protocol positions by collateral
             </p>
           </div>
           <div className="flex flex-col gap-3 md:flex-row md:items-center">
@@ -815,6 +842,24 @@ export default function StatsPage({ loaderData }: Route.ComponentProps) {
               </SelectTrigger>
               <SelectContent>
                 {STATUS_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {/* Collateral Filter */}
+            <Select
+              value={collateralSelection}
+              onValueChange={(value) =>
+                handleCollateralChange(value as CollateralBranchIdString)
+              }
+            >
+              <SelectTrigger className="w-36 h-9 px-3 bg-[#FAFAFA] border-[#E5E5E5] rounded-lg font-sora text-xs font-medium text-[#242424]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {COLLATERAL_OPTIONS.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>

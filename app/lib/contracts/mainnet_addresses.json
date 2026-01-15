@@ -66,6 +66,9 @@
     "redemptionManager": "0x7e5a9f2ffc8bed1a4a1024b107536d4a81fe52fbcce5d8bcd01c223a0506519",
     "batchManager": "0x15b487a3d5a0a364ef29b765fc02fbc37549350b236682b21a9fa944e17e8d5",
     "priceFeed": "0xc5de79107a6d3cdbec1a0d4820a24d7ab2bf1bbdfa3af092898c3fbbed6953",
+    "hintHelpers": "0x44b632d0e09b042b6521cd4ba250add5387fb68736cb10f2cc2411c1a1c2a84",
+    "multiTroveGetter": null,
+    "troveManagerEventsEmitter": "0x53fc2fb416e7d5e8e44594c989b638ffabf8a8f804a2041e564db7febccc2a9",
     "underlyingAddress": null,
     "defaultInterestManager": null
   }
