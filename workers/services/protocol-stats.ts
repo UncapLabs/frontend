@@ -197,6 +197,7 @@ export async function getAllPositions(
     sortBy?: SortField;
     sortDirection?: SortDirection;
     address?: string;
+    collateralBranchId?: number;
   } = {}
 ): Promise<AllPositionsResult> {
   const {
@@ -206,6 +207,7 @@ export async function getAllPositions(
     sortBy = "debt",
     sortDirection = "desc",
     address,
+    collateralBranchId,
   } = options;
 
   const graphqlEndpoint = env.GRAPHQL_ENDPOINT;
@@ -298,13 +300,16 @@ export async function getAllPositions(
   } else {
     // Normal pagination flow
     const needsCalculatedSort = isCalculatedField(sortBy);
+    const hasCollateralFilter = collateralBranchId !== undefined;
+    const needsServerProcessing = needsCalculatedSort || hasCollateralFilter;
 
-    // For calculated fields, we need to fetch all data to sort properly
-    const fetchLimit = needsCalculatedSort ? 1000 : limit;
-    const fetchOffset = needsCalculatedSort ? 0 : offset;
+    // For calculated fields or collateral filtering, we need to fetch all data to sort/filter properly
+    const fetchLimit = needsServerProcessing ? 1000 : limit;
+    const fetchOffset = needsServerProcessing ? 0 : offset;
 
     // Map sort parameters to GraphQL enum values
-    const orderBy = needsCalculatedSort
+    // When filtering by collateral, we'll re-sort server-side anyway, so use default sort
+    const orderBy = needsServerProcessing
       ? Trove_OrderBy.Debt
       : (GRAPHQL_SORT_FIELDS[sortBy] || Trove_OrderBy.Debt);
     const orderDirection = sortDirection === "asc" ? OrderDirection.Asc : OrderDirection.Desc;
@@ -328,15 +333,23 @@ export async function getAllPositions(
     total = countResult.troves?.length || 0;
   }
 
-  const pageCount = Math.ceil(total / limit);
-
   // Map troves to entries (without debtInFront initially)
   let positions = troves.map(mapTroveToEntry);
 
-  // For address queries or calculated fields, we need to sort server-side
-  // For address queries: GraphQL doesn't support our sort params, so always sort here
-  // For calculated fields: Need to compute values before sorting
-  const needsServerSort = address || isCalculatedField(sortBy);
+  // Apply collateral filter if specified
+  const hasCollateralFilter = collateralBranchId !== undefined;
+  if (hasCollateralFilter) {
+    positions = positions.filter((pos) => pos.collateralBranchId === collateralBranchId);
+    total = positions.length;
+  }
+
+  const pageCount = Math.ceil(total / limit);
+
+  // Server-side sorting needed when:
+  // - Address query (GraphQL doesn't support our sort params)
+  // - Calculated fields (need to compute values before sorting)
+  // - Collateral filtering (filter after fetch, so need to re-sort and paginate)
+  const needsServerSort = address || isCalculatedField(sortBy) || hasCollateralFilter;
 
   if (needsServerSort) {
     const btcPriceResult = sortBy === "ltv"
