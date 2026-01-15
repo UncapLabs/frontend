@@ -73,7 +73,7 @@ export const COLLATERALS = {
     symbol: "WBTC", // User-facing name
     name: "Wrapped Bitcoin",
     decimals: 18, // Wrapped token decimals
-    icon: "/wbtc.webp",
+    icon: "/wbtc.png",
     branchId: 0,
     minCollateralizationRatio: new Big(1.15), // 115%
     addresses: {

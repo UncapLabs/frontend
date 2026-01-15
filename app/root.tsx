@@ -46,7 +46,7 @@ export const meta: Route.MetaFunction = () => {
     },
     { property: "og:type", content: "website" },
     { property: "og:url", content: "https://uncap.finance" },
-    { property: "og:image", content: "https://uncap.finance/og-image.jpg" },
+    { property: "og:image", content: "https://uncap.finance/og-image.png" },
     { property: "og:image:width", content: "1200" },
     { property: "og:image:height", content: "630" },
 
@@ -62,7 +62,7 @@ export const meta: Route.MetaFunction = () => {
       content:
         "Borrow against your Bitcoin at rates as low as 0.5%—the cheapest in DeFi. You set the rate and keep full control of your Bitcoin.",
     },
-    { name: "twitter:image", content: "https://uncap.finance/og-image.jpg" },
+    { name: "twitter:image", content: "https://uncap.finance/og-image.png" },
   ];
 };
 
