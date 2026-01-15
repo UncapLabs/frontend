@@ -7,9 +7,9 @@ import Big from "big.js";
 export default function Problem() {
   const { data } = useProtocolStats();
 
-  // Convert to thousands for display (K+)
-  const btcCollateralInK = (data?.totalCollateralUSD ?? new Big(0))
-    .div(1000)
+  // Convert to thousands for display (K+) or millions (M+)
+  const btcCollateralInM = (data?.totalCollateralUSD ?? new Big(0))
+    .div(1_000_000)
     .toNumber();
   const usduCirculationInK = (data?.totalUsduCirculation ?? new Big(0))
     .div(1000)
@@ -84,10 +84,10 @@ export default function Problem() {
               </dt>
               <dd className="relative z-10 mt-2 text-2xl sm:text-4xl lg:text-5xl font-medium tracking-tighter text-[#001B40] font-sora">
                 <AnimatedNumber
-                  value={btcCollateralInK}
-                  decimals={0}
+                  value={btcCollateralInM}
+                  decimals={1}
                   prefix="$"
-                  suffix="K+"
+                  suffix="M+"
                   delay={0.3}
                 />
               </dd>
