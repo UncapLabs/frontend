@@ -47,7 +47,7 @@
     "multiTroveGetter": "0x309c8d0aca584a5e671e46fab0cb966c3abd1d7fe73162af81b2a6c774db615",
     "troveManagerEventsEmitter": "0x2456ca1b9fcf7851577d92c3a4bc26b59c4f44ee222d67ae7032350ee195ac1",
     "underlyingAddress": null,
-    "defaultInterestManager": null
+    "defaultInterestManager": "0x02f0a57deedbc0318580fbf4a55d770928360da3e8632634dbefa83475959904"
   },
   "SOLVBTC": {
     "collateral": "0x0593e034DdA23eea82d2bA9a30960ED42CF4A01502Cc2351Dc9B9881F9931a68",
@@ -70,6 +70,6 @@
     "multiTroveGetter": null,
     "troveManagerEventsEmitter": "0x53fc2fb416e7d5e8e44594c989b638ffabf8a8f804a2041e564db7febccc2a9",
     "underlyingAddress": null,
-    "defaultInterestManager": null
+    "defaultInterestManager": "0x02f0a57deedbc0318580fbf4a55d770928360da3e8632634dbefa83475959904"
   }
 }
