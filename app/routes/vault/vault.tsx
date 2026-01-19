@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { NumericFormat } from "react-number-format";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { RefreshCw, AlertTriangle, ExternalLink, Wallet } from "lucide-react";
+import { RefreshCw, AlertTriangle, ExternalLink, Wallet, ChartPie } from "lucide-react";
 
 import type { Route } from "./+types/vault";
 import { createCaller } from "../../../workers/router";
@@ -299,9 +299,12 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
           {/* Allocation Pie Chart */}
           <Card className="md:col-span-1 min-w-0 overflow-hidden">
             <CardContent className="pt-6 px-4 md:px-6">
-              <h3 className="text-sm font-medium font-sora text-[#94938D] uppercase tracking-tight mb-4">
-                Allocation
-              </h3>
+              <div className="flex items-center gap-2 md:gap-3 mb-4">
+                <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0">
+                  <ChartPie className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" />
+                </div>
+                <span className="text-base md:text-lg font-semibold font-sora text-[#242424]">Allocation</span>
+              </div>
               {pieData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={180}>
                   <PieChart>
@@ -395,7 +398,10 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                     <TableRow className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
                       <TableCell className="py-3 px-2 md:px-4">
                         <div className="flex items-center gap-2">
-                          <img src="/wbtc.png" alt="WBTC" className="w-5 h-5 md:w-6 md:h-6" />
+                          <div className="relative">
+                            <img src="/wbtc.png" alt="WBTC" className="w-5 h-5 md:w-6 md:h-6" />
+                            <img src="/eth.svg" alt="Ethereum" className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-white" />
+                          </div>
                           <span className="font-sora font-medium text-[#242424] text-sm">WBTC</span>
                         </div>
                       </TableCell>
@@ -429,7 +435,10 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                     <TableRow className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
                       <TableCell className="py-3 px-2 md:px-4">
                         <div className="flex items-center gap-2">
-                          <img src="/wbtc.png" alt="WBTC" className="w-5 h-5 md:w-6 md:h-6" />
+                          <div className="relative">
+                            <img src="/wbtc.png" alt="WBTC" className="w-5 h-5 md:w-6 md:h-6" />
+                            <img src="/starknet.png" alt="Starknet" className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-white" />
+                          </div>
                           <span className="font-sora font-medium text-[#242424] text-sm">WBTC</span>
                         </div>
                       </TableCell>
@@ -463,7 +472,10 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                     <TableRow className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
                       <TableCell className="py-3 px-2 md:px-4">
                         <div className="flex items-center gap-2">
-                          <img src="/usdu.png" alt="USDU" className="w-5 h-5 md:w-6 md:h-6" />
+                          <div className="relative">
+                            <img src="/usdu.png" alt="USDU" className="w-5 h-5 md:w-6 md:h-6" />
+                            <img src="/starknet.png" alt="Starknet" className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-white" />
+                          </div>
                           <span className="font-sora font-medium text-[#242424] text-sm">USDU</span>
                         </div>
                       </TableCell>
@@ -494,7 +506,10 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                     <TableRow className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
                       <TableCell className="py-3 px-2 md:px-4">
                         <div className="flex items-center gap-2">
-                          <img src="/usdc.svg" alt="USDC" className="w-5 h-5 md:w-6 md:h-6" />
+                          <div className="relative">
+                            <img src="/usdc.svg" alt="USDC" className="w-5 h-5 md:w-6 md:h-6" />
+                            <img src="/starknet.png" alt="Starknet" className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-white" />
+                          </div>
                           <span className="font-sora font-medium text-[#242424] text-sm">USDC</span>
                         </div>
                       </TableCell>
