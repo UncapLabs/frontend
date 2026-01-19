@@ -12,6 +12,7 @@ import { featureFlagsRouter } from "./routers/feature-flags";
 import { incentivesRouter } from "./routers/incentives";
 import { cacheRouter } from "./routers/cache";
 import { protocolStatsRouter } from "./routers/protocol-stats";
+import { vaultRouter } from "./routers/vault";
 
 // Define our app's router
 export const appRouter = router({
@@ -28,6 +29,7 @@ export const appRouter = router({
   incentivesRouter,
   cacheRouter,
   protocolStatsRouter,
+  vaultRouter,
 });
 
 // Export type of AppRouter for client-side use

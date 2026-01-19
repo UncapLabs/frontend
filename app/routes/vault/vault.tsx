@@ -1,0 +1,834 @@
+import { useQuery } from "@tanstack/react-query";
+import { NumericFormat } from "react-number-format";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { RefreshCw, AlertTriangle, ExternalLink, Wallet } from "lucide-react";
+
+import type { Route } from "./+types/vault";
+import { createCaller } from "../../../workers/router";
+import { useTRPC } from "~/lib/trpc";
+import {
+  Card,
+  CardContent,
+} from "~/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import { Button } from "~/components/ui/button";
+import { Skeleton } from "~/components/ui/skeleton";
+import { getCollateralByBranchId } from "~/lib/collateral";
+
+const CHART_COLORS = ["#F59E0B", "#3B82F6", "#10B981", "#8B5CF6"];
+
+// Badge component for position types
+function PositionBadge({ children, color = "blue" }: { children: React.ReactNode; color?: "blue" | "green" | "purple" }) {
+  const colorClasses = {
+    blue: "bg-blue-100 text-blue-700",
+    green: "bg-green-100 text-green-700",
+    purple: "bg-purple-100 text-purple-700",
+  };
+  return (
+    <span className={`px-2 py-0.5 rounded text-xs font-medium font-sora ${colorClasses[color]}`}>
+      {children}
+    </span>
+  );
+}
+
+export async function loader({ context }: Route.LoaderArgs) {
+  const caller = createCaller({
+    env: context.cloudflare.env,
+    executionCtx: context.cloudflare.ctx,
+  });
+
+  try {
+    const data = await caller.vaultRouter.getAnalytics();
+    return { initialData: data, error: null };
+  } catch (error) {
+    console.error("Error loading vault analytics:", error);
+    return {
+      initialData: null,
+      error: error instanceof Error ? error.message : "Failed to load vault data",
+    };
+  }
+}
+
+function formatTimestamp(timestamp: string): string {
+  return new Date(timestamp).toLocaleString();
+}
+
+function formatUsd(value: string | number): string {
+  const num = typeof value === "string" ? parseFloat(value) : value;
+  if (num >= 1_000_000) {
+    return `$${(num / 1_000_000).toFixed(2)}M`;
+  }
+  if (num >= 1_000) {
+    return `$${(num / 1_000).toFixed(2)}K`;
+  }
+  return `$${num.toFixed(2)}`;
+}
+
+function calculateLTV(collateralWbtc: number, debtUsdu: number, btcPrice: number): number | null {
+  if (collateralWbtc <= 0 || btcPrice <= 0) return null;
+  const collateralUsd = collateralWbtc * btcPrice;
+  if (collateralUsd <= 0) return null;
+  return (debtUsdu / collateralUsd) * 100;
+}
+
+function getLtvColorClass(ltv: number): string {
+  if (ltv >= 80) return "text-red-600";
+  if (ltv >= 70) return "text-orange-600";
+  return "text-green-600";
+}
+
+function LoadingSkeleton() {
+  return (
+    <div className="w-full mx-auto max-w-7xl py-8 lg:py-8 px-4 sm:px-6 lg:px-8 pb-32">
+      <div className="flex justify-between pb-6 lg:pb-4 items-baseline">
+        <Skeleton className="h-12 w-48" />
+      </div>
+
+      {/* Summary Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="bg-white rounded-xl p-5">
+            <Skeleton className="h-4 w-20 mb-2" />
+            <Skeleton className="h-8 w-32" />
+          </div>
+        ))}
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid md:grid-cols-3 gap-6 mb-6">
+        <div className="bg-white rounded-xl p-6">
+          <Skeleton className="h-6 w-32 mb-4" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+        <div className="md:col-span-2 bg-white rounded-xl p-6">
+          <Skeleton className="h-6 w-40 mb-4" />
+          <div className="space-y-4">
+            {[1, 2].map((i) => (
+              <Skeleton key={i} className="h-24 w-full" />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Positions Table */}
+      <div className="bg-white rounded-xl p-6">
+        <Skeleton className="h-6 w-40 mb-4" />
+        <Skeleton className="h-48 w-full" />
+      </div>
+    </div>
+  );
+}
+
+function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div className="w-full mx-auto max-w-7xl py-8 lg:py-8 px-4 sm:px-6 lg:px-8 pb-32">
+      <div className="flex justify-between pb-6 lg:pb-4 items-baseline">
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-medium leading-10 font-sora text-[#242424]">
+          Vault Analytics
+        </h1>
+      </div>
+      <Card>
+        <CardContent className="py-12 text-center">
+          <p className="text-red-600 font-sora mb-4">{message}</p>
+          <Button onClick={onRetry} variant="outline">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Retry
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export default function VaultPage({ loaderData }: Route.ComponentProps) {
+  const trpc = useTRPC();
+
+  const { data, isLoading, error, refetch } = useQuery({
+    ...trpc.vaultRouter.getAnalytics.queryOptions(undefined, {
+      staleTime: 30_000,
+      refetchInterval: 60_000,
+    }),
+    initialData: loaderData.initialData ?? undefined,
+  });
+
+  if (isLoading && !data) {
+    return <LoadingSkeleton />;
+  }
+
+  if (error || loaderData.error || !data) {
+    return (
+      <ErrorState
+        message={error?.message || loaderData.error || "Failed to load vault data"}
+        onRetry={() => refetch()}
+      />
+    );
+  }
+
+  const btcPrice = parseFloat(data.btcPrice);
+
+  // Calculate totals for the positions table
+  let totalCollateralWbtc = 0;
+  let totalDebtUsdu = 0;
+  let totalStabilityPoolUsdu = 0;
+  let totalStabilityPoolYieldGain = 0;
+
+  for (const branch of data.branches) {
+    // Collateral is in 18 decimals (wrapped)
+    totalCollateralWbtc += parseFloat(branch.collateral) / 1e18;
+    totalDebtUsdu += parseFloat(branch.debt) / 1e18;
+    totalStabilityPoolUsdu += parseFloat(branch.stabilityPoolUsdu) / 1e18;
+    totalStabilityPoolYieldGain += parseFloat(branch.stabilityPoolYieldGain) / 1e18;
+  }
+
+  const totalStabilityPoolValue = totalStabilityPoolUsdu + totalStabilityPoolYieldGain;
+
+  const pieData = data.allocations.map((alloc, index) => ({
+    name: alloc.name,
+    value: alloc.value,
+    usdValue: alloc.usdValue,
+    fill: CHART_COLORS[index % CHART_COLORS.length],
+  }));
+
+  return (
+    <div className="w-full mx-auto max-w-7xl py-8 lg:py-8 px-4 sm:px-6 lg:px-8 pb-32">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:justify-between pb-6 lg:pb-4 gap-4">
+        <div>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-medium leading-10 font-sora text-[#242424]">
+            Vault Analytics
+          </h1>
+          <p className="text-sm text-[#94938D] font-sora mt-2">
+            Real-time transparency into vault holdings
+          </p>
+        </div>
+        <div className="flex flex-col items-start md:items-end gap-1 text-xs text-[#94938D] font-sora">
+          <span>Last updated: {formatTimestamp(data.timestamp)}</span>
+          <span>
+            Blocks: ETH {data.blockNumbers.ethereum.toLocaleString()} | SN{" "}
+            {data.blockNumbers.starknet.toLocaleString()}
+          </span>
+        </div>
+      </div>
+
+      {/* Warnings */}
+      {data.warnings.length > 0 && (
+        <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-sora font-medium text-amber-800 text-sm">Warnings</p>
+              <ul className="mt-1 text-sm text-amber-700 font-sora">
+                {data.warnings.map((warning, i) => (
+                  <li key={i}>{warning}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Summary Stats Row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white rounded-xl p-5">
+          <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight mb-2">
+            Net Assets Value (USD)
+          </p>
+          <p className="text-2xl font-semibold font-sora text-[#242424]">
+            <NumericFormat
+              displayType="text"
+              value={parseFloat(data.totalNavUsd).toFixed(0)}
+              thousandSeparator=","
+              prefix="$"
+            />
+          </p>
+        </div>
+        <div className="bg-white rounded-xl p-5">
+          <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight mb-2">
+            Net Assets Value (WBTC)
+          </p>
+          <p className="text-2xl font-semibold font-sora text-[#242424]">
+            {parseFloat(data.totalNavWbtc).toFixed(4)} BTC
+          </p>
+        </div>
+        <div className="bg-white rounded-xl p-5">
+          <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight mb-2">
+            BTC Price
+          </p>
+          <p className="text-2xl font-semibold font-sora text-[#242424]">
+            <NumericFormat
+              displayType="text"
+              value={btcPrice.toFixed(0)}
+              thousandSeparator=","
+              prefix="$"
+            />
+          </p>
+        </div>
+        <div className="bg-white rounded-xl p-5">
+          <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight mb-2">
+            Networks
+          </p>
+          <div className="flex items-center gap-2">
+            <img src="/eth.svg" alt="Ethereum" className="w-6 h-6" />
+            <img src="/starknet.png" alt="Starknet" className="w-6 h-6" />
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content - Debank Style */}
+      <div className="space-y-6 mb-6">
+        {/* Top Row: Allocation + Wallet */}
+        <div className="grid md:grid-cols-3 gap-6">
+          {/* Allocation Pie Chart */}
+          <Card className="md:col-span-1">
+            <CardContent className="pt-6">
+              <h3 className="text-sm font-medium font-sora text-[#94938D] uppercase tracking-tight mb-4">
+                Allocation
+              </h3>
+              {pieData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={180}>
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={70}
+                      paddingAngle={2}
+                      dataKey="value"
+                    >
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value, name, props) => {
+                        const numValue = typeof value === "number" ? value : 0;
+                        const usdValue = props?.payload?.usdValue ?? "0";
+                        return [`${numValue.toFixed(1)}% (${formatUsd(usdValue)})`, name];
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-44 flex items-center justify-center text-[#94938D] font-sora text-sm">
+                  No data
+                </div>
+              )}
+              {/* Legend */}
+              <div className="space-y-2 mt-4">
+                {pieData.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between text-xs font-sora">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: item.fill }}
+                      />
+                      <span className="text-[#242424]">{item.name}</span>
+                    </div>
+                    <span className="text-[#94938D]">{item.value.toFixed(1)}%</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Wallet Section */}
+          <Card className="md:col-span-2">
+            <CardContent className="pt-6">
+              {/* Wallet Header */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                    <Wallet className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="text-lg font-semibold font-sora text-[#242424]">Wallet</span>
+                </div>
+                <NumericFormat
+                  displayType="text"
+                  value={(parseFloat(data.walletBalances.ethereum.totalUsd) + parseFloat(data.walletBalances.starknet.totalUsd)).toFixed(2)}
+                  thousandSeparator=","
+                  prefix="$"
+                  className="text-lg font-semibold font-sora text-[#242424]"
+                />
+              </div>
+
+              {/* Wallet Token Table */}
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-b border-[#E5E5E5] hover:bg-transparent">
+                    <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D]">
+                      Token
+                    </TableHead>
+                    <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D] text-right">
+                      Price
+                    </TableHead>
+                    <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D] text-right">
+                      Amount
+                    </TableHead>
+                    <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D] text-right">
+                      USD Value
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {/* Ethereum WBTC */}
+                  {parseFloat(data.walletBalances.ethereum.wbtc) > 0 && (
+                    <TableRow className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
+                      <TableCell className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <img src="/wbtc.png" alt="WBTC" className="w-6 h-6" />
+                          <span className="font-sora font-medium text-[#242424]">WBTC</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-right">
+                        <NumericFormat
+                          displayType="text"
+                          value={btcPrice.toFixed(2)}
+                          thousandSeparator=","
+                          prefix="$"
+                          className="font-sora text-sm text-[#242424]"
+                        />
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-right">
+                        <span className="font-sora text-sm text-[#242424]">
+                          {(parseFloat(data.walletBalances.ethereum.wbtc) / 1e8).toFixed(8)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-right">
+                        <NumericFormat
+                          displayType="text"
+                          value={data.walletBalances.ethereum.totalUsd}
+                          thousandSeparator=","
+                          prefix="$"
+                          className="font-sora text-sm text-[#242424]"
+                        />
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {/* Starknet WBTC */}
+                  {parseFloat(data.walletBalances.starknet.wbtc) > 0 && (
+                    <TableRow className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
+                      <TableCell className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <img src="/wbtc.png" alt="WBTC" className="w-6 h-6" />
+                          <span className="font-sora font-medium text-[#242424]">WBTC</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-right">
+                        <NumericFormat
+                          displayType="text"
+                          value={btcPrice.toFixed(2)}
+                          thousandSeparator=","
+                          prefix="$"
+                          className="font-sora text-sm text-[#242424]"
+                        />
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-right">
+                        <span className="font-sora text-sm text-[#242424]">
+                          {(parseFloat(data.walletBalances.starknet.wbtc) / 1e8).toFixed(8)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-right">
+                        <NumericFormat
+                          displayType="text"
+                          value={((parseFloat(data.walletBalances.starknet.wbtc) / 1e8) * btcPrice).toFixed(2)}
+                          thousandSeparator=","
+                          prefix="$"
+                          className="font-sora text-sm text-[#242424]"
+                        />
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {/* Starknet USDU */}
+                  {parseFloat(data.walletBalances.starknet.usdu) > 0 && (
+                    <TableRow className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
+                      <TableCell className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <img src="/usdu.png" alt="USDU" className="w-6 h-6" />
+                          <span className="font-sora font-medium text-[#242424]">USDU</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-right">
+                        <span className="font-sora text-sm text-[#242424]">$1.00</span>
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-right">
+                        <NumericFormat
+                          displayType="text"
+                          value={(parseFloat(data.walletBalances.starknet.usdu) / 1e18).toFixed(2)}
+                          thousandSeparator=","
+                          className="font-sora text-sm text-[#242424]"
+                        />
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-right">
+                        <NumericFormat
+                          displayType="text"
+                          value={(parseFloat(data.walletBalances.starknet.usdu) / 1e18).toFixed(2)}
+                          thousandSeparator=","
+                          prefix="$"
+                          className="font-sora text-sm text-[#242424]"
+                        />
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {/* Starknet USDC */}
+                  {parseFloat(data.walletBalances.starknet.usdc) > 0 && (
+                    <TableRow className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
+                      <TableCell className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <img src="/usdc.svg" alt="USDC" className="w-6 h-6" />
+                          <span className="font-sora font-medium text-[#242424]">USDC</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-right">
+                        <span className="font-sora text-sm text-[#242424]">$1.00</span>
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-right">
+                        <NumericFormat
+                          displayType="text"
+                          value={(parseFloat(data.walletBalances.starknet.usdc) / 1e6).toFixed(2)}
+                          thousandSeparator=","
+                          className="font-sora text-sm text-[#242424]"
+                        />
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-right">
+                        <NumericFormat
+                          displayType="text"
+                          value={(parseFloat(data.walletBalances.starknet.usdc) / 1e6).toFixed(2)}
+                          thousandSeparator=","
+                          prefix="$"
+                          className="font-sora text-sm text-[#242424]"
+                        />
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* DeFi Positions - Full Width */}
+        {/* Uncap Protocol Section */}
+          <Card>
+            <CardContent className="pt-6">
+              {/* Protocol Header */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <img src="/uncap.png" alt="Uncap" className="w-8 h-8" />
+                  <span className="text-lg font-semibold font-sora text-[#242424]">Uncap</span>
+                  <a
+                    href="https://uncap.finance"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#94938D] hover:text-[#242424] transition-colors"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                </div>
+                <NumericFormat
+                  displayType="text"
+                  value={(totalCollateralWbtc * btcPrice - totalDebtUsdu + totalStabilityPoolValue).toFixed(2)}
+                  thousandSeparator=","
+                  prefix="$"
+                  className="text-lg font-semibold font-sora text-[#242424]"
+                />
+              </div>
+
+              {/* Borrowing Section */}
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <PositionBadge color="blue">Borrowing</PositionBadge>
+                  <span className="text-xs text-[#94938D] font-sora">
+                    LTV:{" "}
+                    {(() => {
+                      const totalLtv = calculateLTV(totalCollateralWbtc, totalDebtUsdu, btcPrice);
+                      return totalLtv !== null ? (
+                        <span className={getLtvColorClass(totalLtv)}>{totalLtv.toFixed(1)}%</span>
+                      ) : (
+                        "—"
+                      );
+                    })()}
+                  </span>
+                </div>
+
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-b border-[#E5E5E5] hover:bg-transparent">
+                      <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D]">
+                        Supplied
+                      </TableHead>
+                      <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D] text-right">
+                        Balance
+                      </TableHead>
+                      <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D] text-right">
+                        USD Value
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {data.branches.map((branch) => {
+                      const collateral = getCollateralByBranchId(branch.branchId);
+                      const collateralWbtc = parseFloat(branch.collateral) / 1e18;
+                      if (collateralWbtc <= 0) return null;
+                      return (
+                        <TableRow key={`supply-${branch.branchId}`} className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
+                          <TableCell className="py-3 px-4">
+                            <div className="flex items-center gap-2">
+                              {collateral && (
+                                <img src={collateral.icon} alt={collateral.symbol} className="w-5 h-5" />
+                              )}
+                              <span className="font-sora font-medium text-[#242424]">
+                                {collateral?.symbol ?? branch.branchName}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-3 px-4 text-right">
+                            <span className="font-sora text-sm text-[#242424]">
+                              {collateralWbtc.toFixed(8)} BTC
+                            </span>
+                          </TableCell>
+                          <TableCell className="py-3 px-4 text-right">
+                            <NumericFormat
+                              displayType="text"
+                              value={(collateralWbtc * btcPrice).toFixed(2)}
+                              thousandSeparator=","
+                              prefix="$"
+                              className="font-sora text-sm text-[#242424]"
+                            />
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+
+                {/* Borrowed Section */}
+                <Table className="mt-4">
+                  <TableHeader>
+                    <TableRow className="border-b border-[#E5E5E5] hover:bg-transparent">
+                      <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D]">
+                        Borrowed
+                      </TableHead>
+                      <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D] text-right">
+                        Balance
+                      </TableHead>
+                      <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D] text-right">
+                        USD Value
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {data.branches.map((branch) => {
+                      const collateral = getCollateralByBranchId(branch.branchId);
+                      const debtUsdu = parseFloat(branch.debt) / 1e18;
+                      if (debtUsdu <= 0) return null;
+                      return (
+                        <TableRow key={`debt-${branch.branchId}`} className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
+                          <TableCell className="py-3 px-4">
+                            <div className="flex items-center gap-2">
+                              <img src="/usdu.png" alt="USDU" className="w-5 h-5" />
+                              <span className="font-sora font-medium text-[#242424]">
+                                USDU
+                              </span>
+                              <span className="text-xs text-[#94938D] font-sora">
+                                ({collateral?.symbol ?? branch.branchName})
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-3 px-4 text-right">
+                            <NumericFormat
+                              displayType="text"
+                              value={debtUsdu.toFixed(2)}
+                              thousandSeparator=","
+                              className="font-sora text-sm text-red-600"
+                            />
+                          </TableCell>
+                          <TableCell className="py-3 px-4 text-right">
+                            <NumericFormat
+                              displayType="text"
+                              value={debtUsdu.toFixed(2)}
+                              thousandSeparator=","
+                              prefix="-$"
+                              className="font-sora text-sm text-red-600"
+                            />
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Stability Pool Section */}
+              {totalStabilityPoolValue > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <PositionBadge color="green">Stability Pool</PositionBadge>
+                  </div>
+
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-b border-[#E5E5E5] hover:bg-transparent">
+                        <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D]">
+                          Position
+                        </TableHead>
+                        <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D] text-right">
+                          Balance
+                        </TableHead>
+                        <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D] text-right">
+                          USD Value
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {data.branches.map((branch) => {
+                        const collateral = getCollateralByBranchId(branch.branchId);
+                        const spUsdu = parseFloat(branch.stabilityPoolUsdu) / 1e18;
+                        const spYieldGain = parseFloat(branch.stabilityPoolYieldGain) / 1e18;
+                        if (spUsdu <= 0 && spYieldGain <= 0) return null;
+                        return (
+                          <>
+                            {/* Deposited USDU */}
+                            {spUsdu > 0 && (
+                              <TableRow key={`sp-deposit-${branch.branchId}`} className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
+                                <TableCell className="py-3 px-4">
+                                  <div className="flex items-center gap-2">
+                                    <img src="/usdu.png" alt="USDU" className="w-5 h-5" />
+                                    <span className="font-sora font-medium text-[#242424]">
+                                      USDU
+                                    </span>
+                                    <span className="text-xs text-[#94938D] font-sora">
+                                      ({collateral?.symbol ?? branch.branchName} pool)
+                                    </span>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="py-3 px-4 text-right">
+                                  <NumericFormat
+                                    displayType="text"
+                                    value={spUsdu.toFixed(2)}
+                                    thousandSeparator=","
+                                    className="font-sora text-sm text-[#242424]"
+                                  />
+                                </TableCell>
+                                <TableCell className="py-3 px-4 text-right">
+                                  <NumericFormat
+                                    displayType="text"
+                                    value={spUsdu.toFixed(2)}
+                                    thousandSeparator=","
+                                    prefix="$"
+                                    className="font-sora text-sm text-[#242424]"
+                                  />
+                                </TableCell>
+                              </TableRow>
+                            )}
+                            {/* Yield Gain */}
+                            {spYieldGain > 0 && (
+                              <TableRow key={`sp-yield-${branch.branchId}`} className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
+                                <TableCell className="py-3 px-4">
+                                  <div className="flex items-center gap-2">
+                                    <img src="/usdu.png" alt="USDU" className="w-5 h-5" />
+                                    <span className="font-sora font-medium text-green-600">
+                                      Yield Gain
+                                    </span>
+                                    <span className="text-xs text-[#94938D] font-sora">
+                                      ({collateral?.symbol ?? branch.branchName} pool)
+                                    </span>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="py-3 px-4 text-right">
+                                  <NumericFormat
+                                    displayType="text"
+                                    value={spYieldGain.toFixed(2)}
+                                    thousandSeparator=","
+                                    className="font-sora text-sm text-green-600"
+                                  />
+                                </TableCell>
+                                <TableCell className="py-3 px-4 text-right">
+                                  <NumericFormat
+                                    displayType="text"
+                                    value={spYieldGain.toFixed(2)}
+                                    thousandSeparator=","
+                                    prefix="+$"
+                                    className="font-sora text-sm text-green-600"
+                                  />
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Extended Vault Section */}
+          {parseFloat(data.extendedVaultUsd) > 0 && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">EV</span>
+                    </div>
+                    <span className="text-lg font-semibold font-sora text-[#242424]">Extended Vault</span>
+                  </div>
+                  <NumericFormat
+                    displayType="text"
+                    value={parseFloat(data.extendedVaultUsd).toFixed(2)}
+                    thousandSeparator=","
+                    prefix="$"
+                    className="text-lg font-semibold font-sora text-[#242424]"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 mb-3">
+                  <PositionBadge color="purple">DeFi Position</PositionBadge>
+                </div>
+
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-b border-[#E5E5E5] hover:bg-transparent">
+                      <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D]">
+                        Position
+                      </TableHead>
+                      <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D] text-right">
+                        USD Value
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
+                      <TableCell className="py-3 px-4">
+                        <span className="font-sora font-medium text-[#242424]">
+                          Extended Vault Holdings
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-right">
+                        <NumericFormat
+                          displayType="text"
+                          value={parseFloat(data.extendedVaultUsd).toFixed(2)}
+                          thousandSeparator=","
+                          prefix="$"
+                          className="font-sora text-sm text-[#242424]"
+                        />
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+      </div>
+    </div>
+  );
+}

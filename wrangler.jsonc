@@ -3,80 +3,85 @@
  * https://developers.cloudflare.com/workers/wrangler/configuration/
  */
 {
-	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "frontend",
-	"main": "./workers/app.ts",
-	"compatibility_date": "2025-06-25",
-	"compatibility_flags": [
-		"nodejs_compat",
-		"nodejs_compat_populate_process_env"
-	],
-	"observability": {
-		"enabled": true
-	},
-	"services": [
-		{
-			"binding": "DOCS_WORKER",
-			"service": "uncap-docs"
-		}
-	],
-	"routes": [
-		{
-			"pattern": "uncap.finance",
-			"custom_domain": true
-		}
-	],
-	// D1 Database for Points and Referrals
-	"d1_databases": [
-		{
-			"binding": "DB",
-			"database_name": "uncap-points",
-			"database_id": "e283d907-bd57-4b7c-a4d6-ffc13bc0755b",
-			"migrations_dir": "migrations"
-		}
-	],
-	// KV Namespace for Feature Flags
-	/**
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "frontend",
+  "main": "./workers/app.ts",
+  "compatibility_date": "2025-06-25",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "nodejs_compat_populate_process_env"
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "services": [
+    {
+      "binding": "DOCS_WORKER",
+      "service": "uncap-docs"
+    },
+    {
+      "binding": "UNCAP_JOBS",
+      "service": "uncap-jobs",
+      "remote": true
+    }
+  ],
+  "routes": [
+    {
+      "pattern": "uncap.finance",
+      "custom_domain": true
+    }
+  ],
+  // D1 Database for Points and Referrals
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "uncap-points",
+      "database_id": "e283d907-bd57-4b7c-a4d6-ffc13bc0755b",
+      "migrations_dir": "migrations"
+    }
+  ],
+  // KV Namespace for Feature Flags
+  /**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
 	 */
-	// "placement": { "mode": "smart" },
-	/**
+  // "placement": { "mode": "smart" },
+  /**
 	 * Bindings
 	 * Bindings allow your Worker to interact with resources on the Cloudflare Developer Platform, including
 	 * databases, object storage, AI inference, real-time communication and more.
 	 * https://developers.cloudflare.com/workers/runtime-apis/bindings/
 	 */
-	/**
+  /**
 	 * Environment Variables
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
 	 */
-	// "vars": { "MY_VARIABLE": "production_value" },
-	/**
+  // "vars": { "MY_VARIABLE": "production_value" },
+  /**
 	 * Note: Use secrets to store sensitive data.
 	 * https://developers.cloudflare.com/workers/configuration/secrets/
 	 */
-	/**
+  /**
 	 * Static Assets
 	 * https://developers.cloudflare.com/workers/static-assets/binding/
 	 */
-	"assets": {
-		"directory": "./public/",
-		"binding": "ASSETS"
-	},
-	"kv_namespaces": [
-		{
-			"binding": "FEATURE_FLAGS",
-			"id": "a20c216a8ab64032974258b05228b618"
-		},
-		{
-			"binding": "CACHE",
-			"id": "1fe3011279004ff490a11b66abd5af16"
-		}
-	],
-	/**
+  "assets": {
+    "directory": "./public/",
+    "binding": "ASSETS"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "FEATURE_FLAGS",
+      "id": "a20c216a8ab64032974258b05228b618"
+    },
+    {
+      "binding": "CACHE",
+      "id": "1fe3011279004ff490a11b66abd5af16"
+    }
+  ],
+  /**
 	 * Service Bindings (communicate between multiple Workers)
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings
 	 */
-	// "services": [{ "binding": "MY_SERVICE", "service": "my-service" }]
+  // "services": [{ "binding": "MY_SERVICE", "service": "my-service" }]
 }
