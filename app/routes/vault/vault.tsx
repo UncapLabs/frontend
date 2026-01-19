@@ -4,6 +4,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { RefreshCw, AlertTriangle, ExternalLink, Wallet, ChartPie } from "lucide-react";
 
 import type { Route } from "./+types/vault";
+import { createMeta } from "~/lib/utils/meta";
 import { createCaller } from "../../../workers/router";
 import { useTRPC } from "~/lib/trpc";
 import {
@@ -868,4 +869,12 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
       </div>
     </div>
   );
+}
+
+export function meta(args: Route.MetaArgs) {
+  return createMeta(args, {
+    title: "Uncap - Lagoon Vault Analytics",
+    description:
+      "Real-time transparency into Uncap's Lagoon vault holdings and allocations",
+  });
 }
