@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { NumericFormat } from "react-number-format";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { RefreshCw, AlertTriangle, ExternalLink, Wallet } from "lucide-react";
+import { RefreshCw, AlertTriangle, ExternalLink, Wallet, ChartPie } from "lucide-react";
 
 import type { Route } from "./+types/vault";
 import { createCaller } from "../../../workers/router";
@@ -206,13 +206,24 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
           </h1>
           <p className="text-sm text-[#94938D] font-sora mt-2">
             Real-time transparency into vault holdings
+            <span className="mx-2">·</span>
+            <a
+              href="https://app.lagoon.finance/vault/1/0xeff2c1cc0e3bbb6bedc9622a309ed75eab730521"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#94938D] hover:text-[#242424] transition-colors inline-flex items-center gap-1"
+            >
+              View on Lagoon
+              <ExternalLink className="w-3 h-3" />
+            </a>
           </p>
         </div>
         <div className="flex flex-col items-start md:items-end gap-1 text-xs text-[#94938D] font-sora">
           <span>Last updated: {formatTimestamp(data.timestamp)}</span>
-          <span>
-            Blocks: ETH {data.blockNumbers.ethereum.toLocaleString()} | SN{" "}
-            {data.blockNumbers.starknet.toLocaleString()}
+          <span className="flex flex-wrap gap-x-1">
+            <span>ETH {data.blockNumbers.ethereum.toLocaleString()}</span>
+            <span className="hidden xs:inline">|</span>
+            <span>SN {data.blockNumbers.starknet.toLocaleString()}</span>
           </span>
         </div>
       </div>
@@ -235,12 +246,12 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
       )}
 
       {/* Summary Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-xl p-5">
-          <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight mb-2">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
+        <div className="bg-white rounded-xl p-4 md:p-5 min-w-0">
+          <p className="text-[10px] md:text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight mb-1 md:mb-2">
             Net Assets Value (USD)
           </p>
-          <p className="text-2xl font-semibold font-sora text-[#242424]">
+          <p className="text-lg md:text-2xl font-semibold font-sora text-[#242424] truncate">
             <NumericFormat
               displayType="text"
               value={parseFloat(data.totalNavUsd).toFixed(0)}
@@ -249,19 +260,19 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
             />
           </p>
         </div>
-        <div className="bg-white rounded-xl p-5">
-          <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight mb-2">
-            Net Assets Value (WBTC)
+        <div className="bg-white rounded-xl p-4 md:p-5 min-w-0">
+          <p className="text-[10px] md:text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight mb-1 md:mb-2">
+            Net Assets Value (BTC)
           </p>
-          <p className="text-2xl font-semibold font-sora text-[#242424]">
-            {parseFloat(data.totalNavWbtc).toFixed(4)} BTC
+          <p className="text-lg md:text-2xl font-semibold font-sora text-[#242424] truncate">
+            {parseFloat(data.totalNavWbtc).toFixed(4)}
           </p>
         </div>
-        <div className="bg-white rounded-xl p-5">
-          <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight mb-2">
+        <div className="bg-white rounded-xl p-4 md:p-5 min-w-0">
+          <p className="text-[10px] md:text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight mb-1 md:mb-2">
             BTC Price
           </p>
-          <p className="text-2xl font-semibold font-sora text-[#242424]">
+          <p className="text-lg md:text-2xl font-semibold font-sora text-[#242424] truncate">
             <NumericFormat
               displayType="text"
               value={btcPrice.toFixed(0)}
@@ -270,8 +281,8 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
             />
           </p>
         </div>
-        <div className="bg-white rounded-xl p-5">
-          <p className="text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight mb-2">
+        <div className="bg-white rounded-xl p-4 md:p-5 min-w-0">
+          <p className="text-[10px] md:text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight mb-1 md:mb-2">
             Networks
           </p>
           <div className="flex items-center gap-2">
@@ -284,13 +295,16 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
       {/* Main Content - Debank Style */}
       <div className="space-y-6 mb-6">
         {/* Top Row: Allocation + Wallet */}
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-4 md:gap-6">
           {/* Allocation Pie Chart */}
-          <Card className="md:col-span-1">
-            <CardContent className="pt-6">
-              <h3 className="text-sm font-medium font-sora text-[#94938D] uppercase tracking-tight mb-4">
-                Allocation
-              </h3>
+          <Card className="md:col-span-1 min-w-0 overflow-hidden">
+            <CardContent className="pt-6 px-4 md:px-6">
+              <div className="flex items-center gap-2 md:gap-3 mb-4">
+                <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0">
+                  <ChartPie className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" />
+                </div>
+                <span className="text-base md:text-lg font-semibold font-sora text-[#242424]">Allocation</span>
+              </div>
               {pieData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={180}>
                   <PieChart>
@@ -340,39 +354,40 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
           </Card>
 
           {/* Wallet Section */}
-          <Card className="md:col-span-2">
-            <CardContent className="pt-6">
+          <Card className="md:col-span-2 min-w-0 overflow-hidden">
+            <CardContent className="pt-6 px-4 md:px-6">
               {/* Wallet Header */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                    <Wallet className="w-4 h-4 text-white" />
+              <div className="flex items-center justify-between mb-4 gap-2">
+                <div className="flex items-center gap-2 md:gap-3 min-w-0">
+                  <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
+                    <Wallet className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" />
                   </div>
-                  <span className="text-lg font-semibold font-sora text-[#242424]">Wallet</span>
+                  <span className="text-base md:text-lg font-semibold font-sora text-[#242424]">Wallet</span>
                 </div>
                 <NumericFormat
                   displayType="text"
                   value={(parseFloat(data.walletBalances.ethereum.totalUsd) + parseFloat(data.walletBalances.starknet.totalUsd)).toFixed(2)}
                   thousandSeparator=","
                   prefix="$"
-                  className="text-lg font-semibold font-sora text-[#242424]"
+                  className="text-base md:text-lg font-semibold font-sora text-[#242424]"
                 />
               </div>
 
               {/* Wallet Token Table */}
+              <div className="overflow-x-auto -mx-4 px-4 md:-mx-6 md:px-6">
               <Table>
                 <TableHeader>
                   <TableRow className="border-b border-[#E5E5E5] hover:bg-transparent">
-                    <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D]">
+                    <TableHead className="h-10 py-2 px-2 md:px-4 text-xs font-medium font-sora text-[#94938D]">
                       Token
                     </TableHead>
-                    <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D] text-right">
+                    <TableHead className="h-10 py-2 px-2 md:px-4 text-xs font-medium font-sora text-[#94938D] text-right">
                       Price
                     </TableHead>
-                    <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D] text-right">
+                    <TableHead className="h-10 py-2 px-2 md:px-4 text-xs font-medium font-sora text-[#94938D] text-right">
                       Amount
                     </TableHead>
-                    <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D] text-right">
+                    <TableHead className="h-10 py-2 px-2 md:px-4 text-xs font-medium font-sora text-[#94938D] text-right">
                       USD Value
                     </TableHead>
                   </TableRow>
@@ -381,33 +396,36 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                   {/* Ethereum WBTC */}
                   {parseFloat(data.walletBalances.ethereum.wbtc) > 0 && (
                     <TableRow className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
-                      <TableCell className="py-3 px-4">
+                      <TableCell className="py-3 px-2 md:px-4">
                         <div className="flex items-center gap-2">
-                          <img src="/wbtc.png" alt="WBTC" className="w-6 h-6" />
-                          <span className="font-sora font-medium text-[#242424]">WBTC</span>
+                          <div className="relative">
+                            <img src="/wbtc.png" alt="WBTC" className="w-5 h-5 md:w-6 md:h-6" />
+                            <img src="/eth.svg" alt="Ethereum" className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-white" />
+                          </div>
+                          <span className="font-sora font-medium text-[#242424] text-sm">WBTC</span>
                         </div>
                       </TableCell>
-                      <TableCell className="py-3 px-4 text-right">
+                      <TableCell className="py-3 px-2 md:px-4 text-right">
                         <NumericFormat
                           displayType="text"
                           value={btcPrice.toFixed(2)}
                           thousandSeparator=","
                           prefix="$"
-                          className="font-sora text-sm text-[#242424]"
+                          className="font-sora text-xs md:text-sm text-[#242424]"
                         />
                       </TableCell>
-                      <TableCell className="py-3 px-4 text-right">
-                        <span className="font-sora text-sm text-[#242424]">
+                      <TableCell className="py-3 px-2 md:px-4 text-right">
+                        <span className="font-sora text-xs md:text-sm text-[#242424]">
                           {(parseFloat(data.walletBalances.ethereum.wbtc) / 1e8).toFixed(8)}
                         </span>
                       </TableCell>
-                      <TableCell className="py-3 px-4 text-right">
+                      <TableCell className="py-3 px-2 md:px-4 text-right">
                         <NumericFormat
                           displayType="text"
                           value={data.walletBalances.ethereum.totalUsd}
                           thousandSeparator=","
                           prefix="$"
-                          className="font-sora text-sm text-[#242424]"
+                          className="font-sora text-xs md:text-sm text-[#242424]"
                         />
                       </TableCell>
                     </TableRow>
@@ -415,33 +433,36 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                   {/* Starknet WBTC */}
                   {parseFloat(data.walletBalances.starknet.wbtc) > 0 && (
                     <TableRow className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
-                      <TableCell className="py-3 px-4">
+                      <TableCell className="py-3 px-2 md:px-4">
                         <div className="flex items-center gap-2">
-                          <img src="/wbtc.png" alt="WBTC" className="w-6 h-6" />
-                          <span className="font-sora font-medium text-[#242424]">WBTC</span>
+                          <div className="relative">
+                            <img src="/wbtc.png" alt="WBTC" className="w-5 h-5 md:w-6 md:h-6" />
+                            <img src="/starknet.png" alt="Starknet" className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-white" />
+                          </div>
+                          <span className="font-sora font-medium text-[#242424] text-sm">WBTC</span>
                         </div>
                       </TableCell>
-                      <TableCell className="py-3 px-4 text-right">
+                      <TableCell className="py-3 px-2 md:px-4 text-right">
                         <NumericFormat
                           displayType="text"
                           value={btcPrice.toFixed(2)}
                           thousandSeparator=","
                           prefix="$"
-                          className="font-sora text-sm text-[#242424]"
+                          className="font-sora text-xs md:text-sm text-[#242424]"
                         />
                       </TableCell>
-                      <TableCell className="py-3 px-4 text-right">
-                        <span className="font-sora text-sm text-[#242424]">
+                      <TableCell className="py-3 px-2 md:px-4 text-right">
+                        <span className="font-sora text-xs md:text-sm text-[#242424]">
                           {(parseFloat(data.walletBalances.starknet.wbtc) / 1e8).toFixed(8)}
                         </span>
                       </TableCell>
-                      <TableCell className="py-3 px-4 text-right">
+                      <TableCell className="py-3 px-2 md:px-4 text-right">
                         <NumericFormat
                           displayType="text"
                           value={((parseFloat(data.walletBalances.starknet.wbtc) / 1e8) * btcPrice).toFixed(2)}
                           thousandSeparator=","
                           prefix="$"
-                          className="font-sora text-sm text-[#242424]"
+                          className="font-sora text-xs md:text-sm text-[#242424]"
                         />
                       </TableCell>
                     </TableRow>
@@ -449,30 +470,33 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                   {/* Starknet USDU */}
                   {parseFloat(data.walletBalances.starknet.usdu) > 0 && (
                     <TableRow className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
-                      <TableCell className="py-3 px-4">
+                      <TableCell className="py-3 px-2 md:px-4">
                         <div className="flex items-center gap-2">
-                          <img src="/usdu.png" alt="USDU" className="w-6 h-6" />
-                          <span className="font-sora font-medium text-[#242424]">USDU</span>
+                          <div className="relative">
+                            <img src="/usdu.png" alt="USDU" className="w-5 h-5 md:w-6 md:h-6" />
+                            <img src="/starknet.png" alt="Starknet" className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-white" />
+                          </div>
+                          <span className="font-sora font-medium text-[#242424] text-sm">USDU</span>
                         </div>
                       </TableCell>
-                      <TableCell className="py-3 px-4 text-right">
-                        <span className="font-sora text-sm text-[#242424]">$1.00</span>
+                      <TableCell className="py-3 px-2 md:px-4 text-right">
+                        <span className="font-sora text-xs md:text-sm text-[#242424]">$1.00</span>
                       </TableCell>
-                      <TableCell className="py-3 px-4 text-right">
+                      <TableCell className="py-3 px-2 md:px-4 text-right">
                         <NumericFormat
                           displayType="text"
                           value={(parseFloat(data.walletBalances.starknet.usdu) / 1e18).toFixed(2)}
                           thousandSeparator=","
-                          className="font-sora text-sm text-[#242424]"
+                          className="font-sora text-xs md:text-sm text-[#242424]"
                         />
                       </TableCell>
-                      <TableCell className="py-3 px-4 text-right">
+                      <TableCell className="py-3 px-2 md:px-4 text-right">
                         <NumericFormat
                           displayType="text"
                           value={(parseFloat(data.walletBalances.starknet.usdu) / 1e18).toFixed(2)}
                           thousandSeparator=","
                           prefix="$"
-                          className="font-sora text-sm text-[#242424]"
+                          className="font-sora text-xs md:text-sm text-[#242424]"
                         />
                       </TableCell>
                     </TableRow>
@@ -480,49 +504,53 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                   {/* Starknet USDC */}
                   {parseFloat(data.walletBalances.starknet.usdc) > 0 && (
                     <TableRow className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
-                      <TableCell className="py-3 px-4">
+                      <TableCell className="py-3 px-2 md:px-4">
                         <div className="flex items-center gap-2">
-                          <img src="/usdc.svg" alt="USDC" className="w-6 h-6" />
-                          <span className="font-sora font-medium text-[#242424]">USDC</span>
+                          <div className="relative">
+                            <img src="/usdc.svg" alt="USDC" className="w-5 h-5 md:w-6 md:h-6" />
+                            <img src="/starknet.png" alt="Starknet" className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-white" />
+                          </div>
+                          <span className="font-sora font-medium text-[#242424] text-sm">USDC</span>
                         </div>
                       </TableCell>
-                      <TableCell className="py-3 px-4 text-right">
-                        <span className="font-sora text-sm text-[#242424]">$1.00</span>
+                      <TableCell className="py-3 px-2 md:px-4 text-right">
+                        <span className="font-sora text-xs md:text-sm text-[#242424]">$1.00</span>
                       </TableCell>
-                      <TableCell className="py-3 px-4 text-right">
+                      <TableCell className="py-3 px-2 md:px-4 text-right">
                         <NumericFormat
                           displayType="text"
                           value={(parseFloat(data.walletBalances.starknet.usdc) / 1e6).toFixed(2)}
                           thousandSeparator=","
-                          className="font-sora text-sm text-[#242424]"
+                          className="font-sora text-xs md:text-sm text-[#242424]"
                         />
                       </TableCell>
-                      <TableCell className="py-3 px-4 text-right">
+                      <TableCell className="py-3 px-2 md:px-4 text-right">
                         <NumericFormat
                           displayType="text"
                           value={(parseFloat(data.walletBalances.starknet.usdc) / 1e6).toFixed(2)}
                           thousandSeparator=","
                           prefix="$"
-                          className="font-sora text-sm text-[#242424]"
+                          className="font-sora text-xs md:text-sm text-[#242424]"
                         />
                       </TableCell>
                     </TableRow>
                   )}
                 </TableBody>
               </Table>
+              </div>
             </CardContent>
           </Card>
         </div>
 
         {/* DeFi Positions - Full Width */}
         {/* Uncap Protocol Section */}
-          <Card>
-            <CardContent className="pt-6">
+          <Card className="min-w-0 overflow-hidden">
+            <CardContent className="pt-6 px-4 md:px-6">
               {/* Protocol Header */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <img src="/uncap.png" alt="Uncap" className="w-8 h-8" />
-                  <span className="text-lg font-semibold font-sora text-[#242424]">Uncap</span>
+              <div className="flex items-center justify-between mb-4 gap-2">
+                <div className="flex items-center gap-2 md:gap-3 min-w-0">
+                  <img src="/uncap.png" alt="Uncap" className="w-7 h-7 md:w-8 md:h-8 flex-shrink-0" />
+                  <span className="text-base md:text-lg font-semibold font-sora text-[#242424]">Uncap</span>
                   <a
                     href="https://uncap.finance"
                     target="_blank"
@@ -537,7 +565,7 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                   value={(totalCollateralWbtc * btcPrice - totalDebtUsdu + totalStabilityPoolValue).toFixed(2)}
                   thousandSeparator=","
                   prefix="$"
-                  className="text-lg font-semibold font-sora text-[#242424]"
+                  className="text-base md:text-lg font-semibold font-sora text-[#242424]"
                 />
               </div>
 
@@ -558,16 +586,17 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                   </span>
                 </div>
 
+                <div className="overflow-x-auto -mx-4 px-4 md:-mx-6 md:px-6">
                 <Table>
                   <TableHeader>
                     <TableRow className="border-b border-[#E5E5E5] hover:bg-transparent">
-                      <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D]">
+                      <TableHead className="h-10 py-2 px-2 md:px-4 text-xs font-medium font-sora text-[#94938D]">
                         Supplied
                       </TableHead>
-                      <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D] text-right">
+                      <TableHead className="h-10 py-2 px-2 md:px-4 text-xs font-medium font-sora text-[#94938D] text-right">
                         Balance
                       </TableHead>
-                      <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D] text-right">
+                      <TableHead className="h-10 py-2 px-2 md:px-4 text-xs font-medium font-sora text-[#94938D] text-right">
                         USD Value
                       </TableHead>
                     </TableRow>
@@ -579,28 +608,28 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                       if (collateralWbtc <= 0) return null;
                       return (
                         <TableRow key={`supply-${branch.branchId}`} className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
-                          <TableCell className="py-3 px-4">
+                          <TableCell className="py-3 px-2 md:px-4">
                             <div className="flex items-center gap-2">
                               {collateral && (
                                 <img src={collateral.icon} alt={collateral.symbol} className="w-5 h-5" />
                               )}
-                              <span className="font-sora font-medium text-[#242424]">
+                              <span className="font-sora font-medium text-[#242424] text-sm">
                                 {collateral?.symbol ?? branch.branchName}
                               </span>
                             </div>
                           </TableCell>
-                          <TableCell className="py-3 px-4 text-right">
-                            <span className="font-sora text-sm text-[#242424]">
+                          <TableCell className="py-3 px-2 md:px-4 text-right">
+                            <span className="font-sora text-xs md:text-sm text-[#242424]">
                               {collateralWbtc.toFixed(8)} BTC
                             </span>
                           </TableCell>
-                          <TableCell className="py-3 px-4 text-right">
+                          <TableCell className="py-3 px-2 md:px-4 text-right">
                             <NumericFormat
                               displayType="text"
                               value={(collateralWbtc * btcPrice).toFixed(2)}
                               thousandSeparator=","
                               prefix="$"
-                              className="font-sora text-sm text-[#242424]"
+                              className="font-sora text-xs md:text-sm text-[#242424]"
                             />
                           </TableCell>
                         </TableRow>
@@ -608,18 +637,20 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                     })}
                   </TableBody>
                 </Table>
+                </div>
 
                 {/* Borrowed Section */}
-                <Table className="mt-4">
+                <div className="overflow-x-auto -mx-6 px-6 mt-4">
+                <Table>
                   <TableHeader>
                     <TableRow className="border-b border-[#E5E5E5] hover:bg-transparent">
-                      <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D]">
+                      <TableHead className="h-10 py-2 px-2 md:px-4 text-xs font-medium font-sora text-[#94938D]">
                         Borrowed
                       </TableHead>
-                      <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D] text-right">
+                      <TableHead className="h-10 py-2 px-2 md:px-4 text-xs font-medium font-sora text-[#94938D] text-right">
                         Balance
                       </TableHead>
-                      <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D] text-right">
+                      <TableHead className="h-10 py-2 px-2 md:px-4 text-xs font-medium font-sora text-[#94938D] text-right">
                         USD Value
                       </TableHead>
                     </TableRow>
@@ -631,32 +662,32 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                       if (debtUsdu <= 0) return null;
                       return (
                         <TableRow key={`debt-${branch.branchId}`} className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
-                          <TableCell className="py-3 px-4">
+                          <TableCell className="py-3 px-2 md:px-4">
                             <div className="flex items-center gap-2">
                               <img src="/usdu.png" alt="USDU" className="w-5 h-5" />
-                              <span className="font-sora font-medium text-[#242424]">
+                              <span className="font-sora font-medium text-[#242424] text-sm">
                                 USDU
                               </span>
-                              <span className="text-xs text-[#94938D] font-sora">
+                              <span className="text-xs text-[#94938D] font-sora hidden md:inline">
                                 ({collateral?.symbol ?? branch.branchName})
                               </span>
                             </div>
                           </TableCell>
-                          <TableCell className="py-3 px-4 text-right">
+                          <TableCell className="py-3 px-2 md:px-4 text-right">
                             <NumericFormat
                               displayType="text"
                               value={debtUsdu.toFixed(2)}
                               thousandSeparator=","
-                              className="font-sora text-sm text-red-600"
+                              className="font-sora text-xs md:text-sm text-red-600"
                             />
                           </TableCell>
-                          <TableCell className="py-3 px-4 text-right">
+                          <TableCell className="py-3 px-2 md:px-4 text-right">
                             <NumericFormat
                               displayType="text"
                               value={debtUsdu.toFixed(2)}
                               thousandSeparator=","
                               prefix="-$"
-                              className="font-sora text-sm text-red-600"
+                              className="font-sora text-xs md:text-sm text-red-600"
                             />
                           </TableCell>
                         </TableRow>
@@ -664,6 +695,7 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                     })}
                   </TableBody>
                 </Table>
+                </div>
               </div>
 
               {/* Stability Pool Section */}
@@ -673,16 +705,17 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                     <PositionBadge color="green">Stability Pool</PositionBadge>
                   </div>
 
+                  <div className="overflow-x-auto -mx-4 px-4 md:-mx-6 md:px-6">
                   <Table>
                     <TableHeader>
                       <TableRow className="border-b border-[#E5E5E5] hover:bg-transparent">
-                        <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D]">
+                        <TableHead className="h-10 py-2 px-2 md:px-4 text-xs font-medium font-sora text-[#94938D]">
                           Position
                         </TableHead>
-                        <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D] text-right">
+                        <TableHead className="h-10 py-2 px-2 md:px-4 text-xs font-medium font-sora text-[#94938D] text-right">
                           Balance
                         </TableHead>
-                        <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D] text-right">
+                        <TableHead className="h-10 py-2 px-2 md:px-4 text-xs font-medium font-sora text-[#94938D] text-right">
                           USD Value
                         </TableHead>
                       </TableRow>
@@ -698,32 +731,32 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                             {/* Deposited USDU */}
                             {spUsdu > 0 && (
                               <TableRow key={`sp-deposit-${branch.branchId}`} className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
-                                <TableCell className="py-3 px-4">
+                                <TableCell className="py-3 px-2 md:px-4">
                                   <div className="flex items-center gap-2">
                                     <img src="/usdu.png" alt="USDU" className="w-5 h-5" />
-                                    <span className="font-sora font-medium text-[#242424]">
+                                    <span className="font-sora font-medium text-[#242424] text-sm">
                                       USDU
                                     </span>
-                                    <span className="text-xs text-[#94938D] font-sora">
+                                    <span className="text-xs text-[#94938D] font-sora hidden md:inline">
                                       ({collateral?.symbol ?? branch.branchName} pool)
                                     </span>
                                   </div>
                                 </TableCell>
-                                <TableCell className="py-3 px-4 text-right">
+                                <TableCell className="py-3 px-2 md:px-4 text-right">
                                   <NumericFormat
                                     displayType="text"
                                     value={spUsdu.toFixed(2)}
                                     thousandSeparator=","
-                                    className="font-sora text-sm text-[#242424]"
+                                    className="font-sora text-xs md:text-sm text-[#242424]"
                                   />
                                 </TableCell>
-                                <TableCell className="py-3 px-4 text-right">
+                                <TableCell className="py-3 px-2 md:px-4 text-right">
                                   <NumericFormat
                                     displayType="text"
                                     value={spUsdu.toFixed(2)}
                                     thousandSeparator=","
                                     prefix="$"
-                                    className="font-sora text-sm text-[#242424]"
+                                    className="font-sora text-xs md:text-sm text-[#242424]"
                                   />
                                 </TableCell>
                               </TableRow>
@@ -731,32 +764,32 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                             {/* Yield Gain */}
                             {spYieldGain > 0 && (
                               <TableRow key={`sp-yield-${branch.branchId}`} className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
-                                <TableCell className="py-3 px-4">
+                                <TableCell className="py-3 px-2 md:px-4">
                                   <div className="flex items-center gap-2">
                                     <img src="/usdu.png" alt="USDU" className="w-5 h-5" />
-                                    <span className="font-sora font-medium text-green-600">
+                                    <span className="font-sora font-medium text-green-600 text-sm">
                                       Yield Gain
                                     </span>
-                                    <span className="text-xs text-[#94938D] font-sora">
+                                    <span className="text-xs text-[#94938D] font-sora hidden md:inline">
                                       ({collateral?.symbol ?? branch.branchName} pool)
                                     </span>
                                   </div>
                                 </TableCell>
-                                <TableCell className="py-3 px-4 text-right">
+                                <TableCell className="py-3 px-2 md:px-4 text-right">
                                   <NumericFormat
                                     displayType="text"
                                     value={spYieldGain.toFixed(2)}
                                     thousandSeparator=","
-                                    className="font-sora text-sm text-green-600"
+                                    className="font-sora text-xs md:text-sm text-green-600"
                                   />
                                 </TableCell>
-                                <TableCell className="py-3 px-4 text-right">
+                                <TableCell className="py-3 px-2 md:px-4 text-right">
                                   <NumericFormat
                                     displayType="text"
                                     value={spYieldGain.toFixed(2)}
                                     thousandSeparator=","
                                     prefix="+$"
-                                    className="font-sora text-sm text-green-600"
+                                    className="font-sora text-xs md:text-sm text-green-600"
                                   />
                                 </TableCell>
                               </TableRow>
@@ -766,6 +799,7 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                       })}
                     </TableBody>
                   </Table>
+                  </div>
                 </div>
               )}
             </CardContent>
@@ -773,21 +807,21 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
 
           {/* Extended Vault Section */}
           {parseFloat(data.extendedVaultUsd) > 0 && (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center">
+            <Card className="min-w-0 overflow-hidden">
+              <CardContent className="pt-6 px-4 md:px-6">
+                <div className="flex items-center justify-between mb-4 gap-2">
+                  <div className="flex items-center gap-2 md:gap-3 min-w-0">
+                    <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center flex-shrink-0">
                       <span className="text-white text-xs font-bold">EV</span>
                     </div>
-                    <span className="text-lg font-semibold font-sora text-[#242424]">Extended Vault</span>
+                    <span className="text-base md:text-lg font-semibold font-sora text-[#242424]">Extended Vault</span>
                   </div>
                   <NumericFormat
                     displayType="text"
                     value={parseFloat(data.extendedVaultUsd).toFixed(2)}
                     thousandSeparator=","
                     prefix="$"
-                    className="text-lg font-semibold font-sora text-[#242424]"
+                    className="text-base md:text-lg font-semibold font-sora text-[#242424]"
                   />
                 </div>
 
@@ -795,39 +829,42 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                   <PositionBadge color="purple">DeFi Position</PositionBadge>
                 </div>
 
+                <div className="overflow-x-auto -mx-4 px-4 md:-mx-6 md:px-6">
                 <Table>
                   <TableHeader>
                     <TableRow className="border-b border-[#E5E5E5] hover:bg-transparent">
-                      <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D]">
+                      <TableHead className="h-10 py-2 px-2 md:px-4 text-xs font-medium font-sora text-[#94938D]">
                         Position
                       </TableHead>
-                      <TableHead className="h-10 py-2 px-4 text-xs font-medium font-sora text-[#94938D] text-right">
+                      <TableHead className="h-10 py-2 px-2 md:px-4 text-xs font-medium font-sora text-[#94938D] text-right">
                         USD Value
                       </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     <TableRow className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
-                      <TableCell className="py-3 px-4">
-                        <span className="font-sora font-medium text-[#242424]">
+                      <TableCell className="py-3 px-2 md:px-4">
+                        <span className="font-sora font-medium text-[#242424] text-sm">
                           Extended Vault Holdings
                         </span>
                       </TableCell>
-                      <TableCell className="py-3 px-4 text-right">
+                      <TableCell className="py-3 px-2 md:px-4 text-right">
                         <NumericFormat
                           displayType="text"
                           value={parseFloat(data.extendedVaultUsd).toFixed(2)}
                           thousandSeparator=","
                           prefix="$"
-                          className="font-sora text-sm text-[#242424]"
+                          className="font-sora text-xs md:text-sm text-[#242424]"
                         />
                       </TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
+                </div>
               </CardContent>
             </Card>
           )}
+
       </div>
     </div>
   );
