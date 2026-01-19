@@ -4,6 +4,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { RefreshCw, AlertTriangle, ExternalLink, Wallet, ChartPie } from "lucide-react";
 
 import type { Route } from "./+types/vault";
+import { createMeta } from "~/lib/utils/meta";
 import { createCaller } from "../../../workers/router";
 import { useTRPC } from "~/lib/trpc";
 import {
@@ -398,8 +399,8 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                     <TableRow className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
                       <TableCell className="py-3 px-2 md:px-4">
                         <div className="flex items-center gap-2">
-                          <div className="relative">
-                            <img src="/wbtc.png" alt="WBTC" className="w-5 h-5 md:w-6 md:h-6" />
+                          <div className="relative w-5 h-5 md:w-6 md:h-6 flex-shrink-0">
+                            <img src="/wbtc.png" alt="WBTC" className="w-full h-full" />
                             <img src="/eth.svg" alt="Ethereum" className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-white" />
                           </div>
                           <span className="font-sora font-medium text-[#242424] text-sm">WBTC</span>
@@ -435,8 +436,8 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                     <TableRow className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
                       <TableCell className="py-3 px-2 md:px-4">
                         <div className="flex items-center gap-2">
-                          <div className="relative">
-                            <img src="/wbtc.png" alt="WBTC" className="w-5 h-5 md:w-6 md:h-6" />
+                          <div className="relative w-5 h-5 md:w-6 md:h-6 flex-shrink-0">
+                            <img src="/wbtc.png" alt="WBTC" className="w-full h-full" />
                             <img src="/starknet.png" alt="Starknet" className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-white" />
                           </div>
                           <span className="font-sora font-medium text-[#242424] text-sm">WBTC</span>
@@ -472,8 +473,8 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                     <TableRow className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
                       <TableCell className="py-3 px-2 md:px-4">
                         <div className="flex items-center gap-2">
-                          <div className="relative">
-                            <img src="/usdu.png" alt="USDU" className="w-5 h-5 md:w-6 md:h-6" />
+                          <div className="relative w-5 h-5 md:w-6 md:h-6 flex-shrink-0">
+                            <img src="/usdu.png" alt="USDU" className="w-full h-full" />
                             <img src="/starknet.png" alt="Starknet" className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-white" />
                           </div>
                           <span className="font-sora font-medium text-[#242424] text-sm">USDU</span>
@@ -506,8 +507,8 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                     <TableRow className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
                       <TableCell className="py-3 px-2 md:px-4">
                         <div className="flex items-center gap-2">
-                          <div className="relative">
-                            <img src="/usdc.svg" alt="USDC" className="w-5 h-5 md:w-6 md:h-6" />
+                          <div className="relative w-5 h-5 md:w-6 md:h-6 flex-shrink-0">
+                            <img src="/usdc.svg" alt="USDC" className="w-full h-full" />
                             <img src="/starknet.png" alt="Starknet" className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-white" />
                           </div>
                           <span className="font-sora font-medium text-[#242424] text-sm">USDC</span>
@@ -868,4 +869,12 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
       </div>
     </div>
   );
+}
+
+export function meta(args: Route.MetaArgs) {
+  return createMeta(args, {
+    title: "Uncap - Lagoon Vault Analytics",
+    description:
+      "Real-time transparency into Uncap's Lagoon vault holdings and allocations",
+  });
 }
