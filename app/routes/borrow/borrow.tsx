@@ -8,6 +8,7 @@ import { TokenInput } from "~/components/token-input";
 import { ArrowIcon } from "~/components/icons/arrow-icon";
 import { InfoDialog } from "~/components/info-dialog";
 import { Info } from "lucide-react";
+import type { OutputToken } from "~/hooks/use-swap-quote";
 import { useEffect, useCallback } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useCollateralPrice, useUsduPrice } from "~/hooks/use-fetch-prices";
@@ -63,6 +64,10 @@ function Borrow() {
   const [rateMode, setRateMode] = useQueryState(
     "rateMode",
     parseAsStringEnum<RateMode>(["manual", "managed"]).withDefault("manual")
+  );
+  const [outputToken, setOutputToken] = useQueryState(
+    "output",
+    parseAsStringEnum<OutputToken>(["USDU", "USDC"]).withDefault("USDU")
   );
 
   // Get the collateral based on the address in URL or use default
@@ -164,6 +169,9 @@ function Borrow() {
     currentState,
     formData,
     reset,
+    expectedUsdcAmount,
+    isQuoteLoading,
+    quoteError,
   } = useBorrow({
     collateralAmount: collateralAmount ?? undefined,
     borrowAmount: borrowAmount ?? undefined,
@@ -172,6 +180,7 @@ function Borrow() {
     rateMode,
     interestBatchManagerAddress:
       rateMode === "managed" ? telosBatchManagerAddress : undefined,
+    outputToken,
   });
 
   // Revalidate fields when wallet connection changes
@@ -340,6 +349,29 @@ function Borrow() {
                           </>
                         ),
                       },
+                      ...(formData.outputToken === "USDC" &&
+                      formData.expectedUsdcAmount
+                        ? [
+                            {
+                              label: "You Received",
+                              value: (
+                                <>
+                                  <NumericFormat
+                                    displayType="text"
+                                    value={bigintToBig(
+                                      formData.expectedUsdcAmount,
+                                      6
+                                    ).toString()}
+                                    thousandSeparator=","
+                                    decimalScale={2}
+                                    fixedDecimalScale
+                                  />{" "}
+                                  USDC
+                                </>
+                              ),
+                            },
+                          ]
+                        : []),
                       {
                         label: "Interest Rate (APR)",
                         value: `${formData.interestRate.toFixed(2)}%`,
@@ -513,7 +545,11 @@ function Borrow() {
                 >
                   {(field) => (
                     <TokenInput
-                      token={TOKENS.USDU}
+                      token={outputToken === "USDC" ? TOKENS.USDC : TOKENS.USDU}
+                      tokens={[TOKENS.USDU, TOKENS.USDC]}
+                      onTokenChange={(newToken) => {
+                        setOutputToken(newToken.symbol as OutputToken);
+                      }}
                       price={usdu}
                       value={borrowAmount ?? undefined}
                       onChange={(value) => {
@@ -528,9 +564,22 @@ function Borrow() {
                       onPercentageClick={handleBorrowPercentageClick}
                       disabled={isSending || isPending}
                       showBalance={false}
-                      tokenSelectorBgColor="bg-token-bg-red/10"
-                      tokenSelectorTextColor="text-token-bg-red"
+                      tokenSelectorBgColor={
+                        outputToken === "USDC"
+                          ? "bg-[#2775ca]/10"
+                          : "bg-token-bg-red/10"
+                      }
+                      tokenSelectorTextColor={
+                        outputToken === "USDC"
+                          ? "text-[#2775ca]"
+                          : "text-token-bg-red"
+                      }
                       maxValue={100000000}
+                      helperText={
+                        outputToken === "USDC" && expectedUsdcAmount
+                          ? `You'll receive ~${bigintToBig(expectedUsdcAmount, 6).toFixed(2)} USDC (0.2% max slippage)`
+                          : undefined
+                      }
                       bottomRightContent={
                         <div className="flex items-center gap-1.5 sm:gap-2">
                           <span className="text-neutral-800 text-xs font-medium font-sora leading-3">
@@ -625,6 +674,8 @@ function Borrow() {
                                 isSending ||
                                 isPending ||
                                 !canSubmit ||
+                                !isReady ||
+                                isQuoteLoading ||
                                 (rateMode === "managed" &&
                                   Boolean(telosDisableReason)))
                             }
@@ -634,8 +685,19 @@ function Borrow() {
                               ? "Confirm in wallet..."
                               : isPending
                               ? "Transaction pending..."
+                              : outputToken === "USDC" && isQuoteLoading
+                              ? "Fetching swap quote..."
+                              : outputToken === "USDC" && quoteError
+                              ? "USDC unavailable"
                               : buttonText}
                           </Button>
+
+                          {/* Show error when USDC selected but unavailable */}
+                          {outputToken === "USDC" && quoteError && (
+                            <p className="text-red-500 text-sm font-sora text-center">
+                              USDC borrowing is temporarily unavailable
+                            </p>
+                          )}
 
                           {/* Show bridge warning when balance is explicitly 0 */}
                           {bitcoinBalance?.value === 0n && (
@@ -700,6 +762,8 @@ function Borrow() {
             }}
             liquidationPrice={metrics.liquidationPrice}
             collateralType={collateral.id}
+            outputToken={outputToken}
+            expectedUsdcAmount={expectedUsdcAmount ?? undefined}
           />
           <RedemptionInfo />
         </div>
