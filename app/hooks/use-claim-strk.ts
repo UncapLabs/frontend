@@ -62,14 +62,14 @@ export function useClaimStrk({
     }
   }, [address, cumulativeAmount, proof, enabled]);
 
-  const transaction = useTransaction(preparedCall?.calls);
+  const transaction = useTransaction();
 
   const send = useCallback(async () => {
     if (!preparedCall?.calls) {
       throw new Error("Claim transaction not ready");
     }
 
-    const hash = await transaction.send();
+    const hash = await transaction.send(preparedCall.calls);
 
     if (hash && address && claimableAmount) {
       // Store the claimable amount (not cumulative) for display

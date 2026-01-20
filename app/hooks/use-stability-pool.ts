@@ -112,13 +112,13 @@ export function useDepositToStabilityPool({
   }, [address, amount, doClaim, collateralType, rewards]);
 
   // Use the generic transaction hook
-  const transaction = useTransaction(calls);
+  const transaction = useTransaction();
 
   // Create a wrapped send function that manages state transitions
   const deposit = useCallback(async () => {
     if (!calls) return;
 
-    const hash = await transaction.send();
+    const hash = await transaction.send(calls);
 
     if (hash) {
       // Transaction was sent successfully, move to pending
@@ -247,13 +247,13 @@ export function useWithdrawFromStabilityPool({
   }, [address, amount, doClaim, collateralType, rewards]);
 
   // Use the generic transaction hook
-  const transaction = useTransaction(calls);
+  const transaction = useTransaction();
 
   // Create a wrapped send function that manages state transitions
   const withdraw = useCallback(async () => {
     if (!calls) return;
 
-    const hash = await transaction.send();
+    const hash = await transaction.send(calls);
 
     if (hash) {
       // Transaction was sent successfully, move to pending

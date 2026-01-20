@@ -15,6 +15,7 @@ import {
   type CollateralId,
 } from "~/lib/collateral";
 import Big from "big.js";
+import type { OutputToken } from "~/hooks/use-swap-quote";
 
 interface PositionChange {
   collateral?: {
@@ -42,10 +43,11 @@ interface TransactionSummaryProps {
   liquidationPrice?: Big;
   previousLiquidationPrice?: Big;
   className?: string;
-  isValid?: boolean;
   warnings?: React.ReactNode[];
   collateralType?: CollateralId;
   troveId?: bigint; // For update operations
+  outputToken?: OutputToken; // USDU or USDC (with swap)
+  expectedUsdcAmount?: bigint; // Expected USDC amount after swap
 }
 
 export function TransactionSummary({
@@ -57,6 +59,8 @@ export function TransactionSummary({
   warnings = [],
   collateralType,
   troveId,
+  outputToken,
+  expectedUsdcAmount,
 }: TransactionSummaryProps) {
   const title =
     type === "open"
@@ -253,7 +257,11 @@ export function TransactionSummary({
               </span>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Amount of USDU you are borrowing</p>
+              <p>
+                {outputToken === "USDC"
+                  ? "Your debt is denominated in USDU but swapped to USDC"
+                  : "Amount of USDU you are borrowing"}
+              </p>
             </TooltipContent>
           </Tooltip>
           <div className="text-right">
@@ -331,6 +339,43 @@ export function TransactionSummary({
             )}
           </div>
         </div>
+
+        {/* You Receive - shown when swapping to USDC */}
+        {outputToken === "USDC" && type === "open" && (
+          <div className="flex justify-between items-start">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="text-neutral-800 text-sm font-normal font-sora cursor-help">
+                  You receive
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Your USDU loan will be automatically swapped to USDC via Avnu</p>
+              </TooltipContent>
+            </Tooltip>
+            <div className="text-right">
+              <div className="space-y-0.5">
+                <span className="text-neutral-800 text-base font-medium font-sora">
+                  {expectedUsdcAmount ? (
+                    <NumericFormat
+                      displayType="text"
+                      value={bigintToBig(expectedUsdcAmount, 6).toString()}
+                      thousandSeparator=","
+                      decimalScale={2}
+                      fixedDecimalScale
+                    />
+                  ) : (
+                    "—"
+                  )}{" "}
+                  USDC
+                </span>
+                <div className="text-xs text-neutral-800/70 font-sora">
+                  0.2% max slippage
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Interest Rate with annual cost */}
         <div className="flex justify-between items-start">

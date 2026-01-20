@@ -2,7 +2,7 @@ import type { Address } from "@starknet-react/chains";
 import Big from "big.js";
 import { z } from "zod";
 import deploymentData from "../contracts/deployment_addresses";
-import { USDU_ADDRESS, GAS_TOKEN_ADDRESS } from "../contracts/constants";
+import { USDU_ADDRESS, USDC_ADDRESS, GAS_TOKEN_ADDRESS } from "../contracts/constants";
 
 // CollateralId type
 export type CollateralId = "WWBTC" | "TBTC" | "SOLVBTC";
@@ -179,7 +179,7 @@ export const CollateralIdSchema = z.enum(
   Object.keys(COLLATERALS) as [CollateralId, ...CollateralId[]]
 );
 
-// Non-collateral tokens (USDU, STRK, etc.)
+// Non-collateral tokens (USDU, USDC, STRK, etc.)
 export const TOKENS = {
   USDU: {
     address: USDU_ADDRESS,
@@ -187,6 +187,13 @@ export const TOKENS = {
     name: "USDU Stablecoin",
     decimals: 18,
     icon: "/usdu.png",
+  } as Token,
+  USDC: {
+    address: USDC_ADDRESS,
+    symbol: "USDC",
+    name: "USD Coin",
+    decimals: 6,
+    icon: "/usdc.svg",
   } as Token,
   STRK: {
     address: GAS_TOKEN_ADDRESS,

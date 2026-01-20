@@ -6,7 +6,7 @@ import {
 import { type Call } from "starknet";
 
 interface UseTransactionResult {
-  send: () => Promise<string | undefined>;
+  send: (calls: Call[]) => Promise<string | undefined>;
   isPending: boolean;
   isSending: boolean;
   isSuccess: boolean;
@@ -16,9 +16,11 @@ interface UseTransactionResult {
   reset: () => void;
 }
 
-export function useTransaction(
-  calls: Call[] | undefined
-): UseTransactionResult {
+/**
+ * Hook for managing transaction state and receipt watching.
+ * The caller provides calls at send time, allowing for dynamic call building.
+ */
+export function useTransaction(): UseTransactionResult {
   // StarkNet transaction hook
   const {
     sendAsync: sendTransaction,
@@ -48,7 +50,7 @@ export function useTransaction(
       if (isTransactionNotFound && failureCount < 10) {
         return true;
       }
-      
+
       // For other errors, use default retry logic (3 times)
       return failureCount < 3;
     },
@@ -64,14 +66,11 @@ export function useTransaction(
   const isError = isSendError || isReceiptError;
   const error = sendError || receiptError || null;
 
-  // Send wrapper that returns the transaction hash
-  const send = useCallback(async () => {
-    if (!calls) {
-      throw new Error("Transaction not ready");
-    }
+  // Send wrapper that accepts calls and returns the transaction hash
+  const send = useCallback(async (calls: Call[]) => {
     const result = await sendTransaction(calls);
     return result?.transaction_hash;
-  }, [calls, sendTransaction]);
+  }, [sendTransaction]);
 
   return {
     send,

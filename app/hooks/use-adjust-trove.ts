@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { useAccount } from "@starknet-react/core";
 import { contractCall } from "~/lib/contracts/calls";
 import { useTransaction } from "./use-transaction";
@@ -352,10 +352,19 @@ export function useAdjustTrove({
   }, [address, troveId, changes, maxUpfrontFee, collateral, isZombie]);
 
   // Use the generic transaction hook
-  const transaction = useTransaction(calls);
+  const transaction = useTransaction();
+
+  // Wrap send to pass calls
+  const send = useCallback(async () => {
+    if (!calls) {
+      throw new Error("Transaction not ready");
+    }
+    return transaction.send(calls);
+  }, [calls, transaction]);
 
   return {
     ...transaction,
+    send,
     isReady:
       !!calls &&
       !!changes &&

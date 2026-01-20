@@ -12,6 +12,8 @@ import { getTroveId, getPrefixedTroveId } from "~/lib/utils/trove-id";
 import { bigToBigint } from "~/lib/decimal";
 import Big from "big.js";
 import { generateDepositCallsFromBigint } from "~/lib/collateral/wrapping";
+import { useSwapQuote, type OutputToken } from "./use-swap-quote";
+import { buildSwapCalls } from "~/lib/contracts/swap-calls";
 
 const DEFAULT_INTEREST_RATE = new Big(2.5);
 
@@ -22,6 +24,8 @@ export interface BorrowFormData {
   selectedCollateralToken: string;
   rateMode: "manual" | "managed";
   interestBatchManager?: string;
+  outputToken: OutputToken;
+  expectedUsdcAmount?: bigint;
 }
 
 interface UseBorrowParams {
@@ -32,6 +36,7 @@ interface UseBorrowParams {
   onSuccess?: () => void;
   rateMode?: "manual" | "managed";
   interestBatchManagerAddress?: string;
+  outputToken?: OutputToken;
 }
 
 export function useBorrow({
@@ -42,9 +47,25 @@ export function useBorrow({
   onSuccess,
   rateMode = "manual",
   interestBatchManagerAddress,
+  outputToken = "USDU",
 }: UseBorrowParams) {
   const { address } = useAccount();
   const transactionStore = useTransactionStore();
+
+  // Get the USDU amount in bigint for swap quote
+  const usduAmount = borrowAmount ? bigToBigint(borrowAmount, 18) : undefined;
+
+  // Fetch swap quote when outputToken is USDC
+  const {
+    quote: swapQuote,
+    expectedUsdcAmount,
+    isLoading: isQuoteLoading,
+    error: quoteError,
+  } = useSwapQuote({
+    usduAmount,
+    outputToken,
+    enabled: !!borrowAmount && borrowAmount.gt(0),
+  });
 
   const defaultBatchManager =
     rateMode === "managed"
@@ -68,6 +89,7 @@ export function useBorrow({
       selectedCollateralToken: collateral?.symbol || DEFAULT_COLLATERAL.id,
       rateMode,
       interestBatchManager: defaultBatchManager,
+      outputToken,
     },
   });
 
@@ -153,11 +175,29 @@ export function useBorrow({
   ]);
 
   // Use the generic transaction hook
-  const transaction = useTransaction(calls);
+  const transaction = useTransaction();
 
   // Create a wrapped send function that manages state transitions
   const send = useCallback(async () => {
-    const hash = await transaction.send();
+    if (!calls) {
+      throw new Error("Transaction not ready");
+    }
+
+    let finalCalls = calls;
+
+    // If outputToken is USDC and we have a quote, append swap calls
+    if (outputToken === "USDC" && swapQuote && address) {
+      try {
+        const swapResult = await buildSwapCalls(swapQuote, address);
+        finalCalls = [...calls, ...swapResult.calls];
+      } catch (error) {
+        console.error("Failed to build swap calls:", error);
+        throw new Error("Failed to prepare swap transaction");
+      }
+    }
+
+    // Send the transaction
+    const hash = await transaction.send(finalCalls);
 
     if (hash) {
       const effectiveBatchManager =
@@ -174,6 +214,8 @@ export function useBorrow({
         selectedCollateralToken: collateral?.symbol || DEFAULT_COLLATERAL.id,
         rateMode,
         interestBatchManager: effectiveBatchManager,
+        outputToken,
+        expectedUsdcAmount: outputToken === "USDC" ? expectedUsdcAmount ?? undefined : undefined,
       });
       transactionState.setPending(hash);
 
@@ -218,6 +260,7 @@ export function useBorrow({
     }
     // If no hash returned, transaction.send already handles the error
   }, [
+    calls,
     transaction,
     transactionState,
     transactionStore,
@@ -229,6 +272,8 @@ export function useBorrow({
     nextOwnerIndex,
     rateMode,
     interestBatchManagerAddress,
+    outputToken,
+    swapQuote,
   ]);
 
   // Check if we need to update state based on transaction status
@@ -247,12 +292,22 @@ export function useBorrow({
     }
   }
 
+  // Determine if we're ready to send
+  // For USDC output, we also need a valid quote
+  const isReady =
+    !!calls &&
+    (outputToken === "USDU" || (outputToken === "USDC" && !!swapQuote));
+
   return {
     ...transaction,
     ...transactionState,
     send, // Override send with our wrapped version
-    isReady: !!calls,
+    isReady,
     // Pass through isSending for UI state
     isSending: transaction.isSending,
+    // Swap quote info for UI
+    expectedUsdcAmount,
+    isQuoteLoading,
+    quoteError,
   };
 }
