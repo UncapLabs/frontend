@@ -31,6 +31,7 @@ type MnavWorkerResponse = {
       wbtc: string;
       usdu: string;
       usdc: string;
+      usdce: string;
     };
     uncap: {
       branches: {
@@ -81,6 +82,7 @@ export type VaultWalletBalances = {
     wbtc: string; // 8 decimals
     usdu: string; // 18 decimals
     usdc: string; // 6 decimals
+    usdce: string; // 6 decimals
     totalUsd: string; // USD value
   };
 };
@@ -185,8 +187,9 @@ export const vaultRouter = router({
       const snWbtc = new Big(data.positions.starknet.wbtc).div(1e8);
       const snUsdu = new Big(data.positions.starknet.usdu).div(1e18);
       const snUsdc = new Big(data.positions.starknet.usdc).div(1e6);
+      const snUsdce = new Big(data.positions.starknet.usdce ?? "0").div(1e6);
 
-      const walletUsd = ethWbtc.plus(snWbtc).times(btcPrice).plus(snUsdu).plus(snUsdc);
+      const walletUsd = ethWbtc.plus(snWbtc).times(btcPrice).plus(snUsdu).plus(snUsdc).plus(snUsdce);
       if (walletUsd.gt(0)) {
         allocations.push({
           name: "Wallet Holdings",
@@ -215,7 +218,8 @@ export const vaultRouter = router({
     const snWbtcAmount = new Big(data.positions.starknet.wbtc).div(1e8);
     const snUsduAmount = new Big(data.positions.starknet.usdu).div(1e18);
     const snUsdcAmount = new Big(data.positions.starknet.usdc).div(1e6);
-    const snTotalUsd = snWbtcAmount.times(btcPrice).plus(snUsduAmount).plus(snUsdcAmount);
+    const snUsdceAmount = new Big(data.positions.starknet.usdce ?? "0").div(1e6);
+    const snTotalUsd = snWbtcAmount.times(btcPrice).plus(snUsduAmount).plus(snUsdcAmount).plus(snUsdceAmount);
 
     return {
       timestamp: data.timestamp,
@@ -235,6 +239,7 @@ export const vaultRouter = router({
           wbtc: data.positions.starknet.wbtc,
           usdu: data.positions.starknet.usdu,
           usdc: data.positions.starknet.usdc,
+          usdce: data.positions.starknet.usdce ?? "0",
           totalUsd: snTotalUsd.toFixed(2),
         },
       },
