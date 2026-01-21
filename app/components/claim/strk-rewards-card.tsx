@@ -11,7 +11,11 @@ import {
 import { NumericFormat } from "react-number-format";
 import { useAccount } from "@starknet-react/core";
 import { useWalletConnect } from "~/hooks/use-wallet-connect";
-import { useClaimStrk, useStrkAlreadyClaimed } from "~/hooks/use-claim-strk";
+import {
+  useClaimStrk,
+  useStrkAlreadyClaimed,
+  type StrkOutputToken,
+} from "~/hooks/use-claim-strk";
 import {
   useStrkClaimCalldata,
   useStrkAllocationAmount,
@@ -23,6 +27,47 @@ import { bigintToBig } from "~/lib/decimal";
 import type Big from "big.js";
 import { useCallback, useMemo } from "react";
 import { useUncapIncentiveRates } from "~/hooks/use-incentive-rates";
+import { useQueryState, parseAsStringEnum } from "nuqs";
+import { getSlippageForPair } from "~/lib/contracts/avnu";
+import { ArrowIcon } from "~/components/icons/arrow-icon";
+
+interface GetStrkButtonTextParams {
+  address: string | undefined;
+  hasClaimableRewards: boolean;
+  outputToken: StrkOutputToken;
+  isSending: boolean;
+  isPending: boolean;
+  isQuoteLoading: boolean;
+  quoteError: Error | null;
+  claimableAmount: Big | undefined;
+}
+
+function getStrkButtonText(params: GetStrkButtonTextParams): string {
+  const {
+    address,
+    hasClaimableRewards,
+    outputToken,
+    isSending,
+    isPending,
+    isQuoteLoading,
+    quoteError,
+    claimableAmount,
+  } = params;
+
+  const isSwapping = outputToken !== "STRK";
+
+  if (!address) return "Connect Wallet";
+  if (isSending) return "Confirm in wallet...";
+  if (isPending) return "Transaction pending...";
+  if (isSwapping && isQuoteLoading) return "Fetching swap quote...";
+  if (isSwapping && quoteError) return `${outputToken} swap unavailable`;
+
+  if (!hasClaimableRewards) return "No Rewards to Claim";
+
+  return outputToken === "STRK"
+    ? `Claim ${claimableAmount?.toFixed(2) ?? "0.00"} STRK`
+    : `Claim & Swap to ${outputToken}`;
+}
 
 // Helper to get week dates - Week 1 starts Thursday Nov 13, 2025
 function getWeekDates(weekNumber: number): { start: string; end: string } {
@@ -47,9 +92,48 @@ function getWeekDates(weekNumber: number): { start: string; end: string } {
   };
 }
 
+// Token options for the selector
+const OUTPUT_TOKEN_OPTIONS: {
+  value: StrkOutputToken;
+  label: string;
+  icon: string;
+  bgColor: string;
+  textColor: string;
+}[] = [
+  {
+    value: "STRK",
+    label: "STRK",
+    icon: "/starknet.png",
+    bgColor: "bg-token-bg-strk/10",
+    textColor: "text-token-strk",
+  },
+  {
+    value: "USDU",
+    label: "USDU",
+    icon: "/usdu.png",
+    bgColor: "bg-token-bg-red/10",
+    textColor: "text-token-bg-red",
+  },
+  {
+    value: "WBTC",
+    label: "WBTC",
+    icon: "/wbtc.png",
+    bgColor: "bg-orange-500/10",
+    textColor: "text-orange-600",
+  },
+];
+
 export function STRKRewardsCard() {
   const { address } = useAccount();
   const { connectWallet } = useWalletConnect();
+
+  // Output token selection state (URL parameter)
+  const [outputToken, setOutputToken] = useQueryState(
+    "output",
+    parseAsStringEnum<StrkOutputToken>(["STRK", "USDU", "WBTC"]).withDefault(
+      "STRK"
+    )
+  );
 
   // Fetch dynamic incentive rates with fallbacks
   const { data: rates } = useUncapIncentiveRates();
@@ -93,10 +177,14 @@ export function STRKRewardsCard() {
     currentState,
     formData,
     reset,
+    expectedOutputAmount,
+    isQuoteLoading,
+    quoteError,
   } = useClaimStrk({
     cumulativeAmount: calldataResponse?.amount, // Cumulative for contract
     claimableAmount, // Actual claimed amount for display
     proof: calldataResponse?.proof,
+    outputToken,
     enabled: Boolean(
       address && calldataResponse?.amount && calldataResponse?.proof
     ),
@@ -108,10 +196,27 @@ export function STRKRewardsCard() {
     },
   });
 
-  // Already in Big format, no conversion needed
+  // Get the buy token for displaying expected amount
+  const buyToken =
+    outputToken === "USDU"
+      ? TOKENS.USDU
+      : outputToken === "WBTC"
+      ? TOKENS.WBTC
+      : TOKENS.STRK;
+
+  // Get slippage for display
+  const slippagePercent =
+    outputToken !== "STRK"
+      ? (getSlippageForPair("STRK", buyToken.symbol) * 100).toFixed(1)
+      : null;
+
   const hasClaimableRewards = claimableAmount ? claimableAmount.gt(0) : false;
 
-  const handleClaimAll = async () => {
+  const handleComplete = useCallback(() => {
+    reset();
+  }, [reset]);
+
+  const handleButtonClick = async (): Promise<void> => {
     if (!address) {
       await connectWallet();
       return;
@@ -126,24 +231,6 @@ export function STRKRewardsCard() {
       await send();
     } catch (error) {
       console.error("Claim error:", error);
-    }
-  };
-
-  const handleComplete = useCallback(() => {
-    if (currentState === "error") {
-      // Reset for retry
-      reset();
-    } else {
-      // Stay on page after success
-      reset();
-    }
-  }, [currentState, reset]);
-
-  const handleButtonClick = async () => {
-    if (!address) {
-      await connectWallet();
-    } else {
-      await handleClaimAll();
     }
   };
 
@@ -167,13 +254,21 @@ export function STRKRewardsCard() {
               error={
                 transactionError ? new Error(transactionError.message) : null
               }
-              successTitle="STRK Claimed Successfully!"
-              successSubtitle="Your STRK rewards have been claimed and sent to your wallet."
+              successTitle={
+                formData.outputToken && formData.outputToken !== "STRK"
+                  ? `Claimed & Swapped to ${formData.outputToken}!`
+                  : "STRK Claimed Successfully!"
+              }
+              successSubtitle={
+                formData.outputToken && formData.outputToken !== "STRK"
+                  ? `Your STRK rewards have been swapped to ${formData.outputToken} and sent to your wallet.`
+                  : "Your STRK rewards have been claimed and sent to your wallet."
+              }
               details={
                 currentState === "success" && formData.amount
                   ? [
                       {
-                        label: "Amount Claimed",
+                        label: "STRK Claimed",
                         value: (
                           <>
                             <NumericFormat
@@ -190,6 +285,32 @@ export function STRKRewardsCard() {
                           </>
                         ),
                       },
+                      ...(formData.outputToken &&
+                      formData.outputToken !== "STRK" &&
+                      formData.expectedOutputAmount
+                        ? [
+                            {
+                              label: "You Received",
+                              value: (
+                                <>
+                                  <NumericFormat
+                                    displayType="text"
+                                    value={bigintToBig(
+                                      BigInt(formData.expectedOutputAmount),
+                                      formData.outputToken === "USDU" ? 18 : 8
+                                    ).toString()}
+                                    thousandSeparator=","
+                                    decimalScale={
+                                      formData.outputToken === "USDU" ? 2 : 6
+                                    }
+                                    fixedDecimalScale
+                                  />{" "}
+                                  {formData.outputToken}
+                                </>
+                              ),
+                            },
+                          ]
+                        : []),
                     ]
                   : undefined
               }
@@ -199,19 +320,20 @@ export function STRKRewardsCard() {
               }
             />
           ) : (
-            <div className="space-y-6">
-              {/* Rewards Claim Card */}
+            <>
+            <div className="space-y-1">
+              {/* Rewards Claim Card - "From" section */}
               <div className="bg-white rounded-2xl p-6 space-y-6">
                 {/* Label */}
                 <div className="flex justify-between items-start">
                   <label className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight">
-                    Claim Rewards
+                    Available to Claim
                   </label>
                 </div>
 
                 {/* Main content area - exactly like TokenInput */}
                 <div className="flex items-center gap-6">
-                  {/* Token selector on the left */}
+                  {/* Token display on the left */}
                   <div className="flex flex-col gap-2">
                     <div className="p-2.5 bg-token-bg-strk/10 rounded-lg inline-flex justify-start items-center gap-2">
                       <img
@@ -267,26 +389,138 @@ export function STRKRewardsCard() {
                 </div>
               </div>
 
-              {/* Claim Button */}
-              <Button
-                onClick={handleButtonClick}
-                disabled={
-                  (address && !hasClaimableRewards) || isSending || isPending
-                }
-                className="w-full h-12 bg-token-bg-blue hover:bg-blue-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all disabled:opacity-50"
-              >
-                {!address
-                  ? "Connect Wallet"
-                  : isSending
-                  ? "Confirm in wallet..."
-                  : isPending
-                  ? "Transaction pending..."
-                  : hasClaimableRewards
-                  ? `Claim ${claimableAmount?.toFixed(2) ?? "0.00"} STRK`
-                  : "No Rewards to Claim"}
-              </Button>
+              {/* Arrow connecting the two sections */}
+              <div className="relative flex justify-center items-center">
+                <div className="absolute z-10">
+                  <ArrowIcon
+                    size={40}
+                    className="sm:w-12 sm:h-12 md:w-20 md:h-20"
+                    innerCircleColor="#242424"
+                    direction="down"
+                  />
+                </div>
+              </div>
 
-              {/* Weekly Rewards History */}
+              {/* Output Token Selection Card - "To" section */}
+              <div className="bg-white rounded-2xl p-6 space-y-4">
+                <div className="flex justify-between items-start">
+                  <label className="text-neutral-800 text-xs font-medium font-sora uppercase leading-3 tracking-tight">
+                    You Receive
+                  </label>
+                </div>
+
+                {/* Main content area with token selector and amount */}
+                <div className="flex items-center gap-6">
+                  {/* Token selector on the left */}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      {OUTPUT_TOKEN_OPTIONS.map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => setOutputToken(option.value)}
+                          disabled={isSending || isPending}
+                          className={`p-2.5 rounded-lg inline-flex justify-start items-center gap-2 transition-all border-2 ${
+                            outputToken === option.value
+                              ? `${option.bgColor} border-current ${option.textColor}`
+                              : "bg-neutral-50 border-transparent hover:bg-neutral-100"
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
+                        >
+                          <img
+                            src={option.icon}
+                            alt={option.label}
+                            className="w-5 h-5 object-contain"
+                          />
+                          <span
+                            className={`text-xs font-medium font-sora ${
+                              outputToken === option.value
+                                ? option.textColor
+                                : "text-neutral-600"
+                            }`}
+                          >
+                            {option.label}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Amount display on the right */}
+                  <div className="flex-1">
+                    <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal font-sora leading-8 sm:leading-9 md:leading-10 text-neutral-800">
+                      {outputToken === "STRK" ? (
+                        <NumericFormat
+                          displayType="text"
+                          value={claimableAmount?.toString() ?? "0"}
+                          thousandSeparator=","
+                          decimalScale={2}
+                          fixedDecimalScale
+                        />
+                      ) : isQuoteLoading ? (
+                        <span className="text-neutral-400">...</span>
+                      ) : quoteError ? (
+                        <span className="text-red-400 text-lg">
+                          Unavailable
+                        </span>
+                      ) : expectedOutputAmount ? (
+                        <NumericFormat
+                          displayType="text"
+                          value={bigintToBig(
+                            expectedOutputAmount,
+                            buyToken.decimals
+                          ).toString()}
+                          thousandSeparator=","
+                          decimalScale={buyToken.decimals === 18 ? 2 : 6}
+                          fixedDecimalScale
+                        />
+                      ) : (
+                        <span className="text-neutral-400">0.00</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom row: swap info */}
+                <div className="flex justify-between items-center">
+                  <span className="text-neutral-500 text-xs font-sora">
+                    {outputToken !== "STRK" && !quoteError && (
+                      <>Powered by Avnu</>
+                    )}
+                  </span>
+                  {outputToken !== "STRK" && slippagePercent && !quoteError && (
+                    <span className="text-neutral-500 text-xs font-sora">
+                      Max slippage: {slippagePercent}%
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Claim Button */}
+            <Button
+              onClick={handleButtonClick}
+              disabled={
+                (address && !hasClaimableRewards) ||
+                isSending ||
+                isPending ||
+                (outputToken !== "STRK" && isQuoteLoading) ||
+                (outputToken !== "STRK" && !!quoteError)
+              }
+              className="w-full h-12 mt-6 mb-6 bg-token-bg-blue hover:bg-blue-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all disabled:opacity-50"
+            >
+              {getStrkButtonText({
+                address,
+                hasClaimableRewards,
+                outputToken,
+                isSending,
+                isPending,
+                isQuoteLoading,
+                quoteError,
+                claimableAmount,
+              })}
+            </Button>
+
+            {/* Weekly Rewards History */}
               <Card className="rounded-2xl border-0 shadow-none bg-white">
                 <CardHeader className="border-b border-[#F5F3EE]">
                   <CardTitle className="text-lg font-medium font-sora text-neutral-800 flex items-center gap-2">
@@ -345,7 +579,7 @@ export function STRKRewardsCard() {
                   </Table>
                 </CardContent>
               </Card>
-            </div>
+            </>
           )}
         </div>
 

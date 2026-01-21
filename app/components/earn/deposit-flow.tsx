@@ -1,22 +1,63 @@
 import { Button } from "~/components/ui/button";
-import { Checkbox } from "~/components/ui/checkbox";
-import { Label } from "~/components/ui/label";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "~/components/ui/tooltip";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { TOKENS, type CollateralId } from "~/lib/collateral";
 import { NumericFormat } from "react-number-format";
 import { useStabilityPoolTransaction } from "~/hooks/use-stability-pool-transaction";
+import type { CollateralOutputToken } from "~/hooks/use-stability-pool";
 import { validators } from "~/lib/validators";
 import { DepositSection } from "~/components/earn/deposit-section";
-import { HelpCircle } from "lucide-react";
+import { CollateralSwapSelector } from "~/components/earn/collateral-swap-selector";
+import { ClaimRewardsToggle } from "~/components/earn/claim-rewards-toggle";
 import Big from "big.js";
 import { bigintToBig } from "~/lib/decimal";
+
+interface GetDepositButtonTextParams {
+  address: string | undefined;
+  errors: string[];
+  amount: Big | null;
+  hasRewards: boolean;
+  claimRewards: boolean;
+  isSwappingToUsdu: boolean;
+  isSending: boolean;
+  isPending: boolean;
+  isQuoteLoading: boolean;
+  quoteError: boolean;
+}
+
+function getDepositButtonText(params: GetDepositButtonTextParams): string {
+  const {
+    address,
+    errors,
+    amount,
+    hasRewards,
+    claimRewards,
+    isSwappingToUsdu,
+    isSending,
+    isPending,
+    isQuoteLoading,
+    quoteError,
+  } = params;
+
+  if (isSending) return "Confirm in wallet...";
+  if (isPending) return "Transaction pending...";
+  if (isSwappingToUsdu && isQuoteLoading) return "Fetching swap quote...";
+  if (isSwappingToUsdu && quoteError) return "Swap unavailable";
+  if (!address) return "Connect Wallet";
+  if (errors.length > 0) return errors[0];
+  if (!amount) return "Enter deposit amount";
+
+  if (hasRewards && claimRewards) {
+    return isSwappingToUsdu
+      ? "Deposit, Claim & Swap to USDU"
+      : "Deposit & Claim Rewards";
+  }
+
+  if (hasRewards && !claimRewards) return "Deposit & Compound USDU";
+
+  return "Deposit USDU";
+}
 
 interface DepositFlowProps {
   address: string | undefined;
@@ -59,6 +100,15 @@ export function DepositFlow({
   amount,
   setAmount,
 }: DepositFlowProps) {
+  // State for collateral output preference when claiming
+  const [collateralOutputToken, setCollateralOutputToken] =
+    useState<CollateralOutputToken>("COLLATERAL");
+
+  // Check if there are collateral rewards to potentially swap
+  const hasCollateralRewards =
+    selectedPosition?.rewards?.collateral &&
+    selectedPosition.rewards.collateral.gt(0);
+
   // Form is used for validation only, amount comes from URL state
   const form = useForm({
     defaultValues: {
@@ -88,12 +138,16 @@ export function DepositFlow({
     currentState,
     formData,
     reset: transactionReset,
+    expectedUsduAmount,
+    isQuoteLoading,
+    quoteError,
   } = useStabilityPoolTransaction({
     action: "deposit",
     amount: amount ?? undefined,
     doClaim: claimRewards,
     collateralType: selectedCollateral,
     rewards: selectedPosition?.rewards,
+    collateralOutputToken: claimRewards ? collateralOutputToken : "COLLATERAL",
   });
 
   // Re-validate amount when wallet connects/disconnects (intentionally omitting form)
@@ -118,8 +172,18 @@ export function DepositFlow({
           isError={currentState === "error"}
           isSuccess={currentState === "success"}
           error={transactionError as Error | null}
-          successTitle="Deposit Successful!"
-          successSubtitle={`Your USDU has been deposited into the ${selectedCollateralSymbol} Stability Pool.`}
+          successTitle={
+            formData.collateralOutputToken === "USDU" &&
+            formData.rewardsClaimed?.collateral.gt(0)
+              ? "Deposit & Swap Successful!"
+              : "Deposit Successful!"
+          }
+          successSubtitle={
+            formData.collateralOutputToken === "USDU" &&
+            formData.rewardsClaimed?.collateral.gt(0)
+              ? `Your USDU has been deposited and ${selectedCollateralSymbol} rewards swapped to USDU.`
+              : `Your USDU has been deposited into the ${selectedCollateralSymbol} Stability Pool.`
+          }
           details={
             "depositAmount" in formData &&
             formData.depositAmount &&
@@ -153,7 +217,7 @@ export function DepositFlow({
                         {
                           label: "Rewards Claimed",
                           value: (
-                            <div className="space-y-1">
+                            <div className="space-y-1 text-right">
                               {formData.rewardsClaimed.usdu.gt(0) && (
                                 <div>
                                   <NumericFormat
@@ -167,15 +231,34 @@ export function DepositFlow({
                                 </div>
                               )}
                               {formData.rewardsClaimed.collateral.gt(0) && (
-                                <div>
-                                  <NumericFormat
-                                    displayType="text"
-                                    value={formData.rewardsClaimed.collateral.toString()}
-                                    thousandSeparator=","
-                                    decimalScale={6}
-                                    fixedDecimalScale
-                                  />{" "}
-                                  {selectedCollateralSymbol}
+                                <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                                  <span>
+                                    <NumericFormat
+                                      displayType="text"
+                                      value={formData.rewardsClaimed.collateral.toString()}
+                                      thousandSeparator=","
+                                      decimalScale={6}
+                                    />{" "}
+                                    {selectedCollateralSymbol}
+                                  </span>
+                                  {formData.collateralOutputToken === "USDU" &&
+                                    formData.expectedUsduAmount && (
+                                      <>
+                                        <span className="text-neutral-400">→</span>
+                                        <span className="text-green-600 font-medium">
+                                          <NumericFormat
+                                            displayType="text"
+                                            value={bigintToBig(
+                                              BigInt(formData.expectedUsduAmount),
+                                              TOKENS.USDU.decimals
+                                            ).toString()}
+                                            thousandSeparator=","
+                                            decimalScale={2}
+                                          />{" "}
+                                          USDU
+                                        </span>
+                                      </>
+                                    )}
                                 </div>
                               )}
                             </div>
@@ -244,135 +327,30 @@ export function DepositFlow({
               )}
             </form.Field>
 
-            {/* Claim rewards checkbox */}
             <div className="space-y-3">
-              {selectedPosition?.rewards &&
-                (selectedPosition.rewards.usdu.gt(0) ||
-                  selectedPosition.rewards.collateral.gt(0)) && (
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3">
-                        <Checkbox
-                          id="claim-rewards-deposit"
-                          checked={claimRewards}
-                          onCheckedChange={(checked) =>
-                            setClaimRewards(checked === true)
-                          }
-                          disabled={isSending || isPending}
-                        />
-                        <Label
-                          htmlFor="claim-rewards-deposit"
-                          className="text-sm font-medium cursor-pointer select-none flex items-center gap-2 text-neutral-700"
-                        >
-                          Claim rewards while depositing
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <HelpCircle className="h-3.5 w-3.5 text-neutral-400 hover:text-neutral-600" />
-                            </TooltipTrigger>
-                            <TooltipContent
-                              side="top"
-                              className="max-w-xs bg-slate-900 text-white"
-                            >
-                              <div className="space-y-2">
-                                <p className="text-xs">
-                                  If checked, both USDU and{" "}
-                                  {selectedCollateralSymbol} rewards will be
-                                  claimed and sent to your wallet
-                                </p>
-                                <p className="text-xs">
-                                  If left unchecked, USDU rewards will be
-                                  compounded and {selectedCollateralSymbol}{" "}
-                                  rewards will stay in pool and can be claimed
-                                  later
-                                </p>
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
-                        </Label>
-                      </div>
-                      <p className="text-xs text-neutral-500 mt-1 ml-7">
-                        {claimRewards
-                          ? `USDU and ${selectedCollateralSymbol} rewards will be sent to your wallet`
-                          : `USDU rewards will be compounded; ${selectedCollateralSymbol} rewards stay in pool and can be claimed later`}
-                      </p>
-                    </div>
+              <ClaimRewardsToggle
+                rewards={selectedPosition?.rewards}
+                collateralSymbol={selectedCollateralSymbol}
+                claimRewards={claimRewards}
+                setClaimRewards={setClaimRewards}
+                disabled={isSending || isPending}
+                actionLabel="depositing"
+              />
 
-                    <div className="text-right space-y-1">
-                      {selectedPosition.rewards.usdu.gt(0) && (
-                        <div className="text-sm font-medium text-neutral-700">
-                          <NumericFormat
-                            displayType="text"
-                            value={selectedPosition.rewards.usdu.toString()}
-                            thousandSeparator=","
-                            decimalScale={2}
-                            fixedDecimalScale
-                          />{" "}
-                          USDU
-                        </div>
-                      )}
-                      {selectedPosition.rewards.collateral.gt(0) && (
-                        <div className="text-sm font-medium text-neutral-700">
-                          <NumericFormat
-                            displayType="text"
-                            value={selectedPosition.rewards.collateral.toString()}
-                            thousandSeparator=","
-                            decimalScale={6}
-                            fixedDecimalScale
-                          />{" "}
-                          {selectedCollateralSymbol}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-              {/* Show message when no rewards available */}
-              {(!selectedPosition?.rewards ||
-                (selectedPosition.rewards.usdu.eq(0) &&
-                  selectedPosition.rewards.collateral.eq(0))) && (
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3">
-                      <Checkbox
-                        id="claim-rewards-deposit"
-                        checked={false}
-                        disabled={true}
-                      />
-                      <Label
-                        htmlFor="claim-rewards-deposit"
-                        className="text-sm font-medium select-none flex items-center gap-2 text-neutral-400"
-                      >
-                        Claim rewards
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <HelpCircle className="h-3.5 w-3.5 text-neutral-300" />
-                          </TooltipTrigger>
-                          <TooltipContent
-                            side="top"
-                            className="max-w-xs bg-slate-900 text-white"
-                          >
-                            <p className="text-xs">
-                              No rewards available. Rewards accrue when you have
-                              deposits in the stability pool.
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </Label>
-                    </div>
-                    <p className="text-xs text-neutral-400 mt-1 ml-7">
-                      No rewards available to claim
-                    </p>
-                  </div>
-
-                  <div className="text-right space-y-1">
-                    <div className="text-sm font-medium text-neutral-400">
-                      0.00 USDU
-                    </div>
-                    <div className="text-sm font-medium text-neutral-400">
-                      0.000000 {selectedCollateralSymbol}
-                    </div>
-                  </div>
-                </div>
+              {claimRewards && hasCollateralRewards && (
+                <CollateralSwapSelector
+                  collateralOutputToken={collateralOutputToken}
+                  setCollateralOutputToken={setCollateralOutputToken}
+                  collateralSymbol={selectedCollateralSymbol}
+                  collateralId={selectedCollateral}
+                  collateralAmount={
+                    selectedPosition?.rewards?.collateral ?? new Big(0)
+                  }
+                  expectedUsduAmount={expectedUsduAmount}
+                  isQuoteLoading={isQuoteLoading}
+                  quoteError={quoteError}
+                  disabled={isSending || isPending}
+                />
               )}
             </div>
           </div>
@@ -390,21 +368,26 @@ export function DepositFlow({
                   (selectedPosition.rewards.usdu.gt(0) ||
                     selectedPosition.rewards.collateral.gt(0));
 
-                let buttonText = "";
+                const isSwappingToUsdu =
+                  claimRewards &&
+                  hasCollateralRewards &&
+                  collateralOutputToken === "USDU";
 
-                if (!address) {
-                  buttonText = "Connect Wallet";
-                } else if (errors.length > 0) {
-                  buttonText = errors[0];
-                } else if (!amount) {
-                  buttonText = "Enter deposit amount";
-                } else if (hasRewards && claimRewards) {
-                  buttonText = "Deposit & Claim Rewards";
-                } else if (hasRewards && !claimRewards) {
-                  buttonText = "Deposit & Compound USDU";
-                } else {
-                  buttonText = "Deposit USDU";
-                }
+                const isSwapDisabled =
+                  isSwappingToUsdu && (isQuoteLoading || !!quoteError);
+
+                const buttonText = getDepositButtonText({
+                  address,
+                  errors,
+                  amount,
+                  hasRewards: !!hasRewards,
+                  claimRewards,
+                  isSwappingToUsdu,
+                  isSending,
+                  isPending,
+                  isQuoteLoading,
+                  quoteError: !!quoteError,
+                });
 
                 return (
                   <Button
@@ -416,15 +399,12 @@ export function DepositFlow({
                         amount.lte(0) ||
                         isSending ||
                         isPending ||
-                        !canSubmit)
+                        !canSubmit ||
+                        isSwapDisabled)
                     }
                     className="w-full h-12 bg-token-bg-blue hover:bg-blue-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all whitespace-nowrap"
                   >
-                    {isSending
-                      ? "Confirm in wallet..."
-                      : isPending
-                      ? "Transaction pending..."
-                      : buttonText}
+                    {buttonText}
                   </Button>
                 );
               }}

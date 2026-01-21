@@ -1,11 +1,9 @@
 import type { Call } from "starknet";
-import { type AvnuQuote, AVNU_BASE_URL, fetchAvnuQuote } from "./avnu";
+import { type AvnuQuote, AVNU_BASE_URL, getSlippageForPair } from "./avnu";
 
-const SLIPPAGE = 0.002; // 0.2% slippage for stablecoin pair
-
-interface SwapCallsResult {
+export interface SwapCallsResult {
   calls: Call[];
-  expectedUsdcAmount: bigint;
+  expectedOutputAmount: bigint;
 }
 
 interface AvnuBuildResponse {
@@ -13,21 +11,34 @@ interface AvnuBuildResponse {
   calls: Call[];
 }
 
+export interface BuildSwapCallsParams {
+  quote: AvnuQuote;
+  takerAddress: string;
+  /** Token symbols for automatic slippage lookup */
+  sellSymbol: string;
+  buySymbol: string;
+}
+
 /**
- * Builds the calls needed to swap USDU to USDC via Avnu
+ * Builds the calls needed to swap tokens via Avnu
  * Returns the approve + swap calls ready to be included in a multicall
+ * Slippage is automatically determined based on the token pair
  */
-export async function buildSwapCalls(
-  quote: AvnuQuote,
-  takerAddress: string
-): Promise<SwapCallsResult> {
+export async function buildSwapCalls({
+  quote,
+  takerAddress,
+  sellSymbol,
+  buySymbol,
+}: BuildSwapCallsParams): Promise<SwapCallsResult> {
+  const slippage = getSlippageForPair(sellSymbol, buySymbol);
+
   const response = await fetch(`${AVNU_BASE_URL}/swap/v3/build`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       quoteId: quote.quoteId,
       takerAddress,
-      slippage: SLIPPAGE,
+      slippage,
       includeApprove: true,
     }),
   });
@@ -40,18 +51,6 @@ export async function buildSwapCalls(
 
   return {
     calls: result.calls,
-    expectedUsdcAmount: quote.buyAmount,
+    expectedOutputAmount: quote.buyAmount,
   };
-}
-
-/**
- * Fetches a fresh quote and builds swap calls in one operation
- * Useful when you need both the quote and the calls
- */
-export async function fetchQuoteAndBuildSwapCalls(
-  usduAmount: bigint,
-  takerAddress: string
-): Promise<SwapCallsResult> {
-  const quote = await fetchAvnuQuote(usduAmount);
-  return buildSwapCalls(quote, takerAddress);
 }

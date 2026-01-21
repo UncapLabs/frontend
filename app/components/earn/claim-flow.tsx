@@ -1,19 +1,112 @@
 import { Button } from "~/components/ui/button";
-import { Checkbox } from "~/components/ui/checkbox";
-import { Label } from "~/components/ui/label";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "~/components/ui/tooltip";
 import { TransactionStatus } from "~/components/borrow/transaction-status";
-import { useCallback } from "react";
-import { type CollateralId } from "~/lib/collateral";
+import { useCallback, useState } from "react";
+import { type CollateralId, TOKENS } from "~/lib/collateral";
 import { NumericFormat } from "react-number-format";
 import { useStabilityPoolTransaction } from "~/hooks/use-stability-pool-transaction";
+import type { CollateralOutputToken } from "~/hooks/use-stability-pool";
 import { ClaimRewardsSection } from "~/components/earn/claim-rewards-section";
-import { HelpCircle } from "lucide-react";
+import { CollateralSwapSelector } from "~/components/earn/collateral-swap-selector";
+import { ClaimRewardsToggle } from "~/components/earn/claim-rewards-toggle";
 import Big from "big.js";
+import { bigintToBig } from "~/lib/decimal";
+
+interface GetClaimButtonTextParams {
+  address: string | undefined;
+  hasRewards: boolean;
+  claimRewards: boolean;
+  isSwappingToUsdu: boolean;
+  isSending: boolean;
+  isPending: boolean;
+  isQuoteLoading: boolean;
+  quoteError: boolean;
+}
+
+function getClaimButtonText(params: GetClaimButtonTextParams): string {
+  const {
+    address,
+    hasRewards,
+    claimRewards,
+    isSwappingToUsdu,
+    isSending,
+    isPending,
+    isQuoteLoading,
+    quoteError,
+  } = params;
+
+  if (isSending) return "Confirm in wallet...";
+  if (isPending) return "Transaction pending...";
+  if (isSwappingToUsdu && isQuoteLoading) return "Fetching swap quote...";
+  if (isSwappingToUsdu && quoteError) return "Swap unavailable";
+  if (!address) return "Connect Wallet";
+  if (!hasRewards) return "No Rewards Available";
+
+  if (claimRewards) {
+    return isSwappingToUsdu ? "Claim & Swap to USDU" : "Claim All Rewards";
+  }
+
+  return "Compound USDU Only";
+}
+
+interface SubmitButtonProps {
+  address: string | undefined;
+  selectedPosition: ClaimFlowProps["selectedPosition"];
+  claimRewards: boolean;
+  hasCollateralRewards: boolean;
+  collateralOutputToken: CollateralOutputToken;
+  isSending: boolean;
+  isPending: boolean;
+  isQuoteLoading: boolean;
+  quoteError: Error | null;
+  connectWallet: () => Promise<void>;
+}
+
+function SubmitButton({
+  address,
+  selectedPosition,
+  claimRewards,
+  hasCollateralRewards,
+  collateralOutputToken,
+  isSending,
+  isPending,
+  isQuoteLoading,
+  quoteError,
+  connectWallet,
+}: SubmitButtonProps): JSX.Element {
+  const hasRewards =
+    selectedPosition?.rewards &&
+    (selectedPosition.rewards.usdu.gt(0) ||
+      selectedPosition.rewards.collateral.gt(0));
+
+  const isSwappingToUsdu =
+    claimRewards && hasCollateralRewards && collateralOutputToken === "USDU";
+
+  const isSwapDisabled = isSwappingToUsdu && (isQuoteLoading || !!quoteError);
+
+  const buttonText = getClaimButtonText({
+    address,
+    hasRewards: !!hasRewards,
+    claimRewards,
+    isSwappingToUsdu,
+    isSending,
+    isPending,
+    isQuoteLoading,
+    quoteError: !!quoteError,
+  });
+
+  return (
+    <Button
+      type={address ? "submit" : "button"}
+      onClick={!address ? connectWallet : undefined}
+      disabled={
+        !!address && (!hasRewards || isSending || isPending || isSwapDisabled)
+      }
+      className="w-full h-12 bg-token-bg-blue hover:bg-blue-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all whitespace-nowrap"
+    >
+      {buttonText}
+    </Button>
+  );
+}
 
 interface ClaimFlowProps {
   address: string | undefined;
@@ -46,6 +139,10 @@ export function ClaimFlow({
   setClaimRewards,
   connectWallet,
 }: ClaimFlowProps) {
+  // State for collateral output preference
+  const [collateralOutputToken, setCollateralOutputToken] =
+    useState<CollateralOutputToken>("COLLATERAL");
+
   const {
     send,
     isPending,
@@ -56,13 +153,22 @@ export function ClaimFlow({
     currentState,
     formData,
     reset: transactionReset,
+    expectedUsduAmount,
+    isQuoteLoading,
+    quoteError,
   } = useStabilityPoolTransaction({
     action: "claim",
     amount: undefined,
     doClaim: claimRewards,
     collateralType: selectedCollateral,
     rewards: selectedPosition?.rewards,
+    collateralOutputToken: claimRewards ? collateralOutputToken : "COLLATERAL",
   });
+
+  // Check if there are collateral rewards to potentially swap
+  const hasCollateralRewards =
+    selectedPosition?.rewards?.collateral &&
+    selectedPosition.rewards.collateral.gt(0);
 
   const handleComplete = useCallback(() => {
     transactionReset();
@@ -91,8 +197,18 @@ export function ClaimFlow({
           isError={currentState === "error"}
           isSuccess={currentState === "success"}
           error={transactionError as Error | null}
-          successTitle="Rewards Claimed!"
-          successSubtitle={`Your rewards from the ${selectedCollateralSymbol} Stability Pool have been claimed.`}
+          successTitle={
+            formData.collateralOutputToken === "USDU" &&
+            formData.rewardsClaimed?.collateral.gt(0)
+              ? "Rewards Claimed & Swapped!"
+              : "Rewards Claimed!"
+          }
+          successSubtitle={
+            formData.collateralOutputToken === "USDU" &&
+            formData.rewardsClaimed?.collateral.gt(0)
+              ? `Your rewards from the ${selectedCollateralSymbol} Stability Pool have been claimed and ${selectedCollateralSymbol} swapped to USDU.`
+              : `Your rewards from the ${selectedCollateralSymbol} Stability Pool have been claimed.`
+          }
           details={
             claimRewards &&
             formData.rewardsClaimed &&
@@ -107,7 +223,7 @@ export function ClaimFlow({
                   {
                     label: "Rewards Claimed",
                     value: (
-                      <div className="space-y-1">
+                      <div className="space-y-1 text-right">
                         {formData.rewardsClaimed.usdu.gt(0) && (
                           <div>
                             <NumericFormat
@@ -121,15 +237,34 @@ export function ClaimFlow({
                           </div>
                         )}
                         {formData.rewardsClaimed.collateral.gt(0) && (
-                          <div>
-                            <NumericFormat
-                              displayType="text"
-                              value={formData.rewardsClaimed.collateral.toString()}
-                              thousandSeparator=","
-                              decimalScale={6}
-                              fixedDecimalScale
-                            />{" "}
-                            {selectedCollateralSymbol}
+                          <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                            <span>
+                              <NumericFormat
+                                displayType="text"
+                                value={formData.rewardsClaimed.collateral.toString()}
+                                thousandSeparator=","
+                                decimalScale={6}
+                              />{" "}
+                              {selectedCollateralSymbol}
+                            </span>
+                            {formData.collateralOutputToken === "USDU" &&
+                              formData.expectedUsduAmount && (
+                                <>
+                                  <span className="text-neutral-400">→</span>
+                                  <span className="text-green-600 font-medium">
+                                    <NumericFormat
+                                      displayType="text"
+                                      value={bigintToBig(
+                                        BigInt(formData.expectedUsduAmount),
+                                        TOKENS.USDU.decimals
+                                      ).toString()}
+                                      thousandSeparator=","
+                                      decimalScale={2}
+                                    />{" "}
+                                    USDU
+                                  </span>
+                                </>
+                              )}
                           </div>
                         )}
                       </div>
@@ -154,147 +289,47 @@ export function ClaimFlow({
               collateralPrice={bitcoinPrice?.price || new Big(0)}
             />
 
-            {/* Claim rewards checkbox */}
             <div className="space-y-3 pt-6">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3">
-                    <Checkbox
-                      id="claim-all-rewards"
-                      checked={claimRewards}
-                      onCheckedChange={(checked) =>
-                        setClaimRewards(checked === true)
-                      }
-                      disabled={
-                        isSending ||
-                        isPending ||
-                        ((!selectedPosition?.rewards?.usdu ||
-                          selectedPosition.rewards.usdu.eq(0)) &&
-                          (!selectedPosition?.rewards?.collateral ||
-                            selectedPosition.rewards.collateral.eq(0)))
-                      }
-                    />
-                    <Label
-                      htmlFor="claim-all-rewards"
-                      className={`text-sm font-medium select-none flex items-center gap-2 ${
-                        (!selectedPosition?.rewards?.usdu ||
-                          selectedPosition.rewards.usdu.eq(0)) &&
-                        (!selectedPosition?.rewards?.collateral ||
-                          selectedPosition.rewards.collateral.eq(0))
-                          ? "text-neutral-400"
-                          : "text-neutral-700 cursor-pointer"
-                      }`}
-                    >
-                      Claim all rewards to wallet
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="h-3.5 w-3.5 text-neutral-400 hover:text-neutral-600" />
-                        </TooltipTrigger>
-                        <TooltipContent
-                          side="top"
-                          className="max-w-xs bg-slate-900 text-white"
-                        >
-                          <div className="space-y-2">
-                            <p className="text-xs">
-                              If checked, both USDU and{" "}
-                              {selectedCollateralSymbol} rewards will be claimed
-                              and sent to your wallet
-                            </p>
-                            <p className="text-xs">
-                              If left unchecked, USDU rewards will be compounded
-                              and {selectedCollateralSymbol} rewards will stay
-                              in pool and can be claimed later
-                            </p>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </Label>
-                  </div>
-                  <p className="text-xs text-neutral-500 mt-1 ml-7">
-                    {(!selectedPosition?.rewards?.usdu ||
-                      selectedPosition.rewards.usdu.eq(0)) &&
-                    (!selectedPosition?.rewards?.collateral ||
-                      selectedPosition.rewards.collateral.eq(0))
-                      ? "No rewards available"
-                      : claimRewards
-                      ? `USDU and ${selectedCollateralSymbol} rewards will be sent to your wallet`
-                      : `USDU rewards will be compounded; ${selectedCollateralSymbol} rewards stay in pool and can be claimed later`}
-                  </p>
-                </div>
+              <ClaimRewardsToggle
+                rewards={selectedPosition?.rewards}
+                collateralSymbol={selectedCollateralSymbol}
+                claimRewards={claimRewards}
+                setClaimRewards={setClaimRewards}
+                disabled={isSending || isPending}
+                actionLabel="claiming"
+              />
 
-                <div className="text-right space-y-1">
-                  {selectedPosition?.rewards?.usdu &&
-                    selectedPosition.rewards.usdu.gt(0) && (
-                      <div className="text-sm font-medium text-neutral-700">
-                        <NumericFormat
-                          displayType="text"
-                          value={selectedPosition.rewards.usdu.toString()}
-                          thousandSeparator=","
-                          decimalScale={2}
-                          fixedDecimalScale
-                        />{" "}
-                        USDU
-                      </div>
-                    )}
-                  {selectedPosition?.rewards?.collateral &&
-                    selectedPosition.rewards.collateral.gt(0) && (
-                      <div className="text-sm font-medium text-neutral-700">
-                        <NumericFormat
-                          displayType="text"
-                          value={selectedPosition.rewards.collateral.toString()}
-                          thousandSeparator=","
-                          decimalScale={6}
-                          fixedDecimalScale
-                        />{" "}
-                        {selectedCollateralSymbol}
-                      </div>
-                    )}
-                </div>
-              </div>
+              {claimRewards && hasCollateralRewards && (
+                <CollateralSwapSelector
+                  collateralOutputToken={collateralOutputToken}
+                  setCollateralOutputToken={setCollateralOutputToken}
+                  collateralSymbol={selectedCollateralSymbol}
+                  collateralId={selectedCollateral}
+                  collateralAmount={
+                    selectedPosition?.rewards?.collateral ?? new Big(0)
+                  }
+                  expectedUsduAmount={expectedUsduAmount}
+                  isQuoteLoading={isQuoteLoading}
+                  quoteError={quoteError}
+                  disabled={isSending || isPending}
+                />
+              )}
             </div>
           </div>
 
           <div className="flex flex-col items-start space-y-4 mt-4">
-            {(() => {
-              const hasRewards =
-                selectedPosition?.rewards &&
-                (selectedPosition.rewards.usdu.gt(0) ||
-                  selectedPosition.rewards.collateral.gt(0));
-
-              let buttonText = "";
-
-              if (!address) {
-                buttonText = "Connect Wallet";
-              } else if (!hasRewards) {
-                buttonText = "No Rewards Available";
-              } else if (claimRewards) {
-                buttonText = "Claim All Rewards";
-              } else {
-                buttonText = "Compound USDU Only";
-              }
-
-              return (
-                <Button
-                  type={address ? "submit" : "button"}
-                  onClick={!address ? connectWallet : undefined}
-                  disabled={
-                    !!address &&
-                    (!selectedPosition?.rewards ||
-                      (selectedPosition.rewards.usdu.eq(0) &&
-                        selectedPosition.rewards.collateral.eq(0)) ||
-                      isSending ||
-                      isPending)
-                  }
-                  className="w-full h-12 bg-token-bg-blue hover:bg-blue-600 text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all whitespace-nowrap"
-                >
-                  {isSending
-                    ? "Confirm in wallet..."
-                    : isPending
-                    ? "Transaction pending..."
-                    : buttonText}
-                </Button>
-              );
-            })()}
+            <SubmitButton
+              address={address}
+              selectedPosition={selectedPosition}
+              claimRewards={claimRewards}
+              hasCollateralRewards={!!hasCollateralRewards}
+              collateralOutputToken={collateralOutputToken}
+              isSending={isSending}
+              isPending={isPending}
+              isQuoteLoading={isQuoteLoading}
+              quoteError={quoteError}
+              connectWallet={connectWallet}
+            />
           </div>
         </form>
       )}

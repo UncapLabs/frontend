@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import {
   useDepositToStabilityPool,
   useWithdrawFromStabilityPool,
+  type CollateralOutputToken,
 } from "~/hooks/use-stability-pool";
 import type { CollateralId } from "~/lib/collateral";
 import Big from "big.js";
@@ -17,6 +18,7 @@ interface UseStabilityPoolTransactionParams {
     usdu: Big;
     collateral: Big;
   };
+  collateralOutputToken?: CollateralOutputToken;
 }
 
 export function useStabilityPoolTransaction({
@@ -25,6 +27,7 @@ export function useStabilityPoolTransaction({
   doClaim,
   collateralType,
   rewards,
+  collateralOutputToken = "COLLATERAL",
 }: UseStabilityPoolTransactionParams) {
   // Determine amounts for each hook based on action
   // For deposits: only pass amount to deposit hook
@@ -39,6 +42,7 @@ export function useStabilityPoolTransaction({
     doClaim,
     collateralType,
     rewards,
+    collateralOutputToken,
   });
 
   const withdrawHook = useWithdrawFromStabilityPool({
@@ -46,6 +50,7 @@ export function useStabilityPoolTransaction({
     doClaim,
     collateralType,
     rewards,
+    collateralOutputToken,
   });
 
   return useMemo(() => {
@@ -65,6 +70,10 @@ export function useStabilityPoolTransaction({
         reset: depositHook.reset,
         depositHook,
         withdrawHook: null,
+        // Swap quote info
+        expectedUsduAmount: depositHook.expectedUsduAmount,
+        isQuoteLoading: depositHook.isQuoteLoading,
+        quoteError: depositHook.quoteError,
       };
     } else {
       // For both "withdraw" and "claim" actions
@@ -80,6 +89,10 @@ export function useStabilityPoolTransaction({
         reset: withdrawHook.reset,
         depositHook: null,
         withdrawHook,
+        // Swap quote info
+        expectedUsduAmount: withdrawHook.expectedUsduAmount,
+        isQuoteLoading: withdrawHook.isQuoteLoading,
+        quoteError: withdrawHook.quoteError,
       };
     }
   }, [action, depositHook, withdrawHook]);

@@ -16,6 +16,9 @@
 .env.*
 
 # Cursor
-.cursor/prds/
-
+.cursor/
+.agents/
+.claude/
+.codex/
+.opencode/
 
