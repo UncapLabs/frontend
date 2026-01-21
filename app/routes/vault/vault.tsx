@@ -722,6 +722,7 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                               value={debtUsdu.toFixed(2)}
                               thousandSeparator=","
                               prefix="-$"
+                              allowNegative={false}
                               className="font-sora text-xs md:text-sm text-red-600"
                             />
                           </TableCell>
@@ -846,10 +847,8 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
               <CardContent className="pt-6 px-4 md:px-6">
                 <div className="flex items-center justify-between mb-4 gap-2">
                   <div className="flex items-center gap-2 md:gap-3 min-w-0">
-                    <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center flex-shrink-0">
-                      <span className="text-white text-xs font-bold">EV</span>
-                    </div>
-                    <span className="text-base md:text-lg font-semibold font-sora text-[#242424]">Extended Vault</span>
+                    <img src="/extended.jpg" alt="Extended" className="w-7 h-7 md:w-8 md:h-8 rounded-full flex-shrink-0" />
+                    <span className="text-base md:text-lg font-semibold font-sora text-[#242424]">Extended</span>
                   </div>
                   <NumericFormat
                     displayType="text"
@@ -861,7 +860,7 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                 </div>
 
                 <div className="flex items-center gap-2 mb-3">
-                  <PositionBadge color="purple">DeFi Position</PositionBadge>
+                  <PositionBadge color="green">DeFi Position</PositionBadge>
                 </div>
 
                 <div className="overflow-x-auto -mx-4 px-4 md:-mx-6 md:px-6">
