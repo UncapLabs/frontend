@@ -536,6 +536,40 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
                       </TableCell>
                     </TableRow>
                   )}
+                  {/* Starknet USDC.e */}
+                  {parseFloat(data.walletBalances.starknet.usdce) > 0 && (
+                    <TableRow className="border-[#E5E5E5] hover:bg-[#F5F3EE]/50">
+                      <TableCell className="py-3 px-2 md:px-4">
+                        <div className="flex items-center gap-2">
+                          <div className="relative w-5 h-5 md:w-6 md:h-6 flex-shrink-0">
+                            <img src="/usdc.svg" alt="USDC.e" className="w-full h-full" />
+                            <img src="/starknet.png" alt="Starknet" className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-white" />
+                          </div>
+                          <span className="font-sora font-medium text-[#242424] text-sm">USDC.e</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-3 px-2 md:px-4 text-right">
+                        <span className="font-sora text-xs md:text-sm text-[#242424]">$1.00</span>
+                      </TableCell>
+                      <TableCell className="py-3 px-2 md:px-4 text-right">
+                        <NumericFormat
+                          displayType="text"
+                          value={(parseFloat(data.walletBalances.starknet.usdce) / 1e6).toFixed(2)}
+                          thousandSeparator=","
+                          className="font-sora text-xs md:text-sm text-[#242424]"
+                        />
+                      </TableCell>
+                      <TableCell className="py-3 px-2 md:px-4 text-right">
+                        <NumericFormat
+                          displayType="text"
+                          value={(parseFloat(data.walletBalances.starknet.usdce) / 1e6).toFixed(2)}
+                          thousandSeparator=","
+                          prefix="$"
+                          className="font-sora text-xs md:text-sm text-[#242424]"
+                        />
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
               </div>
