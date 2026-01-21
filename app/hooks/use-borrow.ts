@@ -5,15 +5,17 @@ import { useNextOwnerIndex } from "./use-next-owner-index";
 import { useTransaction } from "./use-transaction";
 import { useTransactionState } from "./use-transaction-state";
 import type { Collateral, CollateralId } from "~/lib/collateral";
-import { DEFAULT_COLLATERAL } from "~/lib/collateral";
+import { DEFAULT_COLLATERAL, TOKENS } from "~/lib/collateral";
 import { useTransactionStore } from "~/providers/transaction-provider";
 import { createTransactionDescription } from "~/lib/transaction-descriptions";
 import { getTroveId, getPrefixedTroveId } from "~/lib/utils/trove-id";
 import { bigToBigint } from "~/lib/decimal";
 import Big from "big.js";
 import { generateDepositCallsFromBigint } from "~/lib/collateral/wrapping";
-import { useSwapQuote, type OutputToken } from "./use-swap-quote";
+import { useSwapQuote } from "./use-swap-quote";
 import { buildSwapCalls } from "~/lib/contracts/swap-calls";
+
+export type OutputToken = "USDU" | "USDC";
 
 const DEFAULT_INTEREST_RATE = new Big(2.5);
 
@@ -58,13 +60,14 @@ export function useBorrow({
   // Fetch swap quote when outputToken is USDC
   const {
     quote: swapQuote,
-    expectedUsdcAmount,
+    expectedOutputAmount: expectedUsdcAmount,
     isLoading: isQuoteLoading,
     error: quoteError,
   } = useSwapQuote({
-    usduAmount,
-    outputToken,
-    enabled: !!borrowAmount && borrowAmount.gt(0),
+    sellToken: TOKENS.USDU,
+    buyToken: TOKENS.USDC,
+    sellAmount: usduAmount,
+    enabled: outputToken === "USDC" && !!borrowAmount && borrowAmount.gt(0),
   });
 
   const defaultBatchManager =
@@ -188,7 +191,12 @@ export function useBorrow({
     // If outputToken is USDC and we have a quote, append swap calls
     if (outputToken === "USDC" && swapQuote && address) {
       try {
-        const swapResult = await buildSwapCalls(swapQuote, address);
+        const swapResult = await buildSwapCalls({
+          quote: swapQuote,
+          takerAddress: address,
+          sellSymbol: TOKENS.USDU.symbol,
+          buySymbol: TOKENS.USDC.symbol,
+        });
         finalCalls = [...calls, ...swapResult.calls];
       } catch (error) {
         console.error("Failed to build swap calls:", error);

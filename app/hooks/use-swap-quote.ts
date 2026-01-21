@@ -1,42 +1,52 @@
 import { useQuery } from "@tanstack/react-query";
 import { type AvnuQuote, fetchAvnuQuote } from "~/lib/contracts/avnu";
+import type { Token } from "~/lib/collateral";
 
-export type OutputToken = "USDU" | "USDC";
-
-interface UseSwapQuoteParams {
-  usduAmount?: bigint;
-  outputToken: OutputToken;
+export interface UseSwapQuoteParams {
+  sellToken: Token;
+  buyToken: Token;
+  sellAmount?: bigint;
   enabled?: boolean;
 }
 
-interface SwapQuoteResult {
+export interface SwapQuoteResult {
   quote: AvnuQuote | null;
-  expectedUsdcAmount: bigint | null;
+  expectedOutputAmount: bigint | null;
   isLoading: boolean;
   error: Error | null;
   refetch: () => void;
 }
 
 /**
- * Fetches swap quotes from Avnu for USDU to USDC swaps
- * Uses direct fetch to avoid SDK schema validation issues with null price fields on Sepolia
+ * Fetches swap quotes from Avnu for any token pair
+ * Refreshes every 10 seconds when enabled
  */
 export function useSwapQuote({
-  usduAmount,
-  outputToken,
+  sellToken,
+  buyToken,
+  sellAmount,
   enabled = true,
 }: UseSwapQuoteParams): SwapQuoteResult {
   const shouldFetch =
     enabled &&
-    outputToken === "USDC" &&
-    usduAmount !== undefined &&
-    usduAmount > 0n;
+    sellAmount !== undefined &&
+    sellAmount > 0n &&
+    sellToken.address !== buyToken.address;
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["avnu-swap-quote", usduAmount?.toString(), outputToken],
+    queryKey: [
+      "avnu-swap-quote",
+      sellToken.symbol,
+      buyToken.symbol,
+      sellAmount?.toString(),
+    ],
     queryFn: async () => {
-      if (!usduAmount) return null;
-      return fetchAvnuQuote(usduAmount);
+      if (!sellAmount) return null;
+      return fetchAvnuQuote({
+        sellTokenAddress: sellToken.address,
+        buyTokenAddress: buyToken.address,
+        sellAmount,
+      });
     },
     enabled: shouldFetch,
     refetchInterval: 10000,
@@ -45,7 +55,7 @@ export function useSwapQuote({
 
   return {
     quote: data ?? null,
-    expectedUsdcAmount: data?.buyAmount ?? null,
+    expectedOutputAmount: data?.buyAmount ?? null,
     isLoading: shouldFetch && isLoading,
     error: error as Error | null,
     refetch,

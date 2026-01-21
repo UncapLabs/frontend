@@ -179,7 +179,7 @@ export const CollateralIdSchema = z.enum(
   Object.keys(COLLATERALS) as [CollateralId, ...CollateralId[]]
 );
 
-// Non-collateral tokens (USDU, USDC, STRK, etc.)
+// Non-collateral tokens (USDU, USDC, STRK, WBTC, etc.)
 export const TOKENS = {
   USDU: {
     address: USDU_ADDRESS,
@@ -201,6 +201,13 @@ export const TOKENS = {
     name: "Starknet Token",
     decimals: 18,
     icon: "/starknet.png",
+  } as Token,
+  WBTC: {
+    address: deploymentData.WWBTC.underlyingAddress as Address,
+    symbol: "WBTC",
+    name: "Wrapped Bitcoin",
+    decimals: 8,
+    icon: "/wbtc.png",
   } as Token,
 } as const;
 

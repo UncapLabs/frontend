@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { contractCall } from "~/lib/contracts/calls";
 import {
   type CollateralId,
+  type Token,
   TOKENS,
   COLLATERAL_LIST,
   getCollateralAddresses,
@@ -20,7 +21,13 @@ import type { Call } from "starknet";
 import {
   generateUnwrapCallFromBigint,
   requiresWrapping,
+  getBalanceDecimals,
 } from "~/lib/collateral/wrapping";
+import { useSwapQuote } from "./use-swap-quote";
+import { buildSwapCalls } from "~/lib/contracts/swap-calls";
+
+// Output token options for collateral rewards
+export type CollateralOutputToken = "COLLATERAL" | "USDU";
 
 // Deposit form data structure
 export interface DepositFormData {
@@ -30,6 +37,8 @@ export interface DepositFormData {
     usdu: Big;
     collateral: Big;
   };
+  collateralOutputToken?: CollateralOutputToken;
+  expectedUsduAmount?: string;
 }
 
 // Withdraw form data structure
@@ -40,6 +49,8 @@ export interface WithdrawFormData {
     usdu: Big;
     collateral: Big;
   };
+  collateralOutputToken?: CollateralOutputToken;
+  expectedUsduAmount?: string;
 }
 
 interface UseDepositToStabilityPoolParams {
@@ -50,6 +61,36 @@ interface UseDepositToStabilityPoolParams {
   rewards?: {
     usdu: Big;
     collateral: Big;
+  };
+  collateralOutputToken?: CollateralOutputToken;
+}
+
+// Helper to get the sell token for swapping collateral rewards
+function getCollateralSellToken(collateralId: CollateralId): Token {
+  const collateral = getCollateral(collateralId);
+  // For wrapped collateral, swap the underlying (e.g., WBTC)
+  // For non-wrapped, swap the collateral token directly
+  if (collateral.underlyingToken) {
+    // WWBTC -> use WBTC token
+    if (collateralId === "WWBTC") {
+      return TOKENS.WBTC;
+    }
+    // For other wrapped tokens, create a Token object
+    return {
+      address: collateral.underlyingToken.address,
+      symbol: collateral.symbol,
+      name: collateral.name,
+      decimals: collateral.underlyingToken.decimals,
+      icon: collateral.icon,
+    };
+  }
+  // Non-wrapped collateral (tBTC, SolvBTC)
+  return {
+    address: collateral.addresses.token,
+    symbol: collateral.symbol,
+    name: collateral.name,
+    decimals: collateral.decimals,
+    icon: collateral.icon,
   };
 }
 
@@ -62,16 +103,47 @@ export function useDepositToStabilityPool({
   collateralType,
   onSuccess,
   rewards,
+  collateralOutputToken = "COLLATERAL",
 }: UseDepositToStabilityPoolParams) {
   const { address } = useAccount();
   const transactionStore = useTransactionStore();
+  const collateral = getCollateral(collateralType);
 
   // Transaction state management
   const transactionState = useTransactionState<DepositFormData>({
     initialFormData: {
       depositAmount: undefined,
       collateralType,
+      collateralOutputToken,
     },
+  });
+
+  // Get the sell token for swapping (underlying token for wrapped collateral)
+  const sellToken = getCollateralSellToken(collateralType);
+
+  // Calculate collateral amount in underlying decimals for swap quote
+  const collateralAmountBigint = useMemo(() => {
+    if (!rewards?.collateral || rewards.collateral.lte(0)) return undefined;
+    // Get the underlying decimals for the swap
+    const underlyingDecimals = getBalanceDecimals(collateral);
+    return bigToBigint(rewards.collateral, underlyingDecimals);
+  }, [rewards?.collateral, collateral]);
+
+  // Fetch swap quote when swapping collateral to USDU
+  const {
+    quote: swapQuote,
+    expectedOutputAmount: expectedUsduAmount,
+    isLoading: isQuoteLoading,
+    error: quoteError,
+  } = useSwapQuote({
+    sellToken,
+    buyToken: TOKENS.USDU,
+    sellAmount: collateralAmountBigint,
+    enabled:
+      doClaim &&
+      collateralOutputToken === "USDU" &&
+      !!rewards?.collateral &&
+      rewards.collateral.gt(0),
   });
 
   // Prepare the calls
@@ -118,7 +190,30 @@ export function useDepositToStabilityPool({
   const deposit = useCallback(async () => {
     if (!calls) return;
 
-    const hash = await transaction.send(calls);
+    let finalCalls = calls;
+
+    // If swapping collateral to USDU and we have a quote, append swap calls
+    if (
+      collateralOutputToken === "USDU" &&
+      swapQuote &&
+      address &&
+      rewards?.collateral?.gt(0)
+    ) {
+      try {
+        const swapResult = await buildSwapCalls({
+          quote: swapQuote,
+          takerAddress: address,
+          sellSymbol: sellToken.symbol,
+          buySymbol: TOKENS.USDU.symbol,
+        });
+        finalCalls = [...calls, ...swapResult.calls];
+      } catch (error) {
+        console.error("Failed to build swap calls:", error);
+        throw new Error("Failed to prepare swap transaction");
+      }
+    }
+
+    const hash = await transaction.send(finalCalls);
 
     if (hash) {
       // Transaction was sent successfully, move to pending
@@ -126,6 +221,11 @@ export function useDepositToStabilityPool({
         depositAmount: amount,
         collateralType,
         rewardsClaimed: doClaim ? rewards : undefined,
+        collateralOutputToken,
+        expectedUsduAmount:
+          collateralOutputToken === "USDU"
+            ? expectedUsduAmount?.toString()
+            : undefined,
       });
       transactionState.setPending(hash);
 
@@ -141,6 +241,19 @@ export function useDepositToStabilityPool({
           details: {
             amount: amount.toString(),
             pool: collateralType,
+            ...(doClaim &&
+            rewards &&
+            (rewards.usdu.gt(0) || rewards.collateral.gt(0))
+              ? {
+                  usduRewards: rewards.usdu.toString(),
+                  collateralRewards: rewards.collateral.toString(),
+                  collateralToken: getCollateral(collateralType).symbol,
+                  collateralOutputToken,
+                  ...(collateralOutputToken === "USDU" && expectedUsduAmount
+                    ? { expectedUsduFromSwap: expectedUsduAmount.toString() }
+                    : {}),
+                }
+              : {}),
           },
         };
 
@@ -157,6 +270,10 @@ export function useDepositToStabilityPool({
     address,
     doClaim,
     rewards,
+    collateralOutputToken,
+    swapQuote,
+    sellToken,
+    expectedUsduAmount,
   ]);
 
   // Check if we need to update state based on transaction status
@@ -171,12 +288,25 @@ export function useDepositToStabilityPool({
     }
   }
 
+  // Determine if we're ready to send
+  // For USDU output, also need a valid quote if there are collateral rewards
+  const hasCollateralRewards = rewards?.collateral && rewards.collateral.gt(0);
+  const isReady =
+    !!calls &&
+    (collateralOutputToken === "COLLATERAL" ||
+      !hasCollateralRewards ||
+      (collateralOutputToken === "USDU" && !!swapQuote));
+
   return {
     ...transaction,
     ...transactionState,
     deposit,
-    isReady: !!calls,
+    isReady,
     isSending: transaction.isSending,
+    // Swap quote info for UI
+    expectedUsduAmount,
+    isQuoteLoading,
+    quoteError,
   };
 }
 
@@ -189,6 +319,7 @@ interface UseWithdrawFromStabilityPoolParams {
     usdu: Big;
     collateral: Big;
   };
+  collateralOutputToken?: CollateralOutputToken;
 }
 
 /**
@@ -200,16 +331,47 @@ export function useWithdrawFromStabilityPool({
   collateralType,
   onSuccess,
   rewards,
+  collateralOutputToken = "COLLATERAL",
 }: UseWithdrawFromStabilityPoolParams) {
   const { address } = useAccount();
   const transactionStore = useTransactionStore();
+  const collateral = getCollateral(collateralType);
 
   // Transaction state management
   const transactionState = useTransactionState<WithdrawFormData>({
     initialFormData: {
       withdrawAmount: undefined,
       collateralType,
+      collateralOutputToken,
     },
+  });
+
+  // Get the sell token for swapping (underlying token for wrapped collateral)
+  const sellToken = getCollateralSellToken(collateralType);
+
+  // Calculate collateral amount in underlying decimals for swap quote
+  const collateralAmountBigint = useMemo(() => {
+    if (!rewards?.collateral || rewards.collateral.lte(0)) return undefined;
+    // Get the underlying decimals for the swap
+    const underlyingDecimals = getBalanceDecimals(collateral);
+    return bigToBigint(rewards.collateral, underlyingDecimals);
+  }, [rewards?.collateral, collateral]);
+
+  // Fetch swap quote when swapping collateral to USDU
+  const {
+    quote: swapQuote,
+    expectedOutputAmount: expectedUsduAmount,
+    isLoading: isQuoteLoading,
+    error: quoteError,
+  } = useSwapQuote({
+    sellToken,
+    buyToken: TOKENS.USDU,
+    sellAmount: collateralAmountBigint,
+    enabled:
+      doClaim &&
+      collateralOutputToken === "USDU" &&
+      !!rewards?.collateral &&
+      rewards.collateral.gt(0),
   });
 
   // Prepare the calls
@@ -253,7 +415,30 @@ export function useWithdrawFromStabilityPool({
   const withdraw = useCallback(async () => {
     if (!calls) return;
 
-    const hash = await transaction.send(calls);
+    let finalCalls = calls;
+
+    // If swapping collateral to USDU and we have a quote, append swap calls
+    if (
+      collateralOutputToken === "USDU" &&
+      swapQuote &&
+      address &&
+      rewards?.collateral?.gt(0)
+    ) {
+      try {
+        const swapResult = await buildSwapCalls({
+          quote: swapQuote,
+          takerAddress: address,
+          sellSymbol: sellToken.symbol,
+          buySymbol: TOKENS.USDU.symbol,
+        });
+        finalCalls = [...calls, ...swapResult.calls];
+      } catch (error) {
+        console.error("Failed to build swap calls:", error);
+        throw new Error("Failed to prepare swap transaction");
+      }
+    }
+
+    const hash = await transaction.send(finalCalls);
 
     if (hash) {
       // Transaction was sent successfully, move to pending
@@ -261,6 +446,11 @@ export function useWithdrawFromStabilityPool({
         withdrawAmount: amount,
         collateralType,
         rewardsClaimed: doClaim ? rewards : undefined,
+        collateralOutputToken,
+        expectedUsduAmount:
+          collateralOutputToken === "USDU"
+            ? expectedUsduAmount?.toString()
+            : undefined,
       });
       transactionState.setPending(hash);
 
@@ -287,6 +477,10 @@ export function useWithdrawFromStabilityPool({
                 usduRewards: rewards?.usdu.toString(),
                 collateralRewards: rewards?.collateral.toString(),
                 collateralToken: getCollateral(collateralType).symbol,
+                collateralOutputToken,
+                ...(collateralOutputToken === "USDU" && expectedUsduAmount
+                  ? { expectedUsduFromSwap: expectedUsduAmount.toString() }
+                  : {}),
               }
             : {
                 amount: amount.toString(),
@@ -295,6 +489,10 @@ export function useWithdrawFromStabilityPool({
                   usduRewards: rewards.usdu.toString(),
                   collateralRewards: rewards.collateral.toString(),
                   collateralToken: getCollateral(collateralType).symbol,
+                  collateralOutputToken,
+                  ...(collateralOutputToken === "USDU" && expectedUsduAmount
+                    ? { expectedUsduFromSwap: expectedUsduAmount.toString() }
+                    : {}),
                 } : {}),
               },
         };
@@ -312,6 +510,10 @@ export function useWithdrawFromStabilityPool({
     address,
     doClaim,
     rewards,
+    collateralOutputToken,
+    swapQuote,
+    sellToken,
+    expectedUsduAmount,
   ]);
 
   // Check if we need to update state based on transaction status
@@ -326,12 +528,25 @@ export function useWithdrawFromStabilityPool({
     }
   }
 
+  // Determine if we're ready to send
+  // For USDU output, also need a valid quote if there are collateral rewards
+  const hasCollateralRewards = rewards?.collateral && rewards.collateral.gt(0);
+  const isReady =
+    !!calls &&
+    (collateralOutputToken === "COLLATERAL" ||
+      !hasCollateralRewards ||
+      (collateralOutputToken === "USDU" && !!swapQuote));
+
   return {
     ...transaction,
     ...transactionState,
     withdraw,
-    isReady: !!calls,
+    isReady,
     isSending: transaction.isSending,
+    // Swap quote info for UI
+    expectedUsduAmount,
+    isQuoteLoading,
+    quoteError,
   };
 }
 
