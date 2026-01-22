@@ -78,7 +78,7 @@ export interface IncentiveRates {
  * Returns the interest rebate rate (borrow side) and per-asset collateral rebate rates (supply side)
  */
 export async function getUncapIncentiveRates(env: Env): Promise<IncentiveRates> {
-  const cacheKey = getCacheKey("uncap-incentive-rates-v2");
+  const cacheKey = getCacheKey("uncap-incentive-rates");
 
   // Try to get from KV store first
   const cached = await env.CACHE.get(cacheKey, "json");
