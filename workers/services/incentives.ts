@@ -45,6 +45,20 @@ const SNF_API_BASE_URL =
 const PROTOCOL = "Uncap";
 const CACHE_TTL = 30 * 60 * 12; // 12 hours
 
+// Map API asset symbols to our collateral IDs
+const ASSET_SYMBOL_MAP: Record<string, string> = {
+  WBTC: "WWBTC",
+  TBTC: "TBTC",
+  SOLVBTC: "SOLVBTC",
+};
+
+// Default supply rates per asset (fallback if API doesn't have data)
+const DEFAULT_SUPPLY_RATES: Record<string, number> = {
+  WWBTC: 0.02, // 2%
+  TBTC: 0.02, // 2%
+  SOLVBTC: 0.02, // 2%
+};
+
 /**
  * Get network-prefixed cache key to prevent staging/production data mixing
  */
@@ -53,23 +67,23 @@ function getCacheKey(base: string): string {
   return `${network}:${base}`;
 }
 
+export interface IncentiveRates {
+  borrowRate: number;
+  supplyRates: Record<string, number>; // Per-asset supply rates keyed by collateral ID (WWBTC, TBTC, SOLVBTC)
+  maxDailyTokens: number;
+}
+
 /**
  * Fetches Uncap protocol incentive rates from SNF API
- * Returns the interest rebate rate (borrow side) and collateral rebate rate (supply side)
+ * Returns the interest rebate rate (borrow side) and per-asset collateral rebate rates (supply side)
  */
-export async function getUncapIncentiveRates(
-  env: Env
-): Promise<{ borrowRate: number; supplyRate: number; maxDailyTokens: number }> {
-  const cacheKey = getCacheKey("uncap-incentive-rates");
+export async function getUncapIncentiveRates(env: Env): Promise<IncentiveRates> {
+  const cacheKey = getCacheKey("uncap-incentive-rates-v2");
 
   // Try to get from KV store first
   const cached = await env.CACHE.get(cacheKey, "json");
   if (cached) {
-    return cached as {
-      borrowRate: number;
-      supplyRate: number;
-      maxDailyTokens: number;
-    };
+    return cached as IncentiveRates;
   }
 
   // Fetch from both SNF mm-lending and mm-borrowing APIs in parallel
@@ -93,21 +107,34 @@ export async function getUncapIncentiveRates(
   const lendingData = (await lendingResponse.json()) as SNFApiResponse<SNFLendingItem>;
   const borrowingData = (await borrowingResponse.json()) as SNFApiResponse<SNFBorrowingItem>;
 
-  // Find the most recent Uncap entries (API returns data sorted by date desc)
-  const lendingEntry = lendingData.items.find((item) => item.protocol === PROTOCOL);
-  const borrowingEntry = borrowingData.items.find((item) => item.protocol === PROTOCOL);
+  // Find all Uncap lending entries and build per-asset supply rates
+  const uncapLendingEntries = lendingData.items.filter(
+    (item) => item.protocol === PROTOCOL
+  );
 
-  if (!lendingEntry) {
-    throw new Error("Could not find Uncap protocol data in lending API response");
+  // Build supply rates map from API data
+  const supplyRates: Record<string, number> = { ...DEFAULT_SUPPLY_RATES };
+  for (const entry of uncapLendingEntries) {
+    const collateralId = ASSET_SYMBOL_MAP[entry.asset_symbol];
+    if (collateralId) {
+      supplyRates[collateralId] = parseFloat(entry.effective_apr);
+    }
   }
+
+  // Find the borrowing entry for rebate rate
+  const borrowingEntry = borrowingData.items.find(
+    (item) => item.protocol === PROTOCOL
+  );
 
   if (!borrowingEntry) {
-    throw new Error("Could not find Uncap protocol data in borrowing API response");
+    throw new Error(
+      "Could not find Uncap protocol data in borrowing API response"
+    );
   }
 
-  const result = {
+  const result: IncentiveRates = {
     borrowRate: parseFloat(borrowingEntry.rebate_rate), // e.g., 0.4 = 40% rebate
-    supplyRate: parseFloat(lendingEntry.effective_apr), // e.g., 0.02 = 2%
+    supplyRates, // Per-asset rates
     maxDailyTokens: 0, // No longer used
   };
 

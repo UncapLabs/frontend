@@ -14,6 +14,7 @@ interface STRKRebateInfoProps {
   yearlyRebateUSD: Big;
   collateralValueUSD: Big;
   yearlyCollateralRebateUSD: Big;
+  supplyRatePercent?: number; // Per-asset supply rate percentage (e.g., 2 for 2%)
 }
 
 export function STRKRebateInfo({
@@ -21,13 +22,15 @@ export function STRKRebateInfo({
   yearlyRebateUSD,
   collateralValueUSD = new Big(0),
   yearlyCollateralRebateUSD = new Big(0),
+  supplyRatePercent: supplyRatePercentProp,
 }: STRKRebateInfoProps) {
   const [isOpen, setIsOpen] = useState(true);
 
   // Fetch dynamic rates from API with fallbacks to hardcoded values
   const { data: rates } = useUncapIncentiveRates();
   const borrowRatePercent = (rates?.borrowRate ?? 0.4) * 100; // Fallback: 40%
-  const supplyRatePercent = (rates?.supplyRate ?? 0.02) * 100; // Fallback: 2%
+  // Use prop if provided, otherwise fall back to WBTC rate (most common collateral)
+  const supplyRatePercent = supplyRatePercentProp ?? (rates?.supplyRates?.WWBTC ?? 0.02) * 100;
 
   // Total rebate is interest rebate + collateral rebate
   const totalYearlyRebateUSD = yearlyRebateUSD.plus(yearlyCollateralRebateUSD);
@@ -71,8 +74,8 @@ export function STRKRebateInfo({
       <CollapsibleContent>
         <div className="px-3 pb-3 border-t border-neutral-100">
           <p className="text-xs text-neutral-600 font-sora mt-3 mb-3">
-            You get up to a {borrowRatePercent}% discount on your interest rate
-            + up to {supplyRatePercent}% rebate on your collateral value, paid
+            You get up to a {borrowRatePercent.toFixed(0)}% discount on your interest rate
+            + up to {supplyRatePercent.toFixed(2)}% rebate on your collateral value, paid
             as STRK tokens claimable weekly.
           </p>
 
@@ -80,7 +83,7 @@ export function STRKRebateInfo({
             {/* Collateral Rebate Section */}
             <div className="space-y-2 pt-2 border-t border-neutral-100">
               <div className="text-xs font-medium text-neutral-800 font-sora">
-                Collateral Rebate (up to {supplyRatePercent}%)
+                Collateral Rebate (up to {supplyRatePercent.toFixed(2)}%)
               </div>
 
               <div className="flex justify-between items-center pl-3">
@@ -119,7 +122,7 @@ export function STRKRebateInfo({
             {/* Interest Rebate Section */}
             <div className="space-y-2">
               <div className="text-xs font-medium text-neutral-800 font-sora">
-                Interest Rebate (up to {borrowRatePercent}%)
+                Interest Rebate (up to {borrowRatePercent.toFixed(0)}%)
               </div>
 
               <div className="flex justify-between items-center pl-3">
