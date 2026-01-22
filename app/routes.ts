@@ -23,6 +23,7 @@ export default [
       route("close", "routes/borrow/borrow.$troveId.close.tsx"),
     ]),
     route("earn", "routes/earn/earn.tsx"),
+    route("bridge", "routes/bridge/bridge.tsx"),
     route("points", "routes/points/points.tsx"),
     route("referrals", "routes/points/referrals.tsx"),
     // route("leaderboard", "routes/points/leaderboard.tsx"),
