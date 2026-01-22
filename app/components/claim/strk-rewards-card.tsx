@@ -138,7 +138,8 @@ export function STRKRewardsCard() {
   // Fetch dynamic incentive rates with fallbacks
   const { data: rates } = useUncapIncentiveRates();
   const borrowRatePercent = (rates?.borrowRate ?? 0.4) * 100; // Fallback: 40%
-  const supplyRatePercent = (rates?.supplyRate ?? 0.02) * 100; // Fallback: 2%
+  // Use WBTC rate as default for general display (most common collateral)
+  const supplyRatePercent = (rates?.supplyRates?.WWBTC ?? 0.02) * 100;
 
   // Fetch data from hooks - all return Big from TRPC
   const { alreadyClaimed, refetch: refetchClaimed } = useStrkAlreadyClaimed();

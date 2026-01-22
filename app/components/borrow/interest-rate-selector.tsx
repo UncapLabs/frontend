@@ -307,20 +307,27 @@ export function InterestRateSelector({
         )}
 
         {/* STRK Rebate */}
-        <STRKRebateInfo
-          yearlyInterestUSD={rebateData?.yearlyInterestUSD ?? new Big(0)}
-          yearlyRebateUSD={rebateData?.yearlyRebateUSD ?? new Big(0)}
-          collateralValueUSD={
-            collateralAmount && collateralPriceUSD
-              ? collateralAmount.times(collateralPriceUSD)
-              : new Big(0)
-          }
-          yearlyCollateralRebateUSD={
-            collateralAmount && collateralPriceUSD && incentiveRates.data?.supplyRate
-              ? collateralAmount.times(collateralPriceUSD).times(incentiveRates.data.supplyRate)
-              : new Big(0)
-          }
-        />
+        {(() => {
+          const supplyRates = incentiveRates.data?.supplyRates ?? {};
+          const supplyRate = supplyRates[collateralType] ?? 0.02;
+          return (
+            <STRKRebateInfo
+              yearlyInterestUSD={rebateData?.yearlyInterestUSD ?? new Big(0)}
+              yearlyRebateUSD={rebateData?.yearlyRebateUSD ?? new Big(0)}
+              collateralValueUSD={
+                collateralAmount && collateralPriceUSD
+                  ? collateralAmount.times(collateralPriceUSD)
+                  : new Big(0)
+              }
+              yearlyCollateralRebateUSD={
+                collateralAmount && collateralPriceUSD
+                  ? collateralAmount.times(collateralPriceUSD).times(supplyRate)
+                  : new Big(0)
+              }
+              supplyRatePercent={supplyRate * 100}
+            />
+          );
+        })()}
       </div>
     </div>
   );

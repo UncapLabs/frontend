@@ -39,9 +39,11 @@ interface RatesTableProps {
 export function RatesTable({ borrowRates, earnRates }: RatesTableProps) {
   const navigate = useNavigate();
 
-  // Fetch incentive rates for description
+  // Fetch incentive rates for description - show max rate across all assets
   const { data: rates } = useUncapIncentiveRates();
-  const supplyRatePercent = (rates?.supplyRate ?? 0.02) * 100; // Fallback: 2%
+  const supplyRates = rates?.supplyRates ?? {};
+  const maxSupplyRate = Math.max(...Object.values(supplyRates), 0.02);
+  const supplyRatePercent = maxSupplyRate * 100;
 
   const handleBorrowClick = (collateralAddress?: string) => {
     if (collateralAddress) {
@@ -700,18 +702,19 @@ export default function Stats() {
   const tcrData = useAllBranchTCRs();
   const stabilityPoolData = useStabilityPoolData();
 
-  // Fetch incentive rates for supply APR
+  // Fetch incentive rates for supply APR (per-asset)
   const { data: rates } = useUncapIncentiveRates();
-  const supplyRatePercent = rates?.supplyRate ?? 0.02; // Fallback: 2%
+  const supplyRates = rates?.supplyRates ?? {};
 
-  // Build borrow rates dynamically using COLLATERAL_LIST
+  // Build borrow rates dynamically using COLLATERAL_LIST with per-asset supply rates
   const borrowRates: BorrowRateItem[] = COLLATERAL_LIST.map((collateral) => {
     const tcr = tcrData[collateral.id];
+    const supplyRate = supplyRates[collateral.id] ?? 0.02; // Fallback: 2%
 
     return {
       collateral: collateral.symbol,
       icon: collateral.icon,
-      supplyAPR: new Big(supplyRatePercent * 100), // Convert to percentage
+      supplyAPR: new Big(supplyRate * 100), // Convert to percentage
       totalCollateral: tcr.data?.totalCollateralUSD,
       collateralAddress: collateral.address,
     };

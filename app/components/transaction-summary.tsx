@@ -86,7 +86,9 @@ export function TransactionSummary({
   // Fetch STRK reward rates
   const { data: rates } = useUncapIncentiveRates();
   const borrowRate = rates?.borrowRate ?? 0.4; // 40% fallback
-  const supplyRate = rates?.supplyRate ?? 0.02; // 2% fallback
+  // Get per-asset supply rate based on collateral type
+  const supplyRates = rates?.supplyRates ?? {};
+  const supplyRate = supplyRates[collateralType || DEFAULT_COLLATERAL.id] ?? 0.02; // 2% fallback
 
   // Calculate STRK rewards
   const yearlyInterestRebateUSD =
