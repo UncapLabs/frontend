@@ -141,7 +141,7 @@ export default function FeatureDiscoveryCards() {
             onClick={() => navigate("/vault")}
             className="bg-[#006CFF] hover:bg-[#0056CC] text-white px-6 py-4 h-auto rounded-xl font-sora text-xs font-medium inline-flex items-center gap-8"
           >
-            View vault
+            Deposit Bitcoin
             <svg
               width="6"
               height="9"
