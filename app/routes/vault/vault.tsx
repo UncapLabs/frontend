@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { NumericFormat } from "react-number-format";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { RefreshCw, AlertTriangle, ExternalLink, Wallet, ChartPie } from "lucide-react";
-
 import type { Route } from "./+types/vault";
 import { createMeta } from "~/lib/utils/meta";
 import { createCaller } from "../../../workers/router";
@@ -46,20 +45,24 @@ export async function loader({ context }: Route.LoaderArgs) {
   });
 
   try {
-    const data = await caller.vaultRouter.getAnalytics();
-    return { initialData: data, error: null };
+    const [analyticsData, lagoonData] = await Promise.all([
+      caller.vaultRouter.getAnalytics(),
+      caller.vaultRouter.getLagoonVault().catch((err) => {
+        console.error("Lagoon data fetch failed in loader:", err);
+        return null;
+      }),
+    ]);
+    return { initialData: analyticsData, lagoonData, error: null };
   } catch (error) {
     console.error("Error loading vault analytics:", error);
     return {
       initialData: null,
+      lagoonData: null,
       error: error instanceof Error ? error.message : "Failed to load vault data",
     };
   }
 }
 
-function formatTimestamp(timestamp: string): string {
-  return new Date(timestamp).toLocaleString();
-}
 
 function formatUsd(value: string | number): string {
   const num = typeof value === "string" ? parseFloat(value) : value;
@@ -148,6 +151,7 @@ function ErrorState({ message, onRetry }: { message: string; onRetry: () => void
   );
 }
 
+
 export default function VaultPage({ loaderData }: Route.ComponentProps) {
   const trpc = useTRPC();
 
@@ -157,6 +161,14 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
       refetchInterval: 60_000,
     }),
     initialData: loaderData.initialData ?? undefined,
+  });
+
+  const { data: lagoonData } = useQuery({
+    ...trpc.vaultRouter.getLagoonVault.queryOptions(undefined, {
+      staleTime: 5 * 60_000,
+      refetchInterval: 5 * 60_000,
+    }),
+    initialData: loaderData.lagoonData ?? undefined,
   });
 
   if (isLoading && !data) {
@@ -199,33 +211,102 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
 
   return (
     <div className="w-full mx-auto max-w-7xl py-8 lg:py-8 px-4 sm:px-6 lg:px-8 pb-32">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:justify-between pb-6 lg:pb-4 gap-4">
-        <div>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-medium leading-10 font-sora text-[#242424]">
-            Vault Analytics
-          </h1>
-          <p className="text-sm text-[#94938D] font-sora mt-2">
-            Real-time transparency into vault holdings
-            <span className="mx-2">·</span>
+      {/* Vault Header */}
+      <div className="bg-white rounded-2xl p-6 md:p-8 mb-6">
+        {/* Lagoon branding + deposit CTA */}
+        {lagoonData && (
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-5 mb-6">
+            <div className="min-w-0">
+              <div className="flex items-center gap-3 mb-3">
+                <img
+                  src="/lagoon.png"
+                  alt="Lagoon"
+                  className="w-10 h-10 md:w-11 md:h-11 rounded-full flex-shrink-0"
+                />
+                <div>
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <h1 className="text-xl md:text-2xl font-semibold font-sora text-[#242424] tracking-tight">
+                      {lagoonData.name}
+                    </h1>
+                    {/* <span className="text-[11px] font-medium font-sora text-[#94938D] bg-[#F5F3EE] px-2 py-0.5 rounded">
+                      {lagoonData.symbol}
+                    </span> */}
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-0.5 text-[13px] text-[#AAA28E] font-sora">
+                    {lagoonData.curator && <span>Managed by {lagoonData.curator.name}</span>}
+                    <span className="text-[#D4D0C8]">·</span>
+                    <span>{lagoonData.underlyingAsset.symbol} on Ethereum</span>
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-sm text-[#6B6B6B] font-sora leading-relaxed max-w-2xl">
+                {lagoonData.shortDescription || lagoonData.description}
+              </p>
+            </div>
+
             <a
-              href="https://app.lagoon.finance/vault/1/0xeff2c1cc0e3bbb6bedc9622a309ed75eab730521"
+              href={lagoonData.depositUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#94938D] hover:text-[#242424] transition-colors inline-flex items-center gap-1"
+              className="inline-flex items-center justify-center gap-2 bg-[#006CFF] hover:bg-[#0056CC] text-white font-sora font-medium text-sm px-6 py-3 rounded-xl transition-colors flex-shrink-0"
             >
-              View on Lagoon
-              <ExternalLink className="w-3 h-3" />
+              Deposit on Lagoon
+              <ExternalLink className="w-3.5 h-3.5" />
             </a>
-          </p>
-        </div>
-        <div className="flex flex-col items-start md:items-end gap-1 text-xs text-[#94938D] font-sora">
-          <span>Last updated: {formatTimestamp(data.timestamp)}</span>
-          <span className="flex flex-wrap gap-x-1">
-            <span>ETH {data.blockNumbers.ethereum.toLocaleString()}</span>
-            <span className="hidden xs:inline">|</span>
-            <span>SN {data.blockNumbers.starknet.toLocaleString()}</span>
-          </span>
+          </div>
+        )}
+
+        {/* Analytics subtitle */}
+        <h2 className="text-lg md:text-xl font-semibold font-sora text-[#242424] mb-5">
+          Vault Analytics
+        </h2>
+
+        {/* Summary Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          <div className="bg-[#F5F3EE] rounded-xl p-4 md:p-5 min-w-0">
+            <p className="text-[10px] md:text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight mb-1 md:mb-2">
+              Net Assets Value (USD)
+            </p>
+            <p className="text-lg md:text-2xl font-semibold font-sora text-[#242424] truncate">
+              <NumericFormat
+                displayType="text"
+                value={parseFloat(data.totalNavUsd).toFixed(0)}
+                thousandSeparator=","
+                prefix="$"
+              />
+            </p>
+          </div>
+          <div className="bg-[#F5F3EE] rounded-xl p-4 md:p-5 min-w-0">
+            <p className="text-[10px] md:text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight mb-1 md:mb-2">
+              Net Assets Value (BTC)
+            </p>
+            <p className="text-lg md:text-2xl font-semibold font-sora text-[#242424] truncate">
+              {parseFloat(data.totalNavWbtc).toFixed(4)}
+            </p>
+          </div>
+          <div className="bg-[#F5F3EE] rounded-xl p-4 md:p-5 min-w-0">
+            <p className="text-[10px] md:text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight mb-1 md:mb-2">
+              BTC Price
+            </p>
+            <p className="text-lg md:text-2xl font-semibold font-sora text-[#242424] truncate">
+              <NumericFormat
+                displayType="text"
+                value={btcPrice.toFixed(0)}
+                thousandSeparator=","
+                prefix="$"
+              />
+            </p>
+          </div>
+          <div className="bg-[#F5F3EE] rounded-xl p-4 md:p-5 min-w-0">
+            <p className="text-[10px] md:text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight mb-1 md:mb-2">
+              Networks
+            </p>
+            <div className="flex items-center gap-2">
+              <img src="/eth.svg" alt="Ethereum" className="w-6 h-6" />
+              <img src="/starknet.png" alt="Starknet" className="w-6 h-6" />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -245,53 +326,6 @@ export default function VaultPage({ loaderData }: Route.ComponentProps) {
           </div>
         </div>
       )}
-
-      {/* Summary Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
-        <div className="bg-white rounded-xl p-4 md:p-5 min-w-0">
-          <p className="text-[10px] md:text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight mb-1 md:mb-2">
-            Net Assets Value (USD)
-          </p>
-          <p className="text-lg md:text-2xl font-semibold font-sora text-[#242424] truncate">
-            <NumericFormat
-              displayType="text"
-              value={parseFloat(data.totalNavUsd).toFixed(0)}
-              thousandSeparator=","
-              prefix="$"
-            />
-          </p>
-        </div>
-        <div className="bg-white rounded-xl p-4 md:p-5 min-w-0">
-          <p className="text-[10px] md:text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight mb-1 md:mb-2">
-            Net Assets Value (BTC)
-          </p>
-          <p className="text-lg md:text-2xl font-semibold font-sora text-[#242424] truncate">
-            {parseFloat(data.totalNavWbtc).toFixed(4)}
-          </p>
-        </div>
-        <div className="bg-white rounded-xl p-4 md:p-5 min-w-0">
-          <p className="text-[10px] md:text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight mb-1 md:mb-2">
-            BTC Price
-          </p>
-          <p className="text-lg md:text-2xl font-semibold font-sora text-[#242424] truncate">
-            <NumericFormat
-              displayType="text"
-              value={btcPrice.toFixed(0)}
-              thousandSeparator=","
-              prefix="$"
-            />
-          </p>
-        </div>
-        <div className="bg-white rounded-xl p-4 md:p-5 min-w-0">
-          <p className="text-[10px] md:text-xs font-medium font-sora text-[#AAA28E] uppercase tracking-tight mb-1 md:mb-2">
-            Networks
-          </p>
-          <div className="flex items-center gap-2">
-            <img src="/eth.svg" alt="Ethereum" className="w-6 h-6" />
-            <img src="/starknet.png" alt="Starknet" className="w-6 h-6" />
-          </div>
-        </div>
-      </div>
 
       {/* Main Content - Debank Style */}
       <div className="space-y-6 mb-6">

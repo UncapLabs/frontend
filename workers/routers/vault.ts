@@ -1,6 +1,29 @@
 import { publicProcedure, router } from "../trpc";
 import Big from "big.js";
 
+// --- Lagoon Vault ---
+
+const LAGOON_VAULT_ADDRESS = "0xeff2c1cc0e3bbb6bedc9622a309ed75eab730521";
+const LAGOON_CHAIN_ID = 1;
+const LAGOON_DEPOSIT_URL = `https://app.lagoon.finance/vault/${LAGOON_CHAIN_ID}/${LAGOON_VAULT_ADDRESS}`;
+const LAGOON_CACHE_KEY = "lagoon-vault-data";
+const LAGOON_CACHE_TTL = 5 * 60; // 5 minutes
+
+function getLagoonCacheKey(): string {
+  const network = process.env.NETWORK || "sepolia";
+  return `${network}:${LAGOON_CACHE_KEY}`;
+}
+
+type LagoonVaultData = {
+  name: string;
+  symbol: string;
+  description: string;
+  shortDescription: string;
+  depositUrl: string;
+  curator: { name: string } | null;
+  underlyingAsset: { symbol: string };
+};
+
 // Types matching the actual mNAV worker response
 type MnavStabilityPool = {
   usdu: string;
@@ -117,6 +140,54 @@ const BRANCH_NAME_TO_ID: Record<string, number> = {
 };
 
 export const vaultRouter = router({
+  getLagoonVault: publicProcedure.query(async ({ ctx }): Promise<LagoonVaultData | null> => {
+    const cacheKey = getLagoonCacheKey();
+    try {
+      const cached = await ctx.env.CACHE.get(cacheKey, "json");
+      if (cached) return cached as LagoonVaultData;
+    } catch {
+      // Cache read failed, proceed with fresh fetch
+    }
+
+    try {
+      const url = `https://app.lagoon.finance/api/vault?chainId=${LAGOON_CHAIN_ID}&address=${LAGOON_VAULT_ADDRESS}&includeApr=true`;
+      const response = await fetch(url, {
+        headers: { Accept: "application/json" },
+      });
+
+      if (!response.ok) {
+        console.error(`Lagoon API error: ${response.status}`);
+        return null;
+      }
+
+      // biome-ignore lint: Lagoon API response has dynamic shape
+      const raw: any = await response.json();
+
+      const result: LagoonVaultData = {
+        name: raw.name ?? "",
+        symbol: raw.symbol ?? "",
+        description: raw.description ?? "",
+        shortDescription: raw.shortDescription ?? "",
+        depositUrl: LAGOON_DEPOSIT_URL,
+        curator: raw.curators?.[0] ? { name: raw.curators[0].name } : null,
+        underlyingAsset: { symbol: raw.asset?.symbol ?? "WBTC" },
+      };
+
+      try {
+        await ctx.env.CACHE.put(cacheKey, JSON.stringify(result), {
+          expirationTtl: LAGOON_CACHE_TTL,
+        });
+      } catch {
+        // Cache write failed, not critical
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Failed to fetch Lagoon vault data:", error);
+      return null;
+    }
+  }),
+
   getAnalytics: publicProcedure.query(async ({ ctx }): Promise<VaultAnalyticsData> => {
     // Call uncap-jobs worker via service binding
     const response = await ctx.env.UNCAP_JOBS.fetch(
