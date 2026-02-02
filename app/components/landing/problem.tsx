@@ -24,7 +24,7 @@ export default function Problem() {
             <Heading as="h1" className="text-[#001B40]">
               Your Bitcoin shouldn't just sit there.
             </Heading>
-            <Lead className="mt-6 max-w-xl text-[#001B40]/70">
+            <Lead className="mt-6 max-w-xl text-base font-normal font-sora text-[#001B40]/70 sm:text-lg leading-relaxed">
               For years, Bitcoin holders faced an impossible choice: sell your
               Bitcoin, watch your capital sit idle or give up custody to borrow
               against it.

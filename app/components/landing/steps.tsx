@@ -158,6 +158,7 @@ export function Steps() {
 
   return (
     <div
+      id="how-it-works"
       ref={containerRef}
       className="bg-linear-to-b from-white from-50% to-gray-100 py-24">
       <Container>
