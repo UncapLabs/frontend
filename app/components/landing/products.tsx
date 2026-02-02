@@ -49,7 +49,7 @@ function Header() {
 
 function ProductCards() {
   return (
-    <div className="relative py-24">
+    <div className="relative py-12 sm:py-24">
       <Gradient className="absolute inset-x-2 top-48 bottom-0 rounded-4xl ring-1 ring-black/5 ring-inset" />
       <Container className="relative">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
