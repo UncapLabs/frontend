@@ -544,7 +544,7 @@ export function STRKRewardsCard() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {Array.from({ length: 10 }, (_, i) => i + 1).map(
+                      {Array.from({ length: 20 }, (_, i) => i + 1).map(
                         (weekNumber) => {
                           const dates = getWeekDates(weekNumber);
                           // Find matching data from backend
