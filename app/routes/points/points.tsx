@@ -17,7 +17,7 @@ import { cn } from "~/lib/utils";
 // Season configurations
 const SEASON_CONFIG = {
   1: { startDate: "2025-10-10T06:00:00Z", totalWeeks: 13 },
-  2: { startDate: "2026-01-09T06:00:00Z", totalWeeks: 13 }, // Jan 9 - Apr 10, 2026
+  2: { startDate: "2026-01-09T06:00:00Z", totalWeeks: 5 }, // Jan 9 - Feb 12, 2026 (final season)
 } as const;
 
 type SeasonNumber = 1 | 2;
