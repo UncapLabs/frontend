@@ -45,8 +45,8 @@ export function ManualRateControls({
     if (!visualizationData) {
       // Mimic the non-linear distribution used by the server:
       // - 0.1% increments from 0.5% to 5% (45 bars)
-      // - 0.5% increments from 5% to 20% (30 bars)
-      // Total: 75 bars
+      // - 0.5% increments from 5% to 10% (10 bars)
+      // Total: 55 bars
 
       const rate = interestRate;
       let barIndex: number;
@@ -56,15 +56,15 @@ export function ManualRateControls({
       } else if (rate < 5) {
         // Precision range: 0.5% to 5%
         barIndex = Math.floor((rate - 0.5) / 0.1);
-      } else if (rate <= 20) {
-        // Normal range: 5% to 20%
+      } else if (rate <= 10) {
+        // Normal range: 5% to 10%
         const barsInPreciseRange = 45; // (5 - 0.5) / 0.1 = 45
         barIndex = barsInPreciseRange + Math.floor((rate - 5) / 0.5);
       } else {
-        barIndex = 74; // Max index (75 bars total, 0-indexed)
+        barIndex = 54; // Max index (55 bars total, 0-indexed)
       }
 
-      const totalBars = 75;
+      const totalBars = 55;
       const sliderValue = barIndex / (totalBars - 1);
 
       return {
@@ -119,7 +119,7 @@ export function ManualRateControls({
     (value: number) => {
       if (!visualizationData) {
         // Convert slider position back to interest rate using non-linear distribution
-        const totalBars = 75;
+        const totalBars = 55;
         const barIndex = Math.round(value * (totalBars - 1));
         const barsInPreciseRange = 45;
 
@@ -130,7 +130,7 @@ export function ManualRateControls({
             new Big(barIndex).times("0.1")
           );
         } else {
-          // Normal range: 5% to 20%
+          // Normal range: 5% to 10%
           const normalBarIndex = barIndex - barsInPreciseRange;
           rateBig = new Big("5").plus(
             new Big(normalBarIndex).times("0.5")
@@ -183,7 +183,7 @@ export function ManualRateControls({
           isAllowed={(values) => {
             const { floatValue } = values;
             // Only check maximum, not minimum
-            return floatValue === undefined || floatValue <= 20;
+            return floatValue === undefined || floatValue <= 10;
           }}
           onBlur={() => {
             if (interestRate < 0.5) {

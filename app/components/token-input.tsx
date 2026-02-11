@@ -130,7 +130,7 @@ export const TokenInput = memo(function TokenInput({
   return (
     <div
       className={`bg-white rounded-2xl group ${
-        compact ? "p-4 space-y-3" : "p-6 space-y-6"
+        compact ? "p-5 space-y-4" : "p-6 space-y-6"
       }`}
     >
       <div className="flex justify-between items-start">
@@ -180,7 +180,6 @@ export const TokenInput = memo(function TokenInput({
             >
               <SelectTrigger
                 className={`p-2.5 ${tokenSelectorBgColor} rounded-lg inline-flex justify-start items-center gap-2 h-auto border-0 hover:opacity-80 transition-all`}
-                iconClassName={`${tokenSelectorTextColor} opacity-100`}
               >
                 <div className="flex items-center gap-2">
                   {token.icon && (

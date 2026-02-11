@@ -49,8 +49,8 @@ export default function Hero() {
     const rect = sliderRef.current.getBoundingClientRect();
     const x = Math.min(rect.width, Math.max(0, clientX - rect.x));
     const percentage = x / rect.width;
-    // Map 0-1 to 0.5-20
-    const newRate = 0.5 + percentage * 19.5;
+    // Map 0-1 to 0.5-10
+    const newRate = 0.5 + percentage * 9.5;
     setInterestRate(Math.round(newRate * 10) / 10);
   }, []);
 
@@ -194,7 +194,7 @@ export default function Hero() {
               >
                 <Button
                   asChild
-                  className="bg-[#001B40] hover:bg-[#002B60] text-white font-sora font-medium rounded-xl h-12 px-8 shadow-lg shadow-[#001B40]/20 transition-all hover:shadow-xl hover:shadow-[#001B40]/25 hover:-translate-y-0.5"
+                  className="bg-[#006CFF] hover:bg-[#0056CC] text-white font-sora font-medium rounded-xl h-12 px-8 shadow-lg shadow-[#006CFF]/20 transition-all hover:shadow-xl hover:shadow-[#006CFF]/25 hover:-translate-y-0.5"
                 >
                   <Link to="/borrow" className="flex items-center gap-2">
                     Start Borrowing
@@ -215,7 +215,7 @@ export default function Hero() {
                 </Button>
                 <Button
                   variant="outline"
-                  className="border-neutral-300 bg-white hover:bg-neutral-50 text-[#001B40] font-sora font-medium rounded-xl h-12 px-8 transition-all hover:-translate-y-0.5 flex items-center gap-2"
+                  className="border-neutral-200 bg-white/80 hover:bg-white text-[#242424] font-sora font-medium rounded-xl h-12 px-8 transition-all hover:-translate-y-0.5 flex items-center gap-2"
                   onClick={() => {
                     const stepsSection =
                       document.querySelector("#how-it-works");
@@ -343,15 +343,7 @@ export default function Hero() {
                         setCollateralAmount(value);
                       }}
                       label="Deposit Amount"
-                      percentageButtons
-                      onPercentageClick={(percentage) => {
-                        // Simple percentage of a mock balance
-                        const mockBalance = new Big("2.5");
-                        const newValue = mockBalance.times(percentage);
-                        setCollateralAmount(newValue);
-                      }}
                       disabled={false}
-                      includeMax={true}
                       tokenSelectorBgColor="bg-token-bg"
                       tokenSelectorTextColor="text-token-orange"
                       compact={true}
@@ -377,24 +369,6 @@ export default function Hero() {
                         setBorrowAmount(value);
                       }}
                       label="Borrow Amount"
-                      percentageButtons
-                      onPercentageClick={(percentage) => {
-                        // Percentage based on collateral value
-                        if (
-                          !collateralAmount ||
-                          !bitcoin?.price ||
-                          !usdu?.price
-                        )
-                          return;
-                        const btcPrice = bitcoin.price;
-                        const usduPrice = usdu.price;
-                        const collateralValueUSD =
-                          collateralAmount.times(btcPrice);
-                        const borrowAmountUSD =
-                          collateralValueUSD.times(percentage);
-                        const newValue = borrowAmountUSD.div(usduPrice);
-                        setBorrowAmount(newValue);
-                      }}
                       disabled={false}
                       showBalance={false}
                       tokenSelectorBgColor="bg-token-bg-red/10"
@@ -418,7 +392,7 @@ export default function Hero() {
                     />
 
                     {/* Interest Rate Selector - Minimal version for hero */}
-                    <div className="bg-white rounded-2xl p-5 mt-4">
+                    <div className="bg-white rounded-2xl p-5">
                       {/* Header */}
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex flex-col gap-1">
@@ -484,7 +458,7 @@ export default function Hero() {
                               className="absolute left-0 h-full rounded-full"
                               style={{
                                 width: `${
-                                  ((interestRate - 0.5) / 19.5) * 100
+                                  ((interestRate - 0.5) / 9.5) * 100
                                 }%`,
                                 backgroundColor:
                                   interestRate < 2
@@ -512,7 +486,7 @@ export default function Hero() {
                               style={{
                                 width: "calc(100% - 16px)",
                                 transform: `translateX(${
-                                  ((interestRate - 0.5) / 19.5) * 100
+                                  ((interestRate - 0.5) / 9.5) * 100
                                 }%)`,
                                 transition: "transform 150ms ease-out",
                               }}
@@ -542,23 +516,10 @@ export default function Hero() {
                         </div>
                       </div>
 
-                      {/* Info footer */}
-                      <div className="flex items-center justify-between text-xs font-medium text-neutral-500 font-sora">
-                        <span>
-                          Redeemable before you:{" "}
-                          <span className="text-neutral-700">$0.10M</span>
-                        </span>
-                        <div className="flex items-center gap-1.5">
-                          <span>Redemption Risk:</span>
-                          <div className="px-2 py-0.5 bg-green-50 border border-green-100 rounded text-green-700">
-                            Low
-                          </div>
-                        </div>
-                      </div>
                     </div>
 
                     {/* Get Started Button - navigates to /borrow with URL params */}
-                    <div className="flex flex-col items-start space-y-2 mt-4">
+                    <div className="flex flex-col items-start space-y-2">
                       <Button
                         asChild
                         className="w-full h-12 bg-token-bg-blue hover:bg-[#0051BF] text-white text-sm font-medium font-sora py-4 px-6 rounded-xl transition-all whitespace-nowrap"
