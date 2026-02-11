@@ -1,0 +1,16 @@
+# Starknet RPC endpoint (Alchemy, Infura, or any Starknet RPC provider)
+NODE_URL=https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_9/your_alchemy_api_key
+
+# Indexer endpoint for querying on-chain data
+GRAPHQL_ENDPOINT=https://squid-app-cqw88.ondigitalocean.app/
+
+# STRK claim backend
+CLAIM_BACKEND_URL=https://goldfish-app-s5mk2.ondigitalocean.app/
+
+# Network: "mainnet" or "sepolia"
+NETWORK=mainnet
+
+# (Optional) Cloudflare D1 credentials for Drizzle Studio
+# CLOUDFLARE_ACCOUNT_ID=your_account_id
+# CLOUDFLARE_DATABASE_ID=your_database_id
+# CLOUDFLARE_API_TOKEN=your_api_token
