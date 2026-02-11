@@ -10,10 +10,12 @@
 .mf
 .wrangler
 .dev.vars*
+!.dev.vars.example
 
 # Environment variables
 .env
 .env.*
+!.env.example
 
 # Cursor
 .cursor/

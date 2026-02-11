@@ -1,5 +1,7 @@
 # Uncap Finance
 
+> **Note:** Uncap is winding down. The protocol continues to function normally on-chain. This frontend will remain live until August 2026 to give users ample time to withdraw their funds.
+
 Uncap is a decentralized protocol on Starknet (heavily inspired by Liquity v2) with two core functions:
 
 1. **Borrow against your Bitcoin** — Get liquidity without selling
@@ -21,6 +23,13 @@ USDU is a decentralized stablecoin backed by over-collateralized Bitcoin:
 - **Earn yield** — Deposit in the Stability Pool to earn real yield from borrower interest
 - **Hard-pegged** — Backed by >$1 of Bitcoin per USDU
 
+## Prerequisites
+
+- Node.js (v18 or higher)
+- pnpm (v8 or higher)
+- A Starknet wallet (Argent X or Braavos)
+- An [Alchemy](https://www.alchemy.com/) account (or another Starknet RPC provider)
+
 ## Running Locally
 
 1. Clone the repository:
@@ -36,22 +45,30 @@ cd frontend
 pnpm install
 ```
 
-3. Create environment files:
+3. Create environment files from the examples:
 
-`.env.development` (client-side variables):
-
-```env
-VITE_CHAIN_ID=SN_SEPOLIA
-VITE_ALCHEMY_API=your_alchemy_api_key
+```bash
+cp .env.example .env.development
+cp .dev.vars.example .dev.vars
 ```
 
-`.dev.vars` (server-side variables for Cloudflare Workers):
+Then edit both files and fill in your API keys.
 
-```env
-NODE_URL=https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_8/your_alchemy_api_key
-GRAPHQL_ENDPOINT=your_graphql_endpoint
-NETWORK=sepolia
-```
+`.env.development` — client-side variables (exposed to the browser):
+
+| Variable | Description |
+|---|---|
+| `VITE_CHAIN_ID` | `SN_MAIN` for mainnet, `SN_SEPOLIA` for testnet |
+| `VITE_ALCHEMY_API` | Your Alchemy API key |
+
+`.dev.vars` — server-side variables (Cloudflare Workers, never exposed to client):
+
+| Variable | Description |
+|---|---|
+| `NODE_URL` | Starknet RPC endpoint (Alchemy, Infura, etc.) |
+| `GRAPHQL_ENDPOINT` | Indexer endpoint for querying on-chain data |
+| `CLAIM_BACKEND_URL` | Backend for STRK claim proofs |
+| `NETWORK` | `mainnet` or `sepolia` |
 
 4. Start the development server:
 
@@ -59,7 +76,7 @@ NETWORK=sepolia
 pnpm dev
 ```
 
-The application will be available at `http://localhost:5173`
+The application will be available at `http://localhost:5173`.
 
 ## Building for Production
 
@@ -69,7 +86,7 @@ pnpm build
 
 ## Deployment
 
-The application is configured to deploy to Cloudflare Workers:
+The application is deployed to Cloudflare Workers:
 
 ```bash
 pnpm deploy
@@ -84,12 +101,6 @@ pnpm deploy
 - Starknet.js
 - Cloudflare Workers
 - Vite
-
-## Prerequisites
-
-- Node.js (v18 or higher)
-- pnpm (v8 or higher)
-- A Starknet wallet (Argent X or Braavos)
 
 ## Security
 
