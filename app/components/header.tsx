@@ -27,8 +27,6 @@ import { Separator } from "~/components/ui/separator";
 import { BitcoinIcon, Menu, Percent, PiggyBank } from "lucide-react";
 import { Link, useLocation } from "react-router";
 import { TransactionHistoryButton } from "./transaction-history-button";
-import { Banner1 } from "~/components/banner1";
-import { useFeatureFlag } from "~/hooks/use-feature-flag";
 
 function Logo() {
   return (
@@ -344,7 +342,6 @@ function Header() {
   ];
 
   const location = useLocation();
-  const { data: outageBannerFlag } = useFeatureFlag("show_outage_banner");
 
   const isMoreActive = moreNavItems.some(
     (item) => item.href === location.pathname
@@ -353,15 +350,6 @@ function Header() {
   return (
     <div className="sticky top-2 z-[100] px-2 sm:px-4">
       <header className="bg-white/40 backdrop-blur-xl rounded-2xl max-w-screen-2xl mx-auto border border-[#001B40]/5 relative z-[100]">
-        {outageBannerFlag?.enabled && (
-          <Banner1
-            title="Service Update"
-            description="We're currently experiencing technical difficulties."
-            linkText="Check our Twitter for updates"
-            linkUrl="https://x.com/uncapfinance"
-            defaultVisible={true}
-          />
-        )}
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14">
             {/* Left side: Navigation Links (Desktop) */}
