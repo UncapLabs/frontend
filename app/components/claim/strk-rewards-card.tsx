@@ -30,6 +30,7 @@ import { useUncapIncentiveRates } from "~/hooks/use-incentive-rates";
 import { useQueryState, parseAsStringEnum } from "nuqs";
 import { getSlippageForPair } from "~/lib/contracts/avnu";
 import { ArrowIcon } from "~/components/icons/arrow-icon";
+import { InfoBox } from "~/components/ui/info-box";
 
 interface GetStrkButtonTextParams {
   address: string | undefined;
@@ -544,7 +545,7 @@ export function STRKRewardsCard() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {Array.from({ length: 13 }, (_, i) => i + 1).map(
+                      {Array.from({ length: 14 }, (_, i) => i + 1).map(
                         (weekNumber) => {
                           const dates = getWeekDates(weekNumber);
                           // Find matching data from backend
@@ -584,7 +585,7 @@ export function STRKRewardsCard() {
           )}
         </div>
 
-        {/* Right Panel - Info */}
+        {/* Right Panel - Info (commented out)
         <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px]">
           <Card className="rounded-2xl border-0 shadow-none bg-white">
             <CardHeader className="pb-1">
@@ -681,6 +682,25 @@ export function STRKRewardsCard() {
               </div>
             </CardContent>
           </Card>
+        </div>
+        */}
+
+        {/* Right Panel - Info */}
+        <div className="w-full lg:w-auto lg:flex-1 lg:max-w-md lg:min-w-[320px]">
+          <InfoBox title="STRK Rewards Have Ended" variant="blue">
+            <div className="space-y-3">
+              <p className="text-sm font-normal leading-relaxed">
+                STRK rewards were distributed as part of the Starknet BTCFi
+                incentives program. This program has ended as of Wednesday,
+                February 18, 2026.
+              </p>
+              <p className="text-sm font-normal leading-relaxed">
+                If you have unclaimed rewards, please claim them using the form
+                on this page. You can claim your STRK directly or swap to USDU
+                or WBTC.
+              </p>
+            </div>
+          </InfoBox>
         </div>
       </div>
     </>
