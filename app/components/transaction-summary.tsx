@@ -440,7 +440,7 @@ export function TransactionSummary({
           </div>
         </div>
 
-        {/* Net Cost of Borrowing */}
+        {/* Net Cost of Borrowing (commented out - STRK rewards removed)
         <div className="flex justify-between items-start">
           <Tooltip>
             <TooltipTrigger asChild>
@@ -497,6 +497,7 @@ export function TransactionSummary({
             </div>
           </div>
         </div>
+        */}
 
         {/* Liquidation Price */}
         <div className="flex justify-between items-start">

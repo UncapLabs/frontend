@@ -307,7 +307,7 @@ export function InterestRateSelector({
         )}
 
         {/* STRK Rebate */}
-        {(() => {
+        {/* {(() => {
           const supplyRates = incentiveRates.data?.supplyRates ?? {};
           const supplyRate = supplyRates[collateralType] ?? 0.02;
           return (
@@ -327,7 +327,7 @@ export function InterestRateSelector({
               supplyRatePercent={supplyRate * 100}
             />
           );
-        })()}
+        })()} */}
       </div>
     </div>
   );
