@@ -19,11 +19,11 @@
       "binding": "DOCS_WORKER",
       "service": "uncap-docs"
     },
-    {
-      "binding": "UNCAP_JOBS",
-      "service": "uncap-jobs",
-      "remote": true
-    }
+    // {
+    //   "binding": "UNCAP_JOBS",
+    //   "service": "uncap-jobs",
+    //   "remote": true
+    // }
   ],
   "routes": [
     {
