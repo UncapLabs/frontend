@@ -188,7 +188,26 @@ export const vaultRouter = router({
     }
   }),
 
-  getAnalytics: publicProcedure.query(async ({ ctx }): Promise<VaultAnalyticsData> => {
+  // UNCAP_JOBS service has been shut down — return zeroed-out analytics
+  getAnalytics: publicProcedure.query(async (): Promise<VaultAnalyticsData> => {
+    return {
+      timestamp: new Date().toISOString(),
+      blockNumbers: { ethereum: 0, starknet: 0 },
+      btcPrice: "0",
+      network: "mainnet",
+      totalNavUsd: "0.00",
+      totalNavWbtc: "0.00000000",
+      allocations: [],
+      branches: [],
+      walletBalances: {
+        ethereum: { wbtc: "0", totalUsd: "0.00" },
+        starknet: { wbtc: "0", usdu: "0", usdc: "0", usdce: "0", totalUsd: "0.00" },
+      },
+      extendedVaultUsd: "0.00",
+      warnings: [],
+    };
+
+    /* --- UNCAP_JOBS implementation (commented out — service is being shut down) ---
     // Call uncap-jobs worker via service binding
     const response = await ctx.env.UNCAP_JOBS.fetch(
       new Request("https://uncap-jobs/api/mnav", {
@@ -319,6 +338,7 @@ export const vaultRouter = router({
     };
 
     return result;
+    --- end commented out UNCAP_JOBS implementation */
   }),
 });
 
