@@ -1,3 +1,7 @@
+## Important Notice
+
+This website is no longer operated by Uncap Labs GmbH. It is now provided on an "as is" basis as a community-run service until August 2026 by Web3xplore SRL, a Belgian company with company number 1008728338. References to "Uncap Labs" in this Privacy Policy should be read accordingly, and no representations, warranties, support, or ongoing obligations are provided by either Uncap Labs GmbH or Web3xplore SRL in connection with the Site or the Protocol.
+
 ## Privacy Statement
 
 Neither the Uncap website (www.uncap.finance) or protocol collect any personal information and the anonymous data that is processed is not correlated with personal information held by third parties. Please direct any enquiries to legal@uncap.finance.
