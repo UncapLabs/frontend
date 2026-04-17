@@ -4,7 +4,7 @@ This website is no longer operated by Uncap Labs GmbH. It is now provided on an 
 
 ## Privacy Statement
 
-Neither the Uncap website (www.uncap.finance) or protocol collect any personal information and the anonymous data that is processed is not correlated with personal information held by third parties. Please direct any enquiries to legal@uncap.finance.
+Neither the Uncap website (www.uncap.finance) or protocol collect any personal information and the anonymous data that is processed is not correlated with personal information held by third parties.
 
 ## Privacy Policy - Email Subscribers
 
@@ -38,8 +38,6 @@ Depending on your jurisdiction, you may have certain rights regarding your perso
 - The right to object to processing
 - The right to data portability
 
-To exercise these rights, please contact us at legal@uncap.finance.
-
 ### International Transfers
 
 As Uncap Labs GmbH is based in Switzerland, your email data may be processed in Switzerland. We ensure appropriate safeguards are in place for any international data transfers.
@@ -48,11 +46,4 @@ As Uncap Labs GmbH is based in Switzerland, your email data may be processed in 
 
 We may update this privacy policy from time to time. We encourage you to review it regularly. Any material changes will be communicated to our subscribers.
 
-### Contact Us
-
-If you have any questions about this privacy policy or our treatment of your personal information, please contact us at:
-
-**Uncap Labs GmbH**  
-Email: legal@uncap.finance
-
-_Last updated: 19.09.2025_
+_Last updated: 17.04.2026_

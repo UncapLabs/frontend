@@ -142,8 +142,4 @@ You agree to indemnify and hold Uncap Labs harmless from and against any loss, d
 
 **Class action and jury trial waiver**: You must bring any and all disputes against us in Your individual capacity and not as a plaintiff in or member of any purported class action, collective action, private attorney general action, or other representative proceeding. This provision applies to class arbitration. You and we both agree to waive the right to demand a trial by jury.
 
-## **Contact**
-
-If You need to contact us in relation to these Terms or any other document mentioned in them, please email us at legal\@uncap.finance.
-
-Updated: 03.10.2025. All rights reserved.
+Updated: 17.04.2026. All rights reserved.
