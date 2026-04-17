@@ -38,10 +38,6 @@ Depending on your jurisdiction, you may have certain rights regarding your perso
 - The right to object to processing
 - The right to data portability
 
-### International Transfers
-
-As Uncap Labs GmbH is based in Switzerland, your email data may be processed in Switzerland. We ensure appropriate safeguards are in place for any international data transfers.
-
 ### Changes
 
 We may update this privacy policy from time to time. We encourage you to review it regularly. Any material changes will be communicated to our subscribers.
