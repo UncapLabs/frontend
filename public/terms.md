@@ -1,6 +1,10 @@
 # **Terms of Service**
 
-These terms of service ("Terms") constitute a binding agreement and apply to your ("You" or "User") usage of[ www.uncap.finance](http://www.uncap.finance) ("Site") offered by Uncap Labs GmbH ("Uncap Labs"), a software development company. The Site provides information and access to Uncap, a fully open and permissionless DeFi protocol consisting of a BTC-backed CDP stablecoin (USDU) and a ve(3,3) incentive mechanism allowing anyone to deploy and interact with Bitcoin-denominated financial services (together with any related technology the "Protocol").
+## **Important Notice**
+
+This website is no longer operated by Uncap Labs GmbH. It is now provided on an "as is" basis as a community-run service until August 2026 by Web3xplore SRL, a Belgian company with company number 1008728338. References to "Uncap Labs" in the Terms below should be read accordingly, and no representations, warranties, support, or ongoing obligations are provided by either Uncap Labs GmbH or Web3xplore SRL in connection with the Site or the Protocol.
+
+These terms of service ("Terms") constitute a binding agreement and apply to your ("You" or "User") usage of[ www.uncap.finance](http://www.uncap.finance) ("Site") previously offered by Uncap Labs GmbH ("Uncap Labs"), a software development company. The Site provides information and access to Uncap, a fully open and permissionless DeFi protocol consisting of a BTC-backed CDP stablecoin (USDU) allowing anyone to interact with Bitcoin-denominated financial services (together with any related technology the "Protocol").
 
 The Protocol is not offered, controlled, or operated by Uncap Labs, and these Terms do not govern Your use of the Protocol, which You do so entirely at Your own risk. Please refer to the Protocol Disclaimer below.
 
@@ -113,8 +117,6 @@ If You are accessing or using the Protocol, please note the following:
 - While accessing the Protocol, there is a possibility that Your crypto assets could depreciate partially or entirely in value. Borrowing through the Protocol requires that You provide Your own crypto assets as security. In the event that the value of Your security fails to adequately cover Your borrowings, Your collateral may be seized by others through liquidation. You acknowledge that Uncap Labs accepts no liability for any of these circumstances or risks, as we neither possess nor control the Protocol. Transactions entered in connection with the Protocol are irreversible, and final and there are no refunds. Any transactions by You are unsolicited and solely initiated, and their outcome is solely borne, by, You.
 
 - The Protocol involves minting and using USDU, a BTC-backed stablecoin. Stablecoins carry risks including but not limited to depegging, smart contract vulnerabilities, and liquidation risks. The stability mechanism relies on market forces and protocol incentives which may not always function as intended.
-
-- The Protocol includes a ve(3,3) incentive mechanism and governance token (UNCAP). Token values can be highly volatile and may lose value entirely. Governance tokens carry additional risks related to protocol governance decisions and potential changes to tokenomics.
 
 - The Protocol is non-custodial. You are solely responsible for implementing reasonable measures to secure access to the wallet solution (i.e., private key(s) or other credentials) used to interact with Protocol or receive, hold, send, and use crypto assets.
 
